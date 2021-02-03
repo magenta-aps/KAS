@@ -1,6 +1,6 @@
 # KAS
 
-## Docekr based development environment
+## Docker based development environment
 
 | container | description | port |
 |----------|--------------|------|
@@ -13,7 +13,15 @@ All django containers are using gunicorn and is confgiured to serve static in th
 log everything to stdout/stderr, so you can check the logs using docker logs <container_name>.
 Gunicorn is set to auto-realod on (python) code changes.
 
+### Running the project
+```bash
+docker-compose up
+```
 
+If you add/change/remove a dependency from a requirements.txt you have to rebuild to image using:
+```bash
+docker-compose build
+```
 
 ## settings
 All configurable settings needs to be injected using environment variables beucase we want to re-use the same
