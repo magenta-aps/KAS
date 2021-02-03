@@ -43,7 +43,7 @@ services:
       - kas-postgres-data:/var/lib/postgresql/data
       - ./dev-environment/postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
 
-  selbetjening:
+  selvbetjening:
     container_name: kas-selvbetjening
     build:
       context: .
