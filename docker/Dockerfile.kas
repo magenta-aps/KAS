@@ -1,0 +1,18 @@
+FROM python:3.8
+RUN mkdir /app
+COPY kas/requirements.txt app/requirements.txt
+RUN pip install --no-cache-dir -r app/requirements.txt
+ENV PYTHONUNBUFFERED=1
+#RUN useradd -r --no-create-home --uid 2000 kas #TODO find a global unique UID in salt
+RUN apt-get update && apt-get install -y --no-install-recommends \
+python3-distutils \
+&& apt-get clean && rm -rf /var/lib/apt/lists/*
+#USER gallery
+COPY ./docker/kas_entrypoint.sh /entrypoint.sh
+COPY ./kas /app
+EXPOSE 8000
+VOLUME  /uploads
+#TODO handle static file in combination with traefik
+ENTRYPOINT ["/entrypoint.sh"]
+WORKDIR /app
+CMD ["gunicorn","-b","0.0.0.0:8000","project.wsgi:application","-w 4","--error-logfile", "-","--capture-output"]

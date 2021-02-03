@@ -1,0 +1,62 @@
+version: "3.4"
+services:
+  kas-web:
+    container_name: kas
+    image: kas:latests
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.kas
+    depends_on:
+      - postgres
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./dev-environment/kas.env
+    volumes:
+      - ./kas/:/app
+      - ./kas/uploads:/uploads
+    command: gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output # reload on code changes
+
+  oneshot:
+    container_name: oneshot
+    image: kas:latests
+    depends_on:
+      - postgres
+    volumes:
+      - ./kas/:/app
+    env_file:
+      - ./dev-environment/kas.env
+    environment:
+      - MAKE_MIGRATIONS=true
+      - MIGRATE=true
+      - TEST=true
+
+  postgres:
+    container_name: kas-db
+    image: postgres:13
+    ports:
+      # expose to localhost for easier debugging
+      - "5432:5432"
+    env_file:
+      - ./dev-environment/kas.env
+    volumes:
+      - kas-postgres-data:/var/lib/postgresql/data
+      - ./dev-environment/postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
+
+  selbetjening:
+    container_name: kas-selvbetjening
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.selvbetjening
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8000"
+    env_file:
+      - ./dev-environment/selvbetjening.env
+    volumes:
+      - ./selvbetjening:/app
+    command: gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output # reload on code changes
+
+volumes:
+  kas-postgres-data:
