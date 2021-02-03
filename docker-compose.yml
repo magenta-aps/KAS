@@ -2,7 +2,7 @@ version: "3.4"
 services:
   kas-web:
     container_name: kas
-    image: kas:latests
+    image: kas:latest
     build:
       context: .
       dockerfile: docker/Dockerfile.kas
@@ -19,7 +19,7 @@ services:
 
   oneshot:
     container_name: oneshot
-    image: kas:latests
+    image: kas:latest
     depends_on:
       - postgres
     volumes:
