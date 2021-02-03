@@ -29,3 +29,7 @@ dockerFiles for development and production, if a needed setting is not provided 
 mistakes can be discovered as part of the deployment. All configurable django settings are located in 
 dev-environment/kas.env and dev-environment/selvbetjening.env and can be overriden directly in docker-compose.yml
 using the environment block.
+
+#worker POC
+open: http://localhost:8000/worker/
+press a button, see stuff works
