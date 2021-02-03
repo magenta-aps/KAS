@@ -17,6 +17,19 @@ services:
       - ./kas/uploads:/uploads
     command: gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output # reload on code changes
 
+  worker:
+    #add more containers like this to add more workers
+    container_name: worker-one
+    image: kas:latest
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ./dev-environment/kas.env
+    volumes:
+      - ./kas/:/app
+    command: python manage.py rqworker high default low # listening on all three queues by default
+
   oneshot:
     container_name: oneshot
     image: kas:latest
@@ -42,6 +55,12 @@ services:
     volumes:
       - kas-postgres-data:/var/lib/postgresql/data
       - ./dev-environment/postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
+
+  redis:
+    container_name: redis
+    image: redis:6.0
+    ports:
+      - "6379:6379"
 
   selvbetjening:
     container_name: kas-selvbetjening

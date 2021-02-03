@@ -1,0 +1,3 @@
+<div class="progress" {% if not job.parent %}style="height: 30px"{% endif %}>
+    <div id="{{ job.uuid }}" class="{{ job.bootstrap_color }}" role="progressbar" style="width: {{ job.pretty_progress }}" aria-valuenow="{{ job.progress }}" aria-valuemin="0" aria-valuemax="100">{{ job.title }}</div>
+</div>

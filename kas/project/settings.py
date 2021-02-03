@@ -22,8 +22,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "django_rq",
     'kas',
-    'jobs',
+    'worker',
 ]
 
 MIDDLEWARE = [
@@ -114,3 +115,15 @@ LOGGING = {
         },
     },
 }
+REDIS = {
+    'HOST': 'redis',
+    'PORT': 6379,
+    'DB': 1,
+    'DEFAULT_TIMEOUT': 360,
+}
+RQ_QUEUES = {
+    'default': REDIS,
+    'high': REDIS,
+    'low': REDIS
+}
+RQ_EXCEPTION_HANDLERS = ['worker.exception_handler.write_exception_to_db']
