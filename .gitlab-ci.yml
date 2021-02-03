@@ -121,6 +121,7 @@ Selvbetjening Unittest:
     POSTGRES_PASSWORD: kas
     POSTGRES_DB: selvbetjening
     POSTGRES_HOST: kas-db
+    DJANGO_LANGUAGE_COOKIE_DOMAIN: localhost
   script:
     - cd /app && python manage.py test
 

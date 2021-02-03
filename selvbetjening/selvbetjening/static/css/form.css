@@ -1,0 +1,240 @@
+/* Form */
+
+form > div {
+    background-color: #fff;
+    padding: 1.875rem;
+    margin: 1.5rem 0;
+}
+
+fieldset {
+    border: none;
+    padding: 0;
+    margin: 1.5rem 0;
+}
+
+/* Input field container */
+
+div.input {
+    display: inline-block;
+}
+
+/* Buttons and button-like links */
+
+button,
+a.button,
+a.button:link,
+a.button:visited,
+div.SumoSelect > .CaptionCont {
+    color: #fff;
+    border: none;
+    padding: .75rem 2.25rem;
+    font-size: .875rem;
+    cursor: pointer;
+    margin: 0 .75rem .75rem 0;
+    background-color: #31495b;
+    text-decoration: none;
+    vertical-align: top;
+}
+button:active, button:hover,
+a.button:active, a.button:hover {
+    background-color: #83929d
+}
+
+button[type=submit] {
+    background-color: #fbb03b;
+}
+button[type=submit]:active, button[type=submit]:hover {
+    background-color: #fbb84f;
+}
+
+div.SumoSelect > .CaptionCont {
+    border-radius: 0;
+}
+
+div.SumoSelect > .CaptionCont > label {
+    display: none;
+}
+
+div.SumoSelect > .CaptionCont > span {
+    padding-right: 0;
+    line-height: 1.214em;
+}
+
+div.SumoSelect > .optWrapper {
+    width: 300px;
+}
+
+div.SumoSelect > .optWrapper label {
+    margin: 0;
+}
+
+.SumoSelect > .CaptionCont > span {
+    text-align: center !important;
+}
+
+/* Input fields */
+
+label {
+    display: block;
+    margin: 20px 0 10px
+}
+input:not(input[type="file"],input[type="checkbox"],input[type="radio"]) {
+    width: 100%;
+    height: 46px
+}
+textarea {
+    height: 92px
+}
+input:not(input[type="file"]), textarea {
+    border: 1px solid #d6dbde;
+    border-radius: .175rem;
+    padding: .75rem .75rem;
+    font-size: 1rem;
+    background-color: #fff;
+}
+input[type=date]:focus, input[type=email]:focus,
+input[type=number]:focus, input[type=password]:focus,
+input[type=text]:focus, textarea:focus, select:focus {
+    border-color: #83929d
+}
+
+input[type=number],
+input[type=text] {
+    width: 221px;
+    height: 32px;
+}
+
+form.submitted input:invalid:not([type=checkbox],[type=radio]),
+form.submitted select:invalid,
+.has-error input:not([type=checkbox],[type=radio]), .has-error select {
+    border: 2px solid #d7404d;
+    width: 221px;
+    height: 32px;
+}
+input[disabled] {
+    background-color: #f5f5f5
+}
+
+select {
+    padding: .75rem 1.5rem;
+    padding-right: 3em;
+    /*background-color: #fff;*/
+    border: none;
+    color: #31495b;
+    font-size: 1em;
+    font-weight: 700;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    width: 100%;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: url(../img/sullisivk_arrow.svg) no-repeat #ddd;
+    background-position-x: right 10px;
+    background-position-y: 50%;
+    background-size: 1.5em
+}
+.dropdown:active,
+.dropdown:focus,
+.dropdown:hover {
+    background-color: #d6dbde
+}
+
+.input ul {
+    padding-left: 0;
+    list-style-type: none;
+}
+
+.input ul li {
+    display: inline-block;
+    margin: 0 3em;
+}
+
+.input ul.errorlist li {
+    display: block;
+    margin: 0;
+}
+
+.err-msg {
+    color:red;
+    display: block;
+}
+
+.can-collapse {
+    cursor: pointer;
+}
+
+.can-collapse.has-expanded img {
+    -moz-animation: spin-down 400ms linear;
+    -moz-transform: rotate(90deg);
+    -webkit-animation: spin-down 400ms linear;
+    -webkit-transform: rotate(90deg);
+    animation: spin-down 400ms linear;
+    transform: rotate(90deg);
+}
+
+.can-collapse.has-collapsed img {
+    -moz-animation: spin-right 400ms linear;
+    -moz-transform: rotate(0deg);
+    -webkit-animation: spin-right 400ms linear;
+    -webkit-transform: rotate(0deg);
+    animation: spin-right 400ms linear;
+    transform: rotate(0deg);
+}
+
+@-moz-keyframes spin-right {
+    0% {
+        -moz-transform: rotate(90deg);
+    }
+    100% {
+        -moz-transform: rotate(0deg);
+    }
+}
+@-webkit-keyframes spin-right {
+    0% {
+        -webkit-transform: rotate(90deg);
+    }
+    100% {
+        -webkit-transform: rotate(0deg);
+    }
+}
+@keyframes spin-right {
+    0% {
+        transform: rotate(90deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+@-moz-keyframes spin-down {
+    0% {
+        -moz-transform: rotate(0deg);
+    }
+    100% {
+        -moz-transform: rotate(90deg);
+    }
+}
+@-webkit-keyframes spin-down {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(90deg);
+    }
+}
+@keyframes spin-down {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(90deg);
+    }
+}
