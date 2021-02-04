@@ -106,7 +106,7 @@ KAS Unittest:
     POSTGRES_DB: kas
     POSTGRES_HOST: kas-db
   script:
-    - cd /app && python manage.py tests
+    - cd /app && python manage.py test
 
 Selvbetjening unittest:
   <<: *test-default
@@ -123,4 +123,4 @@ Selvbetjening unittest:
     POSTGRES_DB: selvbetjening
     POSTGRES_HOST: kas-db
   script:
-    - cd /app && python manage.py tests
+    - cd /app && python manage.py test
