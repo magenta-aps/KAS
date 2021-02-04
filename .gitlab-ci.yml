@@ -1,0 +1,126 @@
+stages:
+  - lint
+  - build
+  - test
+
+variables:
+  # Project variables
+  RELEASE_REGISTRY: docker.io
+  #RELEASE_REGISTRY_IMAGE: index.docker.io/magentaaps/kas-kas?
+
+  KAS_IMAGE_SHA: ${CI_REGISTRY_IMAGE}/kas:${CI_COMMIT_SHA}
+
+  KAS_IMAGE_DEV: ${CI_REGISTRY_IMAGE}/kas:dev
+
+  SELF_IMAGE_SHA: ${CI_REGISTRY_IMAGE}/self:${CI_COMMIT_SHA}
+  SELF_IMAGE_DEV: ${CI_REGISTRY_IMAGE}/self:dev
+
+
+
+# Lint stage
+#############
+.lint-default: &lint-default
+  stage: lint
+  needs: []
+  image: python:3.8
+  tags:
+    - docker
+
+Lint Python:
+  <<: *lint-default
+  before_script:
+    - pip3 install flake8
+    #- pip3 install -r django/requirements.txt
+  script:
+    - flake8 --ignore E501,E226 kas/
+    - flake8 --ignore E501,E226 selvbetjening/
+
+Lint Dockerfiles:
+  <<: *lint-default
+  image: hadolint/hadolint:latest-debian
+  before_script:
+    - apt-get -y update
+    - apt-get -y install --no-install-recommends git
+  script:
+    - git ls-files --exclude='Dockerfile*' --ignored | xargs --max-lines=1 hadolint
+
+# Build stage
+#############
+
+Build kas image:
+  stage: build
+  needs: []
+  dependencies: []
+  image:
+    name: gcr.io/kaniko-project/executor:debug-v0.16.0
+    entrypoint: [""]
+  tags:
+    - docker
+  script:
+    # Login to GitLab registry
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --cache
+      --context=$CI_PROJECT_DIR
+      --dockerfile=$CI_PROJECT_DIR/docker/Dockerfile.kas
+      --destination=${KAS_IMAGE_SHA}
+
+Build selvbetjenings image:
+  stage: build
+  needs: []
+  dependencies: []
+  image:
+    name: gcr.io/kaniko-project/executor:debug-v0.16.0
+    entrypoint: [""]
+  tags:
+    - docker
+  script:
+    # Login to GitLab registry
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --cache
+      --context=$CI_PROJECT_DIR
+      --dockerfile=$CI_PROJECT_DIR/docker/Dockerfile.selvbetjening
+      --destination=${SELF_IMAGE_SHA}
+
+# Test stage
+############
+.test-default: &test-default
+  stage: test
+  dependencies: []
+  tags:
+    - docker
+
+KAS Unittest:
+  <<: *test-default
+  needs: ["Build kas image"]
+  image: ${KAS_IMAGE_SHA}
+  services:
+   - name: postgres:13
+     alias: kas-db
+  variables:
+    DJANGO_SECRET_KEY: e$s6@0(hs5ja79-&!l7vt^onoe4h^*bv_e4hj&wt5^8*&x76-$
+    DJANGO_TIMEZONE: Europe/Copenhagen
+    POSTGRES_USER: kas
+    POSTGRES_PASSWORD: kas
+    POSTGRES_DB: kas
+    POSTGRES_HOST: kas-db
+  script:
+    - cd /app && python manage.py test
+
+Selvbetjening unittest:
+  <<: *test-default
+  needs: ["Build selvbetjenings image"]
+  image: ${SELF_IMAGE_SHA}
+  services:
+    - name: postgres:13
+      alias: kas-db
+  variables:
+    DJANGO_SECRET_KEY: e$s6@0(hs5ja79-&!l7vt^onoe4h^*bv_e4hj&wt5^8*&x76-$
+    DJANGO_TIMEZONE: Europe/Copenhagen
+    POSTGRES_USER: kas
+    POSTGRES_PASSWORD: kas
+    POSTGRES_DB: selvbetjening
+    POSTGRES_HOST: kas-db
+  script:
+    - cd /app && python manage.py test

@@ -4,7 +4,7 @@ from time import sleep
 
 @job_decorator
 def slow_job(job):
-    for i in range(1,10):
+    for i in range(1, 10):
         job.progress = 10*i
         job.save(update_fields=['progress'])
         sleep(10)
@@ -24,4 +24,4 @@ def slow_job_with_children(job):
 def job_with_exception(job):
     job.progress = 20
     job.save(update_fields=['progress'])
-    a = 1/0
+    a = 1/0 # noqa

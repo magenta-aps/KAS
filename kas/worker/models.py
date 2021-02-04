@@ -36,7 +36,6 @@ class Job(models.Model):
     status = models.TextField(default='queued', choices=status_choices, blank=True)
     traceback = models.TextField(default='', blank=True)
 
-
     @property
     def bootstrap_color(self):
         if self.status == 'queued':
