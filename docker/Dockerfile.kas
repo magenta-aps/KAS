@@ -4,6 +4,7 @@ COPY kas/requirements.txt app/requirements.txt
 RUN pip install --no-cache-dir -r app/requirements.txt
 ENV PYTHONUNBUFFERED=1
 #RUN useradd -r --no-create-home --uid 2000 kas #TODO find a global unique UID in salt
+# hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
 python3-distutils \
 && apt-get clean && rm -rf /var/lib/apt/lists/*
