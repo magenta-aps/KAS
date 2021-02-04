@@ -9,6 +9,7 @@ variables:
   #RELEASE_REGISTRY_IMAGE: index.docker.io/magentaaps/kas-kas?
 
   KAS_IMAGE_SHA: ${CI_REGISTRY_IMAGE}/kas:${CI_COMMIT_SHA}
+
   KAS_IMAGE_DEV: ${CI_REGISTRY_IMAGE}/kas:dev
 
   SELF_IMAGE_SHA: ${CI_REGISTRY_IMAGE}/self:${CI_COMMIT_SHA}
@@ -64,6 +65,24 @@ Build kas image:
       --dockerfile=$CI_PROJECT_DIR/docker/Dockerfile.kas
       --destination=${KAS_IMAGE_SHA}
 
+Build selvbetjenings image:
+  stage: build
+  needs: []
+  dependencies: []
+  image:
+    name: gcr.io/kaniko-project/executor:debug-v0.16.0
+    entrypoint: [""]
+  tags:
+    - docker
+  script:
+    # Login to GitLab registry
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --cache
+      --context=$CI_PROJECT_DIR
+      --dockerfile=$CI_PROJECT_DIR/docker/Dockerfile.selvbetjening
+      --destination=${SELF_IMAGE_SHA}
+
 # Test stage
 ############
 .test-default: &test-default
@@ -77,4 +96,4 @@ KAS Unittest:
   tags:
     - docker
   script:
-    - python manage.py tests
+    - cd /app && python manage.py tests
