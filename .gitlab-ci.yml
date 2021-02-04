@@ -1,0 +1,79 @@
+stages:
+  - lint
+  - build
+  - test
+
+variables:
+  # Project variables
+  RELEASE_REGISTRY: docker.io
+  #RELEASE_REGISTRY_IMAGE: index.docker.io/magentaaps/kas-kas?
+
+  KAS_IMAGE_SHA: kas-${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
+  KAS_IMAGE_DEV: kas-${CI_REGISTRY_IMAGE}:dev
+
+  KAS_IMAGE: magentaaps/kas-kas
+  KAS_IMAGE_TAG: kas-${IMAGE}:${CI_COMMIT_TAG}
+  KAS_IMAGE_LATEST: kas-${IMAGE}:latest
+
+# Lint stage
+#############
+.lint-default: &lint-default
+  stage: lint
+  needs: []
+  image: python:3.8
+  tags:
+    - docker
+
+Lint Python:
+  <<: *lint-default
+  before_script:
+    - pip3 install flake8
+    #- pip3 install -r django/requirements.txt
+  script:
+    - flake8 --ignore E501,E226 kas/
+    - flake8 --ignore E501,E226 selvbetjening/
+
+Lint Dockerfiles:
+  <<: *lint-default
+  image: hadolint/hadolint:latest-debian
+  before_script:
+    - apt-get -y update
+    - apt-get -y install --no-install-recommends git
+  script:
+    - git ls-files --exclude='Dockerfile*' --ignored | xargs --max-lines=1 hadolint
+
+# Build stage
+#############
+
+Build kas image:
+  stage: build
+  needs: []
+  dependencies: []
+  image:
+    name: gcr.io/kaniko-project/executor:debug-v0.16.0
+    entrypoint: [""]
+  tags:
+    - docker
+  script:
+    # Login to GitLab registry
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --cache
+      --context=$CI_PROJECT_DIR
+      --dockerfile=$CI_PROJECT_DIR/docker/Dockerfile.kas
+      --destination=${KAS_IMAGE_SHA}
+
+# Test stage
+############
+.test-default: &test-default
+  stage: test
+  dependencies: []
+
+KAS Unittest:
+  <<: *test-default
+  needs: ["Build kas image"]
+  image: ${KAS_IMAGE_SHA}
+  tags:
+    - docker
+  script:
+    - python manage.py tests
