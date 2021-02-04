@@ -25,4 +25,3 @@ def job_with_exception(job):
     job.progress = 20
     job.save(update_fields=['progress'])
     a = 1/0 # noqa
-
