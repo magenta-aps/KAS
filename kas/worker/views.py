@@ -1,7 +1,7 @@
 from django.http import JsonResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 
-from django.views.generic import View, TemplateView, FormView
+from django.views.generic import TemplateView
 from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import BaseFormView
 
@@ -29,7 +29,7 @@ class IndexTemplateView(TemplateView):
             'children_form': JobControlForm(data={'action': 'create', 'job_type': 'slow_job_with_children',
                                                   'redirect_url': reverse_lazy('worker:index')}),
             'exception_form': JobControlForm(data={'action': 'create', 'job_type': 'job_with_exception',
-                                                  'redirect_url': reverse_lazy('worker:index')}),
+                                                   'redirect_url': reverse_lazy('worker:index')}),
 
         })
         return ctx
