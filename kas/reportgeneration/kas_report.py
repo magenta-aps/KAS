@@ -1,6 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 
 import os
+import sys
 from fpdf import FPDF
 
 
@@ -34,27 +35,26 @@ pdf.cell(ln=0, h=22.0, align='L', w=75.0, txt='Indsendelsesfrist senest 1. maj 2
 
 
 pdf.set_font('helvetica', '', 12.0)
-#pdf.set_xy(105.0, 8.0)
 
-spacing=1.5
+spacing = 1.5
 col_width = pdf.w / 3.25
 row_height = pdf.font_size
 item = "bla bla bla"
 
-#Adressing
+# Adressing reciever
 pdf.set_xy(30.0, 37.0)
-pdf.multi_cell(60,5,border=0,txt=modtagernavn+"\n"+modtagernadd+"\n"+modtagerpostnummer)
+pdf.multi_cell(60, 5, border=0, txt=modtagernavn+"\n"+modtagernadd+"\n"+modtagerpostnummer)
 
 
-#Adressing
+# Adressing department
 pdf.set_xy(30.0, 57.0)
-pdf.multi_cell(60,5,border=0,txt=afsnavn+"\n"+afsadd+"\n"+afspostnummer)
-pdf.line(30,57,90,72);
-pdf.line(30,72,90,57);
-
+pdf.multi_cell(60, 5, border=0, txt=afsnavn+"\n"+afsadd+"\n"+afspostnummer)
+pdf.line(30, 57, 90, 72)
+pdf.line(30, 72, 90, 57)
 
 
 pdf.set_xy(100.0, 27.0)
+pdf.rotate = 10
 pdf.cell(ln=0, h=5.0, align='L', w=40.0, txt='Personnummer: ', border=1)
 pdf.set_xy(100.0, 32.0)
 pdf.cell(ln=1, h=5.0, align='L', w=40.0, txt='Kapitalafkastskat: ', border=1)
@@ -81,41 +81,77 @@ pdf.set_xy(100.0, 52.0)
 
 pdf.set_xy(15.0, 95.0)
 
-pdf.cell(ln=0, h=5.0, align='L', w=170.0, txt='Vejledning til bilag vedrørende beskatning af visse kapitalafkast', border=1)
+pdf.cell(ln=0, h=5.0, align='L', w=170.0, txt='Vejledning til bilag vedrørende beskatning af visse kapitalafkast',
+         border=1)
 
-yposition = 100;
+yposition = 100
 elementheight = 40
 pdf.set_xy(15.0, yposition)
 pdf.rect(15.0, yposition, 170.0, elementheight)
-pdf.multi_cell(170, 5, "Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print, graphic or web designs. The passage is attributed to an unknown typesetter in the 15th century who is thought to have scrambled parts of Cicero's De Finibus Bonorum et Malorum for use in a type specimen book.", 0)
+pdf.multi_cell(170, 5, "Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print, "
+                       "graphic or web designs. The passage is attributed to an unknown typesetter in the 15th "
+                       "century who is thought to have scrambled parts of Cicero's De Finibus Bonorum et Malorum "
+                       "for use in a type specimen book.", 0)
 yposition += elementheight
 
-elementheight = 20
+elementheight = 15
 pdf.set_xy(15.0, yposition)
 pdf.rect(15.0, yposition, 170.0, elementheight)
-pdf.multi_cell(170, 5, "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla", 0)
+pdf.multi_cell(170, 5, "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla "
+                       "bla bla bla bla bla bla bla bla", 0)
 yposition += elementheight
 
 elementheight = 30
 pdf.set_xy(15.0, yposition)
 pdf.rect(15.0, yposition, 170.0, elementheight)
-pdf.multi_cell(170, 5, "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla", 0)
+pdf.multi_cell(170, 5, "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla "
+                       "bla bla bla bla bla bla bla bla", 0)
 yposition += elementheight
 
-elementheight = 20
+elementheight = 15
 pdf.set_xy(15.0, yposition)
 pdf.rect(15.0, yposition, 170.0, elementheight)
-pdf.multi_cell(170, 5, "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla", 0)
+pdf.multi_cell(170, 5, "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla "
+                       "bla bla bla bla bla bla bla bla", 0)
+yposition += elementheight
+
+
+pdf.set_font('helvetica', '', 10.0)
+yposition += 15
+
+elementheight = 5
+
+pdf.set_xy(80.0, yposition)
+pdf.cell(ln=0, h=elementheight, align='L', w=75.0, txt='Beløb i kroner', border=0)
+pdf.set_xy(120.0, yposition)
+pdf.cell(ln=0, h=elementheight, align='L', w=75.0, txt='Beløb i kroner', border=0)
+pdf.set_xy(160.0, yposition)
+pdf.cell(ln=0, h=elementheight, align='L', w=75.0, txt='Felt nr.', border=0)
+
+yposition += elementheight
+
+yposition += 10
+
+pdf.set_xy(15.0, yposition)
+pdf.cell(ln=0, h=elementheight, align='L', w=75.0, txt='Kapitalafkast  PBL (DK) 	§ 53 A', border=0)
+
+pdf.set_xy(160.0, yposition)
+pdf.cell(ln=0, h=elementheight, align='L', w=75.0, txt='201', border=0)
+
+yposition += elementheight
+
+pdf.line(15, yposition, 60, yposition)
+pdf.line(80, yposition, 110, yposition)
+pdf.line(120, yposition, 150, yposition)
 
 
 pdf.set_xy(15.0, pdf.h - 30)
-pdf.cell(ln=0, h=5.0, align='L', w=40.0, txt=personnummer, border=0)
-
+pdf.cell(ln=0, h=5.0, align='C', w=30.0, txt=personnummer, border=0)
 
 
 pdf.output('./invoice.pdf', 'F')
 
-import sys
+
 if sys.platform.startswith("linux"):
     os.system("xdg-open ./invoice.pdf")
 else:
