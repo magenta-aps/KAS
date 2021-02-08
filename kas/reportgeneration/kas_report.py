@@ -173,8 +173,8 @@ class TaxPDF(FPDF):
         self.cell(h=elementheight, align='L', w=75.0, txt='Kapitalafkastskat', border=0)
 
         self.set_xy(50, yposition)
-        self.multi_cell(60, 3, "Har de betalt foreløbig bla bla bla bla bla bla bla bla bla bla bla bla "
-                                "bla bla bla bla", 0)
+        self.multi_cell(60, 3, 'Har de betalt foreløbig bla bla bla bla bla bla bla bla bla '
+                               'bla bla bla bla bla bla bla', 0)
 
         self.set_xy(120.0, yposition-10)
         self.cell(h=elementheight, align='L', w=75.0, txt='Beløb i kroner', border=0)
@@ -204,10 +204,10 @@ class TaxPDF(FPDF):
         self.multi_cell(30, 3, 'Kapitalafkastskat i udlandet', 0)
 
         self.set_xy(50, yposition)
-        self.multi_cell(60, 3, "Anmoder de om nedslag bla bla bla bla bla bla bla bla bla bla bla bla "
-                           "bla bla bla bla", 0)
+        self.multi_cell(60, 3, 'Anmoder de om nedslag bla bla bla bla bla bla bla bla bla '
+                               'bla bla bla bla bla bla bla', 0)
 
-        elementheight =25
+        elementheight = 25
         self.set_xy(120.0, yposition-10)
         self.cell(h=elementheight-25, align='L', w=75.0, txt='Beløb i kroner', border=0)
         self.line(120, yposition+5, 150, yposition+5)
@@ -240,7 +240,6 @@ class TaxPDF(FPDF):
         self.set_font('helvetica', '', 13.0)
         self.set_xy(self.left_margin, yposition)
         self.cell(h=10, align='L', w=self.right_margin, txt='Indsendes sammen med Selvangivelsen S1/S1U', border=0)
-
 
         self.output('./invoice.pdf', 'F')
 
