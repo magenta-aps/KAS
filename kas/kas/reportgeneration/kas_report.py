@@ -2,13 +2,14 @@
 
 import os
 import sys
+
 from fpdf import FPDF
 
 
 class TaxPDF(FPDF):
 
     right_margin = 170
-    left_margin = 15.0
+    left_margin = 17.0
     contact_info_table_cell_height = 5.0
     contact_info_table_cell_width = 40.0
 
@@ -18,6 +19,12 @@ class TaxPDF(FPDF):
     address_field_width = 70
     address_field_x_pos = 17
     address_field_y_pos = 37
+
+    element_height_1 = 5
+    element_height_2 = 40
+    element_height_3 = 15
+    element_height_4 = 30
+    element_height_5 = 15
 
     tax_year = '-'
     tax_return_date_limit = '-'
@@ -51,7 +58,8 @@ class TaxPDF(FPDF):
         self.set_xy(self.left_margin, self.yposition)
 
     def footer(self):
-        self.set_xy(self.left_margin, self.h - 30)
+        self.set_font('arial', '', 11)
+        self.set_xy(self.left_margin, self.h - 10)
         self.cell(h=5.0, align='C', w=30.0, txt=self.person_number, border=0)
         self.set_xy(self.left_margin, self.yposition)
 
@@ -124,14 +132,15 @@ class TaxPDF(FPDF):
         self.cell(h=self.contact_info_table_cell_height, align='L', w=self.contact_info_table_cell_width,
                   txt=self.nemid_kode, border=1)
 
-        self.set_xy(self.left_margin, 95.0)
+        self.yposition = 80
+        self.set_xy(self.left_margin, self.yposition)
 
-        self.cell(h=5.0, align='L', w=170.0,
+        self.cell(h=self.element_height_1, align='L', w=170.0,
                   txt='Vejledning til bilag vedrørende beskatning af visse kapitalafkast', border=1)
+        self.yposition += self.element_height_1
 
-        self.yposition = 100
-        elementheight = 40
-        self.set_xy(15.0, self.yposition)
+        elementheight = self.element_height_2
+        self.set_xy(self.left_margin, self.yposition)
         self.rect(self.left_margin, self.yposition, self.right_margin, elementheight)
         self.multi_cell(170, 5, "Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out "
                                 "print, graphic or web designs. The passage is attributed to an unknown typesetter in "
@@ -139,33 +148,33 @@ class TaxPDF(FPDF):
                                 "Bonorum et Malorum for use in a type specimen book.", 0)
         self.yposition += elementheight
 
-        elementheight = 15
+        elementheight = self.element_height_3
         self.set_xy(self.left_margin, self.yposition)
         self.rect(self.left_margin, self.yposition, self.right_margin, elementheight)
         self.multi_cell(170, 5, "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla bla "
                                 "bla bla bla bla bla bla bla bla bla bla", 0)
         self.yposition += elementheight
 
-        elementheight = 30
+        elementheight = self.element_height_4
         self.set_xy(self.left_margin, self.yposition)
         self.rect(self.left_margin, self.yposition, self.right_margin, elementheight)
         self.multi_cell(170, 5, "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla "
                                 "bla bla bla bla bla bla bla bla bla bla bla", 0)
         self.yposition += elementheight
 
-        elementheight = 15
+        elementheight = self.element_height_5
         self.set_xy(self.left_margin, self.yposition)
         self.rect(self.left_margin, self.yposition, self.right_margin, elementheight)
         self.multi_cell(170, 5, "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla "
                                 "bla bla bla bla bla bla bla bla bla bla bla", 0)
         self.yposition += elementheight
 
-        self.set_font('helvetica', '', 8.5)
+        self.set_font('arial', '', 8.5)
         self.yposition += 15
 
         elementheight = 5
 
-        self.set_xy(15.0, self.yposition)
+        self.set_xy(self.left_margin, self.yposition)
         self.cell(h=elementheight, align='L', w=75.0, txt='Kapitalafkast PBL (DK) § 53 A', border=0)
         self.set_xy(80.0, self.yposition)
         self.cell(h=elementheight, align='L', w=75.0, txt='Beløb i kroner', border=0)
@@ -178,6 +187,7 @@ class TaxPDF(FPDF):
         self.yposition += 10
 
         for policy in self.policys:
+            self.set_font('arial', '', 8.5)
             self.set_xy(self.left_margin, self.yposition)
             self.cell(h=elementheight, align='L', w=75.0, txt=policy, border=0)
 
@@ -189,6 +199,7 @@ class TaxPDF(FPDF):
             self.line(120, self.yposition, 150, self.yposition)
             self.yposition += 20
 
+        self.set_font('arial', '', 8.5)
         self.set_xy(self.left_margin, self.yposition)
         self.cell(h=elementheight, align='L', w=75.0, txt='', border=0)
         self.set_xy(self.left_margin, self.yposition)
