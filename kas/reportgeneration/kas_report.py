@@ -46,7 +46,7 @@ class TaxPDF(FPDF):
 
         self.set_font('helvetica', 'B', 15.0)
         self.set_xy(105.0, 8.0)
-        self.cell(h=self.contact_info_table_cell_height, align='R', w=75.0, txt=_('Bilag til S1/S1U'), border=0)
+        self.cell(h=self.contact_info_table_cell_height, align='R', w=75.0, txt='Bilag til S1/S1U', border=0)
 
         self.set_font('helvetica', '', 13.0)
         self.set_xy(20.0, 8.0)
@@ -244,13 +244,16 @@ class TaxPDF(FPDF):
         self.output('./invoice.pdf', 'F')
 
 
-if sys.platform.startswith("linux"):
-    os.system("xdg-open ./invoice.pdf")
-else:
-    os.system("./invoice.pdf")
+def main():
+    tax_slip = TaxPDF()
+    tax_slip.set_parameters('1234567890', 'Mads Møller Johansen', 'Sanamut aqqut 21, lejl 102',
+                            '3900 Nuuk', 'Skattestyrelsen', 'Postboks 1605', '3900 Nuuk', '1234')
+    tax_slip.print_tax_slip()
+    if sys.platform.startswith("linux"):
+        os.system("xdg-open ./invoice.pdf")
+    else:
+        os.system("./invoice.pdf")
 
 
-foo = TaxPDF()
-foo.set_parameters('1234567890', 'Mads Møller Johansen', 'Sanamut aqqut 21, lejl 102',
-                   '3900 Nuuk', 'Skattestyrelsen', 'Postboks 1605', '3900 Nuuk', '1234')
-foo.print_tax_slip()
+if __name__ == "__main__":
+    main()
