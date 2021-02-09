@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 import os
 import sys
@@ -46,7 +46,7 @@ class TaxPDF(FPDF):
 
         self.set_font('helvetica', 'B', 15.0)
         self.set_xy(105.0, 8.0)
-        self.cell(h=self.contact_info_table_cell_height, align='R', w=75.0, txt='Bilag til S1/S1U', border=0)
+        self.cell(h=self.contact_info_table_cell_height, align='R', w=75.0, txt=_('Bilag til S1/S1U'), border=0)
 
         self.set_font('helvetica', '', 13.0)
         self.set_xy(20.0, 8.0)
@@ -55,7 +55,7 @@ class TaxPDF(FPDF):
 
         self.set_font('helvetica', '', 10.0)
         self.set_xy(20.0, 12.0)
-        self.cell(ln=0, h=22.0, align='L', w=75.0, txt='Bilag vedrørende beskatning af visse kapitalafkast', border=0)
+        self.cell(ln=0, h=22.0, align='L', w=75.0, txt='Bilag vedrÃ¸rende beskatning af visse kapitalafkast', border=0)
         self.set_xy(20.0, 15.0)
         self.cell(h=self.contact_info_table_cell_height, align='L', w=75.0,
                   txt='Indsendelsesfrist senest 1. maj 2020', border=0)
@@ -109,7 +109,7 @@ class TaxPDF(FPDF):
         self.set_xy(self.left_margin, 95.0)
 
         self.cell(h=5.0, align='L', w=170.0,
-                  txt='Vejledning til bilag vedrørende beskatning af visse kapitalafkast', border=1)
+                  txt='Vejledning til bilag vedrÃ¸rende beskatning af visse kapitalafkast', border=1)
 
         yposition = 100
         elementheight = 40
@@ -148,9 +148,9 @@ class TaxPDF(FPDF):
         elementheight = 5
 
         self.set_xy(80.0, yposition)
-        self.cell(h=elementheight, align='L', w=75.0, txt='Beløb i kroner', border=0)
+        self.cell(h=elementheight, align='L', w=75.0, txt='BelÃ¸b i kroner', border=0)
         self.set_xy(120.0, yposition)
-        self.cell(h=elementheight, align='L', w=75.0, txt='Beløb i kroner', border=0)
+        self.cell(h=elementheight, align='L', w=75.0, txt='BelÃ¸b i kroner', border=0)
         self.set_xy(160.0, yposition)
         self.cell(h=elementheight, align='L', w=75.0, txt='Felt nr.', border=0)
         yposition += elementheight
@@ -158,7 +158,7 @@ class TaxPDF(FPDF):
         yposition += 10
 
         self.set_xy(self.left_margin, yposition)
-        self.cell(h=elementheight, align='L', w=75.0, txt='Kapitalafkast  PBL (DK) 	§ 53 A', border=0)
+        self.cell(h=elementheight, align='L', w=75.0, txt='Kapitalafkast  PBL (DK) 	Â§ 53 A', border=0)
 
         self.set_xy(160.0, yposition)
         self.cell(h=elementheight, align='L', w=75.0, txt='201', border=0)
@@ -173,11 +173,11 @@ class TaxPDF(FPDF):
         self.cell(h=elementheight, align='L', w=75.0, txt='Kapitalafkastskat', border=0)
 
         self.set_xy(50, yposition)
-        self.multi_cell(60, 3, 'Har de betalt foreløbig bla bla bla bla bla bla bla bla bla '
+        self.multi_cell(60, 3, 'Har de betalt forelÃ¸big bla bla bla bla bla bla bla bla bla '
                                'bla bla bla bla bla bla bla', 0)
 
         self.set_xy(120.0, yposition-10)
-        self.cell(h=elementheight, align='L', w=75.0, txt='Beløb i kroner', border=0)
+        self.cell(h=elementheight, align='L', w=75.0, txt='BelÃ¸b i kroner', border=0)
         self.line(120, yposition+5, 150, yposition+5)
         self.set_xy(160.0, yposition)
         self.cell(h=elementheight, align='L', w=75.0, txt='205', border=0)
@@ -189,7 +189,7 @@ class TaxPDF(FPDF):
         self.set_xy(self.left_margin, yposition)
         self.rect(self.left_margin, yposition, 170.0, elementheight)
         self.cell(h=elementheight, align='L', w=75.0,
-                  txt='Er kapitalafkastskatten hævet fra pensionsordning?', border=1)
+                  txt='Er kapitalafkastskatten hÃ¦vet fra pensionsordning?', border=1)
         self.set_xy(110, yposition)
         self.cell(h=elementheight, align='L', w=75.0, txt='Ja', border=0)
         self.set_xy(150, yposition)
@@ -209,7 +209,7 @@ class TaxPDF(FPDF):
 
         elementheight = 25
         self.set_xy(120.0, yposition-10)
-        self.cell(h=elementheight-25, align='L', w=75.0, txt='Beløb i kroner', border=0)
+        self.cell(h=elementheight-25, align='L', w=75.0, txt='BelÃ¸b i kroner', border=0)
         self.line(120, yposition+5, 150, yposition+5)
         self.set_xy(160.0, yposition)
         self.cell(h=elementheight-20, align='L', w=75.0, txt='208', border=0)
@@ -219,7 +219,7 @@ class TaxPDF(FPDF):
         self.set_xy(self.left_margin, yposition)
         self.rect(self.left_margin, yposition, self.right_margin, elementheight)
         self.cell(h=10, align='L', w=self.right_margin,
-                  txt='Oplysninger afgives under ansvar i henhold til bestemmelserne i § 9 i '
+                  txt='Oplysninger afgives under ansvar i henhold til bestemmelserne i Â§ 9 i '
                       'Inatsisartutlov om beskatning af visse kapitalafkast', border=1)
         self.set_xy(self.left_margin, yposition+10)
         self.cell(h=10, align='L', w=56.0, txt='Sted/tlf', border=1)
@@ -251,6 +251,6 @@ else:
 
 
 foo = TaxPDF()
-foo.set_parameters('1234567890', 'Mads Møller Johansen', 'Sanamut aqqut 21, lejl 102',
+foo.set_parameters('1234567890', 'Mads MÃ¸ller Johansen', 'Sanamut aqqut 21, lejl 102',
                    '3900 Nuuk', 'Skattestyrelsen', 'Postboks 1605', '3900 Nuuk', '1234')
 foo.print_tax_slip()
