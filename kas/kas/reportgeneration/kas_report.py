@@ -59,7 +59,7 @@ class TaxPDF(FPDF):
 
     def footer(self):
         self.set_font('arial', '', 11)
-        self.set_xy(self.left_margin, self.h - 10)
+        self.set_xy(self.left_margin, self.h - 17)
         self.cell(h=5.0, align='C', w=30.0, txt=self.person_number, border=0)
         self.set_xy(self.left_margin, self.yposition)
 
