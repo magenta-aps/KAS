@@ -8,17 +8,15 @@ from fpdf import FPDF
 
 class TaxPDF(FPDF):
 
-    std_document_width = 170
+    std_document_width = 171
     left_margin = 17.0
-    contact_info_table_cell_height = 5.0
-    contact_info_table_cell_width = 40.0
+    contact_info_table_cell = {'h': 5, 'w': 40}
 
-    contact_info_table_x_pos = 100.0
-    contact_info_table_y_pos = 27.0
+    contact_info_table = {'x': 100.0, 'y': 27.0}
 
-    address_field_width = 70
-    address_field_x_pos = 17
-    address_field_y_pos = 37
+    address_field = {'w': 70, 'x': 17, 'y': 37}
+
+    signature_table_cell = {'w': 57, 'h': 10}
 
     element_height_1 = 5
     element_height_2 = 40
@@ -26,64 +24,64 @@ class TaxPDF(FPDF):
     element_height_4 = 30
     element_height_5 = 15
 
-    document_header = ['GL Bilag til S1/S1U', 'Bilag til S1/S1U']
-    text2 = ['GL Bilag til Selvangivelse for ', 'Bilag til Selvangivelse for ']
-    text3 = ['GL Bilag vedrørende beskatning af visse kapitalafkast',
-             'Bilag vedrørende beskatning af visse kapitalafkast']
-    text4 = ['GL Indsendelsesfrist senest ', 'Indsendelsesfrist senest ']
-    text5 = ['GL Personnummer: ', 'Personnummer: ']
-    text6 = ['GL Kapitalafkastskat: ', 'Kapitalafkastskat: ']
-    text7 = ['GL Selvbetjeningsinformation', 'Selvbetjeningsinformation']
-    text8 = ['GL Tast selv internet', 'Tast selv internet']
-    text9 = ['GL Tast selv kode', 'Tast selv kode']
-    text10 = ['GL Vejledning til bilag vedrørende beskatning af visse kapitalafkast',
-              'Vejledning til bilag vedrørende beskatning af visse kapitalafkast']
-    text11 = ["GL Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out "
+    document_header = {'gl': 'GL Bilag til S1/S1U', 'dk': 'Bilag til S1/S1U'}
+    text2 = {'gl': 'GL Bilag til Selvangivelse for ', 'dk': 'Bilag til Selvangivelse for '}
+    text3 = {'gl': 'GL Bilag vedrørende beskatning af visse kapitalafkast',
+             'dk': 'Bilag vedrørende beskatning af visse kapitalafkast'}
+    text4 = {'gl': 'GL Indsendelsesfrist senest ', 'dk': 'Indsendelsesfrist senest '}
+    text5 = {'gl': 'GL Personnummer: ', 'dk': 'Personnummer: '}
+    text6 = {'gl': 'GL Kapitalafkastskat: ', 'dk': 'Kapitalafkastskat: '}
+    text7 = {'gl': 'GL Selvbetjeningsinformation', 'dk': 'Selvbetjeningsinformation'}
+    text8 = {'gl': 'GL Tast selv internet', 'dk': 'Tast selv internet'}
+    text9 = {'gl': 'GL Tast selv kode', 'dk': 'Tast selv kode'}
+    text10 = {'gl': 'GL Vejledning til bilag vedrørende beskatning af visse kapitalafkast',
+              'dk': 'Vejledning til bilag vedrørende beskatning af visse kapitalafkast'}
+    text11 = {'gl': "GL Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out "
               "print, graphic or web designs. The passage is attributed to an unknown typesetter in "
               "the 15th century who is thought to have scrambled parts of Cicero's De Finibus "
               "Bonorum et Malorum for use in a type specimen book.",
-              "Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out "
+              'dk': "Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out "
               "print, graphic or web designs. The passage is attributed to an unknown typesetter in "
               "the 15th century who is thought to have scrambled parts of Cicero's De Finibus "
-              "Bonorum et Malorum for use in a type specimen book."]
-    text12 = ["GL Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla bla "
+              "Bonorum et Malorum for use in a type specimen book."}
+    text12 = {'gl': "GL Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla bla "
               "bla bla bla bla bla bla bla bla bla bla",
-              "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla bla "
-              "bla bla bla bla bla bla bla bla bla bla"]
-    text13 = ["GL Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla "
+              'dk': "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla bla "
+              "bla bla bla bla bla bla bla bla bla bla"}
+    text13 = {'gl': "GL Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla "
               "bla bla bla bla bla bla bla bla bla bla bla",
-              "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla "
-              "bla bla bla bla bla bla bla bla bla bla bla"]
-    text14 = ["GL Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla "
+              'dk': "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla "
+              "bla bla bla bla bla bla bla bla bla bla bla"}
+    text14 = {'gl': "GL Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla "
               "bla bla bla bla bla bla bla bla bla bla bla",
-              "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla "
-              "bla bla bla bla bla bla bla bla bla bla bla"]
-    text15 = ['GL Kapitalafkast PBL (DK) § 53 A', 'Kapitalafkast PBL (DK) § 53 A']
-    text16 = ['GL Beløb i kroner', 'Beløb i kroner']
-    text17 = ['GL Beløb i kroner', 'Beløb i kroner']
-    text18 = ['GL Felt nr.', 'Felt nr.']
-    text19 = ['GL Kapitalafkastskat', 'Kapitalafkastskat']
-    text20 = ['Har de betalt foreløbig bla bla bla bla bla bla bla bla bla '
-              'bla bla bla bla bla bla bla', 'Har de betalt foreløbig bla bla bla bla bla bla bla bla bla '
-                                             'bla bla bla bla bla bla bla']
-    text21 = ['GL Beløb i kroner', 'Beløb i kroner']
-    text22 = ['GL Er kapitalafkastskatten hævet fra pensionsordning?',
-              'Er kapitalafkastskatten hævet fra pensionsordning?']
-    text23 = ['GL Kapitalafkastskat i udlandet', 'Kapitalafkastskat i udlandet']
-    text24 = ['GL Anmoder de om nedslag bla bla bla bla bla bla bla bla bla '
-              'bla bla bla bla bla bla bla', 'Anmoder de om nedslag bla bla bla bla bla bla bla bla bla '
-                                             'bla bla bla bla bla bla bla']
-    text25 = ['GL Beløb i kroner', 'Beløb i kroner']
-    text26 = ['GL Oplysninger afgives under ansvar i henhold til bestemmelserne i § 9 i '
+              'dk': "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla "
+              "bla bla bla bla bla bla bla bla bla bla bla"}
+    text15 = {'gl': 'GL Kapitalafkast PBL (DK) § 53 A', 'dk': 'Kapitalafkast PBL (DK) § 53 A'}
+    text16 = {'gl': 'GL Beløb i kroner', 'dk': 'Beløb i kroner'}
+    text17 = {'gl': 'GL Beløb i kroner', 'dk': 'Beløb i kroner'}
+    text18 = {'gl': 'GL Felt nr.', 'dk': 'Felt nr.'}
+    text19 = {'gl': 'GL Kapitalafkastskat', 'dk': 'Kapitalafkastskat'}
+    text20 = {'gl': 'Har de betalt foreløbig bla bla bla bla bla bla bla bla bla '
+              'bla bla bla bla bla bla bla', 'dk': 'Har de betalt foreløbig bla bla bla bla bla bla bla bla bla '
+                                             'bla bla bla bla bla bla bla'}
+    text21 = {'gl': 'GL Beløb i kroner', 'dk': 'Beløb i kroner'}
+    text22 = {'gl': 'GL Er kapitalafkastskatten hævet fra pensionsordning?',
+              'dk': 'Er kapitalafkastskatten hævet fra pensionsordning?'}
+    text23 = {'gl': 'GL Kapitalafkastskat i udlandet', 'dk': 'Kapitalafkastskat i udlandet'}
+    text24 = {'gl': 'GL Anmoder de om nedslag bla bla bla bla bla bla bla bla bla '
+              'bla bla bla bla bla bla bla', 'dk': 'Anmoder de om nedslag bla bla bla bla bla bla bla bla bla '
+                                             'bla bla bla bla bla bla bla'}
+    text25 = {'gl': 'GL Beløb i kroner', 'dk': 'Beløb i kroner'}
+    text26 = {'gl': 'GL Oplysninger afgives under ansvar i henhold til bestemmelserne i § 9 i '
               'Inatsisartutlov om beskatning af visse kapitalafkast',
-              'Oplysninger afgives under ansvar i henhold til bestemmelserne i § 9 i '
-              'Inatsisartutlov om beskatning af visse kapitalafkast']
-    text27 = ['GL Sted/tlf', 'Sted/tlf']
-    text28 = ['GL Dato', 'Dato']
-    text29 = ['GL Underskrift', 'Underskrift']
-    text30 = ['GL Indsendes sammen med Selvangivelsen S1/S1U', 'Indsendes sammen med Selvangivelsen S1/S1U']
-    text_yes = ['Aap', 'Ja']
-    text_no = ['GL nej', 'Nej']
+              'dk': 'Oplysninger afgives under ansvar i henhold til bestemmelserne i § 9 i '
+              'Inatsisartutlov om beskatning af visse kapitalafkast'}
+    text27 = {'gl': 'GL Sted/tlf', 'dk': 'Sted/tlf'}
+    text28 = {'gl': 'GL Dato', 'dk': 'Dato'}
+    text29 = {'gl': 'GL Underskrift', 'dk': 'Underskrift'}
+    text30 = {'gl': 'GL Indsendes sammen med Selvangivelsen S1/S1U', 'dk': 'Indsendes sammen med Selvangivelsen S1/S1U'}
+    text_yes = {'gl': 'Aap', 'dk': 'Ja'}
+    text_no = {'gl': 'GL nej', 'dk': 'Nej'}
 
     tax_year = '-'
     tax_return_date_limit = '-'
@@ -127,75 +125,83 @@ class TaxPDF(FPDF):
 
         self.set_font('arial', 'B', 15.0)
         self.set_xy(105.0, 8.0)
-        self.cell(h=self.contact_info_table_cell_height, align='R', w=75.0, txt=self.document_header[language],
+        self.cell(h=self.contact_info_table_cell.get('h'), align='R', w=75.0, txt=self.document_header.get(language),
                   border=0)
 
         self.set_font('arial', '', 13.0)
         self.set_xy(20.0, 8.0)
-        self.cell(h=self.contact_info_table_cell_height, align='L', w=75.0,
-                  txt=self.text2[language]+self.tax_year, border=0)
+        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=75.0,
+                  txt=self.text2.get(language)+self.tax_year, border=0)
 
         self.set_font('arial', '', 10.0)
         self.set_xy(20.0, 12.0)
         self.cell(ln=0, h=22.0, align='L', w=75.0, txt=self.text3[language], border=0)
         self.set_xy(20.0, 15.0)
-        self.cell(h=self.contact_info_table_cell_height, align='L', w=75.0,
+        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=75.0,
                   txt=self.text4[language]+self.tax_return_date_limit, border=0)
 
         self.set_font('arial', '', 8.5)
         # Adressing reciever
-        self.set_xy(self.address_field_x_pos, self.address_field_y_pos)
-        self.multi_cell(self.address_field_width, 3, border=0,
+        self.set_xy(self.address_field.get('x'), self.address_field.get('y'))
+        self.multi_cell(self.address_field.get('w'), 3, border=0,
                         txt=self.reciever_name+"\n"+self.reciever_address+"\n"+self.reciever_postnumber)
 
         # Adressing department
-        self.set_xy(self.address_field_x_pos, self.address_field_y_pos+12)
-        self.multi_cell(self.address_field_width, 3, border=0,
+        self.set_xy(self.address_field.get('x'), self.address_field.get('y')+12)
+        self.multi_cell(self.address_field.get('w'), 3, border=0,
                         txt=self.sender_name+"\n"+self.sender_address+"\n"+self.sender_postnumber)
-        self.line(self.address_field_x_pos, self.address_field_y_pos+12, self.address_field_x_pos+self.address_field_width-30, self.address_field_y_pos+22)
-        self.line(self.address_field_x_pos, self.address_field_y_pos+22, self.address_field_x_pos+self.address_field_width-30, self.address_field_y_pos+12)
+        self.line(self.address_field.get('x'), self.address_field.get('y')+12,
+                  self.address_field.get('x')+self.address_field.get('w')-30, self.address_field.get('y')+22)
+        self.line(self.address_field.get('x'), self.address_field.get('y')+22,
+                  self.address_field.get('x')+self.address_field.get('w')-30, self.address_field.get('y')+12)
 
-        self.set_xy(self.contact_info_table_x_pos, self.contact_info_table_y_pos)
-        self.cell(h=self.contact_info_table_cell_height, align='L', w=self.contact_info_table_cell_width,
+        self.set_xy(self.contact_info_table.get('x'), self.contact_info_table.get('y'))
+        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=self.contact_info_table_cell.get('w'),
                   txt=self.text5[language], border=1)
-        self.set_xy(self.contact_info_table_x_pos, self.contact_info_table_y_pos+self.contact_info_table_cell_height)
-        self.cell(h=self.contact_info_table_cell_height, align='L', w=self.contact_info_table_cell_width,
+        self.set_xy(self.contact_info_table.get('x'),
+                    self.contact_info_table.get('y')+self.contact_info_table_cell.get('h'))
+        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=self.contact_info_table_cell.get('w'),
                   txt=self.text6[language], border=1)
 
-        self.set_xy(self.contact_info_table_x_pos+self.contact_info_table_cell_width, self.contact_info_table_y_pos)
-        self.cell(h=self.contact_info_table_cell_height, align='L', w=self.contact_info_table_cell_width,
+        self.set_xy(self.contact_info_table.get('x')+self.contact_info_table_cell.get('w'),
+                    self.contact_info_table.get('y'))
+        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=self.contact_info_table_cell.get('w'),
                   txt=self.person_number, border=1)
-        self.set_xy(self.contact_info_table_x_pos+self.contact_info_table_cell_width,
-                    self.contact_info_table_y_pos+self.contact_info_table_cell_height)
-        self.cell(h=self.contact_info_table_cell_height, align='L', w=self.contact_info_table_cell_width,
+        self.set_xy(self.contact_info_table.get('x')+self.contact_info_table_cell.get('w'),
+                    self.contact_info_table.get('y')+self.contact_info_table_cell.get('h'))
+        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=self.contact_info_table_cell.get('w'),
                   txt='15,3%', border=1)
-        self.set_xy(self.contact_info_table_x_pos, self.contact_info_table_y_pos+2*self.contact_info_table_cell_height)
-        self.cell(h=self.contact_info_table_cell_height, align='L', w=2*self.contact_info_table_cell_width,
+        self.set_xy(self.contact_info_table.get('x'),
+                    self.contact_info_table.get('y')+2*self.contact_info_table_cell.get('h'))
+        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=2*self.contact_info_table_cell.get('w'),
                   txt=self.text7[language], border=1)
 
-        self.set_xy(self.contact_info_table_x_pos, self.contact_info_table_y_pos+3*self.contact_info_table_cell_height)
-        self.cell(h=self.contact_info_table_cell_height, align='L', w=self.contact_info_table_cell_width,
+        self.set_xy(self.contact_info_table.get('x'),
+                    self.contact_info_table.get('y')+3*self.contact_info_table_cell.get('h'))
+        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=self.contact_info_table_cell.get('w'),
                   txt=self.text8[language], border=1)
-        self.set_xy(self.contact_info_table_x_pos, self.contact_info_table_y_pos+4*self.contact_info_table_cell_height)
-        self.cell(h=self.contact_info_table_cell_height, align='L', w=self.contact_info_table_cell_width,
+        self.set_xy(self.contact_info_table.get('x'),
+                    self.contact_info_table.get('y')+4*self.contact_info_table_cell.get('h'))
+        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=self.contact_info_table_cell.get('w'),
                   txt='www.silisivik.gl', border=1)
-        self.set_xy(self.contact_info_table_x_pos, self.contact_info_table_y_pos+5*self.contact_info_table_cell_height)
-        self.cell(h=self.contact_info_table_cell_height, align='L', w=self.contact_info_table_cell_width,
+        self.set_xy(self.contact_info_table.get('x'),
+                    self.contact_info_table.get('y')+5*self.contact_info_table_cell.get('h'))
+        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=self.contact_info_table_cell.get('w'),
                   txt='www.aka.gl', border=1)
 
-        self.set_xy(self.contact_info_table_x_pos+self.contact_info_table_cell_width,
-                    self.contact_info_table_y_pos+3*self.contact_info_table_cell_height)
-        self.cell(h=self.contact_info_table_cell_height, align='L', w=self.contact_info_table_cell_width,
+        self.set_xy(self.contact_info_table.get('x')+self.contact_info_table_cell.get('w'),
+                    self.contact_info_table.get('y')+3*self.contact_info_table_cell.get('h'))
+        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=self.contact_info_table_cell.get('w'),
                   txt=self.text9[language], border=1)
-        self.set_xy(self.contact_info_table_x_pos+self.contact_info_table_cell_width,
-                    self.contact_info_table_y_pos+4*self.contact_info_table_cell_height)
-        self.cell(h=self.contact_info_table_cell_height, align='L', w=self.contact_info_table_cell_width,
+        self.set_xy(self.contact_info_table.get('x')+self.contact_info_table_cell.get('w'),
+                    self.contact_info_table.get('y')+4*self.contact_info_table_cell.get('h'))
+        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=self.contact_info_table_cell.get('w'),
                   txt=self.nemid_kode, border=1)
 
         self.yposition = 80
         self.set_xy(self.left_margin, self.yposition)
 
-        self.cell(h=self.element_height_1, align='L', w=170.0,
+        self.cell(h=self.element_height_1, align='L', w=self.std_document_width,
                   txt=self.text10[language], border=1)
         self.yposition += self.element_height_1
 
@@ -303,20 +309,23 @@ class TaxPDF(FPDF):
         elementheight = 30
         self.set_xy(self.left_margin, self.yposition)
         self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
-        self.cell(h=10, align='L', w=self.std_document_width,
+        self.cell(h=self.signature_table_cell.get('h'), align='L', w=self.std_document_width,
                   txt=self.text26[language], border=1)
         self.set_xy(self.left_margin, self.yposition+10)
-        self.cell(h=10, align='L', w=56.0, txt=self.text27[language], border=1)
-        self.set_xy(self.left_margin+56, self.yposition+10)
-        self.cell(h=10, align='L', w=56.0, txt=self.text28[language], border=1)
-        self.set_xy(self.left_margin+56+56, self.yposition+10)
-        self.cell(h=10, align='L', w=58.0, txt=self.text29[language], border=1)
+        self.cell(h=self.signature_table_cell.get('h'), align='L', w=self.signature_table_cell.get('w'),
+                  txt=self.text27[language], border=1)
+        self.set_xy(self.left_margin+self.signature_table_cell.get('w'), self.yposition+10)
+        self.cell(h=self.signature_table_cell.get('h'), align='L', w=self.signature_table_cell.get('w'),
+                  txt=self.text28[language], border=1)
+        self.set_xy(self.left_margin+self.signature_table_cell.get('w')*2, self.yposition+10)
+        self.cell(h=self.signature_table_cell.get('h'), align='L', w=self.signature_table_cell.get('w'),
+                  txt=self.text29[language], border=1)
         self.set_xy(self.left_margin, self.yposition+20)
-        self.cell(h=10, w=56.0, border=1)
-        self.set_xy(self.left_margin+56, self.yposition+20)
-        self.cell(h=10, w=56.0, border=1)
-        self.set_xy(self.left_margin+56+56, self.yposition+20)
-        self.cell(h=10, w=58.0, border=1)
+        self.cell(h=self.signature_table_cell.get('h'), w=self.signature_table_cell.get('w'), border=1)
+        self.set_xy(self.left_margin+self.signature_table_cell.get('w'), self.yposition+20)
+        self.cell(h=self.signature_table_cell.get('h'), w=self.signature_table_cell.get('w'), border=1)
+        self.set_xy(self.left_margin+self.signature_table_cell.get('w')*2, self.yposition+20)
+        self.cell(h=self.signature_table_cell.get('h'), w=self.signature_table_cell.get('w'), border=1)
         self.yposition += elementheight
 
         self.yposition += 10
@@ -334,8 +343,8 @@ def main():
     tax_slip.set_parameters("2020", '1. maj 2020', '1234567890', 'Mads Møller Johansen', 'Sanamut aqqut 21, lejl 102',
                             '3900 Nuuk', 'Skattestyrelsen', 'Postboks 1605', '3900 Nuuk', '1234',
                             ['ATP-12345678', 'PFA-12345678', 'Something else-12345678'])
-    tax_slip.print_tax_slip(0)
-    tax_slip.print_tax_slip(1)
+    tax_slip.print_tax_slip('gl')
+    tax_slip.print_tax_slip('dk')
     tax_slip.write_tax_slip_to_disk('./invoice.pdf')
     if sys.platform.startswith("linux"):
         os.system("xdg-open ./invoice.pdf")
