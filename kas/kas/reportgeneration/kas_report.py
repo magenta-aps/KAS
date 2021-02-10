@@ -4,6 +4,7 @@ import os
 import sys
 
 from fpdf import FPDF
+from django.utils.translation import gettext as _
 
 
 class TaxPDF(FPDF):
@@ -136,7 +137,7 @@ class TaxPDF(FPDF):
         self.set_xy(self.left_margin, self.yposition)
 
         self.cell(h=self.element_height_1, align='L', w=170.0,
-                  txt='Vejledning til bilag vedrørende beskatning af visse kapitalafkast', border=1)
+                  txt=_('Vejledning til bilag vedrørende beskatning af visse kapitalafkast'), border=1)
         self.yposition += self.element_height_1
 
         elementheight = self.element_height_2
