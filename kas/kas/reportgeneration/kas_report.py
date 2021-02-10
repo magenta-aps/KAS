@@ -8,7 +8,7 @@ from fpdf import FPDF
 
 class TaxPDF(FPDF):
 
-    right_margin = 170
+    std_document_width = 170
     left_margin = 17.0
     contact_info_table_cell_height = 5.0
     contact_info_table_cell_width = 40.0
@@ -152,8 +152,8 @@ class TaxPDF(FPDF):
         self.set_xy(self.address_field_x_pos, self.address_field_y_pos+12)
         self.multi_cell(self.address_field_width, 3, border=0,
                         txt=self.sender_name+"\n"+self.sender_address+"\n"+self.sender_postnumber)
-        self.line(self.address_field_x_pos, 49, self.address_field_x_pos+self.address_field_width-30, 59)
-        self.line(self.address_field_x_pos, 59, self.address_field_x_pos+self.address_field_width-30, 49)
+        self.line(self.address_field_x_pos, self.address_field_y_pos+12, self.address_field_x_pos+self.address_field_width-30, self.address_field_y_pos+22)
+        self.line(self.address_field_x_pos, self.address_field_y_pos+22, self.address_field_x_pos+self.address_field_width-30, self.address_field_y_pos+12)
 
         self.set_xy(self.contact_info_table_x_pos, self.contact_info_table_y_pos)
         self.cell(h=self.contact_info_table_cell_height, align='L', w=self.contact_info_table_cell_width,
@@ -201,26 +201,26 @@ class TaxPDF(FPDF):
 
         elementheight = self.element_height_2
         self.set_xy(self.left_margin, self.yposition)
-        self.rect(self.left_margin, self.yposition, self.right_margin, elementheight)
-        self.multi_cell(170, 5, self.text11[language], 0)
+        self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
+        self.multi_cell(self.std_document_width, 5, self.text11[language], 0)
         self.yposition += elementheight
 
         elementheight = self.element_height_3
         self.set_xy(self.left_margin, self.yposition)
-        self.rect(self.left_margin, self.yposition, self.right_margin, elementheight)
-        self.multi_cell(170, 5, self.text12[language], 0)
+        self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
+        self.multi_cell(self.std_document_width, 5, self.text12[language], 0)
         self.yposition += elementheight
 
         elementheight = self.element_height_4
         self.set_xy(self.left_margin, self.yposition)
-        self.rect(self.left_margin, self.yposition, self.right_margin, elementheight)
-        self.multi_cell(170, 5, self.text13[language], 0)
+        self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
+        self.multi_cell(self.std_document_width, 5, self.text13[language], 0)
         self.yposition += elementheight
 
         elementheight = self.element_height_5
         self.set_xy(self.left_margin, self.yposition)
-        self.rect(self.left_margin, self.yposition, self.right_margin, elementheight)
-        self.multi_cell(170, 5, self.text14[language], 0)
+        self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
+        self.multi_cell(self.std_document_width, 5, self.text14[language], 0)
         self.yposition += elementheight
 
         self.set_font('arial', '', 8.5)
@@ -302,8 +302,8 @@ class TaxPDF(FPDF):
 
         elementheight = 30
         self.set_xy(self.left_margin, self.yposition)
-        self.rect(self.left_margin, self.yposition, self.right_margin, elementheight)
-        self.cell(h=10, align='L', w=self.right_margin,
+        self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
+        self.cell(h=10, align='L', w=self.std_document_width,
                   txt=self.text26[language], border=1)
         self.set_xy(self.left_margin, self.yposition+10)
         self.cell(h=10, align='L', w=56.0, txt=self.text27[language], border=1)
@@ -323,7 +323,7 @@ class TaxPDF(FPDF):
 
         self.set_font('helvetica', '', 13.0)
         self.set_xy(self.left_margin, self.yposition)
-        self.cell(h=10, align='L', w=self.right_margin, txt=self.text30[language], border=0)
+        self.cell(h=10, align='L', w=self.std_document_width, txt=self.text30[language], border=0)
 
     def write_tax_slip_to_disk(self, path):
         self.output(path, 'F')
