@@ -249,11 +249,14 @@ class TaxPDF(FPDF):
         for policy in self.policys:
             self.set_font('arial', '', 8.5)
             self.set_xy(self.left_margin, self.yposition)
-            self.cell(h=elementheight, align='L', w=75.0, txt=policy, border=0)
+            self.cell(h=elementheight, align='L', w=75.0, txt=policy.get('policy'), border=0)
 
             self.set_xy(160.0, self.yposition)
             self.cell(h=elementheight, align='L', w=75.0, txt='201', border=0)
             self.yposition += elementheight
+
+            self.set_xy(80, self.yposition-5)
+            self.cell(h=elementheight, align='C', w=25.0, txt=policy.get('value', ''), border=0)
 
             self.line(80, self.yposition, 110, self.yposition)
             self.line(120, self.yposition, 150, self.yposition)
@@ -342,7 +345,7 @@ def main():
     tax_slip = TaxPDF()
     tax_slip.set_parameters("2020", '1. maj 2020', '1234567890', 'Mads Møller Johansen', 'Sanamut aqqut 21, lejl 102',
                             '3900 Nuuk', 'Skattestyrelsen', 'Postboks 1605', '3900 Nuuk', '1234',
-                            ['ATP-12345678', 'PFA-12345678', 'Something else-12345678'])
+                            [{'policy': 'ATP-12345678', 'value': '500'}, {'policy': 'PFA-12345678'}, {'policy': 'Something else-12345678'}])
     tax_slip.print_tax_slip('gl')
     tax_slip.print_tax_slip('dk')
     tax_slip.write_tax_slip_to_disk('./invoice.pdf')
