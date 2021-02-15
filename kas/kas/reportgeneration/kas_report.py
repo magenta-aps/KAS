@@ -10,31 +10,31 @@ class TaxPDF(FPDF):
 
     std_document_width = 171
     left_margin = 17.0
-    contact_info_table_cell = {'h': 5, 'w': 40}
+    contact_info_table_cell = {'h': 5, 'w': 50}
 
-    contact_info_table = {'x': 100.0, 'y': 27.0}
+    contact_info_table = {'x': 90.0, 'y': 27.0}
 
     address_field = {'w': 70, 'x': 17, 'y': 37}
 
     signature_table_cell = {'w': 57, 'h': 10}
 
     element_height_1 = 5
-    element_height_2 = 40
+    element_height_2 = 60
     element_height_3 = 15
     element_height_4 = 30
     element_height_5 = 15
 
     document_header = {'gl': 'S1/S1U-mut ilanngussaq', 'dk': 'Bilag til S1/S1U'}
-    text2 = {'gl': '-imut nammineerluni nalunaarsuinermut ilanngussaq ', 'dk': 'Bilag til Selvangivelse for '}
+    text2 = {'gl': '{}-imut nammineerluni nalunaarsuinermut ilanngussaq ', 'dk': 'Bilag til Selvangivelse for {}'}
     text3 = {'gl': 'Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pillugu ilanngussaq',
              'dk': 'Bilag vedrørende beskatning af visse kapitalafkast'}
-    text4 = {'gl': 'Nassitsinissamut killissarititaq ', 'dk': 'Indsendelsesfrist senest '}
+    text4 = {'gl': 'Nassitsinissamut killissarititaq {}', 'dk': 'Indsendelsesfrist senest {}'}
     text5 = {'gl': 'Inuup-normua: ', 'dk': 'Personnummer: '}
     text6 = {'gl': 'Pigisanit pissarsiat akileraarutaat: ', 'dk': 'Kapitalafkastskat: '}
-    text7 = {'gl': 'Akileraaruseriffik, oqarasuaat mail-ilu Akileraaruseriffik, '
-                   'oqarasuaat mail-ilu Akileraartarnermut Aqutsisoqarfik, '
-                   'Postboks 1605, 3900 Nuuk. Tlf. 346510, Email:tax@nanoq.gl',
-             'dk': 'Kontakt: Skattestyrelsen, Postboks 1605, 3900 Nuuk. Tlf. 346510, Email:tax@nanoq.gl'}
+    text7 = {'gl': 'Akileraaruseriffik, oqarasuaat mail-ilu:\n'
+                   'Akileraartarnermut Aqutsisoqarfik,\n'
+                   'Postboks 1605, 3900 Nuuk. tlf. 346510, Email:tax@nanoq.gl',
+             'dk': 'Kontakt: Skattestyrelsen,\n Postboks 1605, 3900 Nuuk. Tlf. 346510,\n Email:tax@nanoq.gl'}
     text8 = {'gl': 'Nittartagaq iserfissaq', 'dk': 'Tast selv internet'}
     text9 = {'gl': 'Kode isissutissaq', 'dk': 'Tast selv kode'}
     text10 = {'gl': 'Uunga ilitsersuut Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pillugu ilanngussaq',
@@ -56,7 +56,7 @@ class TaxPDF(FPDF):
                     "taava taanna immersoriarlugu atsioriarlugulu Akileraartarnermut Aqutsisoqarfimmut nassiutissavat, "
                     "imaluunniit allannguutit Akileraartarnermut Aqutsisoqarfiup www.aka.gl -ikkut nammineerluni "
                     "iserfissiaatigut imaluunniit www.sullissivik.gl -ikkut nalunaarutigissavatit kingusinnerpaamik "
-                    "ulloq 1. maj 2021.",
+                    "ulloq {}.",
               'dk': "Hvis der på Bilag vedrørende beskatning af visse kapitalafkast er fortrykte oplysninger, "
                     "skal De kontrollere om de fortrykte oplysninger er rigtige. Hvis De har haft kapitalafkast af "
                     "livsforsikringer og pensionsordninger, der opfylder betingelserne i § 39 a, "
@@ -67,7 +67,7 @@ class TaxPDF(FPDF):
                     "visse kapitalafkast. Har De ændringer eller tilføjelser, skal De derfor udfylde og underskrive "
                     "Bilag vedrørende beskatning af visse kapitalafkast og indsende den til Skattestyrelsen "
                     "eller indberette ændringerne via Skattestyrelsens tast-selv løsning på www.aka.gl eller "
-                    "www.sullissivik.gl senest den 1. maj 2021."}
+                    "www.sullissivik.gl senest den {}."}
     text12 = {'gl': "Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pillugu ilanngussami naqeriikkat "
                     "isumaqataaffigigukkit qanoq iliuuseqaqqittariaqanngilatit.",
               'dk': "Hvis De er enig i indholdet af det fortrykte Bilag vedrørende beskatning af visse kapitalafkast, "
@@ -87,12 +87,12 @@ class TaxPDF(FPDF):
                     "pensionsordning, hvor skatten er hævet. Hvis De ikke har hævet beløbet til indbetaling af "
                     "kapitalafkastskatten på pensionsordningen, udbetales eventuel overskydende kapitalafkastskat "
                     "til den bankkonto De har oplyst på Selvangivelsen S1 . De har mulighed for at betale forløbig "
-                    "kapitalafkastskat indtil 1. maj 2021."}
-    text14 = {'gl': "Pigisanit pissarsiat akileraarutissaattut naatsorsugaq 1. september 2021 -imi "
-                    "akiligassanngortussaq, piffissaagallartillugulu 20. september 2021 kingusinnerpaamik "
+                    "kapitalafkastskat indtil {}."}
+    text14 = {'gl': "Pigisanit pissarsiat akileraarutissaattut naatsorsugaq {} -imi "
+                    "akiligassanngortussaq, piffissaagallartillugulu {} kingusinnerpaamik "
                     "akilerneqartussaq Akileraartarnermut Aqutsisoqarfiup akiligassiissutigissavaa.",
               'dk': "Skattestyrelsen opkræver beregnet kapitalafkastskat til betaling med forfald til betaling den "
-                    "1. september 2021 og sidste rettidige betalingsdag den 20. september 2021."}
+                    "{} og sidste rettidige betalingsdag den {}."}
     text15 = {'gl': 'Pigisanit pissarsiat PBL (DK) § 53 A', 'dk': 'Kapitalafkast PBL (DK) § 53 A'}
     text16 = {'gl': 'Aningaasat koruuninngorlugit', 'dk': 'Beløb i kroner'}
     text17 = {'gl': 'Aningaasat koruuninngorlugit', 'dk': 'Beløb i kroner'}
@@ -138,11 +138,13 @@ class TaxPDF(FPDF):
     nemid_kode = '-'
     policys = ['']
 
-    def set_parameters(self, tax_year='-', tax_return_date_limit='', person_number='-', reciever_name='',
-                       reciever_address='', reciever_postnumber='', sender_name='',
+    def set_parameters(self, tax_year='-', tax_return_date_limit='', request_pay='', pay_date='', person_number='-',
+                       reciever_name='', reciever_address='', reciever_postnumber='', sender_name='',
                        sender_address='', sender_postnumber='', nemid_kode='', policys=['']):
         self.tax_year = tax_year
         self.tax_return_date_limit = tax_return_date_limit
+        self.request_pay = request_pay
+        self.pay_date = pay_date
         self.person_number = person_number
         self.reciever_name = reciever_name
         self.reciever_address = reciever_address
@@ -167,21 +169,22 @@ class TaxPDF(FPDF):
         self.add_page()
 
         self.set_font('arial', 'B', 15.0)
-        self.set_xy(105.0, 8.0)
+        self.set_xy(125.0, 8.0)
         self.cell(h=self.contact_info_table_cell.get('h'), align='R', w=75.0, txt=self.document_header.get(language),
                   border=0)
 
-        self.set_font('arial', '', 13.0)
-        self.set_xy(20.0, 8.0)
+        self.set_font('arial', 'B', 12.0)
+        self.set_xy(10.0, 8.0)
         self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=75.0,
-                  txt=self.text2.get(language)+self.tax_year, border=0)
+                  txt=self.text2.get(language).format(self.tax_year), border=0)
 
-        self.set_font('arial', '', 10.0)
-        self.set_xy(20.0, 12.0)
-        self.cell(ln=0, h=22.0, align='L', w=75.0, txt=self.text3[language], border=0)
-        self.set_xy(20.0, 15.0)
-        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=75.0,
-                  txt=self.text4[language]+self.tax_return_date_limit, border=0)
+        self.set_font('arial', 'B', 9.0)
+        self.set_xy(10.0, 17.0)
+        self.cell(h=0, align='L', w=75.0, txt=self.text3[language], border=0)
+        self.set_font('arial', '', 9.0)
+        self.set_xy(10.0, 20.0)
+        self.cell(h=0, align='L', w=75.0,
+                  txt=self.text4[language].format(self.tax_return_date_limit), border=0)
 
         self.set_font('arial', '', 8.5)
         # Adressing reciever
@@ -216,28 +219,23 @@ class TaxPDF(FPDF):
                   txt='15,3%', border=1)
         self.set_xy(self.contact_info_table.get('x'),
                     self.contact_info_table.get('y')+2*self.contact_info_table_cell.get('h'))
-        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=2*self.contact_info_table_cell.get('w'),
-                  txt=self.text7[language], border=1)
+        self.multi_cell(2*self.contact_info_table_cell.get('w'), 5, self.text7[language], border=1, align='L')
 
-        self.set_xy(self.contact_info_table.get('x'),
-                    self.contact_info_table.get('y')+3*self.contact_info_table_cell.get('h'))
-        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=self.contact_info_table_cell.get('w'),
-                  txt=self.text8[language], border=1)
-        self.set_xy(self.contact_info_table.get('x'),
-                    self.contact_info_table.get('y')+4*self.contact_info_table_cell.get('h'))
-        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=self.contact_info_table_cell.get('w'),
-                  txt='www.silisivik.gl', border=1)
         self.set_xy(self.contact_info_table.get('x'),
                     self.contact_info_table.get('y')+5*self.contact_info_table_cell.get('h'))
         self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=self.contact_info_table_cell.get('w'),
-                  txt='www.aka.gl', border=1)
+                  txt=self.text8[language], border=1)
+        self.set_xy(self.contact_info_table.get('x'),
+                    self.contact_info_table.get('y')+6*self.contact_info_table_cell.get('h'))
+        self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=self.contact_info_table_cell.get('w'),
+                  txt='www.sullissivik.gl', border=1)
 
         self.set_xy(self.contact_info_table.get('x')+self.contact_info_table_cell.get('w'),
-                    self.contact_info_table.get('y')+3*self.contact_info_table_cell.get('h'))
+                    self.contact_info_table.get('y')+5*self.contact_info_table_cell.get('h'))
         self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=self.contact_info_table_cell.get('w'),
                   txt=self.text9[language], border=1)
         self.set_xy(self.contact_info_table.get('x')+self.contact_info_table_cell.get('w'),
-                    self.contact_info_table.get('y')+4*self.contact_info_table_cell.get('h'))
+                    self.contact_info_table.get('y')+6*self.contact_info_table_cell.get('h'))
         self.cell(h=self.contact_info_table_cell.get('h'), align='L', w=self.contact_info_table_cell.get('w'),
                   txt=self.nemid_kode, border=1)
 
@@ -251,26 +249,26 @@ class TaxPDF(FPDF):
         elementheight = self.element_height_2
         self.set_xy(self.left_margin, self.yposition)
         self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
-        self.multi_cell(self.std_document_width, 5, self.text11[language], 0)
-        self.yposition += elementheight
+        self.multi_cell(self.std_document_width, 5, self.text11[language].format(self.tax_return_date_limit), 0)
+        self.yposition = self.get_y()
 
         elementheight = self.element_height_3
         self.set_xy(self.left_margin, self.yposition)
         self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
         self.multi_cell(self.std_document_width, 5, self.text12[language], 0)
-        self.yposition += elementheight
+        self.yposition = self.get_y()
 
         elementheight = self.element_height_4
         self.set_xy(self.left_margin, self.yposition)
         self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
-        self.multi_cell(self.std_document_width, 5, self.text13[language], 0)
-        self.yposition += elementheight
+        self.multi_cell(self.std_document_width, 5, self.text13[language].format(self.tax_return_date_limit), 0)
+        self.yposition = self.get_y()
 
         elementheight = self.element_height_5
         self.set_xy(self.left_margin, self.yposition)
         self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
-        self.multi_cell(self.std_document_width, 5, self.text14[language], 0)
-        self.yposition += elementheight
+        self.multi_cell(self.std_document_width, 5, self.text14[language].format(self.request_pay, self.pay_date), 0)
+        self.yposition = self.get_y()
 
         self.set_font('arial', '', 8.5)
         self.yposition += 15
@@ -386,7 +384,7 @@ class TaxPDF(FPDF):
 
 def main():
     tax_slip = TaxPDF()
-    tax_slip.set_parameters("2020", '1. maj 2020', '1234567890', 'Mads Møller Johansen', 'Sanamut aqqut 21, lejl 102',
+    tax_slip.set_parameters("2020", '1. maj 2021', '1. september 2021', '20. september 2021', '1234567890', 'Mads Møller Johansen', 'Sanamut aqqut 21, lejl 102',
                             '3900 Nuuk', 'Skattestyrelsen', 'Postboks 1605', '3900 Nuuk', '1234',
                             [{'policy': 'ATP-12345678', 'value': '500'},
                              {'policy': 'PFA-12345678'},
