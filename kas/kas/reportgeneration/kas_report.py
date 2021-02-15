@@ -24,64 +24,107 @@ class TaxPDF(FPDF):
     element_height_4 = 30
     element_height_5 = 15
 
-    document_header = {'gl': 'GL Bilag til S1/S1U', 'dk': 'Bilag til S1/S1U'}
-    text2 = {'gl': 'GL Bilag til Selvangivelse for ', 'dk': 'Bilag til Selvangivelse for '}
-    text3 = {'gl': 'GL Bilag vedrørende beskatning af visse kapitalafkast',
+    document_header = {'gl': 'S1/S1U-mut ilanngussaq', 'dk': 'Bilag til S1/S1U'}
+    text2 = {'gl': '-imut nammineerluni nalunaarsuinermut ilanngussaq ', 'dk': 'Bilag til Selvangivelse for '}
+    text3 = {'gl': 'Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pillugu ilanngussaq',
              'dk': 'Bilag vedrørende beskatning af visse kapitalafkast'}
-    text4 = {'gl': 'GL Indsendelsesfrist senest ', 'dk': 'Indsendelsesfrist senest '}
-    text5 = {'gl': 'GL Personnummer: ', 'dk': 'Personnummer: '}
-    text6 = {'gl': 'GL Kapitalafkastskat: ', 'dk': 'Kapitalafkastskat: '}
-    text7 = {'gl': 'GL Selvbetjeningsinformation', 'dk': 'Selvbetjeningsinformation'}
-    text8 = {'gl': 'GL Tast selv internet', 'dk': 'Tast selv internet'}
-    text9 = {'gl': 'GL Tast selv kode', 'dk': 'Tast selv kode'}
-    text10 = {'gl': 'GL Vejledning til bilag vedrørende beskatning af visse kapitalafkast',
+    text4 = {'gl': 'Nassitsinissamut killissarititaq ', 'dk': 'Indsendelsesfrist senest '}
+    text5 = {'gl': 'Inuup-normua: ', 'dk': 'Personnummer: '}
+    text6 = {'gl': 'Pigisanit pissarsiat akileraarutaat: ', 'dk': 'Kapitalafkastskat: '}
+    text7 = {'gl': 'Akileraaruseriffik, oqarasuaat mail-ilu Akileraaruseriffik, '
+                   'oqarasuaat mail-ilu Akileraartarnermut Aqutsisoqarfik, '
+                   'Postboks 1605, 3900 Nuuk. Tlf. 346510, Email:tax@nanoq.gl',
+             'dk': 'Kontakt: Skattestyrelsen, Postboks 1605, 3900 Nuuk. Tlf. 346510, Email:tax@nanoq.gl'}
+    text8 = {'gl': 'Nittartagaq iserfissaq', 'dk': 'Tast selv internet'}
+    text9 = {'gl': 'Kode isissutissaq', 'dk': 'Tast selv kode'}
+    text10 = {'gl': 'Uunga ilitsersuut Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pillugu ilanngussaq',
               'dk': 'Vejledning til bilag vedrørende beskatning af visse kapitalafkast'}
-    text11 = {'gl': "GL Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out "
-              "print, graphic or web designs. The passage is attributed to an unknown typesetter in "
-              "the 15th century who is thought to have scrambled parts of Cicero's De Finibus "
-              "Bonorum et Malorum for use in a type specimen book.",
-              'dk': "Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out "
-              "print, graphic or web designs. The passage is attributed to an unknown typesetter in "
-              "the 15th century who is thought to have scrambled parts of Cicero's De Finibus "
-              "Bonorum et Malorum for use in a type specimen book."}
-    text12 = {'gl': "GL Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla bla "
-              "bla bla bla bla bla bla bla bla bla bla",
-              'dk': "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla bla "
-              "bla bla bla bla bla bla bla bla bla bla"}
-    text13 = {'gl': "GL Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla "
-              "bla bla bla bla bla bla bla bla bla bla bla",
-              'dk': "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla "
-              "bla bla bla bla bla bla bla bla bla bla bla"}
-    text14 = {'gl': "GL Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla "
-              "bla bla bla bla bla bla bla bla bla bla bla",
-              'dk': "Hvis de er uneig i indholdet bla bla bla bla bla bla bla bla bla bla bla bla "
-              "bla bla bla bla bla bla bla bla bla bla bla"}
-    text15 = {'gl': 'GL Kapitalafkast PBL (DK) § 53 A', 'dk': 'Kapitalafkast PBL (DK) § 53 A'}
-    text16 = {'gl': 'GL Beløb i kroner', 'dk': 'Beløb i kroner'}
-    text17 = {'gl': 'GL Beløb i kroner', 'dk': 'Beløb i kroner'}
-    text18 = {'gl': 'GL Felt nr.', 'dk': 'Felt nr.'}
-    text19 = {'gl': 'GL Kapitalafkastskat', 'dk': 'Kapitalafkastskat'}
-    text20 = {'gl': 'Har de betalt foreløbig bla bla bla bla bla bla bla bla bla '
-              'bla bla bla bla bla bla bla', 'dk': 'Har de betalt foreløbig bla bla bla bla bla bla bla bla bla '
-                                             'bla bla bla bla bla bla bla'}
-    text21 = {'gl': 'GL Beløb i kroner', 'dk': 'Beløb i kroner'}
-    text22 = {'gl': 'GL Er kapitalafkastskatten hævet fra pensionsordning?',
+    text11 = {'gl': "Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pillugu ilanngussaq paasissutissanik "
+                    "naqeriikkanik imaqarpat paasis-sutissat naqeriikkat eqqortuunerat qulakkiissavat. "
+                    "Inuunermik sillimmasiissutinit aamma soraarnerussutisiaqarnissamut aaqqissuussinernit, "
+                    "aningaasarsianit akileraarutit pillugit Inatsisartut inatsisaanni § 39 a, imm. 1-imi 2-milu "
+                    "piumasaqaatinik naammassinnittunit, tassungalu ilutigitillugu aammattaaq "
+                    "soraarnerussutisiaqarnissamut aaqqissuussinerit il.il. "
+                    "akileraaruserneqartarnerat pillugu danskit inatsisaanni § 20, imm. 4-mi pineqartunit "
+                    "pissarsiaqarsimaguit, aamma/imaluunniit inuunermik sillimmasiissutinit aamma "
+                    "soraarnerussutisiaqarnissamut aaqqissuussinernit, soraarnerussutisiaqarnissamut "
+                    "aaqqissuussinerit il.il. akileraaruserneqartarnerat pillugu danskit inatsisaanni 53 A-mi "
+                    "pineqartunit pissarsiaqarsimaguit, taakkulu paasissutissani naqeriikkani ilaanngippata, "
+                    "taava Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pillugu ilanngussami "
+                    "nalunaarutigissavatit. Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pillugu "
+                    "ilanngussamut allannguutissaqaruit ilassutissaqaruilluunniit, "
+                    "taava taanna immersoriarlugu atsioriarlugulu Akileraartarnermut Aqutsisoqarfimmut nassiutissavat, "
+                    "imaluunniit allannguutit Akileraartarnermut Aqutsisoqarfiup www.aka.gl -ikkut nammineerluni "
+                    "iserfissiaatigut imaluunniit www.sullissivik.gl -ikkut nalunaarutigissavatit kingusinnerpaamik "
+                    "ulloq 1. maj 2021.",
+              'dk': "Hvis der på Bilag vedrørende beskatning af visse kapitalafkast er fortrykte oplysninger, "
+                    "skal De kontrollere om de fortrykte oplysninger er rigtige. Hvis De har haft kapitalafkast af "
+                    "livsforsikringer og pensionsordninger, der opfylder betingelserne i § 39 a, "
+                    "stk. 1 og 2, i landstingslov om indkomstskat, som samtidig er omfattet af § 20, stk. 4 i den "
+                    "danske lov om beskatning af pensionsordninger m.v. og/eller kapitalafkast af livsforsikringer og "
+                    "pensionsordninger omfattet af § 53 A i den danske lov om beskatning af pensionsordninger m.v., "
+                    "udover de fortrykte oplysninger, skal De oplyse dette på Bilag vedrørende beskatning af "
+                    "visse kapitalafkast. Har De ændringer eller tilføjelser, skal De derfor udfylde og underskrive "
+                    "Bilag vedrørende beskatning af visse kapitalafkast og indsende den til Skattestyrelsen "
+                    "eller indberette ændringerne via Skattestyrelsens tast-selv løsning på www.aka.gl eller "
+                    "www.sullissivik.gl senest den 1. maj 2021."}
+    text12 = {'gl': "Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pillugu ilanngussami naqeriikkat "
+                    "isumaqataaffigigukkit qanoq iliuuseqaqqittariaqanngilatit.",
+              'dk': "Hvis De er enig i indholdet af det fortrykte Bilag vedrørende beskatning af visse kapitalafkast, "
+                    "behøver De ikke foretage Dem yderligere."}
+    text13 = {'gl': "Pigisanit pissarsiat akileraarutaannik akiliigallarsimaguit aningaasallu akileraarutip "
+                    "akilernissaanut atugassat soraarnerussutisiaqarnissamut aaqqissuussinermit tiguneqarsimappata, "
+                    "taava pigisanit pissarsiat akileraarutaannut akiliutaavallaarsimajunnartut "
+                    "soraarnerussutisiaqarnissamut aaqqissuussinermut, akileraarutip tiguneqarfianut ikineqassapput. "
+                    "Aningaasat pigisanit pissarsiat akileraarutaasa akilernissaannut atugassat "
+                    "soraarnerussutisiaqarnissamut aaqqissuussinermit tigusimanngikkukkit, taava pigisanit pissarsiat "
+                    "akileraarutaannut akiliutaavallaarsimajunnartut aningaaserivimmi kontumut, "
+                    "Nammineerluni nalunaarsuiffimmi S1 -imi illit nalunaarutigisimasannut ikineqassapput. "
+                    "Pigisanit pissarsiat akileraarutaannik akiliigallarnissamut periarfissaqarputit ulloq "
+                    "1. maj 2021 tikillugu.",
+              'dk': "Hvis De har indbetalt forløbig kapitalafkastskat og beløbet til indbetaling af skatten er "
+                    "hævet på pensionsordningen, indsættes eventuel overskydende kapitalafkastskat på den "
+                    "pensionsordning, hvor skatten er hævet. Hvis De ikke har hævet beløbet til indbetaling af "
+                    "kapitalafkastskatten på pensionsordningen, udbetales eventuel overskydende kapitalafkastskat "
+                    "til den bankkonto De har oplyst på Selvangivelsen S1 . De har mulighed for at betale forløbig "
+                    "kapitalafkastskat indtil 1. maj 2021."}
+    text14 = {'gl': "Pigisanit pissarsiat akileraarutissaattut naatsorsugaq 1. september 2021 -imi "
+                    "akiligassanngortussaq, piffissaagallartillugulu 20. september 2021 kingusinnerpaamik "
+                    "akilerneqartussaq Akileraartarnermut Aqutsisoqarfiup akiligassiissutigissavaa.",
+              'dk': "Skattestyrelsen opkræver beregnet kapitalafkastskat til betaling med forfald til betaling den "
+                    "1. september 2021 og sidste rettidige betalingsdag den 20. september 2021."}
+    text15 = {'gl': 'Pigisanit pissarsiat PBL (DK) § 53 A', 'dk': 'Kapitalafkast PBL (DK) § 53 A'}
+    text16 = {'gl': 'Aningaasat koruuninngorlugit', 'dk': 'Beløb i kroner'}
+    text17 = {'gl': 'Aningaasat koruuninngorlugit', 'dk': 'Beløb i kroner'}
+    text18 = {'gl': 'Sammisap normua', 'dk': 'Felt nr.'}
+    text19 = {'gl': 'Pigisanit pissarsiat akileraarutaat', 'dk': 'Kapitalafkastskat'}
+    text20 = {'gl': 'Pigisanit pissarsiat akileraarutaannik akiliigallarsimaguit aningaasartaat uani allassavatit. '
+                    'Uppernarsaatissap ilanngullugu nassiunnissaa eqqaamajuk.',
+              'dk': 'Har de betalt forløbig kapitalafkastskat angives beløbet her. '
+                    'Husk at vedlægge dokumentation.'}
+    text21 = {'gl': 'Aningaasat koruuninngorlugit', 'dk': 'Beløb i kroner'}
+    text22 = {'gl': 'Pigisanit pissarsiat akileraarutaat soraarnerussutisiaqarnissamut '
+                    'aaqqissuussinermit tiguneqarpat ?',
               'dk': 'Er kapitalafkastskatten hævet fra pensionsordning?'}
-    text23 = {'gl': 'GL Kapitalafkastskat i udlandet', 'dk': 'Kapitalafkastskat i udlandet'}
-    text24 = {'gl': 'GL Anmoder de om nedslag bla bla bla bla bla bla bla bla bla '
-              'bla bla bla bla bla bla bla', 'dk': 'Anmoder de om nedslag bla bla bla bla bla bla bla bla bla '
-                                             'bla bla bla bla bla bla bla'}
-    text25 = {'gl': 'GL Beløb i kroner', 'dk': 'Beløb i kroner'}
-    text26 = {'gl': 'GL Oplysninger afgives under ansvar i henhold til bestemmelserne i § 9 i '
-              'Inatsisartutlov om beskatning af visse kapitalafkast',
+    text23 = {'gl': 'Pigisanit pissarsiat akileraarutaat nunani allani akilersimasat',
+              'dk': 'Betalt kapitalafkastskat i udlandet'}
+    text24 = {'gl': 'Akileraarutissavit, pigisanit pissarsiat akileraarutaannik nunani allani akiliisimanerit '
+                    'pissutigalugu appartinneqarnissaat kissaatigigukku akileraarutit akilerneqarsimasut '
+                    'nulanaarneqassapput uppernarsaatissaallu nammineerluni nalunaarsuinermut ilanngullugit '
+                    'nassiunneqassallutik.', 'dk': 'Anmoder De om nedslag for betalt kapitalafkastskat i udlandet '
+                                                   'angives den betalte skat og dokumentation vedlægges selvangivelsen'}
+    text25 = {'gl': 'Aningaasat koruuninngorlugit', 'dk': 'Beløb i kroner'}
+    text26 = {'gl': 'Paasissutissat Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pillugu Inatsisartut '
+                    'inatsisaanni § 9-mi aalajangersakkat malillugit akisussaassuseqarluni nalunaarneqartussaapput.',
               'dk': 'Oplysninger afgives under ansvar i henhold til bestemmelserne i § 9 i '
               'Inatsisartutlov om beskatning af visse kapitalafkast'}
-    text27 = {'gl': 'GL Sted/tlf', 'dk': 'Sted/tlf'}
-    text28 = {'gl': 'GL Dato', 'dk': 'Dato'}
-    text29 = {'gl': 'GL Underskrift', 'dk': 'Underskrift'}
-    text30 = {'gl': 'GL Indsendes sammen med Selvangivelsen S1/S1U', 'dk': 'Indsendes sammen med Selvangivelsen S1/S1U'}
+    text27 = {'gl': 'Sumiiffik / Oqarasuaat', 'dk': 'Sted/tlf'}
+    text28 = {'gl': 'Ulloq', 'dk': 'Dato'}
+    text29 = {'gl': 'Atsiorneq', 'dk': 'Underskrift'}
+    text30 = {'gl': 'Nammineerluni nalunaarsuineq S1-imut/S1U-mut ilanngullugu nassiunneqassaaq',
+              'dk': 'Indsendes sammen med Selvangivelsen S1/S1U'}
     text_yes = {'gl': 'Aap', 'dk': 'Ja'}
-    text_no = {'gl': 'GL nej', 'dk': 'Nej'}
+    text_no = {'gl': 'Naamik', 'dk': 'Nej'}
 
     tax_year = '-'
     tax_return_date_limit = '-'
@@ -345,7 +388,9 @@ def main():
     tax_slip = TaxPDF()
     tax_slip.set_parameters("2020", '1. maj 2020', '1234567890', 'Mads Møller Johansen', 'Sanamut aqqut 21, lejl 102',
                             '3900 Nuuk', 'Skattestyrelsen', 'Postboks 1605', '3900 Nuuk', '1234',
-                            [{'policy': 'ATP-12345678', 'value': '500'}, {'policy': 'PFA-12345678'}, {'policy': 'Something else-12345678'}])
+                            [{'policy': 'ATP-12345678', 'value': '500'},
+                             {'policy': 'PFA-12345678'},
+                             {'policy': 'Something else-12345678'}])
     tax_slip.print_tax_slip('gl')
     tax_slip.print_tax_slip('dk')
     tax_slip.write_tax_slip_to_disk('./invoice.pdf')
