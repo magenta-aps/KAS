@@ -10,6 +10,7 @@ class TaxPDF(FPDF):
 
     std_document_width = 171
     left_margin = 17.0
+    default_line_width = 0.2
     contact_info_table_cell = {'h': 5, 'w': 50}
 
     contact_info_table = {'x': 90.0, 'y': 27.0}
@@ -94,15 +95,13 @@ class TaxPDF(FPDF):
               'dk': "Skattestyrelsen opkræver beregnet kapitalafkastskat til betaling med forfald til betaling den "
                     "{} og sidste rettidige betalingsdag den {}."}
     text15 = {'gl': 'Pigisanit pissarsiat PBL (DK) § 53 A', 'dk': 'Kapitalafkast PBL (DK) § 53 A'}
-    text16 = {'gl': 'Aningaasat koruuninngorlugit', 'dk': 'Beløb i kroner'}
-    text17 = {'gl': 'Aningaasat koruuninngorlugit', 'dk': 'Beløb i kroner'}
+    text16 = {'gl': 'Aningaasat\n koruuninngorlugit', 'dk': 'Beløb i kroner'}
     text18 = {'gl': 'Sammisap normua', 'dk': 'Felt nr.'}
     text19 = {'gl': 'Pigisanit pissarsiat akileraarutaat', 'dk': 'Kapitalafkastskat'}
     text20 = {'gl': 'Pigisanit pissarsiat akileraarutaannik akiliigallarsimaguit aningaasartaat uani allassavatit. '
                     'Uppernarsaatissap ilanngullugu nassiunnissaa eqqaamajuk.',
               'dk': 'Har de betalt forløbig kapitalafkastskat angives beløbet her. '
                     'Husk at vedlægge dokumentation.'}
-    text21 = {'gl': 'Aningaasat koruuninngorlugit', 'dk': 'Beløb i kroner'}
     text22 = {'gl': 'Pigisanit pissarsiat akileraarutaat soraarnerussutisiaqarnissamut '
                     'aaqqissuussinermit tiguneqarpat ?',
               'dk': 'Er kapitalafkastskatten hævet fra pensionsordning?'}
@@ -154,6 +153,7 @@ class TaxPDF(FPDF):
         self.sender_postnumber = sender_postnumber
         self.nemid_kode = nemid_kode
         self.policys = policys
+        default_line_width = self.line_width
 
     def header(self):
         self.yposition = 40
@@ -248,44 +248,39 @@ class TaxPDF(FPDF):
 
         elementheight = self.element_height_2
         self.set_xy(self.left_margin, self.yposition)
-        self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
-        self.multi_cell(self.std_document_width, 5, self.text11[language].format(self.tax_return_date_limit), 0)
+        self.multi_cell(self.std_document_width, 5, self.text11[language].format(self.tax_return_date_limit), 1)
         self.yposition = self.get_y()
 
         elementheight = self.element_height_3
         self.set_xy(self.left_margin, self.yposition)
-        self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
-        self.multi_cell(self.std_document_width, 5, self.text12[language], 0)
+        self.multi_cell(self.std_document_width, 5, self.text12[language], 1)
         self.yposition = self.get_y()
 
         elementheight = self.element_height_4
         self.set_xy(self.left_margin, self.yposition)
-        self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
-        self.multi_cell(self.std_document_width, 5, self.text13[language].format(self.tax_return_date_limit), 0)
+        self.multi_cell(self.std_document_width, 5, self.text13[language].format(self.tax_return_date_limit), 1)
         self.yposition = self.get_y()
 
         elementheight = self.element_height_5
         self.set_xy(self.left_margin, self.yposition)
-        self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
-        self.multi_cell(self.std_document_width, 5, self.text14[language].format(self.request_pay, self.pay_date), 0)
+        self.multi_cell(self.std_document_width, 5, self.text14[language].format(self.request_pay, self.pay_date), 1)
         self.yposition = self.get_y()
 
         self.set_font('arial', '', 8.5)
         self.yposition += 15
 
-        elementheight = 5
-
+        elementheight = 10
         self.set_xy(self.left_margin, self.yposition)
-        self.cell(h=elementheight, align='L', w=75.0, txt=self.text15[language], border=0)
+        self.cell(h=2, align='L', w=25.0, txt=self.text15[language], border=0)
         self.set_xy(80.0, self.yposition)
-        self.cell(h=elementheight, align='L', w=75.0, txt=self.text16[language], border=0)
+        self.multi_cell(h=2, align='C', w=25.0, txt=self.text16[language], border=0)
         self.set_xy(120.0, self.yposition)
-        self.cell(h=elementheight, align='L', w=75.0, txt=self.text17[language], border=0)
+        self.multi_cell(h=2, align='C', w=25.0, txt=self.text16[language], border=0)
         self.set_xy(160.0, self.yposition)
-        self.cell(h=elementheight, align='L', w=75.0, txt=self.text18[language], border=0)
+        self.cell(h=2, align='L', w=25.0, txt=self.text18[language], border=0)
         self.yposition += elementheight
 
-        self.yposition += 10
+        self.yposition += elementheight
 
         for policy in self.policys:
             self.set_font('arial', '', 8.5)
@@ -296,7 +291,7 @@ class TaxPDF(FPDF):
             self.cell(h=elementheight, align='L', w=75.0, txt='201', border=0)
             self.yposition += elementheight
 
-            self.set_xy(80, self.yposition-5)
+            self.set_xy(80, self.yposition-10)
             self.cell(h=elementheight, align='C', w=25.0, txt=policy.get('value', ''), border=0)
 
             self.line(80, self.yposition, 110, self.yposition)
@@ -307,54 +302,60 @@ class TaxPDF(FPDF):
         self.set_xy(self.left_margin, self.yposition)
         self.cell(h=elementheight, align='L', w=75.0, txt='', border=0)
         self.set_xy(self.left_margin, self.yposition)
-        self.cell(h=elementheight, align='L', w=75.0, txt=self.text19[language], border=0)
+        self.multi_cell(h=4, align='L', w=35.0, txt=self.text19[language], border=0)
 
-        self.set_xy(50, self.yposition)
-        self.multi_cell(60, 3, self.text20[language], 0)
+        self.set_xy(50, self.yposition-5)
+        self.multi_cell(h=5, align='L', w=60, txt=self.text20[language], border=0)
 
         self.set_xy(120.0, self.yposition-10)
-        self.cell(h=elementheight, align='L', w=75.0, txt=self.text21[language], border=0)
-        self.line(120, self.yposition+5, 150, self.yposition+5)
+        self.multi_cell(h=2, align='C', w=25.0, txt=self.text16[language], border=0)
+        self.line(120, self.yposition+10, 150, self.yposition+10)
         self.set_xy(160.0, self.yposition)
         self.cell(h=elementheight, align='L', w=75.0, txt='205', border=0)
         self.yposition += elementheight
 
         self.yposition += 20
 
-        elementheight = 15
+        elementheight = 10
         self.set_xy(self.left_margin, self.yposition)
-        self.rect(self.left_margin, self.yposition, 170.0, elementheight)
-        self.cell(h=elementheight, align='L', w=75.0,
+        self.set_line_width(1)
+        self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
+        self.set_line_width(self.default_line_width)
+        self.multi_cell(h=5, align='L', w=100,
                   txt=self.text22[language], border=1)
-        self.set_xy(110, self.yposition)
+        self.set_xy(130, self.yposition)
         self.cell(h=elementheight, align='L', w=75.0, txt=self.text_yes[language], border=0)
-        self.set_xy(150, self.yposition)
+        self.set_xy(160, self.yposition)
         self.cell(h=elementheight, align='L', w=75.0, txt=self.text_no[language], border=0)
-        self.rect(120.0, self.yposition+5, 5, 5)
-        self.rect(160.0, self.yposition+5, 5, 5)
+
+        self.rect(140.0, self.yposition+2, 5, 5)
+        self.rect(175.0, self.yposition+2, 5, 5)
         self.yposition += elementheight
 
         self.yposition += 30
 
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(30, 3, self.text23[language], 0)
+        self.multi_cell(h=4, align='L', w=35.0, txt=self.text23[language], border=0)
 
-        self.set_xy(50, self.yposition)
-        self.multi_cell(60, 3, self.text24[language], 0)
+        self.set_xy(50, self.yposition-15)
+        self.multi_cell(h=5, align='L', w=60, txt=self.text24[language], border=0)
 
-        elementheight = 25
+
+        elementheight = 45
         self.set_xy(120.0, self.yposition-10)
         self.cell(h=elementheight-25, align='L', w=75.0, txt=self.text25[language], border=0)
-        self.line(120, self.yposition+5, 150, self.yposition+5)
+        self.line(120, self.yposition+15, 150, self.yposition+15)
+        self.set_line_width(1)
         self.set_xy(160.0, self.yposition)
         self.cell(h=elementheight-20, align='L', w=75.0, txt='208', border=0)
         self.yposition += elementheight
 
         elementheight = 30
         self.set_xy(self.left_margin, self.yposition)
+        self.set_line_width(1)
         self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
-        self.cell(h=self.signature_table_cell.get('h'), align='L', w=self.std_document_width,
-                  txt=self.text26[language], border=1)
+        self.set_line_width(self.default_line_width)
+        self.multi_cell(h=5, align='L', w=self.std_document_width, txt=self.text26[language], border=1)
         self.set_xy(self.left_margin, self.yposition+10)
         self.cell(h=self.signature_table_cell.get('h'), align='L', w=self.signature_table_cell.get('w'),
                   txt=self.text27[language], border=1)
@@ -374,7 +375,7 @@ class TaxPDF(FPDF):
 
         self.yposition += 10
 
-        self.set_font('helvetica', '', 13.0)
+        self.set_font('helvetica', 'B', 13.0)
         self.set_xy(self.left_margin, self.yposition)
         self.cell(h=10, align='L', w=self.std_document_width, txt=self.text30[language], border=0)
 
