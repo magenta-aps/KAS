@@ -104,7 +104,7 @@ class TaxPDF(FPDF):
                     'Husk at vedlægge dokumentation.'}
     text22 = {'gl': 'Pigisanit pissarsiat akileraarutaat soraarnerussutisiaqarnissamut '
                     'aaqqissuussinermit tiguneqarpat ?',
-              'dk': 'Er kapitalafkastskatten hævet fra pensionsordning?'}
+              'dk': 'Er kapitalafkastskatten hævet fra pensionsordning?\n  '}
     text23 = {'gl': 'Pigisanit pissarsiat akileraarutaat nunani allani akilersimasat',
               'dk': 'Betalt kapitalafkastskat i udlandet'}
     text24 = {'gl': 'Akileraarutissavit, pigisanit pissarsiat akileraarutaannik nunani allani akiliisimanerit '
@@ -153,7 +153,7 @@ class TaxPDF(FPDF):
         self.sender_postnumber = sender_postnumber
         self.nemid_kode = nemid_kode
         self.policys = policys
-        default_line_width = self.line_width
+        self.default_line_width = self.line_width
 
     def header(self):
         self.yposition = 40
@@ -321,8 +321,7 @@ class TaxPDF(FPDF):
         self.set_line_width(1)
         self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
         self.set_line_width(self.default_line_width)
-        self.multi_cell(h=5, align='L', w=100,
-                  txt=self.text22[language], border=1)
+        self.multi_cell(h=5, align='L', w=100, txt=self.text22[language], border=1)
         self.set_xy(130, self.yposition)
         self.cell(h=elementheight, align='L', w=75.0, txt=self.text_yes[language], border=0)
         self.set_xy(160, self.yposition)
@@ -337,45 +336,48 @@ class TaxPDF(FPDF):
         self.set_xy(self.left_margin, self.yposition)
         self.multi_cell(h=4, align='L', w=35.0, txt=self.text23[language], border=0)
 
-        self.set_xy(50, self.yposition-15)
+        self.set_xy(55, self.yposition-15)
         self.multi_cell(h=5, align='L', w=60, txt=self.text24[language], border=0)
-
 
         elementheight = 45
         self.set_xy(120.0, self.yposition-10)
-        self.cell(h=elementheight-25, align='L', w=75.0, txt=self.text25[language], border=0)
-        self.line(120, self.yposition+15, 150, self.yposition+15)
+        self.multi_cell(h=2, align='C', w=25.0, txt=self.text16[language], border=0)
+        self.line(120, self.yposition+10, 150, self.yposition+10)
         self.set_line_width(1)
         self.set_xy(160.0, self.yposition)
-        self.cell(h=elementheight-20, align='L', w=75.0, txt='208', border=0)
+        self.cell(h=elementheight-30, align='L', w=75.0, txt='208', border=0)
         self.yposition += elementheight
 
         elementheight = 30
         self.set_xy(self.left_margin, self.yposition)
-        self.set_line_width(1)
-        self.rect(self.left_margin, self.yposition, self.std_document_width, elementheight)
+        frametop = self.get_y()
         self.set_line_width(self.default_line_width)
         self.multi_cell(h=5, align='L', w=self.std_document_width, txt=self.text26[language], border=1)
-        self.set_xy(self.left_margin, self.yposition+10)
+        self.yposition = self.get_y()
+        self.set_xy(self.left_margin, self.yposition)
         self.cell(h=self.signature_table_cell.get('h'), align='L', w=self.signature_table_cell.get('w'),
                   txt=self.text27[language], border=1)
-        self.set_xy(self.left_margin+self.signature_table_cell.get('w'), self.yposition+10)
+        self.set_xy(self.left_margin+self.signature_table_cell.get('w'), self.yposition)
         self.cell(h=self.signature_table_cell.get('h'), align='L', w=self.signature_table_cell.get('w'),
                   txt=self.text28[language], border=1)
-        self.set_xy(self.left_margin+self.signature_table_cell.get('w')*2, self.yposition+10)
+        self.set_xy(self.left_margin+self.signature_table_cell.get('w')*2, self.yposition)
         self.cell(h=self.signature_table_cell.get('h'), align='L', w=self.signature_table_cell.get('w'),
                   txt=self.text29[language], border=1)
-        self.set_xy(self.left_margin, self.yposition+20)
+        self.set_xy(self.left_margin, self.yposition+10)
         self.cell(h=self.signature_table_cell.get('h'), w=self.signature_table_cell.get('w'), border=1)
-        self.set_xy(self.left_margin+self.signature_table_cell.get('w'), self.yposition+20)
+        self.set_xy(self.left_margin+self.signature_table_cell.get('w'), self.yposition+10)
         self.cell(h=self.signature_table_cell.get('h'), w=self.signature_table_cell.get('w'), border=1)
-        self.set_xy(self.left_margin+self.signature_table_cell.get('w')*2, self.yposition+20)
+        self.set_xy(self.left_margin+self.signature_table_cell.get('w')*2, self.yposition+10)
         self.cell(h=self.signature_table_cell.get('h'), w=self.signature_table_cell.get('w'), border=1)
+        self.set_line_width(1)
+        framebottom = self.get_y()
+        self.rect(self.left_margin, frametop, self.std_document_width, framebottom-frametop+10)
+        self.set_line_width(self.default_line_width)
         self.yposition += elementheight
 
         self.yposition += 10
 
-        self.set_font('helvetica', 'B', 13.0)
+        self.set_font('arial', 'B', 13.0)
         self.set_xy(self.left_margin, self.yposition)
         self.cell(h=10, align='L', w=self.std_document_width, txt=self.text30[language], border=0)
 
