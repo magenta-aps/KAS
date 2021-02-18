@@ -3,8 +3,9 @@ set -e
 MAKE_MIGRATIONS=${MAKE_MIGRATIONS:=false}
 MIGRATE=${MIGRATE:=false}
 TEST=${TEST:=false}
+DUMMYDATA=${DUMMYDATA:=false}
 
-if [ "$ONESHOT" = true ] || [ "$TEST" = true ] || [ "$MAKE_MIGRATIONS" = true ]; then
+if [ "$ONESHOT" = true ] || [ "$TEST" = true ] || [ "$MAKE_MIGRATIONS" = true ] || [ "$DUMMYDATA" = true ]; then
   python manage.py wait_for_db
   if [ "$MAKE_MIGRATIONS" = true ]; then
     echo 'generating migrations'
@@ -16,7 +17,11 @@ if [ "$ONESHOT" = true ] || [ "$TEST" = true ] || [ "$MAKE_MIGRATIONS" = true ];
   fi
   if [ "$TEST" = true ]; then
     echo 'running tests!'
-    exec python manage.py test
+    python manage.py test
+  fi
+  if [ "$DUMMYDATA" = true ]; then
+    echo 'creating dummy data!'
+    python manage.py create_dummy_data
   fi
 else
   exec "$@"
