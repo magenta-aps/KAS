@@ -9,7 +9,7 @@
 |oneshot   | Container to generate and execute migrations, and unit tests |
 |selvbetjening | Container running the self-service django project. | 8080/tcp |
 
-All django containers are using gunicorn and is confgiured to serve static in the development environment and
+All django containers are using gunicorn and is configured to serve static content in the development environment and
 log everything to stdout/stderr, so you can check the logs using docker logs <container_name>.
 Gunicorn is set to auto-realod on (python) code changes.
 
