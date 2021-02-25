@@ -1,9 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import MinValueValidator, RegexValidator, \
+    MaxValueValidator
 from django.db import models
 from django.db.models.signals import post_save
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 
 class PensionCompany(models.Model):
@@ -11,25 +13,41 @@ class PensionCompany(models.Model):
     name = models.TextField(
         db_index=True,
         verbose_name=_('Navn'),
-        help_text=_('Navn')
+        help_text=_('Navn'),
+        max_length=255,
+        blank=True
     )
 
     address = models.TextField(
         verbose_name=_('Adresse'),
-        help_text=_('Adresse')
+        help_text=_('Adresse'),
+        blank=True
     )
 
     email = models.TextField(
         verbose_name=_('Email'),
-        help_text=_('Email')
+        help_text=_('Email'),
+        blank=True,
+        null=True
     )
 
     phone = models.TextField(
         verbose_name=_('Telefon'),
-        help_text=_('Telefon')
+        help_text=_('Telefon'),
+        blank=True,
+        null=True
     )
 
-    cvr = models.IntegerField()
+    cvr = models.IntegerField(
+        unique=True,
+        validators=(
+            MinValueValidator(limit_value=1),
+            MaxValueValidator(limit_value=99999999)
+        )
+    )
+
+    def __str__(self):
+        return f"{self.__class__.__name__}(name={self.name}, cvr={self.cvr})"
 
 
 class TaxYear(models.Model):
@@ -37,8 +55,14 @@ class TaxYear(models.Model):
     year = models.IntegerField(
         db_index=True,
         verbose_name=_('Skatteår'),
-        help_text=_('Skatteår')
+        help_text=_('Skatteår'),
+        unique=True,
+        null=False,
+        validators=(MinValueValidator(limit_value=2000),)
     )
+
+    def __str__(self):
+        return f"{self.__class__.__name__}(year={self.year})"
 
 
 class Person(models.Model):
@@ -46,65 +70,92 @@ class Person(models.Model):
     cpr = models.TextField(
         db_index=True,
         verbose_name=_('CPR nummer'),
-        help_text=_('CPR nummer')
+        help_text=_('CPR nummer'),
+        unique=True,
+        null=False,
+        max_length=10,
+        validators=(RegexValidator(regex=r'\d{10}'),)
     )
+
+    def __str__(self):
+        return f"{self.__class__.__name__}(cpr={self.cpr})"
 
 
 class PersonTaxYear(models.Model):
 
+    class Meta:
+        unique_together = ['tax_year', 'person']
+
     tax_year = models.ForeignKey(
-        TaxYear, on_delete=models.PROTECT
+        TaxYear,
+        on_delete=models.PROTECT,
+        null=False
     )
 
     person = models.ForeignKey(
-        Person, on_delete=models.PROTECT
+        Person,
+        on_delete=models.PROTECT,
+        null=False
     )
 
     start_date = models.DateField(
-        verbose_name='Startdato'
+        verbose_name='Startdato',
+        null=True
     )
 
     end_date = models.DateField(
-        verbose_name='Slutdato'
+        verbose_name='Slutdato',
+        null=True
     )
 
     number_of_days = models.IntegerField(
-        verbose_name='Antal dage'
+        verbose_name='Antal dage',
+        null=True
     )
+
+    def __str__(self):
+        return f"{self.__class__.__name__}(cpr={self.person.cpr}, year={self.tax_year.year})"
 
 
 class PolicyTaxYear(models.Model):
 
+    class Meta:
+        unique_together = ['person_tax_year', 'pension_company', 'policy_number']
+
     person_tax_year = models.ForeignKey(
         PersonTaxYear,
-        on_delete=models.PROTECT
+        on_delete=models.PROTECT,
+        null=False,
+        blank=True,
     )
 
     pension_company = models.ForeignKey(
         PensionCompany,
-        on_delete=models.PROTECT
+        on_delete=models.PROTECT,
+        null=False,
+        blank=True,
     )
 
     policy_number = models.CharField(
-        max_length=40
+        max_length=40,
+        blank=False,
     )
 
-    prefilled_amount = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        verbose_name=_('Beløb rapporteret fra forsikringsselskab')
+    prefilled_amount = models.BigIntegerField(
+        verbose_name=_('Beløb rapporteret fra forsikringsselskab'),
+        blank=True,
+        null=True
     )
 
-    estimated_amount = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+    estimated_amount = models.BigIntegerField(
         verbose_name=_('Skønsbeløb angivet af Skattestyrelsen'),
+        default=0
     )
 
-    self_reported_amount = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+    self_reported_amount = models.BigIntegerField(
         verbose_name=_('Selvangivet beløb'),
+        blank=False,
+        null=True
     )
 
     ACTIVE_AMOUNT_PREFILLED = 1
@@ -136,12 +187,11 @@ class PolicyTaxYear(models.Model):
         default=CALCULATION_MODEL_DEFAULT
     )
 
-    preliminary_paid_amount = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+    preliminary_paid_amount = models.BigIntegerField(
         verbose_name=_('Foreløbigt betalt kapitalafkast'),
         blank=True,
         null=True,
+        validators=(MinValueValidator(limit_value=0),),
     )
 
     from_pension = models.BooleanField(
@@ -149,39 +199,44 @@ class PolicyTaxYear(models.Model):
         verbose_name=_("Er kapitalafkastskatten hævet fra pensionsordning")
     )
 
-    foreign_paid_amount_self_reported = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+    foreign_paid_amount_self_reported = models.BigIntegerField(
         verbose_name=_('Selvangivet beløb for betalt kapitalafkastskat i udlandet'),
+        blank=True,
+        default=0,
+        validators=(MinValueValidator(limit_value=0),)
     )
 
-    foreign_paid_amount_actual = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+    foreign_paid_amount_actual = models.BigIntegerField(
         verbose_name=_('Faktisk betalt kapitalafkastskat i udlandet'),
+        blank=True,
+        default=0,
+        validators=(MinValueValidator(limit_value=0),)
     )
 
-    deduction_from_previous_years = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+    deduction_from_previous_years = models.BigIntegerField(
         verbose_name=_('Fradrag fra tidligere år'),
+        blank=True,
+        default=0,
+        validators=(MinValueValidator(limit_value=0),)
     )
 
-    applied_deduction_from_previous_years = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+    applied_deduction_from_previous_years = models.BigIntegerField(
         verbose_name=_('Anvendt fradrag fra tidligere år'),
+        blank=True,
+        default=0,
+        validators=(MinValueValidator(limit_value=0),)
     )
 
-    calculated_result = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+    calculated_result = models.BigIntegerField(
         verbose_name=_('Beregnet resultat'),
+        blank=True,
+        default=0,
     )
 
     modified_by = models.CharField(
         max_length=255,
         verbose_name=_('Modificeret af'),
+        default='unknown'
     )
 
     locked = models.BooleanField(
@@ -192,6 +247,7 @@ class PolicyTaxYear(models.Model):
 
     note = models.TextField(
         verbose_name=_('Note'),
+        null=True
     )
 
     @property
@@ -202,17 +258,22 @@ class PolicyTaxYear(models.Model):
     def tax_year(self):
         return self.person_tax_year.tax_year
 
+    def __str__(self):
+        return f"{self.__class__.__name__}(policy_number={self.policy_number}, cpr={self.person.cpr}, year={self.tax_year.year})"
+
 
 class PolicyDocument(models.Model):
 
-    policy = models.ForeignKey(
+    policy_tax_year = models.ForeignKey(
         PolicyTaxYear,
-        on_delete=models.PROTECT
+        on_delete=models.PROTECT,
+        null=False
     )
 
     name = models.CharField(
         max_length=255,
         verbose_name=_('Navn'),
+        blank=False
     )
 
     description = models.TextField(
