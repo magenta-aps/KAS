@@ -36,6 +36,14 @@ press a button, see stuff works
 
 # Working with the eSkat integration
 
+## eSkat development setup
+
+By default the eSkat setup will use local mockup tables as a data source for eSkat data. These tables will automatically
+be used instead of the ones in the eSkat database when importing data. The tables can be populated with mockup data
+by running the `perl manage.py import_eskat_mockup_data` command.
+
+## Connecting to the real eSkat database
+
 By default a development environment does not have the neccessary information to connect to the eSkat database.
 In order to connect an SSH tunnel must be created that allows accessing the database server and login and password
 credentials must be provided.
@@ -43,10 +51,11 @@ credentials must be provided.
 The ssh tunnel can be created from the development host with the following command:
 
 ```
-ssh -g -L16523:10.240.79.23:16523 magenta@10.240.76.91
+ssh -g -L16523:10.240.79.23:16523 kas@10.240.76.76
 ```
 
-The password needed to for the SSH connection can be found in Bitwarden under the key `magenta @ 10.240.76.91 / nopitusec04`.
+The password needed to for the SSH connection can be found in Bitwarden under the key
+`KAS test: kas@10.240.76.76 / kas@nokastest01.dmz70.local`.
 
 Once the SSH tunnel is created a login and password is needed. These should be set up in a `docker-compose.override.yml` dockerFiles
 like this:
@@ -62,4 +71,6 @@ services:
 
 The username and password to use can be found in BitWarden under the key `KAS login til eSkat database (10.240.79.23)`.
 
-This will allow using the `Eskat*` model classes to connect to and query the live eSkat database.
+This will allow using the `eskat.models.EskatModels.*` model classes to connect to and query the live eSkat database.
+
+If `settings.ENVIRONMENT` is set to `production`, the real eSkat database will be used by default.

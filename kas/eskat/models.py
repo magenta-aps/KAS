@@ -5,6 +5,24 @@ from django.forms.models import model_to_dict
 from simple_history.models import HistoricalRecords
 
 
+"""
+There are four types of models in this module:
+
+1) AbstractModels, containing the field definitions for all the other tables
+2) EskatModels, models connecting to the real eSkat database
+3) MockModels, models containing local mockup data for the eSkat database
+4) Imported* models, containing data that has been imported from eSkat, using
+   either the real eSkat models or the mockup models as a source.
+
+The `get_*_model()` methods returns the correct eSkat source model for the given
+environment: In production the real eSkat models will be returned and for all
+other environments the mockup tables will be returned.
+
+Unless dealing with import logic it should only be neccessary to use the `Imported*`
+models.
+"""
+
+
 class AbstractModels:
 
     # This is only here because we got it from the eSkat integration. It is not used as all
@@ -150,17 +168,27 @@ class MockModels:
         pass
 
 
-# Add aliases that can be used to access data both in produktion and
-# test/development.
-if settings.ENVIRONMENT == "production":
+# Add methods that can be used to access correct source data models
+# in both production and test/development.
+def get_kas_beregninger_x_model():
+    if settings.ENVIRONMENT != "production":
+        return MockModels.MockKasBeregningerX
+    else:
+        return EskatModels.KasBeregningerX
 
-    KasBeregningerX = EskatModels.KasBeregningerX
-    KasMandtal = EskatModels.KasMandtal
-    R75PrivatePension = EskatModels.R75PrivatePension
-else:
-    KasBeregningerX = MockModels.MockKasBeregningerX
-    KasMandtal = MockModels.MockKasMandtal
-    R75PrivatePension = MockModels.MockR75PrivatePension
+
+def get_kas_mandtal_model():
+    if settings.ENVIRONMENT != "production":
+        return MockModels.MockKasMandtal
+    else:
+        return EskatModels.KasMandtal
+
+
+def get_r75_private_pension_model():
+    if settings.ENVIRONMENT != "production":
+        return MockModels.MockR75PrivatePension
+    else:
+        return EskatModels.R75PrivatePension
 
 
 class ImportedKasBeregningerX(AbstractModels.KasBeregningerX):
@@ -169,7 +197,9 @@ class ImportedKasBeregningerX(AbstractModels.KasBeregningerX):
 
     @classmethod
     def import_year(cls, year):
-        qs = KasBeregningerX.objects.filter(skatteaar=year)
+        qs = get_kas_beregninger_x_model().objects.filter(
+            skatteaar=year
+        )
         for x in qs:
             try:
                 existing = cls.objects.get(pk=x.pk)
@@ -191,7 +221,9 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
 
     @classmethod
     def import_year(cls, year):
-        qs = KasMandtal.objects.filter(skatteaar=year)
+        qs = get_kas_mandtal_model().objects.filter(
+            skatteaar=year
+        )
         for x in qs:
             try:
                 existing = cls.objects.get(pk=x.pk)
@@ -217,7 +249,9 @@ class ImportedR75PrivatePension(AbstractModels.R75PrivatePension):
 
     @classmethod
     def import_year(cls, year):
-        qs = R75PrivatePension.objects.filter(tax_year=year)
+        qs = get_r75_private_pension_model().objects.filter(
+            tax_year=year
+        )
         for x in qs:
             try:
                 existing = cls.objects.get(pk=x.pk)
