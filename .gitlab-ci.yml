@@ -104,6 +104,14 @@ KAS Unittest:
     POSTGRES_PASSWORD: kas
     POSTGRES_DB: kas
     POSTGRES_HOST: kas-db
+    # No access to the eskat database, so give it dummy environment variables
+    ESKAT_HOST: ""
+    ESKAT_PORT: ""
+    ESKAT_DB: ""
+    ESKAT_USER: ""
+    ESKAT_PASSWORD: ""
+    # Simulate development environment while running tests so we use mockup data
+    ENVIRONMENT: development
   script:
     - cd /app && python manage.py test
 

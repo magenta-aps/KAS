@@ -20,10 +20,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "django_rq",
     'kas',
+    'eskat',
     'worker',
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
+    'simple_history',
 ]
 
 MIDDLEWARE = [
@@ -34,6 +36,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -64,8 +67,26 @@ DATABASES = {
         'USER': os.environ['POSTGRES_USER'],
         'PASSWORD': os.environ['POSTGRES_PASSWORD'],
         'HOST': os.environ['POSTGRES_HOST'],
-    }
+    },
+    'eskat': {
+        'ENGINE': 'django.db.backends.oracle',
+        'NAME': (
+            '('
+            'DESCRIPTION=(ADDRESS='
+            '(PROTOCOL=TCP)'
+            '(HOST=' + os.environ['ESKAT_HOST'] + ')'
+            '(PORT=' + os.environ['ESKAT_PORT'] + '))'
+            '(CONNECT_DATA=(SERVICE_NAME=' + os.environ['ESKAT_DB'] + '))'
+            ')'
+        ),
+        'USER': os.environ['ESKAT_USER'],
+        'PASSWORD': os.environ['ESKAT_PASSWORD'],
+        'HOST': '',
+        'PORT': '',
+    },
 }
+
+DATABASE_ROUTERS = ['eskat.database_routers.ESkatRouter']
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -138,3 +159,5 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
+
+ENVIRONMENT = os.environ['ENVIRONMENT']
