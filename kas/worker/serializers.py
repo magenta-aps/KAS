@@ -1,11 +1,12 @@
 import datetime
 
+from django.template.defaultfilters import date as date_filter
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import formats
 from django.utils.translation import get_language
-from rest_framework.serializers import ModelSerializer, CharField, UUIDField
-from django.template.defaultfilters import date as date_filter
+from rest_framework.serializers import ModelSerializer
+
 from worker.models import Job
 
 

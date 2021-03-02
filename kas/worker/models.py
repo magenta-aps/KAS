@@ -20,7 +20,7 @@ status_choices = (
 )
 
 job_types = {
-    'ImportMandtalJob':  _('Import af mandtal')
+    'ImportMandtalJob': _('Import af mandtal')
 }
 
 
