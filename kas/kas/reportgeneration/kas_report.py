@@ -298,7 +298,7 @@ class TaxPDF(FPDF):
             self.set_xy(self.left_margin+c1w+c2w+c3w+c4w, self.yposition)
             self.cell(h=rowheight, align='L', w=c5w, txt='', border=1)
             self.set_xy(self.left_margin+c1w+c2w+c3w+c4w+c5w, self.yposition)
-            self.cell(h=rowheight, align='C', w=c6w, txt='201', border=1)
+            self.cell(h=rowheight, align='C', w=c6w, txt='KAS201', border=1)
 
             self.set_xy(125, self.yposition)
             self.cell(h=rowheight, align='L', w=20.0, txt=self.text_yes[language], border=0)
@@ -319,7 +319,7 @@ class TaxPDF(FPDF):
         self.set_xy(self.left_margin+c1w+c2w+c3w+c4w, self.yposition)
         self.cell(h=rowheight, align='L', w=c5w, txt='', border=1)
         self.set_xy(self.left_margin+c1w+c2w+c3w+c4w+c5w, self.yposition)
-        self.cell(h=rowheight, align='C', w=c6w, txt='201', border=1)
+        self.cell(h=rowheight, align='C', w=c6w, txt='KAS201', border=1)
 
 
 
@@ -341,7 +341,7 @@ class TaxPDF(FPDF):
         self.multi_cell(h=2, align='C', w=25.0, txt=self.text16[language], border=0)
         self.line(120, self.yposition+10, 150, self.yposition+10)
         self.set_xy(160.0, self.yposition)
-        self.cell(h=elementheight, align='L', w=75.0, txt='205', border=0)
+        self.cell(h=elementheight, align='L', w=75.0, txt='KAS205', border=0)
         self.yposition += elementheight
 
         self.yposition += 30
@@ -358,7 +358,7 @@ class TaxPDF(FPDF):
         self.line(120, self.yposition+10, 150, self.yposition+10)
         self.set_line_width(1)
         self.set_xy(160.0, self.yposition)
-        self.cell(h=elementheight-30, align='L', w=75.0, txt='208', border=0)
+        self.cell(h=elementheight-30, align='L', w=75.0, txt='KAS208', border=0)
         self.yposition += elementheight
 
         elementheight = 30
