@@ -3,11 +3,12 @@ from django.http import HttpResponseRedirect, Http404
 from django.urls import reverse
 from django.views.generic import TemplateView, DetailView
 from django.views.generic.edit import FormView, CreateView
-from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import SessionAuthentication
+
 from kas.view_mixins import BootstrapTableMixin
 from worker.forms import JobTypeSelectForm, MandtalImportJobForm
 from worker.models import job_types, Job
