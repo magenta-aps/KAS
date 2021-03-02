@@ -2,6 +2,7 @@ from django_filters import rest_framework as filters
 from kas.models import TaxYear, Person, PersonTaxYear, PolicyTaxYear, PensionCompany
 from kas.serializers import TaxYearSerializer, PersonSerializer, PolicyTaxYearSerializer, PersonTaxYearSerializer, PensionCompanySerializer
 from rest_framework import routers, viewsets
+from rest_framework.authentication import TokenAuthentication
 
 
 class TaxYearFilter(filters.FilterSet):
@@ -10,6 +11,7 @@ class TaxYearFilter(filters.FilterSet):
 
 
 class TaxYearViewSet(viewsets.ModelViewSet):
+    permission_classes = TokenAuthentication
     queryset = TaxYear.objects.all()
     serializer_class = TaxYearSerializer
     filter_backends = (filters.DjangoFilterBackend,)
@@ -21,6 +23,7 @@ class PersonFilter(filters.FilterSet):
 
 
 class PersonViewSet(viewsets.ModelViewSet):
+    permission_classes = TokenAuthentication
     queryset = Person.objects.all()
     serializer_class = PersonSerializer
     filter_backends = (filters.DjangoFilterBackend,)
@@ -34,6 +37,7 @@ class PersonTaxYearFilter(filters.FilterSet):
 
 
 class PersonTaxYearViewSet(viewsets.ModelViewSet):
+    permission_classes = TokenAuthentication
     queryset = PersonTaxYear.objects.all()
     serializer_class = PersonTaxYearSerializer
     filter_backends = (filters.DjangoFilterBackend,)
@@ -47,6 +51,7 @@ class PolicyTaxYearFilter(filters.FilterSet):
 
 
 class PolicyTaxYearViewSet(viewsets.ModelViewSet):
+    permission_classes = TokenAuthentication
     queryset = PolicyTaxYear.objects.all()
     serializer_class = PolicyTaxYearSerializer
     filter_backends = (filters.DjangoFilterBackend,)
@@ -58,6 +63,7 @@ class PensionCompanyFilter(filters.FilterSet):
 
 
 class PensionCompanyViewSet(viewsets.ModelViewSet):
+    permission_classes = TokenAuthentication
     queryset = PensionCompany.objects.all()
     serializer_class = PensionCompanySerializer
     filter_backends = (filters.DjangoFilterBackend,)
