@@ -30,8 +30,8 @@ class PersonTaxYearSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PersonTaxYear
-        fields = ['id', 'start_date', 'end_date', 'tax_year', 'person']
-        read_only_fields = ['id']
+        fields = ['id', 'tax_year', 'person', 'fully_tax_liable']
+        read_only_fields = ['id', 'fully_tax_liable']
 
     person = serializers.SlugRelatedField(queryset=Person.objects.all(), slug_field='cpr')
     tax_year = serializers.SlugRelatedField(queryset=TaxYear.objects.all(), slug_field='year')

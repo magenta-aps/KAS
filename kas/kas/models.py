@@ -1,11 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.core.validators import MinValueValidator, RegexValidator, \
-    MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.utils.translation import gettext as _
+from simple_history.models import HistoricalRecords
 
 
 class PensionCompany(models.Model):
@@ -67,6 +67,8 @@ class TaxYear(models.Model):
 
 class Person(models.Model):
 
+    history = HistoricalRecords()
+
     cpr = models.TextField(
         db_index=True,
         verbose_name=_('CPR nummer'),
@@ -86,6 +88,8 @@ class PersonTaxYear(models.Model):
     class Meta:
         unique_together = ['tax_year', 'person']
 
+    history = HistoricalRecords()
+
     tax_year = models.ForeignKey(
         TaxYear,
         on_delete=models.PROTECT,
@@ -98,18 +102,46 @@ class PersonTaxYear(models.Model):
         null=False
     )
 
-    start_date = models.DateField(
-        verbose_name='Startdato',
-        null=True
-    )
-
-    end_date = models.DateField(
-        verbose_name='Slutdato',
-        null=True
-    )
-
     number_of_days = models.IntegerField(
         verbose_name='Antal dage',
+        null=True
+    )
+
+    fully_tax_liable = models.BooleanField(
+        verbose_name='Fuldt skattepligtig',
+        default=True
+    )
+
+    municipality_code = models.IntegerField(
+        blank=True,
+        null=True
+    )
+    municipality_name = models.TextField(
+        blank=True,
+        null=True
+    )
+    address_line_1 = models.TextField(
+        blank=True,
+        null=True
+    )
+    address_line_2 = models.TextField(
+        blank=True,
+        null=True
+    )
+    address_line_3 = models.TextField(
+        blank=True,
+        null=True
+    )
+    address_line_4 = models.TextField(
+        blank=True,
+        null=True
+    )
+    address_line_5 = models.TextField(
+        blank=True,
+        null=True
+    )
+    full_address = models.TextField(
+        blank=True,
         null=True
     )
 
