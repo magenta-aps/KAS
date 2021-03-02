@@ -7,7 +7,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.authentication import SessionAuthentication
 from kas.view_mixins import BootstrapTableMixin
 from worker.forms import JobTypeSelectForm, MandtalImportJobForm
 from worker.models import job_types, Job
@@ -25,9 +25,10 @@ class JobDetailView(DetailView):
 
 
 class JobListAPIView(ListAPIView):
+    authentication_classes = [SessionAuthentication]
     serializer_class = JobSerializer
     pagination_class = LimitOffsetPagination
-    filter_backends = [SearchFilter, OrderingFilter]
+    filter_backends = [OrderingFilter]
     ordering_fields = ['created_at', 'status', 'progress']
     ordering = ['-created_at']
 
