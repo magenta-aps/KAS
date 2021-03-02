@@ -43,6 +43,7 @@ services:
       - MAKE_MIGRATIONS=true
       - MIGRATE=true
       - TEST=true
+      - DUMMYDATA=true
 
   postgres:
     container_name: kas-db

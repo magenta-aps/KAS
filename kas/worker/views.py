@@ -27,7 +27,7 @@ class JobDetailView(DetailView):
 class JobListAPIView(ListAPIView):
     serializer_class = JobSerializer
     pagination_class = LimitOffsetPagination
-    filter_backends = [OrderingFilter]
+    filter_backends = [SearchFilter, OrderingFilter]
     ordering_fields = ['created_at', 'status', 'progress']
     ordering = ['-created_at']
 
