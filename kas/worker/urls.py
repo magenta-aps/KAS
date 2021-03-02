@@ -1,10 +1,13 @@
 from django.urls import path
 
-from worker.views import IndexTemplateView, JobControlView, JobDetailView
+from worker.views import JobListTemplateView, JobListAPIView, \
+    JobTypeSelectFormView, StartJobView, JobDetailView
 
 urlpatterns = [
-    path('', IndexTemplateView.as_view(), name='index'),
-    path('jobcontrol', JobControlView.as_view(), name='control_job'),
-    path('jobdetail/<uuid:uuid>/', JobDetailView.as_view(), name='job_detail')
+    path('jobs/', JobListTemplateView.as_view(), name='job_list'),
+    path('job/<uuid:uuid>/', JobDetailView.as_view(), name='job_detail'),
+    path('jobsjax/', JobListAPIView.as_view(), name='job_ajax'),
+    path('jobtypeselect/', JobTypeSelectFormView.as_view(), name='job_type_select'),
+    path('jobstart/<str:job_type>/', StartJobView.as_view(), name='job_start'),
 ]
 app_name = 'worker'

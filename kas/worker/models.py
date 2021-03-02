@@ -1,4 +1,5 @@
 import django_rq
+from django.contrib.auth import get_user_model
 from django.db import transaction, models
 from rq import get_current_job
 from functools import wraps
@@ -6,6 +7,8 @@ import redis
 from uuid import uuid4
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.postgres.fields import JSONField
+from django.utils.translation import gettext as _
 redis_cursor = redis.StrictRedis(host=settings.REDIS['HOST'], db=settings.REDIS['DB'])
 
 status_choices = (
@@ -16,25 +19,27 @@ status_choices = (
     ('finished', 'Finished')
 )
 
-job_types = (
-    ('slow_job', 'Slow job'),
-    ('slow_job_with_children', 'Job with children'),
-    ('job_with_exception', 'Job with exception')
-)
+job_types = {
+    'ImportMandtalJob':  _('Import af mandtal')
+}
 
 
 class Job(models.Model):
     uuid = models.UUIDField(default=uuid4, blank=True, primary_key=True)
+    arguments = JSONField(default=dict)
+    created_by = models.ForeignKey(get_user_model(), on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
     started_at = models.DateTimeField(null=True, blank=True)
     end_at = models.DateTimeField(null=True, blank=True)
-    job_type = models.TextField(choices=job_types)
+    job_type = models.TextField(choices=((k, v) for k, v in job_types.items()))
     rq_job_id = models.TextField(null=True, blank=True)
     parent = models.ForeignKey('Job', null=True, blank=True, on_delete=models.CASCADE)
-    checkpoint = models.TextField(default='', blank=True)
+    checkpoint = JSONField(default=dict)
     progress = models.IntegerField(default=0, blank=True)
     status = models.TextField(default='queued', choices=status_choices, blank=True)
     traceback = models.TextField(default='', blank=True)
+    queue = models.TextField(default='', blank=True)
+    result = JSONField(default=dict)
 
     @property
     def bootstrap_color(self):
@@ -50,8 +55,10 @@ class Job(models.Model):
             return 'progress-bar bg-success'
 
     @property
-    def title(self):
-        return self.job_type.replace('_', ' ').capitalize()
+    def pretty_job_type(self):
+        if self.job_type == '':
+            return 'testJob'
+        return job_types[self.job_type]
 
     @property
     def all_completed(self):
@@ -77,10 +84,9 @@ class Job(models.Model):
                 'jobs': [child.to_dict() for child in self.job_set.all()]}
 
     @classmethod
-    def schedule_job(cls, job_type, f, args=(), kwargs=None, queue='default', parent=None):
+    def schedule_job(cls, job_type, f, kwargs=None, queue='default', parent=None):
         """
         :param f: function to execute
-        :param args: args to call the function with
         :param kwargs:
         :param job_type: used to indicate the job type
         :param queue: queue to schedule the function to
@@ -89,8 +95,8 @@ class Job(models.Model):
         result values.
         """
         queue = django_rq.get_queue(queue, connection=redis_cursor)  # reuse same redis connection
-        job = cls.objects.create(job_type=job_type, parent=parent)
-        rq_job = queue.enqueue(f, args=args, kwargs=kwargs, result_ttl=0, meta={'job_uuid': job.uuid})
+        job = cls.objects.create(job_type=job_type, parent=parent, arguments=kwargs, queue=queue)
+        rq_job = queue.enqueue(f, kwargs=kwargs, result_ttl=0, meta={'job_uuid': job.uuid})
         job.rq_job_id = rq_job.get_id()
         job.statue = rq_job.get_status()
         job.save(update_fields=['rq_job_id', 'status'])
@@ -115,10 +121,11 @@ def job_decorator(function):
             job.save(update_fields=['status', 'progress', 'started_at'])
 
         function(job)
-        job.status = 'finished'
-        job.progress = 100
-        job.end_at = timezone.now()
-        job.save(update_fields=['status', 'progress', 'end_at'])
+        if job.status == 'started':
+            job.status = 'finished'
+            job.progress = 100
+            job.end_at = timezone.now()
+            job.save(update_fields=['status', 'progress', 'end_at'])
 
     # make the original available to the pickle module as "<name>.original"
     inner.original = function

@@ -1,9 +1,17 @@
 from django import forms
-from worker.models import job_types
-action_choices = ('create', )
+
+from kas.forms_mixin import BootstrapModelForm
+from worker.models import job_types, Job
+from django.utils.translation import gettext as _
 
 
-class JobControlForm(forms.Form):
-    action = forms.ChoiceField(choices=((v, v) for v in action_choices), widget=forms.HiddenInput)
-    job_type = forms.ChoiceField(choices=job_types, widget=forms.HiddenInput)
-    redirect_url = forms.CharField(widget=forms.HiddenInput)
+class JobTypeSelectForm(forms.Form):
+    job_type = forms.ChoiceField(choices=((k, v) for k, v in job_types.items()))
+
+
+class MandtalImportJobForm(BootstrapModelForm):
+    year = forms.IntegerField(min_value=2000, label=_('År'))
+
+    class Meta:
+        model = Job
+        fields = ('year', )

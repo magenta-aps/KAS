@@ -1,0 +1,17 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+{% block content %}
+    <a class="btn btn-success" href="{% url 'worker:job_type_select' %}">{% trans 'Start Nyt job' %}</a>
+    <table id="table" data-url="{% url 'worker:job_ajax' %}" data-toggle="table" data-id-field="uuid" data-data-field="results"
+           data-total-field="count" data-locale="{{ table_locale }}" data-pagination="true" data-side-pagination="server"
+           data-page-size="10" data-toolbar="" data-query-params="queryParams" data-sort-order="desc" data-sort-name="created_at">
+        <thead>
+        <tr>
+            <th data-field="detail_url">{% trans 'Job type' %}</th>
+            <th data-field="created_by">{% trans 'Oprettet af' %}</th>
+            <th data-field="created_at" data-sortable="true">{% trans 'Oprettet' %}</th>
+            <th data-field="progress" data-sortable="true">{% trans 'Fremskridt' %}</th>
+            <th data-field="status" data-sortable="true">{% trans 'Status' %}</th>
+        </tr>
+    </table>
+{% endblock %}
