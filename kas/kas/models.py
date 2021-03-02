@@ -4,8 +4,33 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models.signals import post_save
+from django.forms import model_to_dict
 from django.utils.translation import gettext as _
 from simple_history.models import HistoricalRecords
+
+
+class HistoryMixin(object):
+
+    @classmethod
+    def update_or_create(cls, data, keys):
+        try:
+            item = cls.objects.get(**{k: v for k, v in data.items() if k in keys})
+            existing_dict = model_to_dict(item)
+            del existing_dict['id']
+            new_dict = {
+                k: v.pk if isinstance(v, models.Model) else v
+                for k, v in data.items()
+            }
+            if existing_dict != new_dict:
+                for k, v in data.items():
+                    setattr(item, k, v)
+                item._change_reason = "Updated by import"
+                item.save()
+        except cls.DoesNotExist:
+            item = cls(**data)
+            item.change_reason = "Created by import"
+            item.save()
+        return item
 
 
 class PensionCompany(models.Model):
@@ -65,7 +90,7 @@ class TaxYear(models.Model):
         return f"{self.__class__.__name__}(year={self.year})"
 
 
-class Person(models.Model):
+class Person(HistoryMixin, models.Model):
 
     history = HistoricalRecords()
 
@@ -77,39 +102,6 @@ class Person(models.Model):
         null=False,
         max_length=10,
         validators=(RegexValidator(regex=r'\d{10}'),)
-    )
-
-    def __str__(self):
-        return f"{self.__class__.__name__}(cpr={self.cpr})"
-
-
-class PersonTaxYear(models.Model):
-
-    class Meta:
-        unique_together = ['tax_year', 'person']
-
-    history = HistoricalRecords()
-
-    tax_year = models.ForeignKey(
-        TaxYear,
-        on_delete=models.PROTECT,
-        null=False
-    )
-
-    person = models.ForeignKey(
-        Person,
-        on_delete=models.PROTECT,
-        null=False
-    )
-
-    number_of_days = models.IntegerField(
-        verbose_name='Antal dage',
-        null=True
-    )
-
-    fully_tax_liable = models.BooleanField(
-        verbose_name='Fuldt skattepligtig',
-        default=True
     )
 
     municipality_code = models.IntegerField(
@@ -143,6 +135,39 @@ class PersonTaxYear(models.Model):
     full_address = models.TextField(
         blank=True,
         null=True
+    )
+
+    def __str__(self):
+        return f"{self.__class__.__name__}(cpr={self.cpr})"
+
+
+class PersonTaxYear(HistoryMixin, models.Model):
+
+    class Meta:
+        unique_together = ['tax_year', 'person']
+
+    history = HistoricalRecords()
+
+    tax_year = models.ForeignKey(
+        TaxYear,
+        on_delete=models.PROTECT,
+        null=False
+    )
+
+    person = models.ForeignKey(
+        Person,
+        on_delete=models.PROTECT,
+        null=False
+    )
+
+    number_of_days = models.IntegerField(
+        verbose_name='Antal dage',
+        null=True
+    )
+
+    fully_tax_liable = models.BooleanField(
+        verbose_name='Fuldt skattepligtig',
+        default=True
     )
 
     def __str__(self):

@@ -20,46 +20,46 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='persontaxyear',
-            name='address_line_1',
-            field=models.TextField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name='persontaxyear',
-            name='address_line_2',
-            field=models.TextField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name='persontaxyear',
-            name='address_line_3',
-            field=models.TextField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name='persontaxyear',
-            name='address_line_4',
-            field=models.TextField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name='persontaxyear',
-            name='address_line_5',
-            field=models.TextField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name='persontaxyear',
-            name='full_address',
-            field=models.TextField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name='persontaxyear',
             name='fully_tax_liable',
             field=models.BooleanField(default=True, verbose_name='Fuldt skattepligtig'),
         ),
         migrations.AddField(
-            model_name='persontaxyear',
+            model_name='person',
+            name='address_line_1',
+            field=models.TextField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='person',
+            name='address_line_2',
+            field=models.TextField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='person',
+            name='address_line_3',
+            field=models.TextField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='person',
+            name='address_line_4',
+            field=models.TextField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='person',
+            name='address_line_5',
+            field=models.TextField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='person',
+            name='full_address',
+            field=models.TextField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='person',
             name='municipality_code',
             field=models.IntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='persontaxyear',
+            model_name='person',
             name='municipality_name',
             field=models.TextField(blank=True, null=True),
         ),
