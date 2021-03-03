@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 
 
 class JobTypeSelectForm(forms.Form):
-    job_type = forms.ChoiceField(choices=((k, v) for k, v in job_types.items()))
+    job_type = forms.ChoiceField(choices=job_types.items())
 
 
 class MandtalImportJobForm(BootstrapModelForm):

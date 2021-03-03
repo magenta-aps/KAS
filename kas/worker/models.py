@@ -12,11 +12,11 @@ from django.utils.translation import gettext as _
 redis_cursor = redis.StrictRedis(host=settings.REDIS['HOST'], db=settings.REDIS['DB'])
 
 status_choices = (
-    ('queued', 'Pending'),
-    ('started', 'Started'),
-    ('deferred', 'Deferred'),
-    ('failed', 'Failed'),
-    ('finished', 'Finished')
+    ('queued', 'Sat i kø'),
+    ('started', 'Igang'),
+    ('deferred', 'Afventer'),
+    ('failed', 'Fejlet'),
+    ('finished', 'Færdig')
 )
 
 job_types = {
@@ -31,7 +31,7 @@ class Job(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
     started_at = models.DateTimeField(null=True, blank=True)
     end_at = models.DateTimeField(null=True, blank=True)
-    job_type = models.TextField(choices=((k, v) for k, v in job_types.items()))
+    job_type = models.TextField(choices=job_types.items())
     rq_job_id = models.TextField(null=True, blank=True)
     parent = models.ForeignKey('Job', null=True, blank=True, on_delete=models.CASCADE)
     checkpoint = JSONField(default=dict)
@@ -84,10 +84,10 @@ class Job(models.Model):
                 'jobs': [child.to_dict() for child in self.job_set.all()]}
 
     @classmethod
-    def schedule_job(cls, job_type, f, kwargs=None, queue='default', parent=None):
+    def schedule_job(cls, job_type, f, job_kwargs=None, queue='default', parent=None):
         """
         :param f: function to execute
-        :param kwargs:
+        :param job_kwargs: kwargs to pass to the job
         :param job_type: used to indicate the job type
         :param queue: queue to schedule the function to
         :param parent
@@ -95,12 +95,21 @@ class Job(models.Model):
         result values.
         """
         queue = django_rq.get_queue(queue, connection=redis_cursor)  # reuse same redis connection
-        job = cls.objects.create(job_type=job_type, parent=parent, arguments=kwargs, queue=queue)
-        rq_job = queue.enqueue(f, kwargs=kwargs, result_ttl=0, meta={'job_uuid': job.uuid})
+        job = cls.objects.create(job_type=job_type, parent=parent, arguments=job_kwargs, queue=queue)
+        rq_job = queue.enqueue(f, kwargs=job_kwargs, result_ttl=0, meta={'job_uuid': job.uuid})
         job.rq_job_id = rq_job.get_id()
         job.statue = rq_job.get_status()
         job.save(update_fields=['rq_job_id', 'status'])
         return job
+
+    def finish(self):
+        """
+        Mark a job as done/successfully completed
+        """
+        self.status = 'finished'
+        self.progress = 100
+        self.end_at = timezone.now()
+        self.save(update_fields=['status', 'progress', 'end_at'])
 
     def __str__(self):
         return '{} {}%'.format(self.status, self.progress)
@@ -122,10 +131,7 @@ def job_decorator(function):
 
         function(job)
         if job.status == 'started':
-            job.status = 'finished'
-            job.progress = 100
-            job.end_at = timezone.now()
-            job.save(update_fields=['status', 'progress', 'end_at'])
+            job.finish()
 
     # make the original available to the pickle module as "<name>.original"
     inner.original = function
