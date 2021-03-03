@@ -1,11 +1,41 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.core.validators import MinValueValidator, RegexValidator, \
-    MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models.signals import post_save
+from django.forms import model_to_dict
 from django.utils.translation import gettext as _
+from simple_history.models import HistoricalRecords
+
+
+class HistoryMixin(object):
+
+    """
+    :param data: dict to populate model instance
+    :param keys: keys in dict that define how to look for an existing instance. KvPs in data are extracted by keys for the lookup
+    Updates an existing instance, or creates a new one if one doesn't exist.
+    """
+    @classmethod
+    def update_or_create(cls, data, *keys):
+        try:
+            item = cls.objects.get(**{k: v for k, v in data.items() if k in keys})
+            existing_dict = model_to_dict(item)
+            del existing_dict['id']
+            new_dict = {
+                k: v.pk if isinstance(v, models.Model) else v
+                for k, v in data.items()
+            }
+            if existing_dict != new_dict:
+                for k, v in data.items():
+                    setattr(item, k, v)
+                item._change_reason = "Updated by import"
+                item.save()
+        except cls.DoesNotExist:
+            item = cls(**data)
+            item.change_reason = "Created by import"
+            item.save()
+        return item
 
 
 class PensionCompany(models.Model):
@@ -65,7 +95,9 @@ class TaxYear(models.Model):
         return f"{self.__class__.__name__}(year={self.year})"
 
 
-class Person(models.Model):
+class Person(HistoryMixin, models.Model):
+
+    history = HistoricalRecords()
 
     cpr = models.TextField(
         db_index=True,
@@ -77,14 +109,49 @@ class Person(models.Model):
         validators=(RegexValidator(regex=r'\d{10}'),)
     )
 
+    municipality_code = models.IntegerField(
+        blank=True,
+        null=True
+    )
+    municipality_name = models.TextField(
+        blank=True,
+        null=True
+    )
+    address_line_1 = models.TextField(
+        blank=True,
+        null=True
+    )
+    address_line_2 = models.TextField(
+        blank=True,
+        null=True
+    )
+    address_line_3 = models.TextField(
+        blank=True,
+        null=True
+    )
+    address_line_4 = models.TextField(
+        blank=True,
+        null=True
+    )
+    address_line_5 = models.TextField(
+        blank=True,
+        null=True
+    )
+    full_address = models.TextField(
+        blank=True,
+        null=True
+    )
+
     def __str__(self):
         return f"{self.__class__.__name__}(cpr={self.cpr})"
 
 
-class PersonTaxYear(models.Model):
+class PersonTaxYear(HistoryMixin, models.Model):
 
     class Meta:
         unique_together = ['tax_year', 'person']
+
+    history = HistoricalRecords()
 
     tax_year = models.ForeignKey(
         TaxYear,
@@ -98,19 +165,14 @@ class PersonTaxYear(models.Model):
         null=False
     )
 
-    start_date = models.DateField(
-        verbose_name='Startdato',
-        null=True
-    )
-
-    end_date = models.DateField(
-        verbose_name='Slutdato',
-        null=True
-    )
-
     number_of_days = models.IntegerField(
         verbose_name='Antal dage',
         null=True
+    )
+
+    fully_tax_liable = models.BooleanField(
+        verbose_name='Fuldt skattepligtig',
+        default=True
     )
 
     def __str__(self):
