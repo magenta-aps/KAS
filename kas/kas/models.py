@@ -11,8 +11,13 @@ from simple_history.models import HistoricalRecords
 
 class HistoryMixin(object):
 
+    """
+    :param data: dict to populate model instance
+    :param keys: keys in dict that define how to look for an existing instance. KvPs in data are extracted by keys for the lookup
+    Updates an existing instance, or creates a new one if one doesn't exist.
+    """
     @classmethod
-    def update_or_create(cls, data, keys):
+    def update_or_create(cls, data, *keys):
         try:
             item = cls.objects.get(**{k: v for k, v in data.items() if k in keys})
             existing_dict = model_to_dict(item)

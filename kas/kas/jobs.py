@@ -22,7 +22,7 @@ def migrate_mandtal(year):
             'full_address': item.fuld_adresse,
         }
 
-        person = Person.update_or_create(person_data, ['cpr'])
+        person = Person.update_or_create(person_data, 'cpr')
 
         person_tax_year_data = {
             'person': person,
@@ -31,4 +31,4 @@ def migrate_mandtal(year):
             'fully_tax_liable': item.skatteomfang is not None and item.skatteomfang.lower() == 'fuld skattepligtig',
         }
 
-        PersonTaxYear.update_or_create(person_tax_year_data, ['tax_year', 'person'])
+        PersonTaxYear.update_or_create(person_tax_year_data, 'tax_year', 'person')
