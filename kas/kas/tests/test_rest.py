@@ -287,15 +287,16 @@ class PersonTaxYearTest(RestTest):
         )
         PersonTaxYear.objects.create(
             person=person,
-            tax_year=TaxYear.objects.create(year=2021)
+            tax_year=TaxYear.objects.create(year=2021),
+            fully_tax_liable=False
         )
-        extra = {'start_date': None, 'end_date': None}
+        extra = {}
         self.authenticate()
         response = self.client.get(self.url)
         self.assertEquals(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
-                {'person': person.cpr, 'tax_year': person_tax_year.tax_year.year, 'id': person_tax_year.id, **extra}
+                {'person': person.cpr, 'tax_year': person_tax_year.tax_year.year, 'id': person_tax_year.id, 'fully_tax_liable': person_tax_year.fully_tax_liable, **extra}
                 for person_tax_year in PersonTaxYear.objects.all()
             ],
             response.json()
@@ -306,40 +307,76 @@ class PersonTaxYearTest(RestTest):
             cpr='1234567890'
         )
         person_tax_year1 = PersonTaxYear.objects.create(
-            person=person, tax_year=TaxYear.objects.create(year=2020)
+            person=person,
+            tax_year=TaxYear.objects.create(year=2020),
+            fully_tax_liable=False,
         )
         person_tax_year2 = PersonTaxYear.objects.create(
-            person=person, tax_year=TaxYear.objects.create(year=2021)
+            person=person,
+            tax_year=TaxYear.objects.create(year=2021),
+            fully_tax_liable=True,
         )
-        extra = {'start_date': None, 'end_date': None}
+        extra = {}
         self.authenticate()
         response = self.client.get(f"{self.url}{person_tax_year1.id}/")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertDictEqual({'person': person.cpr, 'tax_year': person_tax_year1.tax_year.year, 'id': person_tax_year1.id, **extra}, response.json())
+        self.assertDictEqual({
+            'person': person.cpr,
+            'tax_year': person_tax_year1.tax_year.year,
+            'id': person_tax_year1.id,
+            'fully_tax_liable': person_tax_year1.fully_tax_liable,
+            **extra
+        }, response.json())
         response = self.client.get(f"{self.url}{person_tax_year2.id}/")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertDictEqual({'person': person.cpr, 'tax_year': person_tax_year2.tax_year.year, 'id': person_tax_year2.id, **extra}, response.json())
+        self.assertDictEqual({
+            'person': person.cpr,
+            'tax_year': person_tax_year2.tax_year.year,
+            'id': person_tax_year2.id,
+            'fully_tax_liable': person_tax_year2.fully_tax_liable,
+            **extra
+        }, response.json())
 
     def test_get_filter(self):
         person_tax_year1 = PersonTaxYear.objects.create(
             person=Person.objects.create(cpr='1234567890'),
-            tax_year=TaxYear.objects.create(year=2020)
+            tax_year=TaxYear.objects.create(year=2020),
+            fully_tax_liable=True,
         )
         person_tax_year2 = PersonTaxYear.objects.create(
             person=Person.objects.create(cpr='1234567891'),
-            tax_year=TaxYear.objects.create(year=2021)
+            tax_year=TaxYear.objects.create(year=2021),
+            fully_tax_liable=False,
         )
-        extra = {'start_date': None, 'end_date': None}
+        extra = {}
         self.authenticate()
         response = self.client.get(f"{self.url}?cpr=1234567890")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertCountEqual([{'person': person_tax_year1.person.cpr, 'tax_year': person_tax_year1.tax_year.year, 'id': person_tax_year1.id, **extra}], response.json())
+        self.assertCountEqual([{
+            'person': person_tax_year1.person.cpr,
+            'tax_year': person_tax_year1.tax_year.year,
+            'id': person_tax_year1.id,
+            'fully_tax_liable': person_tax_year1.fully_tax_liable,
+            **extra
+        }], response.json())
         response = self.client.get(f"{self.url}?year=2021")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertCountEqual([{'person': person_tax_year2.person.cpr, 'tax_year': person_tax_year2.tax_year.year, 'id': person_tax_year2.id, **extra}], response.json())
+        self.assertCountEqual([{
+            'person': person_tax_year2.person.cpr,
+            'tax_year': person_tax_year2.tax_year.year,
+            'id': person_tax_year2.id,
+            'fully_tax_liable': person_tax_year2.fully_tax_liable,
+            **extra
+        }], response.json())
         response = self.client.get(f"{self.url}?cpr=1234567890&year=2020")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertCountEqual([{'person': person_tax_year1.person.cpr, 'tax_year': person_tax_year1.tax_year.year, 'id': person_tax_year1.id, **extra}], response.json())
+        self.assertCountEqual([{
+            'person': person_tax_year1.person.cpr,
+            'tax_year': person_tax_year1.tax_year.year,
+            'id': person_tax_year1.id,
+            'fully_tax_liable': person_tax_year1.fully_tax_liable,
+            **extra
+        }], response.json())
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2020")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual([], response.json())
@@ -352,7 +389,7 @@ class PersonTaxYearTest(RestTest):
         item = {'person': '1234567890', 'tax_year': 2020}
         response = self.client.post(self.url, json.dumps(item), content_type='application/json; charset=utf-8')
         self.assertEquals(201, response.status_code, response.content)
-        self.assertDictEqual({**item, 'start_date': None, 'end_date': None}, self.strip_id(response.json()))
+        self.assertDictEqual({**item, 'fully_tax_liable': True}, self.strip_id(response.json()))
         self.assertEquals(1, PersonTaxYear.objects.count())
         self.assertEquals(person.cpr, PersonTaxYear.objects.first().person.cpr)
         self.assertEquals(tax_year.year, PersonTaxYear.objects.first().tax_year.year)
