@@ -57,8 +57,6 @@ class Job(models.Model):
 
     @cached_property
     def pretty_job_type(self):
-        if self.job_type =='':
-            return 'test'
         return self.job_type_dict['label']
 
     @property
