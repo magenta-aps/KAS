@@ -1,7 +1,7 @@
 FROM python:3.8
 RUN mkdir /app
-COPY kas/requirements.txt app/requirements.txt
-RUN pip install --no-cache-dir -r app/requirements.txt
+COPY kas/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 ENV PYTHONUNBUFFERED=1
 #RUN useradd -r --no-create-home --uid 2000 kas #TODO find a global unique UID in salt
 # hadolint ignore=DL3008
