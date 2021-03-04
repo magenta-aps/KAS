@@ -11,6 +11,10 @@ from simple_history.models import HistoricalRecords
 
 class HistoryMixin(object):
 
+    UNCHANGED = 0
+    UPDATED = 1
+    CREATED = 2
+
     """
     :param data: dict to populate model instance
     :param keys: keys in dict that define how to look for an existing instance. KvPs in data are extracted by keys for the lookup
@@ -18,6 +22,7 @@ class HistoryMixin(object):
     """
     @classmethod
     def update_or_create(cls, data, *keys):
+        status = HistoryMixin.UNCHANGED
         try:
             item = cls.objects.get(**{k: v for k, v in data.items() if k in keys})
             existing_dict = model_to_dict(item)
@@ -31,11 +36,13 @@ class HistoryMixin(object):
                     setattr(item, k, v)
                 item._change_reason = "Updated by import"
                 item.save()
+                status = HistoryMixin.UPDATED
         except cls.DoesNotExist:
             item = cls(**data)
             item.change_reason = "Created by import"
             item.save()
-        return item
+            status = HistoryMixin.CREATED
+        return item, status
 
 
 class PensionCompany(models.Model):
