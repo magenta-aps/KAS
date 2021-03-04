@@ -74,7 +74,10 @@ class Job(models.Model):
         return '{}%'.format(max(self.progress, 0))
 
     def set_progress(self, count, total):
-        self.progress = (count / total) * 100
+        self.set_progress_pct((count / total) * 100)
+
+    def set_progress_pct(self, progress):
+        self.progress = progress
         self.save(update_fields=['progress'])
 
     @classmethod

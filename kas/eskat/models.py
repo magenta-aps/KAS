@@ -220,11 +220,13 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
     history = HistoricalRecords()
 
     @classmethod
-    def import_year(cls, year):
+    def import_year(cls, year, job=None, progress_factor=1, progress_start=0):
         qs = get_kas_mandtal_model().objects.filter(
             skatteaar=year
         )
-        for x in qs:
+        # In case we share progress with another function, we want to only fill part of the progress, e.g. up to 50%
+        count = qs.count()
+        for i, x in enumerate(qs):
             try:
                 existing = cls.objects.get(pk=x.pk)
                 # No timestamp field to check here, so compare dicts
@@ -241,6 +243,8 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
                 new_obj = cls(**model_to_dict(x))
                 new_obj.change_reason = "Created by import"
                 new_obj.save()
+            if job is not None:
+                job.set_progress_pct(progress_start + (i / count) * (100 * progress_factor))
 
 
 class ImportedR75PrivatePension(AbstractModels.R75PrivatePension):
