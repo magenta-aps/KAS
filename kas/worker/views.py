@@ -2,16 +2,16 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect, Http404
 from django.urls import reverse
 from django.views.generic import TemplateView, DetailView
-from django.views.generic.edit import FormView, CreateView
+from django.views.generic.edit import FormView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
-
+from worker.job_registry import get_job_types
 from kas.view_mixins import BootstrapTableMixin
-from worker.forms import JobTypeSelectForm, MandtalImportJobForm
-from worker.models import job_types, Job
+from worker.forms import JobTypeSelectForm
+from worker.models import Job
 from worker.serializers import JobSerializer
 
 
@@ -47,32 +47,32 @@ class JobTypeSelectFormView(LoginRequiredMixin, FormView):
         return HttpResponseRedirect(reverse('worker:job_start', kwargs={'job_type': form.cleaned_data['job_type']}))
 
 
-class StartJobView(LoginRequiredMixin, CreateView):
+class StartJobView(LoginRequiredMixin, FormView):
     template_name = 'worker/job_create_form.html'
 
     def get_context_data(self, **kwargs):
         ctx = super(StartJobView, self).get_context_data(**kwargs)
         ctx.update({
-            'pretty_job_title': job_types[self.kwargs['job_type']]
+            'pretty_job_title': get_job_types()[self.kwargs['job_type']]['label']
         })
         return ctx
 
-    def get_form_kwargs(self):
-        kwargs = super(StartJobView, self).get_form_kwargs()
-        kwargs.update({
-            'instance': Job(created_by=self.request.user)
-        })
-        return kwargs
-
     def get_form_class(self):
-        if self.kwargs['job_type'] not in job_types:
+        try:
+            return get_job_types()[self.kwargs['job_type']]['form_class']
+        except IndexError:
             raise Http404('No such job type')
-        if self.kwargs['job_type'] == 'ImportMandtalJob':
-            return MandtalImportJobForm
-        raise Http404('No such job type')
 
     def form_valid(self, form):
-        Job.schedule_job(job_type=self.kwargs['job_type'], f=None, kwargs=form.cleaned_data)
+        function = None
+        if self.kwargs['job_type'] == 'ImportMandtalJob':
+            from kas.jobs import import_mandtal
+            function = import_mandtal
+        if function:
+            Job.schedule_job(function=function,
+                             job_type=self.kwargs['job_type'],
+                             created_by=self.request.user,
+                             job_kwargs=form.cleaned_data)
         return super(StartJobView, self).form_valid(form)
 
     def get_success_url(self):

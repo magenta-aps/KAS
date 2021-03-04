@@ -1,17 +1,19 @@
 from django import forms
-
-from kas.forms_mixin import BootstrapModelForm
-from worker.models import job_types, Job
+from worker.job_registry import get_job_types
+from kas.forms_mixin import BootstrapForm
 from django.utils.translation import gettext as _
 
 
-class JobTypeSelectForm(forms.Form):
-    job_type = forms.ChoiceField(choices=job_types.items())
+class JobTypeSelectForm(BootstrapForm):
+    job_type = forms.ChoiceField(choices=[], required=True, label=_('Job type'))
+
+    def __init__(self, *args, **kwargs):
+        super(JobTypeSelectForm, self).__init__(*args, **kwargs)
+        self.fields['job_type'].choices = ((k, v['label'])for k, v in get_job_types().items())
 
 
-class MandtalImportJobForm(BootstrapModelForm):
+class MandtalImportJobForm(BootstrapForm):
     year = forms.IntegerField(min_value=2000, label=_('År'))
 
     class Meta:
-        model = Job
         fields = ('year', )

@@ -1,9 +1,9 @@
 {% extends 'kas/layout.html' %}
 {% load i18n %}
 {% block content %}
-    <form method="POST">
+    <form method="POST" class="form-inline needs-validation">
         {% csrf_token %}
         {{ form }}
-        <input type="submit" value="Submit">
+        <input class="btn btn-success" type="submit" value="{% trans 'Vælg' %}">
     </form>
 {% endblock %}

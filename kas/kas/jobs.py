@@ -1,10 +1,12 @@
 from eskat.models import ImportedKasMandtal
 from eskat.models import get_kas_mandtal_model
 from kas.models import Person, PersonTaxYear, TaxYear
+from worker.models import job_decorator
 
 
-def migrate_mandtal(year):
-
+@job_decorator
+def import_mandtal(job):
+    year = job.arguments['year']
     tax_year = TaxYear.objects.get(year=year)
     ImportedKasMandtal.import_year(year)
 
@@ -32,3 +34,4 @@ def migrate_mandtal(year):
         }
 
         PersonTaxYear.update_or_create(person_tax_year_data, 'tax_year', 'person')
+        job.result = {'number_of_elements_updated': 200}
