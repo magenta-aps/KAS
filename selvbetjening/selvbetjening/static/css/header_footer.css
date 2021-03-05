@@ -1,0 +1,71 @@
+.globalheader {
+    background-color: #63389b;
+    -webkit-box-shadow: 0 .5rem rgba(0,0,0,.1);
+    box-shadow: 0 .5rem rgba(0,0,0,.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 999;
+    color: #fff;
+    padding: .75rem
+}
+.globalheader-wrapper {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-flow: row nowrap;
+    flex-flow: row nowrap;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between
+}
+.globalheader-heading {
+    font-weight: 400;
+    padding: 0;
+    margin: 0
+}
+.globalheader-logo {
+    width: 8rem;
+    max-width: 100%;
+    height: auto
+}
+@media screen and (min-width: 35rem) {
+    .globalheader-logo {
+        width: 10rem
+    }
+}
+@media screen and (min-width: 60rem) {
+    .footer-wrapper,
+    .globalheader-wrapper {
+        max-width: 75rem;
+        margin: 0 auto 2.25rem
+    }
+    .globalheader-wrapper {
+        margin-bottom: 0
+    }
+}
+
+.locale-changer .option-kl {
+    background: url(../img/flag_gl.svg) no-repeat 0 transparent;
+    background-size: 1rem auto;
+    padding: 0 0 0 1.5rem;
+    cursor: pointer;
+}
+.locale-changer .option-da {
+    background: url(../img/flag_da.svg) no-repeat 0 transparent;
+    background-size: 1rem auto;
+    padding: 0 0 0 1.5rem;
+    cursor: pointer;
+}
+
+footer {
+    background-color: #fff;
+    padding: 1.5rem .75rem 2.25rem
+}

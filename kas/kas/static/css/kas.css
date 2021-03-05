@@ -1,0 +1,9 @@
+/* custom styling that bootstrap doesn't quite cover */
+
+td.job-summary {
+    padding: 0;
+}
+
+table.job-summary tr:first-child td {
+    border-top: 0 none;
+}

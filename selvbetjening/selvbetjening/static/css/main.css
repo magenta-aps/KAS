@@ -1,0 +1,284 @@
+* {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box
+}
+
+/* Wrappers and stuff */
+
+body {
+    font: 1em/1.5 Arial,sans-serif;
+    background-color: #eaecee;
+    color: #31495b;
+    text-rendering: optimizeLegibility;
+    margin: 0;
+    padding: 0;
+    position: relative
+}
+
+main {
+    padding: .75rem;
+    -webkit-box-flex: 1;
+    -ms-flex: 1 0 100%;
+    flex: 1 0 100%;
+    margin-top: 5rem
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #d6dbde;
+    margin: 2.25rem 0
+}
+
+.wrapper {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-flow: column nowrap;
+    flex-flow: column nowrap;
+    min-height: 100vh
+}
+
+address {
+    font-style: normal;
+}
+
+@media screen and (min-width:60rem) {
+    article, nav {
+        max-width: 75rem;
+        margin: 0 auto;
+        /*margin: 2rem auto 2.25rem*/
+        min-height: 1.5em;
+    }
+}
+
+.indexlink {
+    float: left;
+}
+.userinfo {
+    float: right;
+}
+
+/* Links */
+
+a,
+a:link,
+a:visited {
+    color: #31495b;
+    cursor: pointer
+}
+a:active,
+a:hover {
+    opacity: .5
+}
+
+/* Text */
+
+.h1, .h2, .h3, .h4,
+h1, h2, h3, h4 {
+    font-weight: 700;
+    padding: 0;
+    margin: 1.5rem 0 .75rem;
+    display: block;
+    line-height: 1.25;
+}
+.h1, h1 {
+    font-size: 1.5rem;
+    margin: 0 0 1.5rem;
+}
+.h2, h2 {
+    font-size: 1.33rem;
+    margin: 1.5rem 0 .75rem;
+}
+.h3, h3 {
+    font-size: 1.15rem;
+}
+.h4, h4 {
+    font-size: 1rem;
+}
+p {
+    margin: 0 0 .75rem;
+}
+ol, ul {
+    padding-left: 1.25rem;
+}
+
+/* Tables */
+
+table {
+    border-collapse: collapse
+}
+
+/* Bootstrap-inspired row-col layout */
+
+.container {
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto
+}
+@media only screen and (min-width:33.75rem) {
+    .container {
+        width: 80%
+    }
+}
+@media only screen and (min-width:60rem) {
+    .container {
+        width: 75%;
+        max-width: 60rem
+    }
+}
+.container-fluid,
+.row {
+    width: 100%
+}
+.row {
+    position: relative;
+    padding: 0.5em 0;
+}
+.row [class^=col] {
+    float: left;
+    min-height: .125rem
+}
+.row [class^=col]:not[class^=offset] {
+     margin: .5rem 2%;
+ }
+.col-1,
+.col-2,
+.col-3,
+.col-4,
+.col-5,
+.col-6,
+.col-7,
+.col-8,
+.col-9,
+.col-10,
+.col-11,
+.col-12 {
+    width: 100%
+}
+.col-1-sm {
+    width: 8.33%
+}
+.col-2-sm {
+    width: 16.66%
+}
+.col-3-sm {
+    width: 25%
+}
+.col-4-sm {
+    width: 33.33%
+}
+.col-5-sm {
+    width: 41.66%
+}
+.col-6-sm {
+    width: 50%
+}
+.col-7-sm {
+    width: 58.33%
+}
+.col-8-sm {
+    width: 66.66%
+}
+.col-9-sm {
+    width: 75%
+}
+.col-10-sm {
+    width: 83.33%
+}
+.col-11-sm {
+    width: 91.66%
+}
+.col-12-sm {
+    width: 100%
+}
+
+.offset-1-sm {
+    margin-left: 8.33%
+}
+.offset-2-sm {
+    margin-left: 16.66%
+}
+.offset-3-sm {
+    margin-left: 25%
+}
+.offset-4-sm {
+    margin-left: 33.33%
+}
+.offset-5-sm {
+    margin-left: 41.66%
+}
+.offset-6-sm {
+    margin-left: 50%
+}
+.offset-7-sm {
+    margin-left: 58.33%
+}
+.offset-8-sm {
+    margin-left: 66.66%
+}
+.offset-9-sm {
+    margin-left: 75%
+}
+.offset-10-sm {
+    margin-left: 83.33%
+}
+.offset-11-sm {
+    margin-left: 91.66%
+}
+.offset-12-sm {
+    margin-left: 100%
+}
+
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both
+}
+.hidden-sm {
+    display: none
+}
+@media only screen and (min-width:45rem) {
+    .col-1 {
+        width: 4.33%
+    }
+    .col-2 {
+        width: 12.66%
+    }
+    .col-3 {
+        width: 21%
+    }
+    .col-4 {
+        width: 29.33%
+    }
+    .col-5 {
+        width: 37.66%
+    }
+    .col-6 {
+        width: 46%
+    }
+    .col-7 {
+        width: 54.33%
+    }
+    .col-8 {
+        width: 62.66%
+    }
+    .col-9 {
+        width: 71%
+    }
+    .col-10 {
+        width: 79.33%
+    }
+    .col-11 {
+        width: 87.66%
+    }
+    .col-12 {
+        width: 96%
+    }
+    .hidden-sm {
+        display: block
+    }
+}
+

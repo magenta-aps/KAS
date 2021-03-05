@@ -43,6 +43,7 @@ services:
       - MAKE_MIGRATIONS=true
       - MIGRATE=true
       - TEST=true
+      - DUMMYDATA=true
 
   postgres:
     container_name: kas-db
@@ -75,7 +76,10 @@ services:
       - ./dev-environment/selvbetjening.env
     volumes:
       - ./selvbetjening:/app
-    command: gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output # reload on code changes
+    command: bash -c "
+        django-admin compilemessages &&
+        gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output
+      "
 
 volumes:
   kas-postgres-data:

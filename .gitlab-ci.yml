@@ -2,19 +2,18 @@ stages:
   - lint
   - build
   - test
+  - release
 
 variables:
   # Project variables
   RELEASE_REGISTRY: docker.io
-  #RELEASE_REGISTRY_IMAGE: index.docker.io/magentaaps/kas-kas?
+  RELEASE_REGISTRY_IMAGE: index.docker.io/magentaaps/kas
 
   KAS_IMAGE_SHA: ${CI_REGISTRY_IMAGE}/kas:${CI_COMMIT_SHA}
-
   KAS_IMAGE_DEV: ${CI_REGISTRY_IMAGE}/kas:dev
 
   SELF_IMAGE_SHA: ${CI_REGISTRY_IMAGE}/self:${CI_COMMIT_SHA}
   SELF_IMAGE_DEV: ${CI_REGISTRY_IMAGE}/self:dev
-
 
 
 # Lint stage
@@ -105,10 +104,18 @@ KAS Unittest:
     POSTGRES_PASSWORD: kas
     POSTGRES_DB: kas
     POSTGRES_HOST: kas-db
+    # No access to the eskat database, so give it dummy environment variables
+    ESKAT_HOST: ""
+    ESKAT_PORT: ""
+    ESKAT_DB: ""
+    ESKAT_USER: ""
+    ESKAT_PASSWORD: ""
+    # Simulate development environment while running tests so we use mockup data
+    ENVIRONMENT: development
   script:
     - cd /app && python manage.py test
 
-Selvbetjening unittest:
+Selvbetjening Unittest:
   <<: *test-default
   needs: ["Build selvbetjenings image"]
   image: ${SELF_IMAGE_SHA}
@@ -122,5 +129,47 @@ Selvbetjening unittest:
     POSTGRES_PASSWORD: kas
     POSTGRES_DB: selvbetjening
     POSTGRES_HOST: kas-db
+    DJANGO_LANGUAGE_COOKIE_DOMAIN: localhost
   script:
     - cd /app && python manage.py test
+
+# Release stage
+###############
+
+.release-default: &release-default
+  stage: release
+  image: alpine
+  variables:
+    GIT_STRATEGY: none # We do not need the source code
+  dependencies: []
+  tags:
+    - docker
+  before_script:
+    # install skopeo
+    - apk add skopeo
+
+Release kas dev image:
+  <<: *release-default
+  needs: ["KAS Unittest"]
+  only:
+    refs:
+      - master
+  script:
+    - skopeo copy
+      --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
+      --dest-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
+      "docker://${KAS_IMAGE_SHA}"
+      "docker://${KAS_IMAGE_DEV}"
+
+Release selvbetjenings dev image:
+  <<: *release-default
+  needs: ["Selvbetjening Unittest"]
+  only:
+    refs:
+      - master
+  script:
+    - skopeo copy
+      --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
+      --dest-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
+      "docker://${SELF_IMAGE_SHA}"
+      "docker://${SELF_IMAGE_DEV}"

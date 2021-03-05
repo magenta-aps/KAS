@@ -1,0 +1,39 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+{% block content %}
+    <div class="row justify-content-md-center mb-2 mr-sm-2">
+        <h1>{% trans 'KAS' %}</h1>
+    </div>
+    {% if form.non_field_errors %}
+        <div class="row justify-content-md-center">
+            {% for error in form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <div class="row justify-content-md-center">
+        <form action="" method="POST" class="needs-validation">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'worker:job_list' %}">
+            <div class="form-row">
+                <div class="col-md-4 mb-3">
+                    <input class="form-control{% if form.username.errors %} is-invalid{% endif %}" type="text" name="username" placeholder="{% trans 'Username' %}" required>
+                    {% if form.username.errors %}
+                        <div class="invalid-feedback">{{ form.username.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <input class="form-control {% if form.password.errors %} is-invalid{% endif %}" type="password" name="password" placeholder="{% trans 'Password' %}">
+                    {% if form.password.errors %}
+                        <div class="invalid-feedback">{{ form.password.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <button type="submit" class="btn btn-primary">{% trans 'Login' %}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

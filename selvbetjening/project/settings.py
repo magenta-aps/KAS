@@ -16,20 +16,25 @@ TIME_ZONE = os.environ['DJANGO_TIMEZONE']
 # Application definition
 
 INSTALLED_APPS = [
+    'django.contrib.admin',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.auth',
     'selvbetjening',
+    'sullissivik.login',
 ]
 
 MIDDLEWARE = [
+    'django_cookies_samesite.middleware.CookiesSameSite',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -81,10 +86,17 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'da-DK'
 
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
+LANGUAGE_COOKIE_NAME = 'Sullissivik.Portal.Lang'
+LANGUAGE_COOKIE_DOMAIN = os.environ['DJANGO_LANGUAGE_COOKIE_DOMAIN']
+LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
+LOCALE_MAP = {
+    'da': 'da-DK',
+    'kl': 'kl-GL'
+}
+
+SESSION_COOKIE_SAMESITE = 'strict'
 
 STATIC_URL = '/static/'
 
@@ -109,4 +121,34 @@ LOGGING = {
             'propagate': False,
         },
     },
+}
+
+LOGOUT_REDIRECT = 'selvbetjening:test'  # url reverse name to redirect to when logged out
+LOGIN_DEFAULT_REDIRECT = 'selvbetjening:test'  # url reverse name to redirect to when logged in (unless another is explicitly specified in params)
+LOGIN_REQUIREMENT_WHITELIST = ['/favicon.ico']
+
+OPENID_CONNECT = {
+    'enabled': False,
+    'issuer': '""',  # top level url to the issuer, used for autodiscovery
+    'scope': '""',  # openid is mandatory to indicated is is a openid OP, we need to use digitalimik to get the cpr/cvr number.
+    'client_id': '""',  # id of the system (ouath), registered at headnet
+    'client_certificate': '""',  # path to client certificate used to secure the communication between the system and OP
+    'private_key': '""',  # used for signing messages passed to the OP
+    'redirect_uri': '""',  # url registered at headnet to redirect the user to after a successfull login at OP
+    'logout_uri': '""',  # url registered at headnet to call when logging out, removing session data there
+    'front_channel_logout_uri': '""',  # url registered at headnet to call when logging out, should clear our cookies etc.
+    'post_logout_redirect_uri': '""'  # url registered at headnet to redirect to when logout is complete
+}
+
+NEMID_CONNECT = {
+    'enabled': False,
+    'federation_service': '""',
+    'cookie_name': '""',
+    'cookie_path': '""',
+    'cookie_domain': '""',
+    'login_url': '""',
+    'redirect_field': '""',
+    'client_certificate': '""',
+    'private_key': '""',
+    'get_user_service': '""',
 }

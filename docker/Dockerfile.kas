@@ -1,14 +1,22 @@
 FROM python:3.8
 RUN mkdir /app
-COPY kas/requirements.txt app/requirements.txt
-RUN pip install --no-cache-dir -r app/requirements.txt
+COPY kas/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 ENV PYTHONUNBUFFERED=1
 #RUN useradd -r --no-create-home --uid 2000 kas #TODO find a global unique UID in salt
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
 gettext \
 python3-distutils \
+libaio1 \
+libaio-dev \
 && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Oracle DB driver client libraries
+ADD https://download.oracle.com/otn_software/linux/instantclient/191000/instantclient-basiclite-linux.x64-19.10.0.0.0dbru.zip /tmp/oracle_driver.zip
+RUN unzip /tmp/oracle_driver.zip -d /usr/local/lib && \
+    rm /tmp/oracle_driver.zip && \
+    printf "# Oracle client libraries\n/usr/local/lib/instantclient_19_10\n" > /etc/ld.so.conf.d/oracle_client_libraries.conf && \
+    ldconfig
 #USER gallery
 COPY ./docker/kas_entrypoint.sh /entrypoint.sh
 COPY ./kas /app
