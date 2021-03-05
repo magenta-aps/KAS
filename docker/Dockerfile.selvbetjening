@@ -2,8 +2,8 @@ FROM python:3.8
 RUN mkdir /app &&\
 groupadd -g 75050 -r kas &&\
 useradd -u 75050 --no-log-init -r -g kas kas
-COPY selvbetjening/requirements.txt app/requirements.txt
-RUN pip install --no-cache-dir -r app/requirements.txt
+COPY selvbetjening/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 ENV PYTHONUNBUFFERED=1
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \

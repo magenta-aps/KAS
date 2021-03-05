@@ -1,62 +1,79 @@
-from django.http import JsonResponse, HttpResponseRedirect
-from django.urls import reverse_lazy
-
-from django.views.generic import TemplateView
-from django.views.generic.detail import BaseDetailView
-from django.views.generic.edit import BaseFormView
-
-from worker.jobs import slow_job, slow_job_with_children, job_with_exception
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponseRedirect, Http404
+from django.urls import reverse
+from django.views.generic import TemplateView, DetailView
+from django.views.generic.edit import FormView
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.filters import OrderingFilter
+from rest_framework.generics import ListAPIView
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAuthenticated
+from worker.job_registry import get_job_types
+from kas.view_mixins import BootstrapTableMixin
+from worker.forms import JobTypeSelectForm
 from worker.models import Job
-from worker.forms import JobControlForm
+from worker.serializers import JobSerializer
 
 
-class IndexTemplateView(TemplateView):
-    template_name = 'worker/job.html'
+class JobListTemplateView(BootstrapTableMixin, TemplateView):
+    template_name = 'worker/job_list.html'
+
+
+class JobDetailView(DetailView):
+    slug_field = 'uuid'
+    slug_url_kwarg = 'uuid'
+    model = Job
+
+
+class JobListAPIView(ListAPIView):
+    authentication_classes = [SessionAuthentication]
+    serializer_class = JobSerializer
+    pagination_class = LimitOffsetPagination
+    filter_backends = [OrderingFilter]
+    ordering_fields = ['created_at', 'status', 'progress']
+    ordering = ['-created_at']
+
+    permission_classes = [IsAuthenticated, ]
+
+    def get_queryset(self):
+        return Job.objects.filter(parent__isnull=True).select_related('created_by')
+
+
+class JobTypeSelectFormView(LoginRequiredMixin, FormView):
+    template_name = 'worker/job_type_select.html'
+    form_class = JobTypeSelectForm
+
+    def form_valid(self, form):
+        return HttpResponseRedirect(reverse('worker:job_start', kwargs={'job_type': form.cleaned_data['job_type']}))
+
+
+class StartJobView(LoginRequiredMixin, FormView):
+    template_name = 'worker/job_create_form.html'
 
     def get_context_data(self, **kwargs):
-        ctx = super(IndexTemplateView, self).get_context_data(**kwargs)
-
-        try:
-            latest_job = Job.objects.all().order_by('-created_at')[0]
-        except IndexError:
-            latest_job = None
-
+        ctx = super(StartJobView, self).get_context_data(**kwargs)
         ctx.update({
-            'latest_job': latest_job,
-            'form': JobControlForm(data={'action': 'create', 'job_type': 'slow_job',
-                                         'redirect_url': reverse_lazy('worker:index')}),
-
-            'children_form': JobControlForm(data={'action': 'create', 'job_type': 'slow_job_with_children',
-                                                  'redirect_url': reverse_lazy('worker:index')}),
-            'exception_form': JobControlForm(data={'action': 'create', 'job_type': 'job_with_exception',
-                                                   'redirect_url': reverse_lazy('worker:index')}),
-
+            'pretty_job_title': get_job_types()[self.kwargs['job_type']]['label']
         })
         return ctx
 
-
-class JobControlView(BaseFormView):
-    form_class = JobControlForm
-
-    def form_invalid(self, form):
-        return HttpResponseRedirect(form.cleaned_data['redirect_url'])
+    def get_form_class(self):
+        try:
+            return get_job_types()[self.kwargs['job_type']]['form_class']
+        except IndexError:
+            raise Http404('No such job type')
 
     def form_valid(self, form):
-        if form.cleaned_data['action'] == 'create':
-            if form.cleaned_data['job_type'] == 'slow_job':
-                Job.schedule_job(form.cleaned_data['job_type'], slow_job)
-            elif form.cleaned_data['job_type'] == 'slow_job_with_children':
-                Job.schedule_job(form.cleaned_data['job_type'], slow_job_with_children)
-            elif form.cleaned_data['job_type'] == 'job_with_exception':
-                Job.schedule_job(form.cleaned_data['job_type'], job_with_exception)
-        return HttpResponseRedirect(form.cleaned_data['redirect_url'])
+        function = None
+        if self.kwargs['job_type'] == 'ImportMandtalJob':
+            from kas.jobs import import_mandtal
+            function = import_mandtal
+        if function:
+            Job.schedule_job(function=function,
+                             job_type=self.kwargs['job_type'],
+                             created_by=self.request.user,
+                             job_kwargs=form.cleaned_data)
+        return super(StartJobView, self).form_valid(form)
 
-
-class JobDetailView(BaseDetailView):
-    # could a rest view
-    model = Job
-    slug_field = 'uuid'
-    slug_url_kwarg = 'uuid'
-
-    def render_to_response(self, context, **response_kwargs):
-        return JsonResponse(data=self.get_object().to_dict())
+    def get_success_url(self):
+        return reverse('worker:job_list')
