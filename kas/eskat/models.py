@@ -256,13 +256,11 @@ class ImportedR75PrivatePension(AbstractModels.R75PrivatePension):
     history = HistoricalRecords()
 
     @classmethod
-    def import_year(cls, year, job=None, progress_factor=1, progress_start=0):
+    def import_year(cls, year):
         qs = get_r75_private_pension_model().objects.filter(
             tax_year=year
         )
-        count = qs.count()
-        created, updated = (0, 0)
-        for i, x in enumerate(qs):
+        for x in qs:
             try:
                 existing = cls.objects.get(pk=x.pk)
                 if existing.dato != x.dato:
@@ -270,14 +268,8 @@ class ImportedR75PrivatePension(AbstractModels.R75PrivatePension):
                         setattr(existing, k, v)
                     existing._change_reason = "Updated by import"
                     existing.save()
-                    updated += 1
 
             except cls.DoesNotExist:
                 new_obj = cls(**model_to_dict(x))
                 new_obj.change_reason = "Created by import"
                 new_obj.save()
-                created += 1
-
-            if job is not None:
-                job.set_progress_pct(progress_start + (i / count) * (100 * progress_factor))
-        return created, updated
