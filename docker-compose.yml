@@ -15,6 +15,10 @@ services:
     volumes:
       - ./kas/:/app
       - ./kas/uploads:/uploads
+    environment:
+      - MAKE_MIGRATIONS=true
+      - MIGRATE=true
+      - DUMMYDATA=true
     command: gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output # reload on code changes
 
   worker:
@@ -29,21 +33,6 @@ services:
     volumes:
       - ./kas/:/app
     command: python manage.py rqworker high default low # listening on all three queues by default
-
-  oneshot:
-    container_name: oneshot
-    image: kas:latest
-    depends_on:
-      - postgres
-    volumes:
-      - ./kas/:/app
-    env_file:
-      - ./dev-environment/kas.env
-    environment:
-      - MAKE_MIGRATIONS=true
-      - MIGRATE=true
-      - TEST=true
-      - DUMMYDATA=true
 
   postgres:
     container_name: kas-db
@@ -76,6 +65,9 @@ services:
       - ./dev-environment/selvbetjening.env
     volumes:
       - ./selvbetjening:/app
+    environment:
+      - MAKE_MIGRATIONS=true
+      - MIGRATE=true
     command: bash -c "
         django-admin compilemessages &&
         gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output

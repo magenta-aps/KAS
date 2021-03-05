@@ -1,9 +1,11 @@
 FROM python:3.8
-RUN mkdir /app
+RUN mkdir /app &&\
+#gid/uid from salt
+groupadd -g 75050 -r kas &&\
+useradd -u 75050 --no-log-init -r -g kas kas
 COPY kas/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 ENV PYTHONUNBUFFERED=1
-#RUN useradd -r --no-create-home --uid 2000 kas #TODO find a global unique UID in salt
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
 gettext \
@@ -17,12 +19,11 @@ RUN unzip /tmp/oracle_driver.zip -d /usr/local/lib && \
     rm /tmp/oracle_driver.zip && \
     printf "# Oracle client libraries\n/usr/local/lib/instantclient_19_10\n" > /etc/ld.so.conf.d/oracle_client_libraries.conf && \
     ldconfig
-#USER gallery
+USER kas
 COPY ./docker/kas_entrypoint.sh /entrypoint.sh
 COPY ./kas /app
 EXPOSE 8000
 VOLUME  /uploads
-#TODO handle static file in combination with traefik
 ENTRYPOINT ["/entrypoint.sh"]
 WORKDIR /app
 CMD ["gunicorn","-b","0.0.0.0:8000","project.wsgi:application","-w 4","--error-logfile", "-","--capture-output"]
