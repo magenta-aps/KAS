@@ -262,12 +262,12 @@ class TaxPDF(FPDF):
         self.set_font('arial', '', 8.5)
         self.yposition += 15
 
-        c1w=45
-        c2w=20
-        c3w=20
-        c4w=20
-        c5w=48
-        c6w=17
+        c1w = 45
+        c2w = 20
+        c3w = 20
+        c4w = 20
+        c5w = 48
+        c6w = 17
 
         headerheight = 5
         rowheight = 10
@@ -320,11 +320,6 @@ class TaxPDF(FPDF):
         self.cell(h=rowheight, align='L', w=c5w, txt='', border=1)
         self.set_xy(self.left_margin+c1w+c2w+c3w+c4w+c5w, self.yposition)
         self.cell(h=rowheight, align='C', w=c6w, txt='KAS201', border=1)
-
-
-
-
-
 
         self.yposition += 80
 
