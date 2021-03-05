@@ -27,7 +27,7 @@ if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] [ "$TEST" = true ] || 
 fi
 
 if [ "$DJANGO_DEBUG" = false ]; then
-  echo 'collection static files for whitenoise!'
+  echo 'collecting static files for whitenoise!'
   ./manage.py collectstatic --no-input --clear
 fi
 exec "$@"
