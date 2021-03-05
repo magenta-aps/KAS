@@ -1,7 +1,10 @@
-from eskat.models import ImportedKasMandtal
+from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension
 from eskat.models import get_kas_mandtal_model
 from kas.models import Person, PersonTaxYear, TaxYear
 from worker.models import job_decorator
+
+from kas.eskat.models import get_r75_private_pension_model
+from kas.kas.models import PolicyTaxYear
 
 
 @job_decorator
@@ -65,5 +68,52 @@ def import_mandtal(job):
         {'label': 'Personskatteår-objekter', 'value': [
             {'label': 'Tilføjet', 'value': persontaxyears_created},
             {'label': 'Opdateret', 'value': persontaxyears_updated}
+        ]}
+    ]}
+
+
+@job_decorator
+def migrate_r75(job):
+    year = job.arguments['year']
+    tax_year = TaxYear.objects.get(year=year)
+    number_of_progress_segments = 2
+    progress_factor = 1 / number_of_progress_segments
+    (r75_created, r75_updated) = ImportedR75PrivatePension.import_year(year, job, progress_factor, 0)
+
+    progress_start = 0.5
+    (policies_created, policies_updated) = (0, 0)
+
+    qs = get_r75_private_pension_model().objects.filter(tax_year=year)
+    count = qs.count()
+    for i, item in enumerate(qs):
+
+        person = Person.objects.get_or_create(cpr=item.cpr)
+        person_tax_year = PersonTaxYear.objects.get_or_create(person=person, year=tax_year),
+
+        # TODO: Get a pension company from item.res
+        pension_company = None
+
+        policy_data = {
+            'person_tax_year': person_tax_year,
+            'pension_company': pension_company,
+            'policy_number': item.pkt,
+            'prefilled_amount': item.beloeb,
+        }
+        (person_tax_year, status) = PolicyTaxYear.update_or_create(policy_data, 'person_tax_year', 'pension_company', 'policy_number')
+        if status == PersonTaxYear.CREATED:
+            policies_created += 1
+        elif status == PersonTaxYear.UPDATED:
+            policies_updated += 1
+
+        job.set_progress_pct(progress_start + (i / count) * (100 * progress_factor))
+
+    job.result = {'summary': [
+        {'label': 'Rå R75-objekter', 'value': [
+            {'label': 'Tilføjet', 'value': r75_created},
+            {'label': 'Opdateret', 'value': r75_updated}
+        ]},
+        {'label': 'Policeskatteår-objekter', 'value': [
+            {'label': 'Tilføjet', 'value': policies_created},
+            {'label': 'Opdateret', 'value': policies_updated}
         ]}
     ]}

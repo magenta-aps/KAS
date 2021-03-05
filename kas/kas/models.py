@@ -83,6 +83,11 @@ class PensionCompany(models.Model):
         )
     )
 
+    agreement_present = models.BooleanField(
+        default=False,
+        verbose_name=_("Foreligger der en aftale med skattestyrelsen")
+    )
+
     def __str__(self):
         return f"{self.__class__.__name__}(name={self.name}, cvr={self.cvr})"
 
@@ -186,7 +191,9 @@ class PersonTaxYear(HistoryMixin, models.Model):
         return f"{self.__class__.__name__}(cpr={self.person.cpr}, year={self.tax_year.year})"
 
 
-class PolicyTaxYear(models.Model):
+class PolicyTaxYear(HistoryMixin, models.Model):
+
+    history = HistoricalRecords()
 
     class Meta:
         unique_together = ['person_tax_year', 'pension_company', 'policy_number']
