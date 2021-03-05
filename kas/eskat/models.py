@@ -226,7 +226,6 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
         )
         # In case we share progress with another function, we want to only fill part of the progress, e.g. up to 50%
         count = qs.count()
-        created, updated = (0, 0)
         for i, x in enumerate(qs):
             try:
                 existing = cls.objects.get(pk=x.pk)
@@ -239,16 +238,13 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
                         setattr(existing, k, v)
                     existing._change_reason = "Updated by import"
                     existing.save()
-                    updated += 1
 
             except cls.DoesNotExist:
                 new_obj = cls(**model_to_dict(x))
                 new_obj.change_reason = "Created by import"
                 new_obj.save()
-                created += 1
             if job is not None:
                 job.set_progress_pct(progress_start + (i / count) * (100 * progress_factor))
-        return created, updated
 
 
 class ImportedR75PrivatePension(AbstractModels.R75PrivatePension):

@@ -1,42 +1,9 @@
-{% extends 'kas/layout.html' %}
+{{ object.status }}
+{{ object.result }} #{'number_of_elements_updated': 200}
 
-{% load i18n %}
-{% load kas_tags %}
-{% block content %}
+{% if object.status == 'completed' %}
 
-<a class="btn btn-primary" href="{% url 'worker:job_list' %}">{% trans 'Tilbage til liste' %}</a>
 
-<table class="table">
-    <tbody>
-    <tr>
-        <th>{% trans 'Type' %}</th>
-        <td>{{ object.job_type }}</td>
-    </tr>
-    <tr>
-        <th>{% trans 'Status' %}</th>
-        <td><span class="btn {{ object.bootstrap_color }}">{{ object.get_status_display }}</span></td>
-    </tr>
-    <tr>
-        <th>{% trans 'Starttid' %}</th>
-        <td>{{ object.started_at }}</td>
-    </tr>
-    <tr>
-        <th>{% trans 'Kørselstid' %}</th>
-        <td>{{ object.duration|duration }}</td>
-    </tr>
-    {% if object.status == 'finished' %}
-    <tr>
-        <th>{% trans 'Opsummering' %}</th>
-        <td class="job-summary">
-            {% include object.job_type_dict.result_template with result=object.result %}
-        </td>
-    </tr>
-    {% elif object.status == 'started' %}
-    <tr>
-        <th>{% trans 'Fremskridt' %}</th>
-        <td>{{ object.pretty_progress }}</td>
-    </tr>
-    {% endif %}
-    </tbody>
-</table>
-{% endblock %}
+{% else  %}
+
+{% endif %}

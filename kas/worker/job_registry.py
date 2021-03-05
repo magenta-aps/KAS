@@ -9,7 +9,6 @@ def get_job_types():
     return {
         'ImportMandtalJob': {
             'label': _('Import af mandtal'),  # translated label
-            'form_class': MandtalImportJobForm,  # form class used in the start job workflow
-            'result_template': 'worker/jobs_results/mandtal.html',
+            'form_class': MandtalImportJobForm  # form class used in the start job workflow
         }
     }

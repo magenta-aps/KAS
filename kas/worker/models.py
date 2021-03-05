@@ -1,7 +1,6 @@
 import django_rq
 from django.contrib.auth import get_user_model
 from django.db import transaction, models
-from django.utils.datetime_safe import datetime
 from rq import get_current_job
 from functools import wraps, cached_property
 import redis
@@ -40,30 +39,17 @@ class Job(models.Model):
     result = JSONField(default=dict)
 
     @property
-    def has_running_subjobs(self):
-        return self.job_set.exclude(status__in=['failed', 'finished']).exists()
-
-    @property
     def bootstrap_color(self):
         if self.status == 'queued':
-            return 'bg-warning'
-        elif self.status == 'started' or self.has_running_subjobs:
-            return 'bg-success'
+            return 'progress-bar bg-warning progress-bar-striped'
+        elif self.status == 'started' or self.job_set.exclude(status__in=['failed', 'finished']).exists():
+            return 'progress-bar bg-success progress-bar-striped progress-bar-animated'
         elif self.status == 'deferred':
-            return 'bg-warning'
+            return 'progress-bar progress-bar-striped bg-warning'
         elif self.status == 'failed':
-            return 'bg-danger'
+            return 'progress-bar bg-danger'
         elif self.status == 'finished':
-            return 'bg-success'
-
-    @property
-    def bootstrap_progress_bar_class(self):
-        classes = ['progress-bar', self.bootstrap_color]
-        if self.status in ('queued', 'deferred'):
-            classes.append('progress-bar-striped')
-        elif self.status == 'started' or self.has_running_subjobs:
-            classes.extend(('progress-bar-striped', 'progress-bar-animated'))
-        return ' '.join(classes)
+            return 'progress-bar bg-success'
 
     @cached_property
     def job_type_dict(self):
@@ -72,14 +58,6 @@ class Job(models.Model):
     @cached_property
     def pretty_job_type(self):
         return self.job_type_dict['label']
-
-    @property
-    def duration(self):
-        if self.started_at is not None:
-            if self.end_at is not None:
-                return self.end_at - self.started_at
-            else:
-                return datetime.now() - self.started_at
 
     @property
     def all_completed(self):
