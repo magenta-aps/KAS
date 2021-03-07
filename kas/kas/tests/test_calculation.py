@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.test import TestCase
 from kas.models import PolicyTaxYear
 
@@ -28,7 +29,7 @@ class TestCalculationMath(TestCase):
         self.assertEquals(result["taxable_amount"], amount)
 
         # Full tax should be equal to amount times the tax rate
-        self.assertEquals(result["full_tax"], 153)
+        self.assertEquals(result["full_tax"], amount * settings.KAS_TAX_RATE)
 
         # Tax with deductions should be equal to the full amount
         self.assertEquals(result["tax_with_deductions"], result["full_tax"])

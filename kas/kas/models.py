@@ -1,5 +1,6 @@
 import math
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -182,9 +183,6 @@ class PersonTaxYear(HistoryMixin, models.Model):
 
 
 class PolicyTaxYear(models.Model):
-
-    # Tax rate is 15.3%
-    TAX_RATE = 0.153
 
     class Meta:
         unique_together = ['person_tax_year', 'pension_company', 'policy_number']
@@ -370,7 +368,7 @@ class PolicyTaxYear(models.Model):
         taxable_amount = year_adjusted_amount - used_negative_return
 
         # Calculate the tax
-        full_tax = math.floor(taxable_amount * cls.TAX_RATE)
+        full_tax = math.floor(taxable_amount * settings.KAS_TAX_RATE)
 
         tax_with_deductions = max(0, full_tax - max(0, foreign_paid_amount))
 
@@ -417,22 +415,26 @@ class PolicyTaxYear(models.Model):
         return self.person.cpr
 
     @property
-    def previous_ten_years_qs(self):
-
-        # Finds posts for the last ten years with the same
-        # cpr, pension company and policy number
+    def same_policy_qs(self):
         return PolicyTaxYear.objects.filter(
             person_tax_year__person__cpr=self.cpr,
             pension_company=self.pension_company,
             policy_number=self.policy_number,
+        )
+
+    def previous_years_qs(self, years=10):
+
+        # Finds posts for the last ten years with the same
+        # cpr, pension company and policy number
+        return self.same_policy_qs.filter(
             person_tax_year__tax_year__year__lt=self.year,
-            person_tax_year__tax_year__year__gte=self.year - 10,
+            person_tax_year__tax_year__year__gte=self.year - years,
         )
 
     @property
     def negative_return_last_ten_years(self):
         # Sum up negative amounts from last ten years
-        result = self.previous_ten_years_qs.filter(
+        result = self.previous_years_qs(years=10).filter(
             year_adjusted_amount__lt=0
         ).aggregate(models.Sum('year_adjusted_amount'))
 
@@ -441,8 +443,10 @@ class PolicyTaxYear(models.Model):
     @property
     def used_negative_return_last_ten_years(self):
 
-        # Sum up applied deductions from last ten years
-        result = self.previous_ten_years_qs.aggregate(
+        # Sum up applied deductions from last nine years
+        # Has to be nine instead of ten as deductions are used the year
+        # after the negative return is present.
+        result = self.previous_years_qs(years=9).aggregate(
             models.Sum('applied_deduction_from_previous_years')
         )
 
