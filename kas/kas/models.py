@@ -340,7 +340,6 @@ class PreviousYearNegativePayout(models.Model):
         on_delete=models.PROTECT
     )
 
-
     transferred_negative_payout = models.BigIntegerField(
         verbose_name=_('Overført negativt afkast'),
         blank=True,
