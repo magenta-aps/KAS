@@ -329,7 +329,8 @@ class PolicyDocument(models.Model):
     policy_tax_year = models.ForeignKey(
         PolicyTaxYear,
         on_delete=models.PROTECT,
-        null=False
+        null=False,
+        related_name='policy_documents'
     )
 
     name = models.CharField(
@@ -340,10 +341,12 @@ class PolicyDocument(models.Model):
 
     description = models.TextField(
         verbose_name=_('Beskrivelse'),
+        blank=True,
     )
 
     file = models.FileField(
         verbose_name=_('Fil'),
+        blank=False
     )
 
 

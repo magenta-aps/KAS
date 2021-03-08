@@ -37,18 +37,6 @@ class PersonTaxYearSerializer(serializers.ModelSerializer):
     tax_year = serializers.SlugRelatedField(queryset=TaxYear.objects.all(), slug_field='year')
 
 
-class PolicyTaxYearSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = PolicyTaxYear
-        fields = ['id', 'policy_number', 'prefilled_amount', 'self_reported_amount', 'pension_company', 'person_tax_year', 'preliminary_paid_amount', 'from_pension']
-        read_only_fields = ['id', 'policy_number', 'pension_company', 'person_tax_year']
-        depth = 2
-
-    person_tax_year = serializers.PrimaryKeyRelatedField(queryset=PersonTaxYear.objects.all())
-    pension_company = serializers.SlugRelatedField(queryset=PensionCompany.objects.all(), slug_field='cvr')
-
-
 class PolicyDocumentSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -57,3 +45,16 @@ class PolicyDocumentSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
     policy_tax_year = serializers.PrimaryKeyRelatedField(queryset=PolicyTaxYear.objects.all())
+
+
+class PolicyTaxYearSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PolicyTaxYear
+        fields = ['id', 'policy_number', 'prefilled_amount', 'self_reported_amount', 'pension_company', 'person_tax_year', 'preliminary_paid_amount', 'from_pension', 'foreign_paid_amount_self_reported', 'deduction_from_previous_years', 'policy_documents']
+        read_only_fields = ['id', 'policy_number', 'pension_company', 'person_tax_year', 'policy_documents']
+        depth = 2
+
+    person_tax_year = serializers.PrimaryKeyRelatedField(queryset=PersonTaxYear.objects.all())
+    pension_company = PensionCompanySerializer(read_only=True)
+    policy_documents = PolicyDocumentSerializer(many=True, read_only=True)

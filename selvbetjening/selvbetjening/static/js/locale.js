@@ -53,6 +53,7 @@ $(function() {
             if (typeof text !== 'string') {
                 text = String(text);
             }
+            text = text.replace(/\{(\w+)\}/, "%($1)s");
             text = django.gettext(language, text);
             if (params) {
                 for (let key in params) {
@@ -64,7 +65,8 @@ $(function() {
                         } else {
                             value = format(value, null, language);
                         }
-                        text = text.replace("{" + key + "}", value);
+                        text = text.replace("%(" + key + ")s", value);
+                        //text = text.replace("{" + key + "}", value);
                     }
                 }
             }
@@ -93,12 +95,25 @@ $(function() {
             });
         });
         const updateTranslations = function(event, language) {
+            const search = "data-trans-param-";
             $("*[data-trans]").each(function() {
                 const $this = $(this);
                 let text = $this.attr('data-trans');
-                const params = $this.attr('data-trans-params');
-                text = format(text, params && JSON.parse(params), language);
-                $this.text(text);
+                const paramsJson = $this.attr('data-trans-params');
+                const params = paramsJson && JSON.parse(paramsJson) || {};
+                for (let i=0; i<this.attributes.length; i++) {
+                    const attribute = this.attributes[i];
+                    if (attribute.name.startsWith(search)) {
+                        params[attribute.name.substr(search.length)] = attribute.value;
+                    }
+                }
+                text = format(text, params, language);
+                const attr = $this.attr('data-trans-attr')
+                if (attr) {
+                    $this.attr(attr, text);
+                } else {
+                    $this.text(text);
+                }
             });
         };
         $document.on('language-change', updateTranslations);

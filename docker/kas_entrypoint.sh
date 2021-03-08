@@ -3,10 +3,11 @@ set -e
 MAKE_MIGRATIONS=${MAKE_MIGRATIONS:=false}
 MIGRATE=${MIGRATE:=false}
 TEST=${TEST:=false}
+CREATE_USERS=${CREATE_USERS:=false}
 DUMMYDATA=${DUMMYDATA:=false}
 DJANGO_DEBUG=${DJANGO_DEBUG:=false}
 
-if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] [ "$TEST" = true ] || [ "$DUMMYDATA" = true ]; then
+if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] [ "$TEST" = true ] || [ "$CREATE_USERS" = true ] || [ "$DUMMYDATA" = true ]; then
   python manage.py wait_for_db
   if [ "$MAKE_MIGRATIONS" = true ]; then
     echo 'generating migrations'
@@ -15,6 +16,16 @@ if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] [ "$TEST" = true ] || 
   if [ "$MIGRATE" = true ]; then
     echo 'running migations'
     python manage.py migrate
+  fi
+  if [ "$CREATE_USERS" = true ]; then
+    echo 'creating users'
+    python manage.py shell --command "
+from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
+user,c = User.objects.get_or_create(username='rest')
+Token.objects.filter(user=user).delete()
+token = Token.objects.create(user=user,key='${REST_TOKEN}')
+      "
   fi
   if [ "$TEST" = true ]; then
     echo 'running tests!'

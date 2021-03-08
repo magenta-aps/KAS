@@ -7,7 +7,7 @@
 
 body {
     font: 1em/1.5 Arial,sans-serif;
-    background-color: #eaecee;
+    background-color: #eaecee !important;
     color: #31495b;
     text-rendering: optimizeLegibility;
     margin: 0;
@@ -281,4 +281,21 @@ table {
         display: block
     }
 }
+body .accordion-button {
+}
+body .accordion-button::after {
+    background-image: url('../img/sullisivik_arrow.svg')
+}
+body .accordion-button:not(.collapsed) {
+    background-color: #31495b;
+    color: #fff;
+}
+body .accordion-button:not(.collapsed)::after {
+    background-image: url('../img/sullisivik_arrow_white.svg')
+}
 
+body .accordion-button:focus {
+    border-color: revert;
+    outline: 0;
+    box-shadow: none;
+}

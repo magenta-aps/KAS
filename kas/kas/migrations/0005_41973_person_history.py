@@ -12,9 +12,15 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('kas', '0004_41973_person_fields'),
+        ('kas', '0004_merge_20210219_1307'),
     ]
 
     operations = [
+        migrations.AlterField(
+            model_name='policydocument',
+            name='policy_tax_year',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='policy_documents', to='kas.PolicyTaxYear'),
+        ),
         migrations.CreateModel(
             name='HistoricalPersonTaxYear',
             fields=[

@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+
+<div class="container">
+
+    {% include "nav-tabs.html" with active="edit-current" %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.management_form }}
+        <div class="accordion" id="policies">
+            {% for policyform in form %}
+            {% with policydata=data|get:policyform.id.value %}
+            {{ policyform.errors }}
+            {{ policyform.non_field_errors }}
+            <div class="policyform accordion-item">
+                {% for hidden_field in policyform.hidden_fields %}
+                {{ hidden_field }}
+                {% endfor %}
+                <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} " type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ forloop.counter }}">
+                        {{ policydata.pension_company.name }}, Police nr {{ policyform.policy_number.value }}
+                    </button>
+                </h2>
+                <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#policies">
+                    <div class="accordion-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th class="col-2-sm">{% trans 'Feltnavn' %}</th>
+                                    <th class="col-6-sm">{% trans 'Beskrivelse' %}</th>
+                                    <th class="col-3-sm">{% trans 'Felt' %}</th>
+                                    <th class="col-1-sm">{% trans 'Felt nr.' %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="col-2-sm">{% trans 'Kapitalafkast PBL (DK) § 53 A' %}</td>
+                                    <td class="col-6-sm">{% blocktrans with policyform.prefilled_amount.value as value %}Vores beregning: {{value}}{% endblocktrans %}</td>
+                                    <td class="col-3-sm"><label>{% trans 'Deres rettelse:' %}</label>{{ policyform.self_reported_amount }}</td>
+                                    <td class="col-1-sm">201</td>
+                                </tr>
+
+                                {% if not policydata.pension_company.agreement %}
+                                <tr>
+                                    <td class="col-2-sm">{% trans 'Forudbetalt kapitalafkast' %}</td>
+                                    <td class="col-6-sm">{% trans 'Har De allerede betalt foreløbig kapitalafkastskat angives beløbet her. Husk at vedlægge dokumentation.' %}</td>
+                                    <td class="col-3-sm"><label>{% trans 'Beløb:' %}</label>{{ policyform.preliminary_paid_amount }}</td>
+                                    <td class="col-1-sm">205</td>
+                                </tr>
+                                {% endif %}
+
+                                <tr>
+                                    <td class="col-2-sm">{% trans 'Hævet på pensionsordning' %}</td>
+                                    <td class="col-6-sm">{% trans 'Er kapitalafkastskatten hævet fra pensionsordning?' %}</td>
+                                    <td class="col-3-sm">
+                                        {% for item in policyform.from_pension %}
+                                        {{ item }}
+                                        {% endfor %}
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-2-sm">{% trans 'Betalt kapitalafkastskat i udlandet' %}</td>
+                                    <td class="col-6-sm">{% trans 'Anmoder De om nedslag for betalt kapitalafkastskat i udlandet angives den betalte skat og dokumentation vedlægges selvangivelsen' %}</td>
+                                    <td class="col-3-sm"><label>{% trans 'Beløb:' %}</label>{{ policyform.foreign_paid_amount_self_reported }}</td>
+                                    <td class="col-1-sm">208</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-2-sm">{% trans 'Negativt kapitalafkast fra tidligere år' %}</td>
+                                    <td class="col-6-sm">{% trans 'Negative kapitalafkast (tab) fra tidligere år kan fratrækkes det beskattede beløb for i år' %}</td>
+                                    <td class="col-3-sm"><label>{% trans 'Beløb:' %}</label>{{ policyform.deduction_from_previous_years }}</td>
+                                    <td class="col-1-sm">208</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-2-sm">{% trans 'Dokumentation for betalt kapitalafkastskat' %}</td>
+                                    <td class="col-6-sm">
+                                        {% if policydata.pension_company.agreement %}
+                                        {% trans 'Vedhæft dokumentation for allerede betalt kapitalafkastskat i udlandet.' %}
+                                        {% else %}
+                                        {% trans 'Vedhæft dokumentation for allerede betalt kapitalafkastskat. Dokumentation for betaling både i Grønland og i udlandet kan vedhæftes her.' %}
+                                        {% endif %}
+                                    </td>
+                                    <td class="col-4-sm file_container" colspan="2">
+
+                                        {% for field in policyform %}
+                                        {% if field.name|startswith:'file_existing_id' %}
+                                        <div class="doc_file_existing">
+                                            {{ field }}
+
+                                            {% with field.keep_field as keep_field %}
+                                            <label for="{{ keep_field.id_for_label }}">{{ keep_field }}{{ keep_field.label }}</label>
+                                            {% endwith %}
+
+                                            {{ field.description_field }}
+
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+
+                                        <div class="doc_file prototype" style="display:none">
+                                            {{ policyform.file_file_0 }}
+                                            <button type="button" class="close" title="{% trans 'Fjern' %}"></button>
+                                            {{ policyform.file_description_0 }}
+                                        </div>
+                                        {% for field in policyform %}
+                                            {% if field.name|startswith:'file_file' and field.value is not None %}
+                                            <div class="doc_file">
+                                                {{ field }}
+                                                <button type="button" class="close" style="display:none"></button>
+                                                {% with field.name|after:'file_file_' as id %}
+                                                {% with 'file_description_'|addstr:id as desc_id %}
+                                                {{ policyform|get:desc_id }}
+                                                {% endwith %}
+                                                {% endwith %}
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+        <button class="button">{% trans 'Indsend' %}</button>
+        </form>
+    <script>
+        $(function(){
+            // If all file rows are set (has a value), create a new empty row
+            const updateRows = function(animate) {
+                const policyform = $(this);
+                const container = policyform.find(".file_container");
+                const rows = container.find(".doc_file").not(".prototype");
+                let allFilled = true;
+                if (animate !== false) {
+                    animate = true;
+                }
+                rows.each(function() {
+                    const $this = $(this);
+                    const fileField = $this.find("input[type=file]");
+                    const filled = (fileField.val() !== undefined && fileField.val() !== '');
+                    $this.find("button").toggle(filled);
+                    if (!filled) {
+                        allFilled = false;
+                    }
+                });
+                if (allFilled) {
+                    const clone = container.find(".doc_file.prototype").first().clone();
+                    clone.removeClass("prototype");
+                    clone.find("input").val('');
+                    const m = /id_form-(\d+)-file_file/.exec(clone.find("input[type=file]").attr("id"));
+                    const form_index = m ? m[1] : policyform.index();
+                    const row_index = firstIdleIndex(container);
+                    const file_name = "form-"+form_index+"-file_file_"+row_index;
+                    clone.find("input[type=file]").attr({"id": "id_"+file_name, "name": file_name});
+                    const text_name = "form-"+form_index+"-file_description_"+row_index;
+                    clone.find("input[type=text]").attr({"id": "id_"+text_name, "name": text_name});
+                    clone.change(updateRows.bind(policyform));
+                    clone.find(".close").click(removeRow).hide();
+                    container.append(clone);
+                    if (animate) {
+                        clone.slideDown();
+                    } else {
+                        clone.show();
+                    }
+                }
+            }
+
+            const getRowIndexes = function(container) {
+                const indexes = {};
+                container.find(".doc_file").not(".prototype").each(function(){
+                    const id = $(this).find("input[type=file]").attr("id");
+                    const s = id.lastIndexOf("_");
+                    if (s !== -1) {
+                        indexes[id.substring(s+1)] = $(this);
+                    }
+                });
+                return indexes;
+            };
+
+            const firstIdleIndex = function(container) {
+                const indexes = getRowIndexes(container);
+                let i=0;
+                while (indexes[""+i]) {
+                    i++;
+                }
+                return i;
+            }
+
+            const removeRow = function() {
+                const row = $(this).parent(".doc_file");
+                row.slideUp(400, function(){
+                    row.remove();
+                });
+            }
+
+            $(".policyform").each(function() {
+                $(this).find(".doc_file").change(updateRows.bind(this));
+                $(this).find(".doc_file .close").click(removeRow);
+                updateRows.call(this, false);
+            });
+
+            $("form").submit(function() {
+                $('.doc_file.prototype').remove();
+            });
+
+        });
+    </script>
+</div>
+{% endblock %}
