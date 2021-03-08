@@ -328,8 +328,18 @@ class PreviousYearNegativePayout(models.Model):
 
     used_from = models.ForeignKey(
         PolicyTaxYear,
+        related_name='used_from',
+        null=True,
         on_delete=models.PROTECT
     )
+
+    used_for = models.ForeignKey(
+        PolicyTaxYear,
+        related_name='used_for',
+        null=True,
+        on_delete=models.PROTECT
+    )
+
 
     transferred_negative_payout = models.BigIntegerField(
         verbose_name=_('Overført negativt afkast'),
