@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-07 12:39+0100\n"
+"POT-Creation-Date: 2021-03-08 10:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -13,18 +13,158 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: templates/base.html:65
+#, python-format
+msgid "Logget ind som %(cpr)s"
+msgstr ""
 
-msgid "DK"
-msgstr "Danmark"
+#: templates/base.html:68
+msgid "Log ud"
+msgstr ""
 
-msgid "GL"
-msgstr "Grønland"
+#: templates/form.html:33 templates/view.html:47 templates/view.html:111
+msgid "Feltnavn"
+msgstr ""
 
-msgid "test-text"
-msgstr "Her er en tekst"
+#: templates/form.html:34
+msgid "Beskrivelse"
+msgstr ""
 
-msgid "common.logout"
-msgstr "Log ud"
+#: templates/form.html:35
+msgid "Felt"
+msgstr ""
 
-msgid "common.logged_in_as"
-msgstr "Logget ind som: {navn}"
+#: templates/form.html:36 templates/view.html:49 templates/view.html:113
+msgid "Felt nr."
+msgstr ""
+
+#: templates/form.html:41 templates/view.html:54 templates/view.html:118
+msgid "Kapitalafkast PBL (DK) § 53 A"
+msgstr ""
+
+#: templates/form.html:42
+#, python-format
+msgid "Vores beregning: %(value)s"
+msgstr ""
+
+#: templates/form.html:43
+msgid "Deres rettelse:"
+msgstr ""
+
+#: templates/form.html:49
+msgid "Forudbetalt kapitalafkast"
+msgstr ""
+
+#: templates/form.html:50
+msgid ""
+"Har De allerede betalt foreløbig kapitalafkastskat angives beløbet her. Husk "
+"at vedlægge dokumentation."
+msgstr ""
+
+#: templates/form.html:51 templates/form.html:69 templates/form.html:75
+msgid "Beløb:"
+msgstr ""
+
+#: templates/form.html:57 templates/view.html:64
+msgid "Hævet på pensionsordning"
+msgstr ""
+
+#: templates/form.html:58
+msgid "Er kapitalafkastskatten hævet fra pensionsordning?"
+msgstr ""
+
+#: templates/form.html:67 templates/view.html:71 templates/view.html:128
+msgid "Betalt kapitalafkastskat i udlandet"
+msgstr ""
+
+#: templates/form.html:68
+msgid ""
+"Anmoder De om nedslag for betalt kapitalafkastskat i udlandet angives den "
+"betalte skat og dokumentation vedlægges selvangivelsen"
+msgstr ""
+
+#: templates/form.html:73
+msgid "Negativt kapitalafkast fra tidligere år"
+msgstr ""
+
+#: templates/form.html:74
+msgid ""
+"Negative kapitalafkast (tab) fra tidligere år kan fratrækkes det beskattede "
+"beløb for i år"
+msgstr ""
+
+#: templates/form.html:79
+msgid "Dokumentation for betalt kapitalafkastskat"
+msgstr ""
+
+#: templates/form.html:82
+msgid "Vedhæft dokumentation for allerede betalt kapitalafkastskat i udlandet."
+msgstr ""
+
+#: templates/form.html:84
+msgid ""
+"Vedhæft dokumentation for allerede betalt kapitalafkastskat. Dokumentation "
+"for betaling både i Grønland og i udlandet kan vedhæftes her."
+msgstr ""
+
+#: templates/form.html:106
+msgid "Fjern"
+msgstr ""
+
+#: templates/form.html:132
+msgid "Indsend"
+msgstr ""
+
+#: templates/nav-tabs.html:7
+msgid "KAS-opgørelser fra tidligere år"
+msgstr ""
+
+#: templates/nav-tabs.html:10
+#, python-format
+msgid "KAS-opgørelser fra %(year)s"
+msgstr ""
+
+#: templates/nav-tabs.html:13
+#, python-format
+msgid "Ret KAS-opgørelse fra %(year)s"
+msgstr ""
+
+#: templates/view.html:13
+#, python-format
+msgid "Udtræk for %(year)s"
+msgstr ""
+
+#: templates/view.html:48 templates/view.html:112
+msgid "Værdi"
+msgstr ""
+
+#: templates/view.html:59 templates/view.html:123
+msgid "Forudbetalt kapitalafkastskat"
+msgstr ""
+
+#: templates/view.html:76
+msgid "Negativt kapilatafkast fra tidligere år"
+msgstr ""
+
+#: templates/view.html:83 templates/view.html:89
+msgid "Dokumentation"
+msgstr ""
+
+#: templates/view.html:103
+msgid "Opsummering"
+msgstr ""
+
+#~ msgid "common.logout"
+#~ msgstr "Log ud"
+
+#~ msgid "DK"
+#~ msgstr "Danmark"
+
+#~ msgid "GL"
+#~ msgstr "Grønland"
+
+#~ msgid "test-text"
+#~ msgstr "Her er en tekst"
+
+#~ msgid "common.logged_in_as"
+#~ msgstr "Logget ind som: {navn}"

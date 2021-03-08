@@ -12,7 +12,7 @@ if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ]; then
     python manage.py makemigrations
   fi
   if [ "$MIGRATE" = true ]; then
-    echo 'running migations'
+    echo 'running migrations'
     python manage.py migrate
   fi
 fi
