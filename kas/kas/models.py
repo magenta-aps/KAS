@@ -324,6 +324,25 @@ class PolicyTaxYear(models.Model):
         return f"{self.__class__.__name__}(policy_number={self.policy_number}, cpr={self.person.cpr}, year={self.tax_year.year})"
 
 
+class PreviousYearNagativePayout(models.Model):
+
+    used_from = models.ForeignKey(
+        PolicyTaxYear,
+        on_delete=models.PROTECT
+    )
+
+    used_for = models.ForeignKey(
+        PolicyTaxYear,
+        on_delete=models.PROTECT
+    )
+
+    transferred_negative_payout_ = models.BigIntegerField(
+        verbose_name=_('Overført negativt afkast'),
+        blank=True,
+        default=0,
+    )
+
+
 class PolicyDocument(models.Model):
 
     policy_tax_year = models.ForeignKey(
