@@ -1,3 +1,5 @@
+from builtins import Exception, min
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -7,6 +9,7 @@ from django.db.models.signals import post_save
 from django.forms import model_to_dict
 from django.utils.translation import gettext as _
 from simple_history.models import HistoricalRecords
+from django.db.models import Sum
 
 
 class HistoryMixin(object):
@@ -320,6 +323,36 @@ class PolicyTaxYear(models.Model):
     def tax_year(self):
         return self.person_tax_year.tax_year
 
+    def sum_of_used_amount(self):
+        # Deliver the amount of this years loss used in other years deduction
+        result = self.payouts_using.aggregate(Sum('transferred_negative_payout'))
+
+        value = result['transferred_negative_payout__sum']
+        if value is None:
+            return 0
+
+        return value
+
+    def use_amount(self, use_up_to_amount, deducting_policy_tax_year):
+        # Create a relation of usage of this years loss as deduction in other years
+        if self.calculated_result >= 0:
+            raise Exception("No loss this year")
+
+        if self.sum_of_used_amount() >= -self.calculated_result:
+            raise Exception("All loss used")
+
+        available_to_be_used_amount = -self.calculated_result - self.sum_of_used_amount()
+        to_be_used_amount = min(available_to_be_used_amount, use_up_to_amount)
+
+        item, created = PreviousYearNegativePayout.objects.get_or_create(used_from=self, used_for=deducting_policy_tax_year)
+        item.transferred_negative_payout+=to_be_used_amount
+        item.save()
+
+    def sum_of_deducted_amount(self):
+        # Deliver the amount of this years deduction
+        result = self.payouts_used.aggregate(Sum('transferred_negative_payout'))
+        return result['transferred_negative_payout__sum']
+
     def __str__(self):
         return f"{self.__class__.__name__}(policy_number={self.policy_number}, cpr={self.person.cpr}, year={self.tax_year.year})"
 
@@ -328,14 +361,14 @@ class PreviousYearNegativePayout(models.Model):
 
     used_from = models.ForeignKey(
         PolicyTaxYear,
-        related_name='used_from',
+        related_name='payouts_using',
         null=True,
         on_delete=models.PROTECT
     )
 
     used_for = models.ForeignKey(
         PolicyTaxYear,
-        related_name='used_for',
+        related_name='payouts_used',
         null=True,
         on_delete=models.PROTECT
     )
@@ -345,6 +378,9 @@ class PreviousYearNegativePayout(models.Model):
         blank=True,
         default=0,
     )
+
+    def __str__(self):
+        return f'used from :{self.used_from} used for :{self.used_for} payout :{self.transferred_negative_payout}'
 
 
 class PolicyDocument(models.Model):
