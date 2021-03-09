@@ -1,12 +1,12 @@
+from builtins import Exception
 
 from django.test import TestCase
 from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear
-from kas.models import PreviousYearNegativePayout
 
 
 class DeductionTest(TestCase):
 
-    def test_simple(self):
+    def test_Using_up_loss(self):
         person = Person.objects.create(cpr='1234567890')
         pension_company = PensionCompany.objects.create(
             cvr=12345678,
@@ -42,6 +42,11 @@ class DeductionTest(TestCase):
             calculated_result=1000
         )
 
-        policy_tax_year1.use_amount(2000, policy_tax_year2)
-
-        print(PreviousYearNegativePayout.objects.first())
+        usup = policy_tax_year1.use_amount(900, policy_tax_year2)
+        assert usup == 900
+        usup = policy_tax_year1.use_amount(900, policy_tax_year2)
+        assert usup == 100
+        try:
+            policy_tax_year1.use_amount(900, policy_tax_year2)
+        except Exception:
+            pass
