@@ -348,6 +348,7 @@ class PolicyTaxYear(models.Model):
                                                                          used_for=deducting_policy_tax_year)
         item.transferred_negative_payout += to_be_used_amount
         item.save()
+        return to_be_used_amount
 
     def sum_of_deducted_amount(self):
         # Deliver the amount of this years deduction
