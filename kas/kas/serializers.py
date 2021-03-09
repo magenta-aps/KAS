@@ -51,7 +51,7 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PolicyTaxYear
-        fields = ['id', 'policy_number', 'prefilled_amount', 'self_reported_amount', 'pension_company', 'person_tax_year', 'preliminary_paid_amount', 'from_pension', 'foreign_paid_amount_self_reported', 'deduction_from_previous_years', 'policy_documents']
+        fields = ['id', 'policy_number', 'prefilled_amount', 'self_reported_amount', 'pension_company', 'person_tax_year', 'preliminary_paid_amount', 'from_pension', 'foreign_paid_amount_self_reported', 'applied_deduction_from_previous_years', 'policy_documents']
         read_only_fields = ['id', 'policy_number', 'pension_company', 'person_tax_year', 'policy_documents']
         depth = 2
 

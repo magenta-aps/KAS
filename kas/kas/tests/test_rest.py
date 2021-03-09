@@ -471,7 +471,7 @@ class PolicyTaxYearTest(RestTest):
                     'pension_company': model_to_dict(pension_company),
                     'preliminary_paid_amount': policy_tax_year.preliminary_paid_amount,
                     'foreign_paid_amount_self_reported': policy_tax_year.foreign_paid_amount_self_reported,
-                    'deduction_from_previous_years': policy_tax_year.deduction_from_previous_years,
+                    'applied_deduction_from_previous_years': policy_tax_year.applied_deduction_from_previous_years,
                     'from_pension': policy_tax_year.from_pension,
                     'policy_documents': [],
                     **extra
@@ -524,7 +524,7 @@ class PolicyTaxYearTest(RestTest):
             'pension_company': model_to_dict(pension_company),
             'preliminary_paid_amount': policy_tax_year1.preliminary_paid_amount,
             'foreign_paid_amount_self_reported': policy_tax_year1.foreign_paid_amount_self_reported,
-            'deduction_from_previous_years': policy_tax_year1.deduction_from_previous_years,
+            'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year1.from_pension,
             'policy_documents': [],
         }, response.json())
@@ -540,7 +540,7 @@ class PolicyTaxYearTest(RestTest):
             'pension_company': model_to_dict(pension_company),
             'preliminary_paid_amount': policy_tax_year2.preliminary_paid_amount,
             'foreign_paid_amount_self_reported': policy_tax_year2.foreign_paid_amount_self_reported,
-            'deduction_from_previous_years': policy_tax_year1.deduction_from_previous_years,
+            'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year2.from_pension,
             'policy_documents': [],
         }, response.json())
@@ -592,7 +592,7 @@ class PolicyTaxYearTest(RestTest):
             'pension_company': model_to_dict(pension_company),
             'preliminary_paid_amount': policy_tax_year1.preliminary_paid_amount,
             'foreign_paid_amount_self_reported': policy_tax_year1.foreign_paid_amount_self_reported,
-            'deduction_from_previous_years': policy_tax_year1.deduction_from_previous_years,
+            'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year1.from_pension,
             'policy_documents': [],
         }], response.json())
@@ -608,7 +608,7 @@ class PolicyTaxYearTest(RestTest):
             'pension_company': model_to_dict(pension_company),
             'preliminary_paid_amount': policy_tax_year1.preliminary_paid_amount,
             'foreign_paid_amount_self_reported': policy_tax_year1.foreign_paid_amount_self_reported,
-            'deduction_from_previous_years': policy_tax_year1.deduction_from_previous_years,
+            'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year1.from_pension,
             'policy_documents': [],
         }], response.json())
@@ -624,7 +624,7 @@ class PolicyTaxYearTest(RestTest):
             'pension_company': model_to_dict(pension_company),
             'preliminary_paid_amount': policy_tax_year2.preliminary_paid_amount,
             'foreign_paid_amount_self_reported': policy_tax_year1.foreign_paid_amount_self_reported,
-            'deduction_from_previous_years': policy_tax_year1.deduction_from_previous_years,
+            'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year2.from_pension,
             'policy_documents': [],
         }], response.json())
@@ -666,7 +666,7 @@ class PolicyTaxYearTest(RestTest):
                 'person_tax_year': person_tax_year.id,
                 'policy_number': policy_tax_year.policy_number,
                 'prefilled_amount': policy_tax_year.prefilled_amount,
-                'deduction_from_previous_years': policy_tax_year.deduction_from_previous_years,
+                'applied_deduction_from_previous_years': policy_tax_year.applied_deduction_from_previous_years,
                 'policy_documents': [],
             },
             self.strip_id(response.json())
