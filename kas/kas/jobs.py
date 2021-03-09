@@ -8,9 +8,17 @@ from worker.models import job_decorator
 def import_mandtal(job):
     year = job.arguments['year']
     tax_year = TaxYear.objects.get(year=year)
-    ImportedKasMandtal.import_year(year)
+    number_of_progress_segments = 2
+    progress_factor = 1 / number_of_progress_segments
+    mandtal_created, mandtal_updated = ImportedKasMandtal.import_year(year, job, progress_factor, 0)
 
-    for item in get_kas_mandtal_model().objects.filter(skatteaar=year):
+    qs = get_kas_mandtal_model().objects.filter(skatteaar=year)
+    count = qs.count()
+    progress_start = 0.5
+    (persons_created, persons_updated) = (0, 0)
+    (persontaxyears_created, persontaxyears_updated) = (0, 0)
+
+    for i, item in enumerate(qs.iterator()):
 
         person_data = {
             'cpr': item.cpr,
@@ -24,7 +32,11 @@ def import_mandtal(job):
             'full_address': item.fuld_adresse,
         }
 
-        person = Person.update_or_create(person_data, 'cpr')
+        (person, status) = Person.update_or_create(person_data, 'cpr')
+        if status == Person.CREATED:
+            persons_created += 1
+        elif status == Person.UPDATED:
+            persons_updated += 1
 
         person_tax_year_data = {
             'person': person,
@@ -33,5 +45,25 @@ def import_mandtal(job):
             'fully_tax_liable': item.skatteomfang is not None and item.skatteomfang.lower() == 'fuld skattepligtig',
         }
 
-        PersonTaxYear.update_or_create(person_tax_year_data, 'tax_year', 'person')
-        job.result = {'number_of_elements_updated': 200}
+        (person_tax_year, status) = PersonTaxYear.update_or_create(person_tax_year_data, 'tax_year', 'person')
+        if status == PersonTaxYear.CREATED:
+            persontaxyears_created += 1
+        elif status == PersonTaxYear.UPDATED:
+            persontaxyears_updated += 1
+
+        job.set_progress_pct(progress_start + (i / count) * (100 * progress_factor))
+
+    job.result = {'summary': [
+        {'label': 'Rå Mandtal-objekter', 'value': [
+            {'label': 'Tilføjet', 'value': mandtal_created},
+            {'label': 'Opdateret', 'value': mandtal_updated}
+        ]},
+        {'label': 'Person-objekter', 'value': [
+            {'label': 'Tilføjet', 'value': persons_created},
+            {'label': 'Opdateret', 'value': persons_updated}
+        ]},
+        {'label': 'Personskatteår-objekter', 'value': [
+            {'label': 'Tilføjet', 'value': persontaxyears_created},
+            {'label': 'Opdateret', 'value': persontaxyears_updated}
+        ]}
+    ]}
