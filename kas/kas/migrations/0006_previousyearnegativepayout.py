@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0005_40973_person_history'),
+        ('kas', '0006_merge_20210307_0917'),
     ]
 
     operations = [

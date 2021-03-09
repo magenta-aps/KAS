@@ -30,7 +30,7 @@ class OpenId:
     def authenticate(request):
         return None  # If the user has nothing in the session, we just don't log him in - there's no SSO cookie that we may want to check
 
-    whitelist = [reverse_lazy('openid:login'), reverse_lazy('openid:callback'), reverse_lazy('openid:logout-callback')]
+    whitelist = [reverse_lazy('sullissivik:openid:login'), reverse_lazy('sullissivik:openid:callback'), reverse_lazy('sullissivik:openid:logout-callback')]
 
     @staticmethod
     def clear_session(session):
@@ -46,19 +46,22 @@ class OpenId:
             client_authn_method=CLIENT_AUTHN_METHOD,
             client_cert=OpenId.client_cert
         )
+        logout_redirect_uri = cls.open_id_settings['login_callback']
+        # If this changes, make sure to notify the sullissivik login provider (their key: PostLogoutRedirectUris)
+        post_logout_redirect_uri = cls.open_id_settings['post_logout_redirect_uri']
         client.store_registration_info(
             RegistrationResponse(**{
                 'client_id': cls.open_id_settings['client_id'],
-                'redirect_uris': [cls.open_id_settings['front_channel_logout_uri']],
-                'post_logout_redirect_uris': [cls.open_id_settings['post_logout_redirect_uri']]
+                'redirect_uris': [logout_redirect_uri],
+                'post_logout_redirect_uris': [post_logout_redirect_uri]
             })
         )
         request_args = {
             'scope': cls.open_id_settings['scope'],
             'client_id': cls.open_id_settings['client_id'],
-            'redirect_uri': cls.open_id_settings['front_channel_logout_uri'],
+            'redirect_uri': logout_redirect_uri,
             'id_token_hint': session.get('raw_id_token'),
-            'post_logout_redirect_uri': cls.open_id_settings['post_logout_redirect_uri'],
+            'post_logout_redirect_uri': post_logout_redirect_uri,
             'state': rndstr(32),
         }
         auth_req = client.construct_EndSessionRequest(

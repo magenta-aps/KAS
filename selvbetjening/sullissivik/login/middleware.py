@@ -3,7 +3,6 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.http import urlencode, urlquote
 
-from sullissivik.login.nemid.nemid import NemId
 from sullissivik.login.openid.openid import OpenId
 
 
@@ -11,7 +10,7 @@ class LoginManager:
 
     @property
     def enabled(self):
-        return NemId.enabled() or OpenId.enabled()
+        return OpenId.enabled()
 
     white_listed_urls = []
 
@@ -20,7 +19,7 @@ class LoginManager:
 
     @property
     def white_listed_urls(self):
-        return NemId.whitelist + OpenId.whitelist + settings.LOGIN_REQUIREMENT_WHITELIST + [reverse('sullissivik:login')]
+        return OpenId.whitelist + settings.LOGIN_REQUIREMENT_WHITELIST + [reverse('sullissivik:login')]
 
     def __call__(self, request):
         if self.enabled:
@@ -32,12 +31,17 @@ class LoginManager:
                         backpage = urlquote(request.path)
                         if request.GET:
                             backpage += "?" + urlencode(request.GET, True)
-                        return redirect(reverse_lazy(settings.LOGIN_DEFAULT_REDIRECT) + "?back=" + backpage)
+                        return redirect(reverse_lazy(settings.LOGIN_UNAUTH_REDIRECT) + "?back=" + backpage)
+        elif settings.DEFAULT_CPR is not None:
+            # For dev environment, use dummy CPR
+            if 'user_info' not in request.session:
+                request.session['user_info'] = {}
+            request.session['user_info']['CPR'] = settings.DEFAULT_CPR
         return self.get_response(request)
 
     @staticmethod
     def authenticate(request):
-        user = NemId.authenticate(request)
+        user = OpenId.authenticate(request)
         return user is not None and user.is_authenticated
 
     @staticmethod

@@ -3,6 +3,7 @@ import os
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.forms import model_to_dict
 from django.test import TestCase
 from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear, PolicyDocument
 from rest_framework import status
@@ -467,9 +468,12 @@ class PolicyTaxYearTest(RestTest):
                     'id': policy_tax_year.id,
                     'prefilled_amount': policy_tax_year.prefilled_amount,
                     'self_reported_amount': policy_tax_year.self_reported_amount,
-                    'pension_company': pension_company.cvr,
+                    'pension_company': model_to_dict(pension_company),
                     'preliminary_paid_amount': policy_tax_year.preliminary_paid_amount,
+                    'foreign_paid_amount_self_reported': policy_tax_year.foreign_paid_amount_self_reported,
+                    'applied_deduction_from_previous_years': policy_tax_year.applied_deduction_from_previous_years,
                     'from_pension': policy_tax_year.from_pension,
+                    'policy_documents': [],
                     **extra
                 }
                 for policy_tax_year in PolicyTaxYear.objects.all()
@@ -506,6 +510,7 @@ class PolicyTaxYearTest(RestTest):
             preliminary_paid_amount=0,
             from_pension=True,
         )
+
         self.authenticate()
 
         response = self.client.get(f"{self.url}{policy_tax_year1.id}/")
@@ -516,9 +521,12 @@ class PolicyTaxYearTest(RestTest):
             'id': policy_tax_year1.id,
             'prefilled_amount': policy_tax_year1.prefilled_amount,
             'self_reported_amount': policy_tax_year1.self_reported_amount,
-            'pension_company': pension_company.cvr,
+            'pension_company': model_to_dict(pension_company),
             'preliminary_paid_amount': policy_tax_year1.preliminary_paid_amount,
+            'foreign_paid_amount_self_reported': policy_tax_year1.foreign_paid_amount_self_reported,
+            'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year1.from_pension,
+            'policy_documents': [],
         }, response.json())
 
         response = self.client.get(f"{self.url}{policy_tax_year2.id}/")
@@ -529,9 +537,12 @@ class PolicyTaxYearTest(RestTest):
             'id': policy_tax_year2.id,
             'prefilled_amount': policy_tax_year2.prefilled_amount,
             'self_reported_amount': policy_tax_year2.self_reported_amount,
-            'pension_company': pension_company.cvr,
+            'pension_company': model_to_dict(pension_company),
             'preliminary_paid_amount': policy_tax_year2.preliminary_paid_amount,
+            'foreign_paid_amount_self_reported': policy_tax_year2.foreign_paid_amount_self_reported,
+            'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year2.from_pension,
+            'policy_documents': [],
         }, response.json())
 
     def test_get_filter(self):
@@ -555,6 +566,7 @@ class PolicyTaxYearTest(RestTest):
             prefilled_amount=100,
             self_reported_amount=100,
             preliminary_paid_amount=50,
+            foreign_paid_amount_self_reported=0,
             from_pension=True,
         )
         policy_tax_year2 = PolicyTaxYear.objects.create(
@@ -564,6 +576,7 @@ class PolicyTaxYearTest(RestTest):
             prefilled_amount=200,
             self_reported_amount=200,
             preliminary_paid_amount=50,
+            foreign_paid_amount_self_reported=0,
             from_pension=False,
         )
         self.authenticate()
@@ -576,9 +589,12 @@ class PolicyTaxYearTest(RestTest):
             'id': policy_tax_year1.id,
             'prefilled_amount': policy_tax_year1.prefilled_amount,
             'self_reported_amount': policy_tax_year1.self_reported_amount,
-            'pension_company': pension_company.cvr,
+            'pension_company': model_to_dict(pension_company),
             'preliminary_paid_amount': policy_tax_year1.preliminary_paid_amount,
+            'foreign_paid_amount_self_reported': policy_tax_year1.foreign_paid_amount_self_reported,
+            'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year1.from_pension,
+            'policy_documents': [],
         }], response.json())
 
         response = self.client.get(f"{self.url}?year=2020")
@@ -589,9 +605,12 @@ class PolicyTaxYearTest(RestTest):
             'id': policy_tax_year1.id,
             'prefilled_amount': policy_tax_year1.prefilled_amount,
             'self_reported_amount': policy_tax_year1.self_reported_amount,
-            'pension_company': pension_company.cvr,
+            'pension_company': model_to_dict(pension_company),
             'preliminary_paid_amount': policy_tax_year1.preliminary_paid_amount,
+            'foreign_paid_amount_self_reported': policy_tax_year1.foreign_paid_amount_self_reported,
+            'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year1.from_pension,
+            'policy_documents': [],
         }], response.json())
 
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2021")
@@ -602,9 +621,12 @@ class PolicyTaxYearTest(RestTest):
             'id': policy_tax_year2.id,
             'prefilled_amount': policy_tax_year2.prefilled_amount,
             'self_reported_amount': policy_tax_year2.self_reported_amount,
-            'pension_company': pension_company.cvr,
+            'pension_company': model_to_dict(pension_company),
             'preliminary_paid_amount': policy_tax_year2.preliminary_paid_amount,
+            'foreign_paid_amount_self_reported': policy_tax_year1.foreign_paid_amount_self_reported,
+            'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year2.from_pension,
+            'policy_documents': [],
         }], response.json())
 
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2020")
@@ -632,6 +654,7 @@ class PolicyTaxYearTest(RestTest):
         item = {
             'self_reported_amount': 200,
             'preliminary_paid_amount': 30,
+            'foreign_paid_amount_self_reported': 0,
             'from_pension': True,
         }
         response = self.client.patch(f"{self.url}{policy_tax_year.id}/", json.dumps(item), content_type='application/json; charset=utf-8')
@@ -639,10 +662,12 @@ class PolicyTaxYearTest(RestTest):
         self.assertDictEqual(
             {
                 **item,
-                'pension_company': pension_company.cvr,
+                'pension_company': model_to_dict(pension_company),
                 'person_tax_year': person_tax_year.id,
                 'policy_number': policy_tax_year.policy_number,
                 'prefilled_amount': policy_tax_year.prefilled_amount,
+                'applied_deduction_from_previous_years': policy_tax_year.applied_deduction_from_previous_years,
+                'policy_documents': [],
             },
             self.strip_id(response.json())
         )
@@ -669,8 +694,9 @@ class PolicyTaxYearTest(RestTest):
             'prefilled_amount': 100,
             'self_reported_amount': 200,
             'person_tax_year': person_tax_year.id,
-            'pension_company': pension_company.cvr,
+            'pension_company': model_to_dict(pension_company),
             'preliminary_paid_amount': '10.25',
+            'foreign_paid_amount_self_reported': 0,
             'from_pension': True
         }
 

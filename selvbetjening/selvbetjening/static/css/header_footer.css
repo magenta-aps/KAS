@@ -57,12 +57,20 @@
     background-size: 1rem auto;
     padding: 0 0 0 1.5rem;
     cursor: pointer;
+    width: 1rem;
+    height: 1rem;
 }
 .locale-changer .option-da {
     background: url(../img/flag_da.svg) no-repeat 0 transparent;
     background-size: 1rem auto;
     padding: 0 0 0 1.5rem;
     cursor: pointer;
+    width: 1rem;
+    height: 1rem;
+}
+
+.locale-changer button[type=submit]:hover {
+    background-color: transparent;
 }
 
 footer {

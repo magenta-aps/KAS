@@ -30,7 +30,7 @@ if getattr(settings, 'OPENID_CONNECT', None) and settings.OPENID_CONNECT.get('en
     client_cert = (open_id_settings['client_certificate'], open_id_settings['private_key'])
 
 
-class Login(View):
+class LoginView(View):
     """
     builds up the url with the correct GET parameters and redirects the browser to it.
     So the user can login to the external OpenId Provider
@@ -40,9 +40,10 @@ class Login(View):
     def get(self, request, *args, **kwargs):
         client = Client(client_authn_method=CLIENT_AUTHN_METHOD, client_cert=OpenId.client_cert)
         provider_info = client.provider_config(OpenId.open_id_settings['issuer'])  # noqa
+        login_callback_uri = OpenId.open_id_settings['login_callback']
         client_reg = RegistrationResponse(**{
             'client_id': OpenId.open_id_settings['client_id'],
-            'redirect_uris': [OpenId.open_id_settings['redirect_uri']]
+            'redirect_uris': [login_callback_uri]
         })
         client.store_registration_info(client_reg)
 
@@ -52,7 +53,7 @@ class Login(View):
             'response_type': 'code',
             'scope': settings.OPENID_CONNECT['scope'],
             'client_id': settings.OPENID_CONNECT['client_id'],
-            'redirect_uri': settings.OPENID_CONNECT['redirect_uri'],
+            'redirect_uri': login_callback_uri,
             'state': state,
             'nonce': nonce
         }
@@ -78,11 +79,11 @@ class LoginCallback(TemplateView):
             if 'oid_state' in request.session:
                 del request.session['oid_state']  # if nonce was missing ensure oid_state is too
             logger.exception(SuspiciousOperation('Session `oid_nonce` does not exist!'))
-            return HttpResponseRedirect(reverse('openid:login'))
+            return HttpResponseRedirect(reverse('sullissivik:openid:login'))
 
         if 'oid_state' not in request.session:
             logger.exception(SuspiciousOperation('Session `oid_state` does not exist!'))
-            return HttpResponseRedirect(reverse('openid:login'))
+            return HttpResponseRedirect(reverse('sullissivik:openid:login'))
 
         client = Client(client_authn_method=CLIENT_AUTHN_METHOD, client_cert=OpenId.client_cert)
         client.keyjar[""] = OpenId.kc_rsa
@@ -114,14 +115,14 @@ class LoginCallback(TemplateView):
             if aresp['state'] != request.session['oid_state']:
                 del request.session['oid_state']
                 logger.exception(SuspiciousOperation('Session `oid_state` does not match the OID callback state'))
-                return HttpResponseRedirect(reverse('openid:login'))
+                return HttpResponseRedirect(reverse('sullissivik:openid:login'))
 
             provider_info = client.provider_config(settings.OPENID_CONNECT['issuer'])  # noqa
             logger.debug('provider info: {}'.format(client.config))
 
             request_args = {
                 'code': aresp['code'],
-                'redirect_uri': request.build_absolute_uri(reverse('openid:callback'))
+                'redirect_uri': request.build_absolute_uri(reverse('sullissivik:openid:login-callback'))
             }
 
             resp = client.do_access_token_request(
@@ -154,6 +155,11 @@ class LoginCallback(TemplateView):
                 del request.session['oid_state']
                 # after the oauth flow is done and we have the user_info redirect to the original page or the frontpage
                 return HttpResponseRedirect(request.session.get('backpage', reverse(settings.LOGIN_DEFAULT_REDIRECT)))
+
+
+class LogoutView(View):
+    def get(self, request, *args, **kwargs):
+        return OpenId.logout(self.request.session)
 
 
 class LogoutCallback(View):
