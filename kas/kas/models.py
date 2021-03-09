@@ -344,8 +344,9 @@ class PolicyTaxYear(models.Model):
         available_to_be_used_amount = -self.calculated_result - self.sum_of_used_amount()
         to_be_used_amount = min(available_to_be_used_amount, use_up_to_amount)
 
-        item, created = PreviousYearNegativePayout.objects.get_or_create(used_from=self, used_for=deducting_policy_tax_year)
-        item.transferred_negative_payout+=to_be_used_amount
+        item, created = PreviousYearNegativePayout.objects.get_or_create(used_from=self,
+                                                                         used_for=deducting_policy_tax_year)
+        item.transferred_negative_payout += to_be_used_amount
         item.save()
 
     def sum_of_deducted_amount(self):

@@ -1,14 +1,7 @@
-import json
-import os
 
-from django.contrib.auth.models import User
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
-from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear, PolicyDocument
+from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear
 from kas.models import PreviousYearNegativePayout
-from rest_framework import status
-from rest_framework.authtoken.models import Token
-from rest_framework.test import APIClient
 
 
 class DeductionTest(TestCase):
@@ -51,7 +44,4 @@ class DeductionTest(TestCase):
 
         policy_tax_year1.use_amount(2000, policy_tax_year2)
 
-
-
         print(PreviousYearNegativePayout.objects.first())
-
