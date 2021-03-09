@@ -132,8 +132,8 @@ OPENID_CONNECT = {
     'issuer': os.environ.get('OPENID_ISSUER'),
     'scope': os.environ.get('OPENID_SCOPE'),
     'client_id': os.environ.get('OPENID_CLIENT_ID'),
-    'client_certificate': (BASE_DIR + "/sullissivik/cert/" + os.environ['OPENID_CLIENT_CERTIFICATE_FILENAME']) if 'OPENID_CLIENT_CERTIFICATE_FILENAME' in os.environ else None,
-    'private_key': BASE_DIR + "/sullissivik/cert/" + os.environ['OPENID_PRIVATE_KEY_FILENAME'] if 'OPENID_PRIVATE_KEY_FILENAME' in os.environ else None,
+    'client_certificate': os.environ.get('OPENID_CLIENT_CERTIFICATE_FILE'),
+    'private_key': os.environ.get('OPENID_PRIVATE_KEY_FILE'),
     'login_callback': os.environ.get('OPENID_LOGIN_CALLBACK'),  # This must be equal to fqdn + reverse('sullissivik:openid:login-callback')
     'front_channel_logout_uri': os.environ.get('OPENID_FRONT_CHANNEL_LOGOUT_URI'),  # This must be equal to fqdn + reverse('sullissivik:openid:logout-callback')
     'logout_uri': os.environ.get('OPENID_LOGOUT_URI'),
