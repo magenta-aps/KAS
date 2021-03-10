@@ -10,6 +10,7 @@ from django.db.models.signals import post_save
 from django.forms import model_to_dict
 from django.utils.translation import gettext as _
 from simple_history.models import HistoricalRecords
+from django.db.models import Sum
 
 
 class HistoryMixin(object):
@@ -477,8 +478,67 @@ class PolicyTaxYear(models.Model):
         self.calculated_full_tax = result["full_tax"]
         self.calculated_result = result["tax_with_deductions"]
 
+    def sum_of_used_amount(self):
+        # Deliver the amount of this years loss used in other years deduction
+        result = self.payouts_using.aggregate(Sum('transferred_negative_payout'))
+
+        value = result['transferred_negative_payout__sum']
+        if value is None:
+            return 0
+
+        return value
+
+    # Make a registration that we use some ot self's loss as deductoin on 'deducting_policy_tax_year'
+    def use_amount(self, use_up_to_amount, deducting_policy_tax_year):
+        # Create a relation of usage of this years loss as deduction in other years
+        if self.year_adjusted_amount >= 0:
+            return 0
+
+        if self.sum_of_used_amount() >= -self.year_adjusted_amount:
+            return 0
+
+        available_to_be_used_amount = -self.year_adjusted_amount - self.sum_of_used_amount()
+        to_be_used_amount = min(available_to_be_used_amount, use_up_to_amount)
+
+        item, created = PreviousYearNegativePayout.objects.get_or_create(used_from=self,
+                                                                         used_for=deducting_policy_tax_year)
+        item.transferred_negative_payout += to_be_used_amount
+        item.save()
+        return to_be_used_amount
+
+    def sum_of_deducted_amount(self):
+        # Deliver the amount of this years deduction
+        result = self.payouts_used.aggregate(Sum('transferred_negative_payout'))
+        return result['transferred_negative_payout__sum']
+
     def __str__(self):
         return f"{self.__class__.__name__}(policy_number={self.policy_number}, cpr={self.person.cpr}, year={self.tax_year.year})"
+
+
+class PreviousYearNegativePayout(models.Model):
+
+    used_from = models.ForeignKey(
+        PolicyTaxYear,
+        related_name='payouts_using',
+        null=True,
+        on_delete=models.PROTECT
+    )
+
+    used_for = models.ForeignKey(
+        PolicyTaxYear,
+        related_name='payouts_used',
+        null=True,
+        on_delete=models.PROTECT
+    )
+
+    transferred_negative_payout = models.BigIntegerField(
+        verbose_name=_('Overført negativt afkast'),
+        blank=True,
+        default=0,
+    )
+
+    def __str__(self):
+        return f'used from :{self.used_from} used for :{self.used_for} payout :{self.transferred_negative_payout}'
 
 
 class PolicyDocument(models.Model):
