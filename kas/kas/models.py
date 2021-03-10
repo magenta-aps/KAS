@@ -488,13 +488,14 @@ class PolicyTaxYear(models.Model):
 
         return value
 
+    # Make a registration that we use some ot self's loss as deductoin on 'deducting_policy_tax_year'
     def use_amount(self, use_up_to_amount, deducting_policy_tax_year):
         # Create a relation of usage of this years loss as deduction in other years
         if self.year_adjusted_amount >= 0:
-            raise Exception("No loss this year")
+            return 0
 
         if self.sum_of_used_amount() >= -self.year_adjusted_amount:
-            raise Exception("All loss used")
+            return 0
 
         available_to_be_used_amount = -self.year_adjusted_amount - self.sum_of_used_amount()
         to_be_used_amount = min(available_to_be_used_amount, use_up_to_amount)

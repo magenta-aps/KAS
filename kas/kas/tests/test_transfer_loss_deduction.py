@@ -1,4 +1,3 @@
-from builtins import Exception
 
 from django.test import TestCase
 from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear
@@ -63,10 +62,8 @@ class DeductionTest(TestCase):
         assert used_previous_loss == 900
         used_previous_loss = policy_tax_year0.use_amount(900, policy_tax_year2)
         assert used_previous_loss == 100
-        try:
-            policy_tax_year0.use_amount(900, policy_tax_year2)
-        except Exception:
-            pass
+        used_previous_loss = policy_tax_year0.use_amount(900, policy_tax_year2)
+        assert used_previous_loss == 0
 
         used_previous_loss = policy_tax_year1.use_amount(300, policy_tax_year2)
         assert used_previous_loss == 300
@@ -110,7 +107,5 @@ class DeductionTest(TestCase):
             calculated_result=1000
         )
 
-        try:
-            policy_tax_year2.use_amount(1, policy_tax_year3)
-        except Exception:
-            pass
+        used_previous_loss = policy_tax_year2.use_amount(1, policy_tax_year3)
+        assert used_previous_loss == 0
