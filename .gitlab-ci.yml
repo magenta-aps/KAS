@@ -132,7 +132,6 @@ Selvbetjening Unittest:
     POSTGRES_HOST: kas-db
     DJANGO_LANGUAGE_COOKIE_DOMAIN: localhost
     REST_TOKEN: 1799c88d-10e6-489d-8fe9-adeb2fd8a36f
-    OPENID_ENABLED: false
     
   script:
     - cd /app && python manage.py test
