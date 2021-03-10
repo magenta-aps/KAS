@@ -101,3 +101,26 @@ takes a simple job instance as context.
 
 If there are any exceptions raised while executing the job it will trigger the registered exception handler which logs
 the traceback in the traceback file on the job and set the job to status 'failed'.
+
+##Running the containers as you
+Because we specify a hardcoded user and group i the docker file this causes issues when you are trying to generate
+migrations and translations since the container is trying to write as an unknown user to the hosts filesystem.
+To overcome this we can ask the container to run as your user since your user should be the owner of the source code 
+for the project and should be able to write files to the mounted volumes. Because the local user aka your UID and GID
+will be different from installation to installation we can create a docker-compose.override.yml with the current 
+uid and gid. First obtain the UID and GID by using the id command which should output something like
+```bash
+uid=1000(mac) gid=1000(mac) groups=1000(mac) ....
+```
+
+Then we can crate a docker-compose.override.yml with the following content (using the obtained uid, gid).
+```yaml
+version: "3.4"
+services:
+  kas-web:
+    user: "1000:1000" #uid:gid
+
+
+  selvbetjening:
+    user: "1000:1000"
+```
