@@ -490,13 +490,13 @@ class PolicyTaxYear(models.Model):
 
     def use_amount(self, use_up_to_amount, deducting_policy_tax_year):
         # Create a relation of usage of this years loss as deduction in other years
-        if self.calculated_result >= 0:
+        if self.year_adjusted_amount >= 0:
             raise Exception("No loss this year")
 
-        if self.sum_of_used_amount() >= -self.calculated_result:
+        if self.sum_of_used_amount() >= -self.year_adjusted_amount:
             raise Exception("All loss used")
 
-        available_to_be_used_amount = -self.calculated_result - self.sum_of_used_amount()
+        available_to_be_used_amount = -self.year_adjusted_amount - self.sum_of_used_amount()
         to_be_used_amount = min(available_to_be_used_amount, use_up_to_amount)
 
         item, created = PreviousYearNegativePayout.objects.get_or_create(used_from=self,

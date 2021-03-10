@@ -36,7 +36,7 @@ class DeductionTest(TestCase):
             self_reported_amount=100,
             preliminary_paid_amount=0,
             from_pension=True,
-            calculated_result=-1000
+            year_adjusted_amount=-1000
         )
         policy_tax_year1 = PolicyTaxYear.objects.create(
             policy_number='1234',
@@ -46,7 +46,7 @@ class DeductionTest(TestCase):
             self_reported_amount=100,
             preliminary_paid_amount=0,
             from_pension=True,
-            calculated_result=-1000
+            year_adjusted_amount=-1000
         )
         policy_tax_year2 = PolicyTaxYear.objects.create(
             policy_number='1234',
@@ -56,7 +56,7 @@ class DeductionTest(TestCase):
             self_reported_amount=200,
             preliminary_paid_amount=20,
             from_pension=False,
-            calculated_result=1000
+            year_adjusted_amount=1000
         )
 
         used_previous_loss = policy_tax_year0.use_amount(900, policy_tax_year2)
