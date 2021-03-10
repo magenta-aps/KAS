@@ -1,0 +1,12 @@
+<table class="table job-summary">
+    {% for item in result.summary %}
+        {% for kvp in item.value %}
+        <tr>
+            {% if forloop.first %}
+            <td rowspan="{{item.value|length}}" class="col-sm-3">{{item.label}}</td>
+            {% endif %}
+            <td class="col-sm-9">{{ kvp.label }}: {{ kvp.value }}</td>
+        </tr>
+        {% endfor %}
+    {% endfor %}
+</table>

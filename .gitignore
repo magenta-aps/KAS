@@ -3,3 +3,4 @@ env/
 .idea/
 kas/uploads/*
 *.mo
+docker-compose.override.yml

@@ -77,27 +77,50 @@ If `settings.ENVIRONMENT` is set to `production`, the real eSkat database will b
 
 ## Creating new job Types
 To create a new job type you have to add (or re-use) a form located in worker forms (use MandtalImportJobForm as an example).
-The form is going to allow the user to add input parameters af selecting the job type.Eg the MandtalImportJobForm
+The form is going to allow the user to add input parameters and selecting the job type, e.g. the MandtalImportJobForm
 allows the user to input a tax year to import from eskat.
 
-Secondly we need to add the job to the job registry located in worker.job_registry.py. 
-The job_registry the label and a reference to the newly created form. 
+Secondly we need to add the job to the job registry located in worker.job_registry.py.
+The job_registry holds the label and a reference to the newly created form.
 The key is used as an internal/systematic name for the job-type.
 
 Thirdly we need to import and add the job function to the StartJobView (worker/views.py)
 so the function can get passed to the schedule_job function.
 
 ### Writing the job function
-When writing the job function you could use the job_decorator from worker/models.py to handle starting, fetching 
-and finishing the job. If you use the decorator the job function will take a single argument: **job** which is the job 
+When writing the job function you could use the job_decorator from worker/models.py to handle starting, fetching
+and finishing the job. If you use the decorator the job function will take a single argument: **job** which is the job
 instance stored in the database. If you need any input parameters for the job they are stored in the **arguments** field
 on the job as a dictionary.
 
-When you need to update the progress you simply set the **progress** field on the job(or use the method on the job class) 
-and save the job to persist it in the database. All result data like how many items are imported/changed can be stored
+When you need to update the progress you simply set the **progress** field on the job (or use the method on the job class)
+and save the job to persist it in the database. All result data, like how many items are imported/changed, can be stored
 in the **result** field (JsonB) and then it is up to you to parse it and present it in the job_detail template that
 takes a simple job instance as context.
 
 
 If there are any exceptions raised while executing the job it will trigger the registered exception handler which logs
-the traceback on the traceback fil on the job and set the job to failed.
+the traceback in the traceback file on the job and set the job to status 'failed'.
+
+##Running the containers as you
+Because we specify a hardcoded user and group i the docker file this causes issues when you are trying to generate
+migrations and translations since the container is trying to write as an unknown user to the hosts filesystem.
+To overcome this we can ask the container to run as your user since your user should be the owner of the source code 
+for the project and should be able to write files to the mounted volumes. Because the local user aka your UID and GID
+will be different from installation to installation we can create a docker-compose.override.yml with the current 
+uid and gid. First obtain the UID and GID by using the id command which should output something like
+```bash
+uid=1000(mac) gid=1000(mac) groups=1000(mac) ....
+```
+
+Then we can crate a docker-compose.override.yml with the following content (using the obtained uid, gid).
+```yaml
+version: "3.4"
+services:
+  kas-web:
+    user: "1000:1000" #uid:gid
+
+
+  selvbetjening:
+    user: "1000:1000"
+```

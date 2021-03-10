@@ -7,7 +7,7 @@ CREATE_USERS=${CREATE_USERS:=false}
 DUMMYDATA=${DUMMYDATA:=false}
 DJANGO_DEBUG=${DJANGO_DEBUG:=false}
 
-if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] [ "$TEST" = true ] || [ "$CREATE_USERS" = true ] || [ "$DUMMYDATA" = true ]; then
+if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] || [ "$TEST" = true ] || [ "$CREATE_USERS" = true ] || [ "$DUMMYDATA" = true ]; then
   python manage.py wait_for_db
   if [ "$MAKE_MIGRATIONS" = true ]; then
     echo 'generating migrations'
