@@ -128,16 +128,16 @@ REST_TOKEN = os.environ['REST_TOKEN']
 DEFAULT_CPR = os.environ.get('DEFAULT_CPR', None)
 
 OPENID_CONNECT = {
-    'enabled': bool(strtobool(os.environ.get('OPENID_ENABLED', 'False'))),
-    'issuer': os.environ.get('OPENID_ISSUER'),
-    'scope': os.environ.get('OPENID_SCOPE'),
-    'client_id': os.environ.get('OPENID_CLIENT_ID'),
-    'client_certificate': os.environ.get('OPENID_CLIENT_CERTIFICATE_FILE'),
-    'private_key': os.environ.get('OPENID_PRIVATE_KEY_FILE'),
-    'login_callback': os.environ.get('OPENID_LOGIN_CALLBACK'),  # This must be equal to fqdn + reverse('sullissivik:openid:login-callback')
-    'front_channel_logout_uri': os.environ.get('OPENID_FRONT_CHANNEL_LOGOUT_URI'),  # This must be equal to fqdn + reverse('sullissivik:openid:logout-callback')
-    'logout_uri': os.environ.get('OPENID_LOGOUT_URI'),
-    'post_logout_redirect_uri': os.environ.get('OPENID_POST_LOGOUT_REDIRECT_URI'),
+    'enabled': bool(strtobool(os.environ['OPENID_ENABLED'])),
+    'issuer': os.environ['OPENID_ISSUER'],
+    'scope': os.environ['OPENID_SCOPE'],
+    'client_id': os.environ['OPENID_CLIENT_ID'],
+    'client_certificate': os.environ['OPENID_CLIENT_CERTIFICATE_FILE'],
+    'private_key': os.environ['OPENID_PRIVATE_KEY_FILE'],
+    'login_callback': os.environ['OPENID_LOGIN_CALLBACK'],  # This must be equal to fqdn + reverse('sullissivik:openid:login-callback')
+    'front_channel_logout_uri': os.environ['OPENID_FRONT_CHANNEL_LOGOUT_URI'],  # This must be equal to fqdn + reverse('sullissivik:openid:logout-callback')
+    'logout_uri': os.environ['OPENID_LOGOUT_URI'],
+    'post_logout_redirect_uri': os.environ['OPENID_POST_LOGOUT_REDIRECT_URI']
 }
 
 NEMID_CONNECT = {
