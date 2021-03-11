@@ -12,8 +12,16 @@ class JobTypeSelectForm(BootstrapForm):
         self.fields['job_type'].choices = ((k, v['label'])for k, v in get_job_types().items())
 
 
-class MandtalImportJobForm(BootstrapForm):
+class YearForm(BootstrapForm):
     year = forms.IntegerField(min_value=2000, label=_('År'))
 
     class Meta:
         fields = ('year', )
+
+
+class MandtalImportJobForm(YearForm):
+    pass
+
+
+class R75ImportJobForm(YearForm):
+    pass

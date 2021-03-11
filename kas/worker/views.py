@@ -68,6 +68,9 @@ class StartJobView(LoginRequiredMixin, FormView):
         if self.kwargs['job_type'] == 'ImportMandtalJob':
             from kas.jobs import import_mandtal
             function = import_mandtal
+        if self.kwargs['job_type'] == 'ImportR75Job':
+            from kas.jobs import import_r75
+            function = import_r75
         if function:
             Job.schedule_job(function=function,
                              job_type=self.kwargs['job_type'],

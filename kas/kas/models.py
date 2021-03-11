@@ -11,6 +11,7 @@ from django.forms import model_to_dict
 from django.utils.translation import gettext as _
 from simple_history.models import HistoricalRecords
 from django.db.models import Sum
+import calendar
 
 
 class HistoryMixin(object):
@@ -56,13 +57,15 @@ class PensionCompany(models.Model):
         verbose_name=_('Navn'),
         help_text=_('Navn'),
         max_length=255,
-        blank=True
+        blank=True,
+        null=True,
     )
 
     address = models.TextField(
         verbose_name=_('Adresse'),
         help_text=_('Adresse'),
-        blank=True
+        blank=True,
+        null=True,
     )
 
     email = models.TextField(
@@ -84,7 +87,19 @@ class PensionCompany(models.Model):
         validators=(
             MinValueValidator(limit_value=1),
             MaxValueValidator(limit_value=99999999)
-        )
+        ),
+        null=True,
+    )
+
+    agreement_present = models.BooleanField(
+        default=False,
+        verbose_name=_("Foreligger der en aftale med skattestyrelsen")
+    )
+
+    reg_nr = models.PositiveSmallIntegerField(
+        verbose_name=_('Reg. nr.'),
+        null=True,
+        unique=True,
     )
 
     def __str__(self):
@@ -101,6 +116,14 @@ class TaxYear(models.Model):
         null=False,
         validators=(MinValueValidator(limit_value=2000),)
     )
+
+    @property
+    def is_leap_year(self):
+        return calendar.isleap(self.year)
+
+    @property
+    def days_in_year(self):
+        return 366 if self.is_leap_year else 365
 
     def __str__(self):
         return f"{self.__class__.__name__}(year={self.year})"
@@ -186,11 +209,17 @@ class PersonTaxYear(HistoryMixin, models.Model):
         default=True
     )
 
+    @property
+    def days_in_year_factor(self):
+        return self.number_of_days / self.tax_year.days_in_year
+
     def __str__(self):
         return f"{self.__class__.__name__}(cpr={self.person.cpr}, year={self.tax_year.year})"
 
 
-class PolicyTaxYear(models.Model):
+class PolicyTaxYear(HistoryMixin, models.Model):
+
+    history = HistoricalRecords()
 
     class Meta:
         unique_together = ['person_tax_year', 'pension_company', 'policy_number']
@@ -291,15 +320,6 @@ class PolicyTaxYear(models.Model):
         validators=(MinValueValidator(limit_value=0),)
     )
 
-    # TODO: This needs to be handled with a relation stating which
-    # amount was used from which year.
-    applied_deduction_from_previous_years = models.BigIntegerField(
-        verbose_name=_('Anvendt fradrag fra tidligere år'),
-        blank=True,
-        default=0,
-        validators=(MinValueValidator(limit_value=0),)
-    )
-
     calculated_full_tax = models.BigIntegerField(
         verbose_name=_('Beregnet skat uden fradrag'),
         blank=True,
@@ -310,6 +330,14 @@ class PolicyTaxYear(models.Model):
         verbose_name=_('Beregnet resultat'),
         blank=True,
         default=0,
+    )
+
+    available_negative_return = models.BigIntegerField(
+        verbose_name=_('Tilgængeligt fradrag fra andre år (beregnet ud fra andre data)'),
+        blank=True,
+        null=True,
+        default=None,
+        editable=False,
     )
 
     modified_by = models.CharField(
@@ -335,8 +363,7 @@ class PolicyTaxYear(models.Model):
         initial_amount: int,                           # The full base amount for the whole tax year
         days_in_year: int = 365,                       # Days in the year of the calculation
         taxable_days_in_year: int = 365,               # Number of days the person is paying tax in Greenland
-        negative_return_last_ten_years: int = 0,       # Sum of negative return last 10 years (as a positive integer)
-        used_negative_return_last_ten_years: int = 0,  # Spent negative return from last 10 years
+        available_deduction_data: dict = None,         # Dict of years to available deduction amounts
         foreign_paid_amount: int = 0,                  # Amount already paid in taxes in foreign country
     ) -> dict:
 
@@ -349,31 +376,44 @@ class PolicyTaxYear(models.Model):
         if taxable_days_in_year > days_in_year:
             raise ValueError("More taxable days than days in year")
 
-        if negative_return_last_ten_years < 0:
-            raise ValueError("Negative return should be specified using a positive number")
+        if available_deduction_data is None:
+            available_deduction_data = {}
 
-        if used_negative_return_last_ten_years < 0:
-            raise ValueError("Used negative return must be zero or higher")
+        for year, amount in available_deduction_data.items():
+            if amount < 0:
+                raise ValueError("Negative return should be specified using a positive number")
 
         if foreign_paid_amount < 0:
             raise ValueError("Foreign paid amount must be zero or higher")
 
-        positive_amount = max(0, initial_amount)
-
         # Calculate taxable days adjust factor
         tax_days_adjust_factor = taxable_days_in_year / days_in_year
 
+        # Make sure initial amount is an integer
+        initial_amount = int(initial_amount)
+
         # Adjust for taxable days. Round down because we only operate in integer amounts of money
-        year_adjusted_amount = math.floor(positive_amount * tax_days_adjust_factor)
+        year_adjusted_amount = math.floor(initial_amount * tax_days_adjust_factor)
+
+        taxable_amount = max(0, year_adjusted_amount)
+        used_negative_return = 0
+        desired_deduction_data = {}
+        # Given the available_deduction_data dict, calculate how much deduction we want
+        if taxable_amount > 0:
+            for year, amount in sorted(available_deduction_data.items(), key=lambda kvp: kvp[0]):
+                if amount > 0:
+                    used_amount = min(amount, taxable_amount)
+                    taxable_amount -= used_amount
+                    used_negative_return += used_amount
+                    desired_deduction_data[year] = used_amount
+                    if taxable_amount == 0:
+                        break
+
+            # Taxable amount
+            assert taxable_amount == year_adjusted_amount - used_negative_return
 
         # The amount of negative return that can actually be used
-        available_negative_return = max(0, used_negative_return_last_ten_years - negative_return_last_ten_years)
-
-        # Used negative return
-        used_negative_return = min(available_negative_return, year_adjusted_amount)
-
-        # Taxable amount
-        taxable_amount = year_adjusted_amount - used_negative_return
+        available_negative_return = sum(available_deduction_data.values())
 
         # Calculate the tax
         full_tax = math.floor(taxable_amount * settings.KAS_TAX_RATE)
@@ -384,10 +424,7 @@ class PolicyTaxYear(models.Model):
             "initial_amount": initial_amount,
             "days_in_year": days_in_year,
             "taxable_days_in_year": taxable_days_in_year,
-            "negative_return_last_ten_years": negative_return_last_ten_years,
-            "used_negative_return_last_ten_years": used_negative_return_last_ten_years,
             "foreign_paid_amount": foreign_paid_amount,
-            "positive_amount": positive_amount,
             "tax_days_adjust_factor": tax_days_adjust_factor,
             "year_adjusted_amount": year_adjusted_amount,
             "available_negative_return": available_negative_return,
@@ -395,6 +432,7 @@ class PolicyTaxYear(models.Model):
             "taxable_amount": taxable_amount,
             "full_tax": full_tax,
             "tax_with_deductions": tax_with_deductions,
+            "desired_deduction_data": desired_deduction_data,
         }
 
     @property
@@ -439,44 +477,38 @@ class PolicyTaxYear(models.Model):
             person_tax_year__tax_year__year__gte=self.year - years,
         )
 
-    @property
-    def negative_return_last_ten_years(self):
-        # Sum up negative amounts from last ten years
-        result = self.previous_years_qs(years=10).filter(
-            year_adjusted_amount__lt=0
-        ).aggregate(models.Sum('year_adjusted_amount'))
-
-        return result["year_adjusted_amount_sum"] * -1
-
-    @property
-    def used_negative_return_last_ten_years(self):
-
-        # Sum up applied deductions from last nine years
-        # Has to be nine instead of ten as deductions are used the year
-        # after the negative return is present.
-        result = self.previous_years_qs(years=9).aggregate(
-            models.Sum('applied_deduction_from_previous_years')
-        )
-
-        return result['applied_deduction_from_previous_years__sum']
-
     def get_calculation(self):
         return PolicyTaxYear.perform_calculation(
             self.initial_amount,
             days_in_year=self.tax_year.days_in_year,
             taxable_days_in_year=self.person_tax_year.number_of_days,
-            negative_return_last_ten_years=self.negative_return_last_ten_years,
-            used_negative_return_last_ten_years=self.used_negative_return_last_ten_years,
+            available_deduction_data=self.calculate_available_yearly_deduction(),
             foreign_paid_amount=self.foreign_paid_amount_actual,
         )
 
+    def calculate_available_yearly_deduction(self):
+        available = {}
+        qs = self.previous_years_qs().filter(year_adjusted_amount__lt=0).order_by('person_tax_year__tax_year__year')
+        # Loop over prior years, using deductible amounts from them until either we have used it all, or nothing more is needed
+        for policy in qs.iterator():
+            result = policy.payouts_using.exclude(used_for=self.id).aggregate(Sum('transferred_negative_payout'))
+            used = result['transferred_negative_payout__sum'] or 0
+            available[policy.year] = (-policy.year_adjusted_amount) - used  # Positive value
+        return available
+
     def recalculate(self):
+        self.payouts_used.all().delete()
         result = self.get_calculation()
 
+        other_policies = {policy.year: policy for policy in self.previous_years_qs()}
+        for year, amount in result['desired_deduction_data'].items():
+            other_policies[year].use_amount(amount, self)
+
         self.year_adjusted_amount = result["year_adjusted_amount"]
-        self.applied_deduction_from_previous_years = result["used_negative_return"]
         self.calculated_full_tax = result["full_tax"]
         self.calculated_result = result["tax_with_deductions"]
+        self.available_negative_return = result["available_negative_return"]
+        self.save()
 
     def sum_of_used_amount(self):
         # Deliver the amount of this years loss used in other years deduction
@@ -497,19 +529,40 @@ class PolicyTaxYear(models.Model):
         if self.sum_of_used_amount() >= -self.year_adjusted_amount:
             return 0
 
-        available_to_be_used_amount = -self.year_adjusted_amount - self.sum_of_used_amount()
+        available_to_be_used_amount = (-self.year_adjusted_amount) - self.sum_of_used_amount()
         to_be_used_amount = min(available_to_be_used_amount, use_up_to_amount)
 
-        item, created = PreviousYearNegativePayout.objects.get_or_create(used_from=self,
-                                                                         used_for=deducting_policy_tax_year)
+        item, created = PreviousYearNegativePayout.objects.get_or_create(
+            used_from=self,
+            used_for=deducting_policy_tax_year
+        )
         item.transferred_negative_payout += to_be_used_amount
         item.save()
         return to_be_used_amount
 
-    def sum_of_deducted_amount(self):
-        # Deliver the amount of this years deduction
+    @property
+    def available_deduction_from_previous_years(self):
+        if self.available_negative_return is None:
+            self.available_negative_return = sum(self.calculate_available_yearly_deduction().values())
+        return self.available_negative_return
+
+    @property
+    def applied_deduction_from_previous_years(self):
+        # Return the amount of deductions used by this policy (losses from other years used as deductions in this year)
         result = self.payouts_used.aggregate(Sum('transferred_negative_payout'))
-        return result['transferred_negative_payout__sum']
+        return result['transferred_negative_payout__sum'] or 0
+
+    @property
+    def sum_of_deducted_amount(self):
+        # Return the amount of this years deduction (losses used as deductions in other years)
+        result = self.payouts_using.aggregate(Sum('transferred_negative_payout'))
+        return result['transferred_negative_payout__sum'] or 0
+
+    # How much deduction is still available for use on this policy
+    # Returns a positive number
+    @property
+    def remaining_negative_amount(self):
+        return max(0, (-self.year_adjusted_amount) - self.sum_of_deducted_amount)
 
     def __str__(self):
         return f"{self.__class__.__name__}(policy_number={self.policy_number}, cpr={self.person.cpr}, year={self.tax_year.year})"
