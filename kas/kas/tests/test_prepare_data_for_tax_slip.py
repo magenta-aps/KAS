@@ -1,7 +1,9 @@
+import os
 
 from django.test import TestCase
 from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear
 from kas.reportgeneration.kas_report import TaxPDF
+import tempfile
 
 
 class DeductionTest(TestCase):
@@ -16,11 +18,28 @@ class DeductionTest(TestCase):
             name='Foobar A/S',
             address='Foobarvej 42'
         )
+        tax_year_2019 = TaxYear.objects.create(year=2019)
         tax_year_2020 = TaxYear.objects.create(year=2020)
+
+        person_tax_year_p1_2019 = PersonTaxYear.objects.create(
+            person=person1,
+            tax_year=tax_year_2019
+        )
 
         person_tax_year_p1_2020 = PersonTaxYear.objects.create(
             person=person1,
             tax_year=tax_year_2020
+        )
+
+        PolicyTaxYear.objects.create(
+            policy_number='1234',
+            person_tax_year=person_tax_year_p1_2019,
+            pension_company=pension_company,
+            prefilled_amount=100,
+            self_reported_amount=100,
+            preliminary_paid_amount=0,
+            from_pension=True,
+            year_adjusted_amount=-1000
         )
 
         PolicyTaxYear.objects.create(
@@ -60,6 +79,19 @@ class DeductionTest(TestCase):
             from_pension=True,
             year_adjusted_amount=-1000
         )
+        print("Q")
+        self.test_dir = tempfile.mkdtemp()+'/'
+
+        print(self.test_dir)
 
         pdf_documen = TaxPDF()
-        pdf_documen.perform_complete_write_of_one_tax_year(destination_path='/srv/', tax_year=2020)
+        pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2020)
+
+        filelist = os.listdir(self.test_dir)
+        self.assertEquals(['Y_2020_1234567891.pdf', 'Y_2020_1234567890.pdf'], filelist)
+        self.test_dir = tempfile.mkdtemp()+'/'
+
+        pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2019)
+        filelist = os.listdir(self.test_dir)
+        self.assertEquals(['Y_2019_1234567890.pdf'], filelist)
+        os.remove('/tmp/Y_2019_1234567890.pdf')
