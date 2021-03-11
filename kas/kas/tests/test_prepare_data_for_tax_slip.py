@@ -88,10 +88,9 @@ class DeductionTest(TestCase):
         pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2020)
 
         filelist = os.listdir(self.test_dir)
-        self.assertEquals(['Y_2020_1234567891.pdf', 'Y_2020_1234567890.pdf'], filelist)
+        self.assertListEqual(['Y_2020_1234567891.pdf', 'Y_2020_1234567890.pdf'], filelist)
         self.test_dir = tempfile.mkdtemp()+'/'
 
         pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2019)
         filelist = os.listdir(self.test_dir)
-        self.assertEquals(['Y_2019_1234567890.pdf'], filelist)
-        os.remove('/tmp/Y_2019_1234567890.pdf')
+        self.assertListEqual(['Y_2019_1234567890.pdf'], filelist)
