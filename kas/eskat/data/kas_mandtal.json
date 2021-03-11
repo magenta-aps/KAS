@@ -169,7 +169,7 @@
 			"ADRESSELINJE4" : "3962  Upernavik",
 			"ADRESSELINJE5" : null,
 			"SKATTEOMFANG" : "Fuld skattepligtig",
-			"SKATTEDAGE" : 366
+			"SKATTEDAGE" : 365
 		},
 		{
 			"PT_CENSUS_GUID" : "94e3971b-0505-96c3-e053-154ff00a24c0",
@@ -186,7 +186,7 @@
 			"ADRESSELINJE4" : "3962  Upernavik",
 			"ADRESSELINJE5" : null,
 			"SKATTEOMFANG" : "Fuld skattepligtig",
-			"SKATTEDAGE" : 366
+			"SKATTEDAGE" : 365
 		},
 		{
 			"PT_CENSUS_GUID" : "5a8bc8ad-0606-6ee7-e053-154ff00a06c0",
@@ -356,7 +356,7 @@
 			"ADRESSELINJE4" : "3900  Nuuk",
 			"ADRESSELINJE5" : null,
 			"SKATTEOMFANG" : "Fuld skattepligtig",
-			"SKATTEDAGE" : 366
+			"SKATTEDAGE" : 365
 		},
 		{
 			"PT_CENSUS_GUID" : "94e3971a-0909-96c3-e053-154ff00a24c1",
@@ -373,7 +373,7 @@
 			"ADRESSELINJE4" : "3900  Nuuk",
 			"ADRESSELINJE5" : null,
 			"SKATTEOMFANG" : "Fuld skattepligtig",
-			"SKATTEDAGE" : 366
+			"SKATTEDAGE" : 365
 		},
 		{
 			"PT_CENSUS_GUID" : "7803e4eb-1010-7b3a-e053-154ff00a256e",

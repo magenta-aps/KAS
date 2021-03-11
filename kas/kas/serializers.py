@@ -6,7 +6,7 @@ class PensionCompanySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PensionCompany
-        fields = ['id', 'name', 'address', 'email', 'phone', 'cvr']
+        fields = ['id', 'name', 'address', 'email', 'phone', 'cvr', 'reg_nr', 'agreement_present']
         read_only_fields = ['id']
 
 
@@ -51,8 +51,16 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PolicyTaxYear
-        fields = ['id', 'policy_number', 'prefilled_amount', 'self_reported_amount', 'pension_company', 'person_tax_year', 'preliminary_paid_amount', 'from_pension', 'foreign_paid_amount_self_reported', 'applied_deduction_from_previous_years', 'policy_documents']
-        read_only_fields = ['id', 'policy_number', 'pension_company', 'person_tax_year', 'policy_documents']
+        fields = [
+            'id', 'policy_number', 'prefilled_amount', 'self_reported_amount', 'pension_company',
+            'person_tax_year', 'preliminary_paid_amount', 'from_pension',
+            'foreign_paid_amount_self_reported', 'applied_deduction_from_previous_years', 'policy_documents',
+            'available_deduction_from_previous_years'
+        ]
+        read_only_fields = [
+            'id', 'policy_number', 'pension_company', 'person_tax_year', 'policy_documents',
+            'applied_deduction_from_previous_years', 'available_deduction_from_previous_years'
+        ]
         depth = 2
 
     person_tax_year = serializers.PrimaryKeyRelatedField(queryset=PersonTaxYear.objects.all())
