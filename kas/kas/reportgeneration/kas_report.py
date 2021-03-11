@@ -4,6 +4,9 @@ from fpdf import FPDF
 
 from kas.models import PolicyTaxYear, PersonTaxYear
 
+from django.db import models
+from django.db.models import Model
+
 
 class TaxPDF(FPDF):
 
@@ -419,11 +422,13 @@ class TaxPDF(FPDF):
 
         list_of_policys = PolicyTaxYear.objects.filter(
             person_tax_year=person_tax_year
-
         )
 
+        policy_file_name = f'{destination_path}Y_{tax_year}_{person_number}.pdf'
+
         for policy in list_of_policys:
-            policys.append({'policy': policy.policy_number})
+            policys.append({'policy': policy.pension_company.name+'-'+policy.policy_number})
+
 
         policys.append({'policy': ''})
 
@@ -433,7 +438,7 @@ class TaxPDF(FPDF):
                             reciever_address_line_5, policys)
         self.print_tax_slip('gl')
         self.print_tax_slip('dk')
-        self.write_tax_slip_to_disk(destination_path+person_number+'.pdf')
+        self.write_tax_slip_to_disk(policy_file_name)
 
     def perform_complete_write_of_one_tax_year(self, destination_path, tax_year):
 
@@ -442,4 +447,4 @@ class TaxPDF(FPDF):
         )
 
         for person_tax_year in List_of_person_tax_year:
-            self.perform_complete_write_of_one_person_tax_year(destination_path='/srv/', person_tax_year=person_tax_year)
+            self.perform_complete_write_of_one_person_tax_year(destination_path=destination_path, person_tax_year=person_tax_year)
