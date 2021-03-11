@@ -15,6 +15,7 @@ services:
     volumes:
       - ./kas/:/app
       - ./kas/uploads:/uploads
+      - ./data:/srv
     environment:
       - MAKE_MIGRATIONS=true
       - MIGRATE=true

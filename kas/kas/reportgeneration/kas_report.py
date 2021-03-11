@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-
 from fpdf import FPDF
+
+from kas.models import PolicyTaxYear
 
 
 class TaxPDF(FPDF):
@@ -24,6 +23,10 @@ class TaxPDF(FPDF):
     element_height_3 = 15
     element_height_4 = 30
     element_height_5 = 15
+
+    sender_name = 'Skattestyrelsen'
+    sender_address = 'Postboks 1605'
+    sender_postnumber = '3900 Nuuk'
 
     document_header = {'gl': 'GL-OVERSKRIFT', 'dk': 'DK-OVERSKRIFT'}
     text2 = {'gl': '{}-imut nammineerluni nalunaarsuinermut ilanngussaq ', 'dk': 'Bilag til Selvangivelse for {}'}
@@ -130,29 +133,35 @@ class TaxPDF(FPDF):
     tax_return_date_limit = '-'
     person_number = '-'
     reciever_name = '-'
-    reciever_address = '-'
-    reciever_postnumber = '-'
-    sender_name = '-'
-    sender_address = '-'
-    sender_postnumber = '-'
+    reciever_address_l1 = '-'
+    reciever_address_l2 = '-'
+    reciever_address_l3 = '-'
+    reciever_address_l4 = '-'
+    reciever_address_l5 = '-'
+    full_reciever_address = ''
     nemid_kode = '-'
     policys = ['']
 
     def set_parameters(self, tax_year='-', tax_return_date_limit='', request_pay='', pay_date='', person_number='-',
-                       reciever_name='', reciever_address='', reciever_postnumber='', sender_name='',
-                       sender_address='', sender_postnumber='', nemid_kode='', policys=['']):
+                       reciever_name='', reciever_address_l1='', reciever_address_l2='', reciever_address_l3='',
+                       reciever_address_l4='', reciever_address_l5='', policys=['']):
         self.tax_year = tax_year
         self.tax_return_date_limit = tax_return_date_limit
         self.request_pay = request_pay
         self.pay_date = pay_date
         self.person_number = person_number
         self.reciever_name = reciever_name
-        self.reciever_address = reciever_address
-        self.reciever_postnumber = reciever_postnumber
-        self.sender_name = sender_name
-        self.sender_address = sender_address
-        self.sender_postnumber = sender_postnumber
-        self.nemid_kode = nemid_kode
+        if reciever_address_l1 is not None:
+            self.full_reciever_address += reciever_address_l1 + '\n'
+        if reciever_address_l2 is not None:
+            self.full_reciever_address += reciever_address_l2 + '\n'
+        if reciever_address_l3 is not None:
+            self.full_reciever_address += reciever_address_l3 + '\n'
+        if reciever_address_l4 is not None:
+            self.full_reciever_address += reciever_address_l4 + '\n'
+        if reciever_address_l5 is not None:
+            self.full_reciever_address += reciever_address_l5
+
         self.policys = policys
         self.default_line_width = self.line_width
 
@@ -191,7 +200,7 @@ class TaxPDF(FPDF):
         # Adressing reciever
         self.set_xy(self.address_field.get('x'), self.address_field.get('y'))
         self.multi_cell(self.address_field.get('w'), 3, border=0,
-                        txt=self.reciever_name+"\n"+self.reciever_address+"\n"+self.reciever_postnumber)
+                        txt=self.reciever_name+"\n"+self.full_reciever_address)
 
         # Adressing department
         self.set_xy(self.address_field.get('x'), self.address_field.get('y')+12)
@@ -298,7 +307,7 @@ class TaxPDF(FPDF):
             self.set_xy(self.left_margin+c1w+c2w+c3w+c4w, self.yposition)
             self.cell(h=rowheight, align='L', w=c5w, txt='', border=1)
             self.set_xy(self.left_margin+c1w+c2w+c3w+c4w+c5w, self.yposition)
-            self.cell(h=rowheight, align='C', w=c6w, txt='KAS201', border=1)
+            self.cell(h=rowheight, align='C', w=c6w, txt='KAS-201', border=1)
 
             self.set_xy(125, self.yposition)
             self.cell(h=rowheight, align='L', w=20.0, txt=self.text_yes[language], border=0)
@@ -319,7 +328,7 @@ class TaxPDF(FPDF):
         self.set_xy(self.left_margin+c1w+c2w+c3w+c4w, self.yposition)
         self.cell(h=rowheight, align='L', w=c5w, txt='', border=1)
         self.set_xy(self.left_margin+c1w+c2w+c3w+c4w+c5w, self.yposition)
-        self.cell(h=rowheight, align='C', w=c6w, txt='KAS201', border=1)
+        self.cell(h=rowheight, align='C', w=c6w, txt='KAS-201', border=1)
 
         self.yposition += 80
 
@@ -336,7 +345,7 @@ class TaxPDF(FPDF):
         self.multi_cell(h=2, align='C', w=25.0, txt=self.text16[language], border=0)
         self.line(120, self.yposition+10, 150, self.yposition+10)
         self.set_xy(160.0, self.yposition)
-        self.cell(h=elementheight, align='L', w=75.0, txt='KAS205', border=0)
+        self.cell(h=elementheight, align='L', w=75.0, txt='KAS-205', border=0)
         self.yposition += elementheight
 
         self.yposition += 30
@@ -353,7 +362,7 @@ class TaxPDF(FPDF):
         self.line(120, self.yposition+10, 150, self.yposition+10)
         self.set_line_width(1)
         self.set_xy(160.0, self.yposition)
-        self.cell(h=elementheight-30, align='L', w=75.0, txt='KAS208', border=0)
+        self.cell(h=elementheight-30, align='L', w=75.0, txt='KAS-208', border=0)
         self.yposition += elementheight
 
         elementheight = 30
@@ -392,22 +401,37 @@ class TaxPDF(FPDF):
     def write_tax_slip_to_disk(self, path):
         self.output(path, 'F')
 
+    def perform_complete_write(self, destination_path, person_tax_year):
 
-def main():
-    tax_slip = TaxPDF()
-    tax_slip.set_parameters("2020", '1. maj 2021', '1. september 2021', '20. september 2021', '1234567890', 'Mads Møller Johansen', 'Sanamut aqqut 21, lejl 102',
-                            '3900 Nuuk', 'Skattestyrelsen', 'Postboks 1605', '3900 Nuuk', '1234',
-                            [{'policy': 'ATP-12345678', 'value': '500'},
-                             {'policy': 'PFA-12345678'},
-                             {'policy': 'Something else-12345678'}])
-    tax_slip.print_tax_slip('gl')
-    tax_slip.print_tax_slip('dk')
-    tax_slip.write_tax_slip_to_disk('./invoice.pdf')
-    if sys.platform.startswith("linux"):
-        os.system("xdg-open ./invoice.pdf")
-    else:
-        os.system("./invoice.pdf")
+        tax_year = person_tax_year.tax_year.year
+        tax_return_date_limit = f'1. maj {(person_tax_year.tax_year.year+1)}'
+        request_pay = f'1. september {(person_tax_year.tax_year.year+1)}'
+        pay_date = f'20. september {(person_tax_year.tax_year.year+1)}'
+        person_number = person_tax_year.person.cpr
+        reciever_name = person_tax_year.person.name
+        reciever_address_line_1 = person_tax_year.person.address_line_1
+        reciever_address_line_2 = person_tax_year.person.address_line_2
+        reciever_address_line_3 = person_tax_year.person.address_line_3
+        reciever_address_line_4 = person_tax_year.person.address_line_4
+        reciever_address_line_5 = person_tax_year.person.address_line_5
 
+        policys = []
 
-if __name__ == "__main__":
-    main()
+        list_of_policys = PolicyTaxYear.objects.filter(
+            person_tax_year=person_tax_year
+
+        )
+
+        for policy in list_of_policys:
+            print(policy.policy_number)
+            policys.append({'policy': policy.policy_number})
+
+        policys.append({'policy': ''})
+
+        self.set_parameters(tax_year, tax_return_date_limit, request_pay, pay_date, person_number,
+                            reciever_name, reciever_address_line_1, reciever_address_line_2,
+                            reciever_address_line_3, reciever_address_line_4,
+                            reciever_address_line_5, policys)
+        self.print_tax_slip('gl')
+        self.print_tax_slip('dk')
+        self.write_tax_slip_to_disk(destination_path+person_number+'.pdf')
