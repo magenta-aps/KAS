@@ -719,8 +719,6 @@ class Payment(models.Model):
     )
 
 
-
-
 def add_all_user_permission_if_staff(sender, instance, **kwargs):
     if instance.is_staff is True and instance.is_superuser is False:
         content_type = ContentType.objects.get_for_model(type(instance))

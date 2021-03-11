@@ -4,9 +4,6 @@ from fpdf import FPDF
 
 from kas.models import PolicyTaxYear, PersonTaxYear
 
-from django.db import models
-from django.db.models import Model
-
 
 class TaxPDF(FPDF):
 
@@ -428,7 +425,6 @@ class TaxPDF(FPDF):
 
         for policy in list_of_policys:
             policys.append({'policy': policy.pension_company.name+'-'+policy.policy_number})
-
 
         policys.append({'policy': ''})
 
