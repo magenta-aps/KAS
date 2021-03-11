@@ -25,4 +25,3 @@ class Command(BaseCommand):
         except Token.DoesNotExist:
             print("Token does not exist, creating")
             Token.objects.create(user=user, key=token_value)
-
