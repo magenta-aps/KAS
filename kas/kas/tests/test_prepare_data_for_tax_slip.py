@@ -1,4 +1,5 @@
 import os
+from builtins import len
 
 from django.test import TestCase
 from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear
@@ -82,15 +83,17 @@ class DeductionTest(TestCase):
         print("Q")
         self.test_dir = tempfile.mkdtemp()+'/'
 
-        print(self.test_dir)
-
         pdf_documen = TaxPDF()
         pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2020)
 
         filelist = os.listdir(self.test_dir)
-        self.assertListEqual(['Y_2020_1234567891.pdf', 'Y_2020_1234567890.pdf'], filelist)
-        self.test_dir = tempfile.mkdtemp()+'/'
 
+        self.assertEqual(2, len(filelist))
+        self.assertEqual(True, 'Y_2020_1234567890.pdf' in filelist)
+        self.assertEqual(True, 'Y_2020_1234567891.pdf' in filelist)
+
+        self.test_dir = tempfile.mkdtemp()+'/'
         pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2019)
         filelist = os.listdir(self.test_dir)
-        self.assertListEqual(['Y_2019_1234567890.pdf'], filelist)
+        self.assertEqual(1, len(filelist))
+        self.assertEqual(True, 'Y_2019_1234567890.pdf' in filelist)
