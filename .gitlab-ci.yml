@@ -3,6 +3,7 @@ stages:
   - build
   - test
   - release
+  - deploy
 
 variables:
   # Project variables
@@ -185,3 +186,34 @@ Release selvbetjenings dev image:
       --dest-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
       "docker://${SELF_IMAGE_SHA}"
       "docker://${SELF_IMAGE_DEV}"
+
+# Deploy stage
+##############
+
+.deploy-default: &deploy-default
+  stage: deploy
+  image: magentalabs/pepper:latest
+  services: []
+  dependencies: []
+  tags:
+    - deploy
+
+
+Deploy test:
+  # Automatic deployment of branch master to test
+  <<: *deploy-default
+  needs: ["Release kas dev image", "Release selvbetjenings dev image"]
+  only:
+    refs:
+      - master
+  variables:
+    DEPLOYMENT_NAMESPACE: kas.service-test
+    SALTAPI_URL: https://ctrldev1.magenta-aps.dk/api/
+    SALTAPI_EAUTH: file
+    GIT_STRATEGY: none
+  script:
+    - echo Attempting to call deployment
+    - pepper --client runner --fail-any state.orchestrate ${DEPLOYMENT_NAMESPACE}
+  environment:
+    name: test
+    url: ""
