@@ -105,9 +105,9 @@ the traceback in the traceback file on the job and set the job to status 'failed
 ##Running the containers as you
 Because we specify a hardcoded user and group i the docker file this causes issues when you are trying to generate
 migrations and translations since the container is trying to write as an unknown user to the hosts filesystem.
-To overcome this we can ask the container to run as your user since your user should be the owner of the source code 
+To overcome this we can ask the container to run as your user since your user should be the owner of the source code
 for the project and should be able to write files to the mounted volumes. Because the local user aka your UID and GID
-will be different from installation to installation we can create a docker-compose.override.yml with the current 
+will be different from installation to installation we can create a docker-compose.override.yml with the current
 uid and gid. First obtain the UID and GID by using the id command which should output something like
 ```bash
 uid=1000(mac) gid=1000(mac) groups=1000(mac) ....
@@ -124,3 +124,70 @@ services:
   selvbetjening:
     user: "1000:1000"
 ```
+
+# Use of mockup data
+
+The following is a guide on how to completely reset a development environment and import mockup data.
+
+## Step 0: Remove old environment
+
+If you have an existing development environment it can be torn down with:
+
+```
+docker-compose down -v
+```
+
+## Step 1: Start up base environment
+
+To start a new environment from scratch do:
+
+```
+docker-compose up -d
+```
+
+You migh want to check that everything is running by issuing:
+
+```
+docker-compose logs -f
+```
+
+You can end the output by pressing `Ctrl-c`.
+
+## Step 2: Import data
+
+Exec into the running kas-container and run some manage commands to import data:
+
+```
+docker exec -it kas bash
+# Import pension companies
+python manage.py import_default_pension_companies
+# Import eSkat mockup data
+python manage.py import_eskat_mockup_data
+exit
+```
+
+## Step 3: Create a superuser
+```
+docker exec -it kas bash
+# Import pension companies
+python manage.py createsuperuser
+# Fill out the questions asked
+exit
+```
+
+## Step 4: Use webinterface to run jobs
+
+Go to http://localhost:8000/django-admin/login to log in with the user you created.
+
+After logging in, navigate to http://localhost:8000/worker/jobs. Here you can start import jobs.
+
+Run the following imports:
+
+* Mandtal with year 2018 as input
+* Mandtal with year 2019 as input
+* Mandtal with year 2020 as input
+* R75 with with year 2018 as input
+* R75 with with year 2019 as input
+* R75 with with year 2020 as input
+
+The environment should now be up and running and have PersonTaxYear and PolicyTaxYear objects that can be used for generating PDFs etc.
