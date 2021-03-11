@@ -685,6 +685,37 @@ class Payment(models.Model):
     )
 
 
+class TaxSlipGenerated(models.Model):
+    person_tax_year = models.ForeignKey(
+        PersonTaxYear,
+        on_delete=models.PROTECT,
+    )
+
+    file = models.FilePathField(path='/srv/', null=True)
+
+    STATUS_CREATED = 1
+    STATUS_PENDING = 2
+    STATUS_SENT_TO_PROXY = 3
+    STATUS_DELIVERED_EBOKS = 4
+    STATUS_DELIVERED_SNAILMAIL = 5
+    STATUS_FAILED_DELIVERY = 6
+
+    calculations_model_options = (
+        (STATUS_CREATED, 'created'),
+        (STATUS_PENDING, 'pending'),
+        (STATUS_SENT_TO_PROXY, 'sent_to_proxy'),
+        (STATUS_DELIVERED_EBOKS, 'delivered_to_eboks'),
+        (STATUS_DELIVERED_SNAILMAIL, 'delivered_to_snailmail'),
+        (STATUS_FAILED_DELIVERY, 'failed'),
+    )
+
+    active_amount = models.SmallIntegerField(
+        verbose_name=('created'),
+        choices=calculations_model_options,
+        default=STATUS_CREATED
+    )
+
+
 def add_all_user_permission_if_staff(sender, instance, **kwargs):
     if instance.is_staff is True and instance.is_superuser is False:
         content_type = ContentType.objects.get_for_model(type(instance))

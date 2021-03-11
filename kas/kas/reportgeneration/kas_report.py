@@ -2,7 +2,7 @@
 
 from fpdf import FPDF
 
-from kas.models import PolicyTaxYear
+from kas.models import PolicyTaxYear, PersonTaxYear
 
 
 class TaxPDF(FPDF):
@@ -401,7 +401,7 @@ class TaxPDF(FPDF):
     def write_tax_slip_to_disk(self, path):
         self.output(path, 'F')
 
-    def perform_complete_write(self, destination_path, person_tax_year):
+    def perform_complete_write_of_one_person_tax_year(self, destination_path, person_tax_year):
 
         tax_year = person_tax_year.tax_year.year
         tax_return_date_limit = f'1. maj {(person_tax_year.tax_year.year+1)}'
@@ -423,7 +423,6 @@ class TaxPDF(FPDF):
         )
 
         for policy in list_of_policys:
-            print(policy.policy_number)
             policys.append({'policy': policy.policy_number})
 
         policys.append({'policy': ''})
@@ -435,3 +434,12 @@ class TaxPDF(FPDF):
         self.print_tax_slip('gl')
         self.print_tax_slip('dk')
         self.write_tax_slip_to_disk(destination_path+person_number+'.pdf')
+
+    def perform_complete_write_of_one_tax_year(self, destination_path, tax_year):
+
+        List_of_person_tax_year = PersonTaxYear.objects.filter(
+            tax_year__year=tax_year
+        )
+
+        for person_tax_year in List_of_person_tax_year:
+            self.perform_complete_write_of_one_person_tax_year(destination_path='/srv/', person_tax_year=person_tax_year)

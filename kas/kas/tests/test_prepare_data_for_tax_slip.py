@@ -61,11 +61,5 @@ class DeductionTest(TestCase):
             year_adjusted_amount=-1000
         )
 
-        List_of_person_tax_year = PersonTaxYear.objects.filter(
-            tax_year__year=2020
-        )
-
-        for person_tax_year in List_of_person_tax_year:
-
-            pdf_documen = TaxPDF()
-            pdf_documen.perform_complete_write(destination_path='/srv/', person_tax_year=person_tax_year)
+        pdf_documen = TaxPDF()
+        pdf_documen.perform_complete_write_of_one_tax_year(destination_path='/srv/', tax_year=2020)
