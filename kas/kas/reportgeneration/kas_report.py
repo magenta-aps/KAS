@@ -2,7 +2,7 @@
 
 from fpdf import FPDF
 
-from kas.models import PolicyTaxYear, PersonTaxYear
+from kas.models import PolicyTaxYear, PersonTaxYear, TaxSlipGenerated
 
 
 class TaxPDF(FPDF):
@@ -435,6 +435,11 @@ class TaxPDF(FPDF):
         self.print_tax_slip('gl')
         self.print_tax_slip('dk')
         self.write_tax_slip_to_disk(policy_file_name)
+
+        ts = TaxSlipGenerated.objects.create(file=policy_file_name)
+        ts.save()
+        person_tax_year.tax_slip = ts
+        person_tax_year.save()
 
     def perform_complete_write_of_one_tax_year(self, destination_path, tax_year):
 

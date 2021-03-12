@@ -80,20 +80,25 @@ class DeductionTest(TestCase):
             from_pension=True,
             year_adjusted_amount=-1000
         )
-        print("Q")
+
         self.test_dir = tempfile.mkdtemp()+'/'
 
         pdf_documen = TaxPDF()
         pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2020)
 
-        filelist = os.listdir(self.test_dir)
+        filelist1 = os.listdir(self.test_dir)
 
-        self.assertEqual(2, len(filelist))
-        self.assertEqual(True, 'Y_2020_1234567890.pdf' in filelist)
-        self.assertEqual(True, 'Y_2020_1234567891.pdf' in filelist)
+        self.assertEqual(2, len(filelist1))
+        self.assertEqual(True, 'Y_2020_1234567890.pdf' in filelist1)
+        self.assertEqual(True, 'Y_2020_1234567891.pdf' in filelist1)
 
         self.test_dir = tempfile.mkdtemp()+'/'
         pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2019)
-        filelist = os.listdir(self.test_dir)
-        self.assertEqual(1, len(filelist))
-        self.assertEqual(True, 'Y_2019_1234567890.pdf' in filelist)
+        filelist2 = os.listdir(self.test_dir)
+        self.assertEqual(1, len(filelist2))
+        self.assertEqual(True, 'Y_2019_1234567890.pdf' in filelist2)
+
+        person_tax_year_list = PersonTaxYear.objects.all()
+
+        for person_tax_year in person_tax_year_list:
+            self.assertEqual(1, person_tax_year.tax_slip.status)
