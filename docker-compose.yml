@@ -14,8 +14,7 @@ services:
       - ./dev-environment/kas.env
     volumes:
       - ./kas/:/app
-      - ./kas/uploads:/uploads
-      - ./data:/srv
+      - ./data/kas:/srv/media
     environment:
       - MAKE_MIGRATIONS=true
       - MIGRATE=true
@@ -35,6 +34,7 @@ services:
       - ./dev-environment/kas.env
     volumes:
       - ./kas/:/app
+      - ./data/kas:/srv/media
     command: python manage.py rqworker high default low # listening on all three queues by default
 
   postgres:

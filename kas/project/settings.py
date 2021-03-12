@@ -116,8 +116,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 UPLOAD_PATH = '/uploads'
-MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
-MEDIA_URL = "/uploads/"
+MEDIA_ROOT = "/srv/media"
+MEDIA_URL = "/media/"
 
 LOGGING = {
     'version': 1,
