@@ -19,13 +19,7 @@ if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] || [ "$TEST" = true ] 
   fi
   if [ "$CREATE_USERS" = true ]; then
     echo 'creating users'
-    python manage.py shell --command "
-from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token
-user,c = User.objects.get_or_create(username='rest')
-Token.objects.filter(user=user).delete()
-token = Token.objects.create(user=user,key='${REST_TOKEN}')
-      "
+    python manage.py create_rest_user ${REST_TOKEN}
   fi
   if [ "$TEST" = true ]; then
     echo 'running tests!'
