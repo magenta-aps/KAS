@@ -241,7 +241,7 @@ class PersonTaxYear(HistoryMixin, models.Model):
 
 class TaxSlipGenerated(models.Model):
 
-    file = models.FilePathField(path='/srv/', null=True)
+    file = models.FileField(upload_to='reports/', null=True)
 
     STATUS_CREATED = 1
     STATUS_PENDING = 2
@@ -269,7 +269,7 @@ class TaxSlipGenerated(models.Model):
 class PolicyTaxYear(HistoryMixin, models.Model):
     history = HistoricalRecords()
 
-    tax_slip = models.ForeignKey(
+    tax_slip = models.OneToOneField(
         TaxSlipGenerated,
         on_delete=models.PROTECT,
         blank=True,
