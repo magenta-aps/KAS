@@ -65,8 +65,6 @@ class LoginView(View):
         auth_req = client.construct_AuthorizationRequest(request_args=request_args)
         login_url = auth_req.request(client.authorization_endpoint)
         print(f"request.session.modified: {request.session.modified}")
-        request.session.modified = True
-        print("Explicitly saving session")
         return HttpResponseRedirect(login_url)
 
 
@@ -77,6 +75,7 @@ class LoginCallback(TemplateView):
     def get(self, request, *args, **kwargs):
         nonce = request.session.get('oid_nonce')
         print(f"Login callback with nonce {nonce}")
+        print(f"session contains: {request.session.items()}")
         if nonce:
             # Make sure that nonce is not used twice
             del request.session['oid_nonce']

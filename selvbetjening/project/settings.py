@@ -90,7 +90,7 @@ django.conf.locale.LANG_INFO['kl'] = {
     'name_local': u'Kalaallisut',
 }
 
-SESSION_COOKIE_SAMESITE = 'strict'
+SESSION_COOKIE_SAMESITE = 'lax'
 
 STATIC_URL = '/static/'
 
