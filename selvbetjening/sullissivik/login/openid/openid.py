@@ -30,7 +30,7 @@ class OpenId:
     def authenticate(request):
         return None  # If the user has nothing in the session, we just don't log him in - there's no SSO cookie that we may want to check
 
-    whitelist = [reverse_lazy('sullissivik:openid:login'), reverse_lazy('sullissivik:openid:callback'), reverse_lazy('sullissivik:openid:logout-callback')]
+    whitelist = [reverse_lazy('sullissivik:openid:login'), reverse_lazy('sullissivik:openid:login-callback'), reverse_lazy('sullissivik:openid:logout-callback')]
 
     @staticmethod
     def clear_session(session):
