@@ -6,7 +6,6 @@ from oic.oic import Client, rndstr
 from oic.oic.message import RegistrationResponse
 from oic.utils.authn.client import CLIENT_AUTHN_METHOD
 from oic.utils.keyio import KeyBundle
-import os
 
 
 class OpenId:
@@ -17,12 +16,6 @@ class OpenId:
     if getattr(settings, 'OPENID_CONNECT', None) and settings.OPENID_CONNECT.get('enabled', True):
         # if openID is enabled setup the key bundle and client_cert
         open_id_settings = settings.OPENID_CONNECT
-
-        keyfile = open_id_settings['private_key']
-        print(f"keyfile: {keyfile}")
-        print(f"exists: {os.path.exists(keyfile)}")
-        print(f"readable: {os.access(keyfile, os.R_OK)}")
-
         key = rsa_load(open_id_settings['private_key'])
         kc_rsa = KeyBundle([{'key': key, 'kty': 'RSA', 'use': 'ver'},
                             {'key': key, 'kty': 'RSA', 'use': 'sig'}])

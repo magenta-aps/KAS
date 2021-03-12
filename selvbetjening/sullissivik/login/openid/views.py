@@ -72,6 +72,7 @@ class LoginCallback(TemplateView):
 
     def get(self, request, *args, **kwargs):
         nonce = request.session.get('oid_nonce')
+        print(f"Login callback with nonce {nonce}")
         if nonce:
             # Make sure that nonce is not used twice
             del request.session['oid_nonce']
@@ -82,8 +83,12 @@ class LoginCallback(TemplateView):
             return HttpResponseRedirect(reverse('sullissivik:openid:login'))
 
         if 'oid_state' not in request.session:
+            print("oid_state not in request.session")
+            print(f"session contains: {request.session.items()}")
             logger.exception(SuspiciousOperation('Session `oid_state` does not exist!'))
             return HttpResponseRedirect(reverse('sullissivik:openid:login'))
+        else:
+            print("oid_state in request.session")
 
         client = Client(client_authn_method=CLIENT_AUTHN_METHOD, client_cert=OpenId.client_cert)
         client.keyjar[""] = OpenId.kc_rsa
