@@ -23,20 +23,16 @@ class LoginManager:
 
     def __call__(self, request):
         if self.enabled:
+            print(f"session contains: {request.session.items()}")
             white_listed_urls = self.white_listed_urls
             # When any non-whitelisted page is loaded, check if we are authenticated
             if request.path not in white_listed_urls and request.path.rstrip('/') not in white_listed_urls:
-                print(f"{request.path} is not in whitelist {white_listed_urls}")
                 if 'user_info' not in request.session or not request.session['user_info']:
                     if not self.authenticate(request):  # The user might not have anything in his session, but he may have a cookie that can log him in anyway
-                        print("Could not authenticate")
                         backpage = urlquote(request.path)
                         if request.GET:
                             backpage += "?" + urlencode(request.GET, True)
-                        print("redirecting to " + reverse_lazy(settings.LOGIN_UNAUTH_REDIRECT) + "?back=" + backpage)
                         return redirect(reverse_lazy(settings.LOGIN_UNAUTH_REDIRECT) + "?back=" + backpage)
-            else:
-                print(f"{request.path} is in whitelist {white_listed_urls}")
         elif settings.DEFAULT_CPR is not None:
             # For dev environment, use dummy CPR
             if 'user_info' not in request.session:
