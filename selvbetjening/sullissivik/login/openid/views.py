@@ -58,13 +58,11 @@ class LoginView(View):
             'nonce': nonce
         }
 
-        print(f"Setting nonce in session: {nonce}")
         request.session['oid_state'] = state
         request.session['oid_nonce'] = nonce
         request.session['login_method'] = 'openid'
         auth_req = client.construct_AuthorizationRequest(request_args=request_args)
         login_url = auth_req.request(client.authorization_endpoint)
-        print(f"request.session.modified: {request.session.modified}")
         return HttpResponseRedirect(login_url)
 
 
@@ -74,8 +72,6 @@ class LoginCallback(TemplateView):
 
     def get(self, request, *args, **kwargs):
         nonce = request.session.get('oid_nonce')
-        print(f"Login callback with nonce {nonce}")
-        print(f"session contains: {request.session.items()}")
         if nonce:
             # Make sure that nonce is not used twice
             del request.session['oid_nonce']
@@ -86,12 +82,8 @@ class LoginCallback(TemplateView):
             return HttpResponseRedirect(reverse('sullissivik:openid:login'))
 
         if 'oid_state' not in request.session:
-            print("oid_state not in request.session")
-            print(f"session contains: {request.session.items()}")
             logger.exception(SuspiciousOperation('Session `oid_state` does not exist!'))
             return HttpResponseRedirect(reverse('sullissivik:openid:login'))
-        else:
-            print("oid_state in request.session")
 
         client = Client(client_authn_method=CLIENT_AUTHN_METHOD, client_cert=OpenId.client_cert)
         client.keyjar[""] = OpenId.kc_rsa
@@ -157,6 +149,8 @@ class LoginCallback(TemplateView):
                 request.session['access_token_data'] = respdict
                 userinfo = client.do_user_info_request(state=request.session['oid_state'])
                 user_info_dict = userinfo.to_dict()
+                print(f"respdict: {respdict}")
+                print(f"user_info_dict: {user_info_dict}")
                 request.session['user_info'] = user_info_dict
                 request.session['raw_id_token'] = resp["id_token"].jwt
                 # always delete the state so it is not reused
