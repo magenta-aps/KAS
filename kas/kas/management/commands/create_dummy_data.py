@@ -11,7 +11,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         pension_companies = [
-            PensionCompany.objects.get_or_create(cvr=10000000 + i, name=f"Pension Company {i}")[0]
+            PensionCompany.objects.get_or_create(res=10000000 + i, name=f"Pension Company {i}")[0]
             for i in range(1, 5)
         ]
 

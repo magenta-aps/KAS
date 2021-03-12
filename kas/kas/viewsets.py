@@ -57,7 +57,7 @@ class PolicyTaxYearViewSet(viewsets.ModelViewSet):
 
 
 class PensionCompanyFilter(filters.FilterSet):
-    cvr = filters.CharFilter(field_name="cvr")
+    res = filters.CharFilter(field_name="res")
 
 
 class PensionCompanyViewSet(viewsets.ModelViewSet):

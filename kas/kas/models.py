@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.forms import model_to_dict
@@ -82,13 +82,11 @@ class PensionCompany(models.Model):
         null=True
     )
 
-    cvr = models.IntegerField(
+    res = models.IntegerField(
+        verbose_name=_('Identificerende nummer (reg.nr. for banker, se-nr for pensionsselskaber)'),
         unique=True,
-        validators=(
-            MinValueValidator(limit_value=1),
-            MaxValueValidator(limit_value=99999999)
-        ),
-        null=True,
+        null=True,  # This will be null when created as a self-reported company
+        validators=(MinValueValidator(limit_value=1),),
     )
 
     agreement_present = models.BooleanField(
@@ -96,14 +94,28 @@ class PensionCompany(models.Model):
         verbose_name=_("Foreligger der en aftale med skattestyrelsen")
     )
 
-    reg_nr = models.PositiveSmallIntegerField(
-        verbose_name=_('Reg. nr.'),
-        null=True,
-        unique=True,
+    DOF_UNKNOWN = 0
+    DOF_DOMESTIC = 1
+    DOF_FOREIGN = 2
+
+    dof_options = (
+        (DOF_UNKNOWN, _('Uvist')),
+        (DOF_DOMESTIC, _('Indenlandsk')),
+        (DOF_FOREIGN, _('Udenlandsk')),
+    )
+
+    domestic_or_foreign = models.IntegerField(
+        choices=dof_options,
+        default=DOF_UNKNOWN,
+    )
+
+    accepts_payments = models.BooleanField(
+        verbose_name=_('Modtager indbetalinger'),
+        default=False,
     )
 
     def __str__(self):
-        return f"{self.__class__.__name__}(name={self.name}, cvr={self.cvr})"
+        return f"{self.__class__.__name__}(name={self.name}, res={self.res})"
 
 
 class TaxYear(models.Model):

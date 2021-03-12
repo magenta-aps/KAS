@@ -21,7 +21,7 @@ class RestTest(TestCase):
     invalid_submit_body = invalid_string_values + ['', 'foobar', None, 17]
     invalid_year_values = invalid_string_values + ['', 1900]
     invalid_cpr_values = invalid_string_values + ['', 'hephey', '123456-7890', '123456789', '12345678901', '-1234567890']
-    invalid_cvr_values = [-4, 0, [], 'hephey', 100000000]
+    invalid_res_values = [-4, 0, [], 'hephey']
     invalid_fk_values = invalid_string_values + ['', 'hephey']
     invalid_policy_number_values = ['', [], {}, 'x'*41]
     invalid_amount_values = ['', [], {}, 'hephey']
@@ -204,9 +204,17 @@ class PensionCompanyTest(RestTest):
 
     url = '/rest/pension_company/'
 
+    extra_fields = {
+        'agreement_present': False,
+        'phone': None,
+        'email': None,
+        'domestic_or_foreign': PensionCompany.DOF_UNKNOWN,
+        'accepts_payments': False,
+    }
+
     def test_get_all(self):
-        pension_company_data1 = {'cvr': '12345678', 'name': 'Foobar A/S', 'address': 'Foobarvej 42'}
-        pension_company_data2 = {'cvr': '12345670', 'name': 'Hephey A/S', 'address': 'Hepheyvej 21'}
+        pension_company_data1 = {'res': '12345678', 'name': 'Foobar A/S', 'address': 'Foobarvej 42'}
+        pension_company_data2 = {'res': '12345670', 'name': 'Hephey A/S', 'address': 'Hepheyvej 21'}
         PensionCompany.objects.create(**pension_company_data1)
         PensionCompany.objects.create(**pension_company_data2)
         self.authenticate()
@@ -214,52 +222,49 @@ class PensionCompanyTest(RestTest):
         self.assertEquals(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
-                {**{key: getattr(person, key) for key in ['cvr', 'name', 'address', 'phone', 'email', 'agreement_present', 'reg_nr']}, 'id': person.id}
+                {**{key: getattr(person, key) for key in ['res', 'name', 'address', 'phone', 'email', 'agreement_present', 'domestic_or_foreign', 'accepts_payments']}, 'id': person.id}
                 for person in PensionCompany.objects.all()
             ],
             response.json()
         )
 
     def test_get_id(self):
-        pension_company_data1 = {'cvr': 12345678, 'name': 'Foobar A/S', 'address': 'Foobarvej 42'}
-        pension_company_data2 = {'cvr': 12345670, 'name': 'Hephey A/S', 'address': 'Hepheyvej 21'}
-        extra = {'agreement_present': False, 'reg_nr': None, 'phone': None, 'email': None}
+        pension_company_data1 = {'res': 12345678, 'name': 'Foobar A/S', 'address': 'Foobarvej 42'}
+        pension_company_data2 = {'res': 12345670, 'name': 'Hephey A/S', 'address': 'Hepheyvej 21'}
         pension_company1 = PensionCompany.objects.create(**pension_company_data1)
         pension_company2 = PensionCompany.objects.create(**pension_company_data2)
         self.authenticate()
         response = self.client.get(f"{self.url}{pension_company1.id}/")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertDictEqual({**pension_company_data1, 'id': pension_company1.id, **extra}, response.json())
+        self.assertDictEqual({**pension_company_data1, 'id': pension_company1.id, **self.extra_fields}, response.json())
         response = self.client.get(f"{self.url}{pension_company2.id}/")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertDictEqual({**pension_company_data2, 'id': pension_company2.id, **extra}, response.json())
+        self.assertDictEqual({**pension_company_data2, 'id': pension_company2.id, **self.extra_fields}, response.json())
 
     def test_get_filter(self):
-        pension_company_data1 = {'cvr': 12345678, 'name': 'Foobar A/S', 'address': 'Foobarvej 42'}
-        pension_company_data2 = {'cvr': 12345670, 'name': 'Hephey A/S', 'address': 'Hepheyvej 21'}
-        extra = {'agreement_present': False, 'reg_nr': None, 'phone': None, 'email': None}
+        pension_company_data1 = {'res': 12345678, 'name': 'Foobar A/S', 'address': 'Foobarvej 42'}
+        pension_company_data2 = {'res': 12345670, 'name': 'Hephey A/S', 'address': 'Hepheyvej 21'}
         pension_company1 = PensionCompany.objects.create(**pension_company_data1)
         PensionCompany.objects.create(**pension_company_data2)
         self.authenticate()
-        response = self.client.get(f"{self.url}?cvr=12345678")
+        response = self.client.get(f"{self.url}?res=12345678")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertCountEqual([{**pension_company_data1, 'id': pension_company1.id, **extra}], response.json())
+        self.assertCountEqual([{**pension_company_data1, 'id': pension_company1.id, **self.extra_fields}], response.json())
 
     def test_create_one(self):
         # Create one item, test the response and the created object
         self.authenticate()
-        pension_company_data1 = {'cvr': 12345678, 'name': 'Foobar A/S', 'address': 'Foobarvej 42'}
-        extra = {'agreement_present': False, 'reg_nr': None, 'phone': None, 'email': None}
+        pension_company_data1 = {'res': 12345678, 'name': 'Foobar A/S', 'address': 'Foobarvej 42'}
         response = self.client.post(self.url, json.dumps(pension_company_data1), content_type='application/json; charset=utf-8')
         self.assertEquals(201, response.status_code, response.content)
-        self.assertDictEqual({**pension_company_data1, **extra}, self.strip_id(response.json()))
+        self.assertDictEqual({**pension_company_data1, **self.extra_fields}, self.strip_id(response.json()))
         self.assertEquals(1, PensionCompany.objects.count())
-        self.assertEquals(pension_company_data1['cvr'], PensionCompany.objects.first().cvr)
+        self.assertEquals(pension_company_data1['res'], PensionCompany.objects.first().res)
 
     def test_create_two(self):
         # Create two items with the same input. Test that only one item is created
         self.authenticate()
-        pension_company_data1 = {'cvr': 12345678, 'name': 'Foobar A/S', 'address': 'Foobarvej 42'}
+        pension_company_data1 = {'res': 12345678, 'name': 'Foobar A/S', 'address': 'Foobarvej 42'}
         self.client.post(self.url, json.dumps(pension_company_data1), content_type='application/json; charset=utf-8')
         self.assertEquals(1, PensionCompany.objects.count())
         response2 = self.client.post(self.url, json.dumps(pension_company_data1), content_type='application/json; charset=utf-8')
@@ -269,9 +274,9 @@ class PensionCompanyTest(RestTest):
     def test_invalid_input(self):
         # Create an item with invalid input and expect errors
         self.authenticate()
-        full = {'cvr': 12345678, 'name': 'Foobar A/S', 'address': 'Foobarvej 42'}
+        full = {'res': 12345678, 'name': 'Foobar A/S', 'address': 'Foobarvej 42'}
         inputs = self.invalid_submit_body + \
-            [{**full, 'cvr': x} for x in self.invalid_cvr_values] + \
+            [{**full, 'res': x} for x in self.invalid_res_values] + \
             [{**full, 'name': x} for x in ['x'*256]]
         for input in inputs:
             response = self.client.post(self.url, json.dumps(input), content_type='application/json; charset=utf-8')
@@ -433,7 +438,7 @@ class PolicyTaxYearTest(RestTest):
     def test_get_all(self):
         person = Person.objects.create(cpr='1234567890')
         pension_company = PensionCompany.objects.create(
-            cvr=12345678,
+            res=12345678,
             name='Foobar A/S',
             address='Foobarvej 42'
         )
@@ -492,7 +497,7 @@ class PolicyTaxYearTest(RestTest):
             tax_year=TaxYear.objects.create(year=2020)
         )
         pension_company = PensionCompany.objects.create(
-            cvr=12345678,
+            res=12345678,
             name='Foobar A/S',
             address='Foobarvej 42'
         )
@@ -561,7 +566,7 @@ class PolicyTaxYearTest(RestTest):
             tax_year=TaxYear.objects.create(year=2021)
         )
         pension_company = PensionCompany.objects.create(
-            cvr=12345678,
+            res=12345678,
             name='Foobar A/S',
             address='Foobarvej 42'
         )
@@ -649,7 +654,7 @@ class PolicyTaxYearTest(RestTest):
             tax_year=TaxYear.objects.create(year=2021)
         )
         pension_company = PensionCompany.objects.create(
-            cvr=12345678,
+            res=12345678,
             name='Foobar A/S',
             address='Foobarvej 42'
         )
@@ -694,7 +699,7 @@ class PolicyTaxYearTest(RestTest):
             tax_year=TaxYear.objects.create(year=2021)
         )
         pension_company = PensionCompany.objects.create(
-            cvr=12345678,
+            res=12345678,
             name='Foobar A/S',
             address='Foobarvej 42'
         )
@@ -734,7 +739,7 @@ class PolicyDocumentTest(RestTest):
                 tax_year=TaxYear.objects.create(year=2021)
             ),
             pension_company=PensionCompany.objects.create(
-                cvr=12345678,
+                res=12345678,
                 name='Foobar A/S',
                 address='Foobarvej 42'
             )
@@ -770,7 +775,7 @@ class PolicyDocumentTest(RestTest):
                 tax_year=TaxYear.objects.create(year=2021)
             ),
             pension_company=PensionCompany.objects.create(
-                cvr=12345678,
+                res=12345678,
                 name='Foobar A/S',
                 address='Foobarvej 42'
             )

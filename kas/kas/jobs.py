@@ -94,9 +94,7 @@ def import_r75(job):
             person_tax_years_created += 1
 
         res = int(item.res)
-        # Source data contains both 4-digit and 8-digit numbers
-        key = 'reg_nr' if res < 10000 else 'cvr'
-        pension_company, c = PensionCompany.objects.get_or_create(**{key: res})
+        pension_company, c = PensionCompany.objects.get_or_create(**{'res': res})
 
         policy_data = {
             'person_tax_year': person_tax_year,
