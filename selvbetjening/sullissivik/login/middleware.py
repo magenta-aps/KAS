@@ -33,6 +33,9 @@ class LoginManager:
                         if request.GET:
                             backpage += "?" + urlencode(request.GET, True)
                         return redirect(reverse_lazy(settings.LOGIN_UNAUTH_REDIRECT) + "?back=" + backpage)
+                if 'CPR' not in request.session['user_info']:
+                    # User info exists, but does not contain a CPR number (e.g. company login)
+                    return redirect(reverse_lazy('sullissivik:openid:logout'))
         elif settings.DEFAULT_CPR is not None:
             # For dev environment, use dummy CPR
             if 'user_info' not in request.session:
