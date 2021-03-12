@@ -109,7 +109,7 @@ class PolicyFormView(FormView):
                 'policy_tax_year',
                 person_tax_year=person_tax_years[0]['id']
             )
-            policy_tax_years.sort(key=lambda k: k['pension_company']['cvr'])
+            policy_tax_years.sort(key=lambda k: k['pension_company']['res'])
         else:
             policy_tax_years = []
         self.request.session['policy_tax_years'] = policy_tax_years

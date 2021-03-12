@@ -7,7 +7,7 @@ class RestClient(object):
 
     PERSON_SLUG_FIELD = 'cpr'
     TAX_YEAR_SLUG_FIELD = 'year'
-    INSURANCE_COMPANY_SLUG_FIELD = 'cvr'
+    INSURANCE_COMPANY_SLUG_FIELD = 'res'
     PERSON_TAX_YEAR_SLUG_FIELD = 'id'
 
     @property

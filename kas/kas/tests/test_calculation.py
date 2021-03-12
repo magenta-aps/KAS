@@ -217,7 +217,7 @@ class TestCalculationMath(TestCase):
 
         # Set up two older policies with losses, and one new policy that will deduct those losses
         person = Person.objects.create(cpr='0101010101')
-        pension_company = PensionCompany.objects.create(cvr=12345678)
+        pension_company = PensionCompany.objects.create(res=12345678)
         older_policy_1 = PolicyTaxYear.objects.create(
             person_tax_year=PersonTaxYear.objects.create(
                 person=person,

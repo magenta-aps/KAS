@@ -10,7 +10,7 @@ class DeductionTest(TestCase):
     def test_Using_up_loss_from_2019(self):
         person = Person.objects.create(cpr='1234567890')
         pension_company = PensionCompany.objects.create(
-            cvr=12345678,
+            res=12345678,
             name='Foobar A/S',
             address='Foobarvej 42'
         )
@@ -72,7 +72,7 @@ class DeductionTest(TestCase):
     def test_Using_up_loss_from_2020(self):
         person = Person.objects.create(cpr='1234567890')
         pension_company = PensionCompany.objects.create(
-            cvr=12345678,
+            res=12345678,
             name='Foobar A/S',
             address='Foobarvej 42'
         )
