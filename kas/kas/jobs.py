@@ -4,14 +4,12 @@ from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension
 from eskat.models import get_kas_mandtal_model, get_r75_private_pension_model
 from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated
 from kas.eboks import EboksClient, EboksDispatchGenerator
-from kas.reportgeneration.kas_report import TaxPDF
 from requests.exceptions import HTTPError, ConnectionError
 from rq import get_current_job
 from time import sleep
 from worker.models import job_decorator, Job
 
 import base64
-import traceback
 
 
 @job_decorator
@@ -78,6 +76,7 @@ def import_mandtal(job):
         ]}
     ]}
 
+
 @job_decorator
 def import_r75(job):
     year = job.arguments['year']
@@ -132,6 +131,7 @@ def import_r75(job):
             {'label': 'Opdateret', 'value': policies_updated}
         ]}
     ]}
+
 
 def chunks(lst, size):
     """Yield successive n-sized chunks from lst."""
