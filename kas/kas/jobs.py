@@ -254,8 +254,8 @@ def dispatch_eboks_tax_slips(job):
 
             with transaction.atomic():
                 pending_slips = {slip.message_id: slip for slip in TaxSlipGenerated.objects.filter(
-                                    status='post_processing').filter(
-                                    persontaxyear__tax_year__pk=job.parent.arguments['year_pk']).select_for_update(skip_locked=True)[:50]}
+                    status='post_processing').filter(
+                    persontaxyear__tax_year__pk=job.parent.arguments['year_pk']).select_for_update(skip_locked=True)[:50]}
                 while pending_slips:
                     update_status_for_pending_dispatches(client, pending_slips)
                     pending_slips = {slip.message_id: slip for slip in TaxSlipGenerated.objects.filter(
