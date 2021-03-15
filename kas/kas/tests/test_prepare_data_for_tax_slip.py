@@ -16,7 +16,8 @@ class DeductionTest(TestCase):
         person2 = Person.objects.create(cpr='1234567891', municipality_code=956, municipality_name='Sermersooq', address_line_2='Mut aqqut 15', address_line_4='3900 Nuuk', name='Anders And')
         pension_company = PensionCompany.objects.create(
             name='Foobar A/S',
-            address='Foobarvej 42'
+            address='Foobarvej 42',
+            agreement_present=True,
         )
         tax_year_2019 = TaxYear.objects.create(year=2019)
         tax_year_2020 = TaxYear.objects.create(year=2020)
@@ -46,9 +47,9 @@ class DeductionTest(TestCase):
             policy_number='1234',
             person_tax_year=person_tax_year_p1_2020,
             pension_company=pension_company,
-            prefilled_amount=100,
+            prefilled_amount=200,
             self_reported_amount=100,
-            preliminary_paid_amount=0,
+            preliminary_paid_amount=7,
             from_pension=True,
             year_adjusted_amount=-1000
         )
@@ -57,9 +58,9 @@ class DeductionTest(TestCase):
             policy_number='1235',
             person_tax_year=person_tax_year_p1_2020,
             pension_company=pension_company,
-            prefilled_amount=100,
+            prefilled_amount=300,
             self_reported_amount=112,
-            preliminary_paid_amount=0,
+            preliminary_paid_amount=8,
             from_pension=True,
             year_adjusted_amount=-1000
         )
@@ -73,9 +74,9 @@ class DeductionTest(TestCase):
             policy_number='1234',
             person_tax_year=person_tax_year_p2_2020,
             pension_company=pension_company,
-            prefilled_amount=100,
+            prefilled_amount=400,
             self_reported_amount=142,
-            preliminary_paid_amount=0,
+            preliminary_paid_amount=9,
             from_pension=True,
             year_adjusted_amount=-1000
         )
