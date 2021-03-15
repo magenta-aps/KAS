@@ -1,8 +1,8 @@
 FROM python:3.8
-RUN mkdir /app &&\
+RUN mkdir /app && mkdir -p /srv/media && \
 #gid/uid from salt
-groupadd -g 75050 -r kas &&\
-useradd -u 75050 --no-log-init -r -g kas kas
+groupadd -g 75050 -r kas && \
+useradd -u 75050 --no-log-init -r -g kas kas && chown kas:kas /srv/media
 COPY kas/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 ENV PYTHONUNBUFFERED=1
@@ -23,7 +23,7 @@ USER kas
 COPY ./docker/kas_entrypoint.sh /entrypoint.sh
 COPY ./kas /app
 EXPOSE 8000
-VOLUME  /uploads
+VOLUME  /srv/media
 ENTRYPOINT ["/entrypoint.sh"]
 WORKDIR /app
 CMD ["gunicorn","-b","0.0.0.0:8000","project.wsgi:application","-w 4","--error-logfile", "-","--capture-output"]

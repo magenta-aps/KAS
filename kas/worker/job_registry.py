@@ -5,16 +5,23 @@ def get_job_types():
     """
     :returns a registry dictionary with label and form_class for each job type
     """
-    from worker.forms import MandtalImportJobForm, R75ImportJobForm
+    from worker.forms import MandtalImportJobForm, R75ImportJobForm, DispatchTaxYearForm
     return {
         'ImportMandtalJob': {
             'label': _('Import af mandtal'),  # translated label
             'form_class': MandtalImportJobForm,  # form class used in the start job workflow
             'result_template': 'worker/includes/mandtal.html',
         },
+
         'ImportR75Job': {
             'label': _('Import af data fra R75'),  # translated label
             'form_class': R75ImportJobForm,  # form class used in the start job workflow
             'result_template': 'worker/includes/r75.html',
+        },
+
+        'DispatchTaxYear': {
+            'label': ('Afsendelse af Kas opgørelse for et given år'),
+            'form_class': DispatchTaxYearForm
+
         }
     }

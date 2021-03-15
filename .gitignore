@@ -1,6 +1,7 @@
 *.pyc
 env/
 .idea/
-kas/uploads/*
 *.mo
 docker-compose.override.yml
+data/kas/*
+!data/kas/.gitkeep

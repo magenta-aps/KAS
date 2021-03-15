@@ -2,6 +2,7 @@ from django import forms
 from worker.job_registry import get_job_types
 from kas.forms_mixin import BootstrapForm
 from django.utils.translation import gettext as _
+from kas.models import TaxYear
 
 
 class JobTypeSelectForm(BootstrapForm):
@@ -25,3 +26,12 @@ class MandtalImportJobForm(YearForm):
 
 class R75ImportJobForm(YearForm):
     pass
+
+
+class DispatchTaxYearForm(BootstrapForm):
+    year_pk = forms.ChoiceField(choices=[], required=True)
+    title = forms.CharField(label=_('Titel'), help_text=_('Vil blive brugt som title feltet i e-boks'))
+
+    def __init__(self, *args, **kwargs):
+        super(DispatchTaxYearForm, self).__init__(*args, **kwargs)
+        self.fields['year_pk'].choices = ((year.pk, str(year)) for year in TaxYear.objects.all())

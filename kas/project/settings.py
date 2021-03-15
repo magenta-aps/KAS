@@ -116,8 +116,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 UPLOAD_PATH = '/uploads'
-MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
-MEDIA_URL = "/uploads/"
+MEDIA_ROOT = "/srv/media"
+MEDIA_URL = "/media/"
 
 LOGGING = {
     'version': 1,
@@ -166,3 +166,14 @@ ENVIRONMENT = os.environ['ENVIRONMENT']
 
 KAS_TAX_RATE = 0.153
 KAS_TAX_RATE_IN_PERCENT = KAS_TAX_RATE * 100
+
+EBOKS = {
+    'client_certificate': os.environ['EBOKS_CLIENT_CERTIFICATES'],
+    'client_private_key': os.environ['EBOKS_CLIENT_PRIVATE_KEY'],
+    'verify': os.environ['EBOKS_VERIFY'],
+    'client_id': os.environ['EBOKS_CLIENT_ID'],
+    'system_id': os.environ['EBOKS_SYSTEM_ID'],
+    'content_type_id': os.environ['EBOKS_CONTENT_TYPE_ID'],
+    'host': os.environ['EBOKS_HOST'],
+    'dispatch_bulk_size': int(os.environ['EBOKS_DISPATCH_BULK_SIZE'])
+}

@@ -155,6 +155,10 @@ class Person(HistoryMixin, models.Model):
         validators=(RegexValidator(regex=r'\d{10}'),)
     )
 
+    name = models.TextField(
+        blank=True,
+        null=True
+    )
     municipality_code = models.IntegerField(
         blank=True,
         null=True
@@ -189,7 +193,29 @@ class Person(HistoryMixin, models.Model):
     )
 
     def __str__(self):
-        return f"{self.__class__.__name__}(cpr={self.cpr})"
+        return f"{self.__class__.__name__}(cpr={self.cpr},municipality_code={self.municipality_code}," \
+               f"municipality_name={self.municipality_name}," \
+               f"address_line_1={self.address_line_1},address_line_2={self.address_line_2}," \
+               f"address_line_3={self.address_line_1},address_line_4={self.address_line_2}," \
+               f"address_line_5={self.address_line_2}," \
+               f"full_address={self.full_address})"
+
+
+tax_slip_statuses = (
+    ('created', _('KAS Selvangivelse genereret')),
+    ('sent', _('KAS Selvangivelse afsendt')),  # sent means that the processing is done
+    ('post_processing', _('Afventer efterbehandling')),
+    ('failed', _('Afsendelse fejlet'))
+)
+# final state is either sent or failed
+
+
+class TaxSlipGenerated(models.Model):
+    file = models.FileField(upload_to='reports/', null=True)
+    status = models.TextField(choices=tax_slip_statuses, default='created', blank=True)
+    post_processing_status = models.TextField(default='', blank=True)
+    recipient_status = models.TextField(default='', blank=True)
+    message_id = models.TextField(blank=True, default='')  # eboks message_id
 
 
 class PersonTaxYear(HistoryMixin, models.Model):
@@ -198,6 +224,13 @@ class PersonTaxYear(HistoryMixin, models.Model):
         unique_together = ['tax_year', 'person']
 
     history = HistoricalRecords()
+
+    tax_slip = models.OneToOneField(
+        TaxSlipGenerated,
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True
+    )
 
     tax_year = models.ForeignKey(
         TaxYear,
@@ -230,7 +263,6 @@ class PersonTaxYear(HistoryMixin, models.Model):
 
 
 class PolicyTaxYear(HistoryMixin, models.Model):
-
     history = HistoricalRecords()
 
     class Meta:
@@ -577,7 +609,15 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         return max(0, (-self.year_adjusted_amount) - self.sum_of_deducted_amount)
 
     def __str__(self):
-        return f"{self.__class__.__name__}(policy_number={self.policy_number}, cpr={self.person.cpr}, year={self.tax_year.year})"
+        return f"{self.__class__.__name__}(policy_number={self.policy_number}, cpr={self.person.cpr}, " \
+               f"year={self.tax_year.year}), prefilled_amount={self.prefilled_amount}, " \
+               f"estimated_amount={self.estimated_amount}, self_reported_amount={self.self_reported_amount}, " \
+               f"calculations_model_options={self.calculations_model_options}, active_amount={self.active_amount}, " \
+               f"year_adjusted_amount={self.year_adjusted_amount}, calculation_model={self.calculation_model}, " \
+               f"preliminary_paid_amount={self.preliminary_paid_amount}, from_pension={self.from_pension}, " \
+               f"foreign_paid_amount_self_reported={self.foreign_paid_amount_self_reported}, " \
+               f"foreign_paid_amount_actual={self.foreign_paid_amount_actual}, " \
+               f"applied_deduction_from_previous_years={self.applied_deduction_from_previous_years}"
 
 
 class PreviousYearNegativePayout(models.Model):
