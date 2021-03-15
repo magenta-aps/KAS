@@ -1,18 +1,19 @@
-from unittest.mock import patch, MagicMock
 from datetime import datetime
+from unittest.mock import patch, MagicMock
 
 import django_rq
-from django.test import TestCase, override_settings, TransactionTestCase
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
+from django.test import override_settings, TransactionTestCase
+from fakeredis import FakeStrictRedis
+from rq import Queue
 
+from kas.eboks import EboksClient
+from kas.jobs import dispatch_tax_year
 from kas.models import TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany, TaxSlipGenerated
 from worker.models import Job
-from django.contrib.auth import get_user_model
-from rq import Queue
-from fakeredis import FakeStrictRedis
-from kas.eboks import EboksClient
-from kas.jobs import dispatch_eboks_tax_slips, dispatch_tax_year
-from django.conf import settings
-from django.core.files.base import ContentFile
+
 test_settings = dict(settings.EBOKS)
 test_settings['dispatch_bulk_size'] = 2
 
@@ -53,23 +54,23 @@ def get_recipient_status_mock(as_side_effect=False):
          "proxy_error": "",
          "modified_at": datetime.utcnow().isoformat(),
          "recipients": [{
-                 "nr": "",
-                 "recipient_type": "cpr",
-                 "nationality": "Denmark",
-                 "status": "exempt",
-                 "reject_reason": "",
-                 "post_processing_status": "address resolved"}]},
+             "nr": "",
+             "recipient_type": "cpr",
+             "nationality": "Denmark",
+             "status": "exempt",
+             "reject_reason": "",
+             "post_processing_status": "address resolved"}]},
         {"message_id": '8111245036',
-            "proxy_response_code": "200",
-            "proxy_error": "",
-            "modified_at": datetime.utcnow().isoformat(),
-            "recipients": [{
-                "nr": "",
-                "recipient_type": "cpr",
-                "nationality": "Denmark",
-                "status": "exempt",
-                "reject_reason": "",
-                "post_processing_status": "address resolved"}]}]
+         "proxy_response_code": "200",
+         "proxy_error": "",
+         "modified_at": datetime.utcnow().isoformat(),
+         "recipients": [{
+             "nr": "",
+             "recipient_type": "cpr",
+             "nationality": "Denmark",
+             "status": "exempt",
+             "reject_reason": "",
+             "post_processing_status": "address resolved"}]}]
     mock = MagicMock()
     if as_side_effect:
         mock.json = MagicMock(side_effect=[response, response])
@@ -92,22 +93,22 @@ class JobsTest(TransactionTestCase):
             person_tax_year.tax_slip.file.save('test', report_file)
             person_tax_year.save()
 
-            policy_tax_year = PolicyTaxYear.objects.create(person_tax_year=person_tax_year,
-                                                           pension_company=self.pension_company,
-                                                           policy_number='test')
+            PolicyTaxYear.objects.create(person_tax_year=person_tax_year,
+                                         pension_company=self.pension_company,
+                                         policy_number='test')
 
         self.user = get_user_model().objects.create(username='test')
 
         self.job_kwargs = {'year_pk': self.tax_year.pk,
-                      'title': 'test af eboks: {}'.format(str(self.tax_year.year))}
+                           'title': 'test af eboks: {}'.format(str(self.tax_year.year))}
 
         self.mock_message = {'0112947728': '',
-                        '1256874212': '',
-                        '1256842143': '',
-                        '125742u568': '',
-                        '2505811057': 'pending',
-                        '2505636811': 'pending',
-                        '8111245036': 'pending'}
+                             '1256874212': '',
+                             '1256842143': '',
+                             '125742u568': '',
+                             '2505811057': 'pending',
+                             '2505636811': 'pending',
+                             '8111245036': 'pending'}
 
     @patch.object(EboksClient, 'get_recipient_status')
     @patch.object(EboksClient, 'send_message')

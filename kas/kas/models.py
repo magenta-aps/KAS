@@ -200,14 +200,14 @@ class Person(HistoryMixin, models.Model):
                f"address_line_5={self.address_line_2}," \
                f"full_address={self.full_address})"
 
-# final state is either sent or failed
+
 tax_slip_statuses = (
     ('created', _('KAS Selvangivelse genereret')),
-    ('sent', _('KAS Selvangivelse afsendt')), # sent means that the processing is done
+    ('sent', _('KAS Selvangivelse afsendt')),  # sent means that the processing is done
     ('post_processing', _('Afventer efterbehandling')),
     ('failed', _('Afsendelse fejlet'))
 )
-
+# final state is either sent or failed
 
 
 class TaxSlipGenerated(models.Model):
@@ -215,7 +215,7 @@ class TaxSlipGenerated(models.Model):
     status = models.TextField(choices=tax_slip_statuses, default='created', blank=True)
     post_processing_status = models.TextField(default='', blank=True)
     recipient_status = models.TextField(default='', blank=True)
-    message_id = models.TextField(blank=True, default='') #eboks message_id
+    message_id = models.TextField(blank=True, default='')  # eboks message_id
 
 
 class PersonTaxYear(HistoryMixin, models.Model):
