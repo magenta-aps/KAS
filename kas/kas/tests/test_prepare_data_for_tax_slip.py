@@ -101,4 +101,4 @@ class DeductionTest(TestCase):
         person_tax_year_list = PersonTaxYear.objects.all()
 
         for person_tax_year in person_tax_year_list:
-            self.assertEqual(1, person_tax_year.tax_slip.status)
+            self.assertEqual('created', person_tax_year.tax_slip.status)
