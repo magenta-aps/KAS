@@ -157,18 +157,19 @@ class PolicyDetailView(TemplateView):
                 for key in [
                     'prefilled_amount', 'estimated_amount', 'self_reported_amount',
                     'preliminary_paid_amount', 'foreign_paid_amount_self_reported',
-                    'foreign_paid_amount_actual', 'deduction_from_previous_years',
-                    'applied_deduction_from_previous_years', 'calculated_result'
+                    'foreign_paid_amount_actual', 'applied_deduction_from_previous_years',
+                    'calculated_result'
                 ]
             }
         }
 
         if year < nowyear:
+            all_years = client.get_person_tax_years(cpr)
             years = [
                 p['tax_year']
                 for p in client.get_person_tax_years(cpr)
                 if p['tax_year'] < nowyear
-            ]
+            ] if all_years is not None else []
             years.sort()
             context['years'] = years
 

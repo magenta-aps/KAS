@@ -41,7 +41,7 @@
                                     <td class="col-2-sm">{% trans 'Kapitalafkast PBL (DK) § 53 A' %}</td>
                                     <td class="col-6-sm">{% blocktrans with policyform.prefilled_amount.value as value %}Vores beregning: {{value}}{% endblocktrans %}</td>
                                     <td class="col-3-sm"><label>{% trans 'Deres rettelse:' %}</label>{{ policyform.self_reported_amount }}</td>
-                                    <td class="col-1-sm">201</td>
+                                    <td class="col-1-sm">KAS-201</td>
                                 </tr>
 
                                 {% if not policydata.pension_company.agreement %}
@@ -49,7 +49,7 @@
                                     <td class="col-2-sm">{% trans 'Forudbetalt kapitalafkast' %}</td>
                                     <td class="col-6-sm">{% trans 'Har De allerede betalt foreløbig kapitalafkastskat angives beløbet her. Husk at vedlægge dokumentation.' %}</td>
                                     <td class="col-3-sm"><label>{% trans 'Beløb:' %}</label>{{ policyform.preliminary_paid_amount }}</td>
-                                    <td class="col-1-sm">205</td>
+                                    <td class="col-1-sm">KAS-205</td>
                                 </tr>
                                 {% endif %}
 
@@ -67,13 +67,13 @@
                                     <td class="col-2-sm">{% trans 'Betalt kapitalafkastskat i udlandet' %}</td>
                                     <td class="col-6-sm">{% trans 'Anmoder De om nedslag for betalt kapitalafkastskat i udlandet angives den betalte skat og dokumentation vedlægges selvangivelsen' %}</td>
                                     <td class="col-3-sm"><label>{% trans 'Beløb:' %}</label>{{ policyform.foreign_paid_amount_self_reported }}</td>
-                                    <td class="col-1-sm">208</td>
+                                    <td class="col-1-sm">KAS-208</td>
                                 </tr>
                                 <tr>
                                     <td class="col-2-sm">{% trans 'Negativt kapitalafkast fra tidligere år' %}</td>
                                     <td class="col-6-sm">{% trans 'Negative kapitalafkast (tab) fra tidligere år kan fratrækkes det beskattede beløb for i år' %}</td>
                                     <td class="col-3-sm"><label>{% trans 'Beløb:' %}</label>{{ policyform.deduction_from_previous_years }}</td>
-                                    <td class="col-1-sm">208</td>
+                                    <td class="col-1-sm">KAS-208</td>
                                 </tr>
                                 <tr>
                                     <td class="col-2-sm">{% trans 'Dokumentation for betalt kapitalafkastskat' %}</td>

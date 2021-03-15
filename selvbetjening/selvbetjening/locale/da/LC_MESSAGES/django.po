@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-08 10:15+0000\n"
+"POT-Creation-Date: 2021-03-09 16:19+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,23 +22,60 @@ msgstr ""
 msgid "Log ud"
 msgstr ""
 
-#: templates/form.html:33 templates/view.html:47 templates/view.html:111
+#: templates/calculation.html:3
+msgid "Beregning"
+msgstr ""
+
+#: templates/calculation.html:7 templates/form.html:33 templates/view.html:47
+#: templates/view.html:113
 msgid "Feltnavn"
 msgstr ""
 
-#: templates/form.html:34
+#: templates/calculation.html:8 templates/form.html:34
 msgid "Beskrivelse"
+msgstr ""
+
+#: templates/calculation.html:9 templates/view.html:48 templates/view.html:114
+msgid "Værdi"
+msgstr ""
+
+#: templates/calculation.html:14
+msgid "Antal skattepligtige dage i skatteår"
+msgstr ""
+
+#: templates/calculation.html:15
+msgid "Antal dage i året (skudår har en ekstra dag)"
+msgstr ""
+
+#: templates/calculation.html:19
+msgid "Justeringsfaktor dage i skatteår"
+msgstr ""
+
+#: templates/calculation.html:24
+msgid "Beløb justeret for skatteår"
+msgstr ""
+
+#: templates/calculation.html:29
+msgid "Skattegrundlag før eventuelt negativt afkast"
+msgstr ""
+
+#: templates/calculation.html:34
+msgid "Anvendt negativt afkast"
+msgstr ""
+
+#: templates/calculation.html:39
+msgid "Skattepligtigt beløb / skattegrundlag"
 msgstr ""
 
 #: templates/form.html:35
 msgid "Felt"
 msgstr ""
 
-#: templates/form.html:36 templates/view.html:49 templates/view.html:113
+#: templates/form.html:36 templates/view.html:49 templates/view.html:115
 msgid "Felt nr."
 msgstr ""
 
-#: templates/form.html:41 templates/view.html:54 templates/view.html:118
+#: templates/form.html:41 templates/view.html:54 templates/view.html:120
 msgid "Kapitalafkast PBL (DK) § 53 A"
 msgstr ""
 
@@ -73,7 +110,7 @@ msgstr ""
 msgid "Er kapitalafkastskatten hævet fra pensionsordning?"
 msgstr ""
 
-#: templates/form.html:67 templates/view.html:71 templates/view.html:128
+#: templates/form.html:67 templates/view.html:71 templates/view.html:130
 msgid "Betalt kapitalafkastskat i udlandet"
 msgstr ""
 
@@ -83,7 +120,7 @@ msgid ""
 "betalte skat og dokumentation vedlægges selvangivelsen"
 msgstr ""
 
-#: templates/form.html:73
+#: templates/form.html:73 templates/view.html:76
 msgid "Negativt kapitalafkast fra tidligere år"
 msgstr ""
 
@@ -134,23 +171,15 @@ msgstr ""
 msgid "Udtræk for %(year)s"
 msgstr ""
 
-#: templates/view.html:48 templates/view.html:112
-msgid "Værdi"
-msgstr ""
-
-#: templates/view.html:59 templates/view.html:123
+#: templates/view.html:59 templates/view.html:125
 msgid "Forudbetalt kapitalafkastskat"
-msgstr ""
-
-#: templates/view.html:76
-msgid "Negativt kapilatafkast fra tidligere år"
 msgstr ""
 
 #: templates/view.html:83 templates/view.html:89
 msgid "Dokumentation"
 msgstr ""
 
-#: templates/view.html:103
+#: templates/view.html:105
 msgid "Opsummering"
 msgstr ""
 
