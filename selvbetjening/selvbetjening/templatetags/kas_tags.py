@@ -121,3 +121,17 @@ def number(item):
     locale.setlocale(locale.LC_ALL, ('da_dk', 'utf-8'))
     value = float(item.replace(',', '.')) if isinstance(item, str) else item
     return locale.format("%.2f", value, grouping=True)
+
+
+@register.filter
+def validation_class(field, class_name):
+    classes = [field.css_classes()]
+    if field.errors:
+        classes.append(class_name)
+    existing_attrs = field.field.widget.attrs or {}
+    if 'class' in existing_attrs:
+        classes.append(existing_attrs['class'])
+    return field.as_widget(attrs={
+        **existing_attrs,
+        "class": " ".join(classes)
+    })

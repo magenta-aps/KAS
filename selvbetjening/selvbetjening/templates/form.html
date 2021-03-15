@@ -14,18 +14,23 @@
         <div class="accordion" id="policies">
             {% for policyform in form %}
             {% with policydata=data|get:policyform.id.value %}
-            {{ policyform.errors }}
-            {{ policyform.non_field_errors }}
             <div class="policyform accordion-item">
                 {% for hidden_field in policyform.hidden_fields %}
                 {{ hidden_field }}
                 {% endfor %}
                 <h2 class="accordion-header" id="heading{{ forloop.counter }}">
-                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} " type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ forloop.counter }}">
-                        {{ policydata.pension_company.name }}, Police nr {{ policyform.policy_number.value }}
+                    {# Expand if (not form.errors and first) or (form.errors and policyform.errors) #}
+                    <button class="accordion-button {% if not form.errors and forloop.first or form.errors and policyform.errors %}expanded{% else %}collapsed{% endif %} " type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ forloop.counter }}">
+                        {% if policyform.id.value is None %}
+                        {% trans 'Angiv ny police' %}
+                        {% else %}
+                        {% blocktrans with company=policydata.pension_company.name policy=policyform.policy_number.value %}
+                        {{ company }}, Police nr {{ policy }}
+                        {% endblocktrans %}
+                        {% endif %}
                     </button>
                 </h2>
-                <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#policies">
+                <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if not form.errors and forloop.first or form.errors and policyform.errors %}show{% endif %}" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#policies">
                     <div class="accordion-body">
                         <table class="table">
                             <thead>
@@ -37,10 +42,37 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                {% if policyform.id.value is None %}
+                                <tr>
+                                    <td class="col-2-sm">{% trans 'Pensionsselskab' %}</td>
+                                    <td class="col-6-sm"></td>
+                                    <td class="col-3-sm">
+                                        {% include 'include/field.html' with field=policyform.pension_company_id %}
+                                        {% include 'include/field.html' with field=policyform.pension_company_name %}
+                                    </td>
+                                    <td class="col-1-sm"></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-2-sm">{% trans 'Policenummer' %}</td>
+                                    <td class="col-6-sm"></td>
+                                    <td class="col-3-sm">
+                                        {% include 'include/field.html' with field=policyform.policy_number_new %}
+                                    </td>
+                                    <td class="col-1-sm"></td>
+                                </tr>
+                                {% endif %}
+
                                 <tr>
                                     <td class="col-2-sm">{% trans 'Kapitalafkast PBL (DK) § 53 A' %}</td>
-                                    <td class="col-6-sm">{% blocktrans with policyform.prefilled_amount.value as value %}Vores beregning: {{value}}{% endblocktrans %}</td>
-                                    <td class="col-3-sm"><label>{% trans 'Deres rettelse:' %}</label>{{ policyform.self_reported_amount }}</td>
+                                    <td class="col-6-sm">
+                                        {% if policyform.id.value is not None %}
+                                        {% blocktrans with policyform.prefilled_amount.value as value %}Vores beregning: {{value}}{% endblocktrans %}
+                                        {% endif %}
+                                    </td>
+                                    <td class="col-3-sm">
+                                        <label for="{{policyform.self_reported_amount.id_for_label}}">{% if policyform.id.value is None %}{% trans 'Beløb:' %}{% else %}{% trans 'Deres rettelse:' %}{% endif %}</label>
+                                        {% include 'include/field.html' with field=policyform.self_reported_amount %}
+                                    </td>
                                     <td class="col-1-sm">KAS-201</td>
                                 </tr>
 
@@ -48,7 +80,7 @@
                                 <tr>
                                     <td class="col-2-sm">{% trans 'Forudbetalt kapitalafkast' %}</td>
                                     <td class="col-6-sm">{% trans 'Har De allerede betalt foreløbig kapitalafkastskat angives beløbet her. Husk at vedlægge dokumentation.' %}</td>
-                                    <td class="col-3-sm"><label>{% trans 'Beløb:' %}</label>{{ policyform.preliminary_paid_amount }}</td>
+                                    <td class="col-3-sm">{% include 'include/field.html' with field=policyform.preliminary_paid_amount label='Beløb:' %}</td>
                                     <td class="col-1-sm">KAS-205</td>
                                 </tr>
                                 {% endif %}
@@ -66,13 +98,9 @@
                                 <tr>
                                     <td class="col-2-sm">{% trans 'Betalt kapitalafkastskat i udlandet' %}</td>
                                     <td class="col-6-sm">{% trans 'Anmoder De om nedslag for betalt kapitalafkastskat i udlandet angives den betalte skat og dokumentation vedlægges selvangivelsen' %}</td>
-                                    <td class="col-3-sm"><label>{% trans 'Beløb:' %}</label>{{ policyform.foreign_paid_amount_self_reported }}</td>
-                                    <td class="col-1-sm">KAS-208</td>
-                                </tr>
-                                <tr>
-                                    <td class="col-2-sm">{% trans 'Negativt kapitalafkast fra tidligere år' %}</td>
-                                    <td class="col-6-sm">{% trans 'Negative kapitalafkast (tab) fra tidligere år kan fratrækkes det beskattede beløb for i år' %}</td>
-                                    <td class="col-3-sm"><label>{% trans 'Beløb:' %}</label>{{ policyform.deduction_from_previous_years }}</td>
+                                    <td class="col-3-sm">
+                                        {% include 'include/field.html' with field=policyform.foreign_paid_amount_self_reported label='Beløb:' %}
+                                    </td>
                                     <td class="col-1-sm">KAS-208</td>
                                 </tr>
                                 <tr>
@@ -211,6 +239,17 @@
                 $('.doc_file.prototype').remove();
             });
 
+            const changeCompanySelect = function() {
+                const $this = $(this);
+                const explicit = $this.siblings(".company_explicit");
+                if ($(this).val()) {
+                    explicit.attr("disabled", "disabled");
+                } else {
+                    explicit.removeAttr("disabled");
+                }
+            }
+            $(".policyform .company_select").change(changeCompanySelect);
+            $(".policyform .company_select").each(changeCompanySelect);
         });
     </script>
 </div>

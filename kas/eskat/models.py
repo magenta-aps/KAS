@@ -264,7 +264,7 @@ class ImportedR75PrivatePension(AbstractModels.R75PrivatePension):
         )
         count = qs.count()
         created, updated = (0, 0)
-        for i, x in enumerate(qs):
+        for i, x in enumerate(qs.iterator()):
             try:
                 existing = cls.objects.get(pk=x.pk)
                 if existing.dato != x.dato:
@@ -279,7 +279,6 @@ class ImportedR75PrivatePension(AbstractModels.R75PrivatePension):
                 new_obj.change_reason = "Created by import"
                 new_obj.save()
                 created += 1
-
             if job is not None:
                 job.set_progress_pct(progress_start + (i / count) * (100 * progress_factor))
         if job is not None:

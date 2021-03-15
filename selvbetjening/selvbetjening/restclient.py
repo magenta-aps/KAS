@@ -18,7 +18,6 @@ class RestClient(object):
         if response.status_code == 204:
             return None
         elif response.ok:
-            print(response.json())
             return response.json()
         else:
             response.raise_for_status()
@@ -66,24 +65,43 @@ class RestClient(object):
     def get_person_tax_years(self, cpr):
         person_tax_years = self.get('person_tax_year', cpr=cpr)
         for p in person_tax_years:
-            p['person_tax_year'] = self.get_tax_year(p['tax_year'])
+            p['tax_year'] = self.get_tax_year(p['tax_year'])
+
+    def get_person_tax_year(self, cpr, year):
+        person_tax_years = self.get('person_tax_year', cpr=cpr, year=year)
+        if len(person_tax_years) == 1:
+            person_tax_year = person_tax_years[0]
+            person_tax_year['tax_year'] = self.get_tax_year(person_tax_year['tax_year'])
+            return person_tax_year
 
     def get_tax_year(self, year):
         tax_years = self.get('tax_year', year=year)
         return tax_years[0] if len(tax_years) else None
 
-    def get_person_tax_year(self, id):
+    def get_person_tax_year_by_id(self, id):
         person_tax_year = self.get(f"person_tax_year/{id}")
         person_tax_year['tax_year'] = self.get_tax_year(person_tax_year['tax_year'])
         return person_tax_year
 
-    def get_policies(self, cpr, year):
-        policies = self.get('policy_tax_year', cpr=cpr, year=year)
+    def get_policies(self, **params):
+        policies = self.get('policy_tax_year', **params)
         for p in policies:
-            p['person_tax_year'] = self.get_person_tax_year(p['person_tax_year'])
+            if type(p['person_tax_year']) == int:
+                p['person_tax_year'] = self.get_person_tax_year_by_id(p['person_tax_year'])
+            if type(p['pension_company']) == int:
+                p['pension_company'] = self.get_pension_company_by_id(p['pension_company'])
         return policies
 
-    def post_policy(self, id, policy):
+    def get_pension_companies(self):
+        return self.get("pension_company")
+
+    def get_pension_company_by_id(self, id):
+        return self.get(f"pension_company/{id}")
+
+    def create_pension_company(self, name):
+        return self.post("pension_company", name=name)
+
+    def update_policy(self, id, policy):
         policy_response = self.patch(
             f"policy_tax_year/{id}",
             **{
@@ -91,7 +109,6 @@ class RestClient(object):
                 if k in [
                     'self_reported_amount', 'preliminary_paid_amount', 'from_pension',
                     'foreign_paid_amount_self_reported',
-                    # 'deduction_from_previous_years'
                 ]
             }
         )
@@ -116,4 +133,28 @@ class RestClient(object):
                         f"policy_document/{id}",
                         description=data.get('description')
                     )
+        return policy_response
+
+    def create_policy(self, policy):
+        policy_response = self.post(
+            "policy_tax_year",
+            **{
+                k: v for k, v in policy.items()
+                if k in [
+                    'self_reported_amount', 'preliminary_paid_amount', 'from_pension',
+                    'foreign_paid_amount_self_reported', 'pension_company', 'person_tax_year',
+                    'policy_number'
+                ]
+            }
+        )
+        if 'files' in policy:
+            for file in policy['files']:
+                (fileobject, description) = file
+                self.post(
+                    'policy_document',
+                    policy_tax_year=policy_response['id'],
+                    name=fileobject.name,
+                    description=description,
+                    files={'file': fileobject}
+                )
         return policy_response

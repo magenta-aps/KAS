@@ -16,6 +16,7 @@ from django.views.i18n import JavaScriptCatalog
 
 from selvbetjening.forms import PolicyForm
 from selvbetjening.restclient import RestClient
+from django.utils.translation import gettext as _
 
 
 class CustomJavaScriptCatalog(JavaScriptCatalog):
@@ -80,11 +81,18 @@ class SetLanguageView(View):
 class PolicyFormView(FormView):
     template_name = 'form.html'
     success_url = ''
-    form_class = formset_factory(PolicyForm, min_num=1, extra=0)
+    form_class = formset_factory(PolicyForm, min_num=1, extra=1)
 
     def get(self, request, *args, **kwargs):
         self.load_initial()
         return super(PolicyFormView, self).get(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        formset = super(PolicyFormView, self).get_form(form_class=form_class)
+        choices = [(None, _("--- angiv navn ---"))] + [(company['id'], company['name']) for company in self.request.session['pension_companies']]
+        for form in formset.extra_forms:
+            form.fields['pension_company_id'].widget.choices = choices
+        return formset
 
     def get_context_data(self, **kwargs):
         context = {
@@ -94,25 +102,33 @@ class PolicyFormView(FormView):
         }
         return super(PolicyFormView, self).get_context_data(**context)
 
+    @property
+    def cpr(self):
+        return self.request.session['user_info']['CPR']
+
+    @property
+    def year(self):
+        return date.today().year - 1
+
     def load_initial(self):
         # Load known policy_tax_year data to populate form with initial data
         # We should only do this once per get-post cycle, because it contains requests to the REST backend (and is thus "expensive")
-        year = date.today().year - 1
         client = RestClient()
-        person_tax_years = client.get(
-            'person_tax_year',
-            cpr=self.request.session['user_info']['CPR'],
-            year=str(year)
+        person_tax_year = client.get_person_tax_year(
+            self.cpr,
+            self.year
         )
-        if len(person_tax_years) == 1:
-            policy_tax_years = client.get(
-                'policy_tax_year',
-                person_tax_year=person_tax_years[0]['id']
+        if person_tax_year is not None:
+            self.request.session['person_tax_year'] = person_tax_year
+            policy_tax_years = client.get_policies(
+                person_tax_year=person_tax_year['id']
             )
-            policy_tax_years.sort(key=lambda k: k['pension_company']['res'])
+            policy_tax_years.sort(key=lambda k: str(k['pension_company']['res']))
         else:
             policy_tax_years = []
         self.request.session['policy_tax_years'] = policy_tax_years
+        pension_companies = client.get_pension_companies()
+        self.request.session['pension_companies'] = pension_companies
 
     def get_initial(self):
         return self.request.session['policy_tax_years']
@@ -122,20 +138,41 @@ class PolicyFormView(FormView):
         for policyform in form:
             policyform_data = policyform.get_nonfile_data()
             if len(policyform_data):
-                existing_files_data = policyform.get_existing_files()
-                client.post_policy(policyform_data['id'], {
-                    **policyform_data,
-                    'files': policyform.get_filled_files(),
-                    'existing_files': existing_files_data,
-                })
+                id = policyform_data['id']
+                if id is None:
+                    # Creating new
+                    if policyform_data['pension_company_name'] and not policyform_data['pension_company_id']:
+                        pension_company = client.create_pension_company(policyform_data.pop('pension_company_name'))
+                        policyform_data['pension_company'] = pension_company['id']
+                    else:
+                        policyform_data['pension_company'] = policyform_data['pension_company_id']
+                    policyform_data['policy_number'] = policyform_data['policy_number_new']
+                    person_tax_year = self.request.session.get('person_tax_year')
+                    if person_tax_year is None:
+                        person_tax_year = client.create_person_tax_year(self.cpr, self.year)
+                    policyform_data['person_tax_year'] = person_tax_year['id']
+                    client.create_policy({
+                        **policyform_data,
+                        'files': policyform.get_filled_files(),
+                    })
+                else:
+                    existing_files_data = policyform.get_existing_files()
+                    client.update_policy(id, {
+                        **policyform_data,
+                        'files': policyform.get_filled_files(),
+                        'existing_files': existing_files_data,
+                    })
         return redirect(reverse('selvbetjening:policyview', args=[date.today().year - 1]))
 
 
 class PolicyDetailView(TemplateView):
     template_name = 'view.html'
 
+    @property
+    def cpr(self):
+        return self.request.session['user_info']['CPR']
+
     def get_context_data(self, **kwargs):
-        cpr = self.request.session['user_info']['CPR']
         client = RestClient()
         year = kwargs.get('year')
         nowyear = date.today().year - 1
@@ -144,7 +181,7 @@ class PolicyDetailView(TemplateView):
         else:
             year = int(year)
 
-        policies = client.get_policies(cpr, year)
+        policies = client.get_policies(cpr=self.cpr, year=year)
         context = {
             **kwargs,
             'items': policies,
@@ -164,10 +201,10 @@ class PolicyDetailView(TemplateView):
         }
 
         if year < nowyear:
-            all_years = client.get_person_tax_years(cpr)
+            all_years = client.get_person_tax_years(self.cpr)
             years = [
                 p['tax_year']
-                for p in client.get_person_tax_years(cpr)
+                for p in all_years
                 if p['tax_year'] < nowyear
             ] if all_years is not None else []
             years.sort()
