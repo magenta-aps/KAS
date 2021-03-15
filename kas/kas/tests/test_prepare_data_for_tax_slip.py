@@ -15,7 +15,6 @@ class DeductionTest(TestCase):
         person1 = Person.objects.create(cpr='1234567890', municipality_code=956, municipality_name='Sermersooq', address_line_2='Mut aqqut 13', address_line_4='3900 Nuuk', name='Andersine And')
         person2 = Person.objects.create(cpr='1234567891', municipality_code=956, municipality_name='Sermersooq', address_line_2='Mut aqqut 15', address_line_4='3900 Nuuk', name='Anders And')
         pension_company = PensionCompany.objects.create(
-            cvr=12345678,
             name='Foobar A/S',
             address='Foobarvej 42'
         )
