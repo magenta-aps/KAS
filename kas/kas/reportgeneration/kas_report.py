@@ -415,23 +415,23 @@ class TaxPDF(FPDF):
         reciever_address_line_4 = person_tax_year.person.address_line_4
         reciever_address_line_5 = person_tax_year.person.address_line_5
 
-        policys = []
+        policies = []
 
-        list_of_policys = PolicyTaxYear.objects.filter(
+        list_of_policies = PolicyTaxYear.objects.filter(
             person_tax_year=person_tax_year
         )
 
         policy_file_name = f'{destination_path}Y_{tax_year}_{person_number}.pdf'
 
-        for policy in list_of_policys:
-            policys.append({'policy': policy.pension_company.name+'-'+policy.policy_number})
+        for policy in list_of_policies:
+            policies.append({'policy': policy.pension_company.name+'-'+policy.policy_number})
 
-        policys.append({'policy': ''})
+        policies.append({'policy': ''})
 
         self.set_parameters(tax_year, tax_return_date_limit, request_pay, pay_date, person_number,
                             reciever_name, reciever_address_line_1, reciever_address_line_2,
                             reciever_address_line_3, reciever_address_line_4,
-                            reciever_address_line_5, policys)
+                            reciever_address_line_5, policies)
         self.print_tax_slip('gl')
         self.print_tax_slip('dk')
         self.write_tax_slip_to_disk(policy_file_name)
@@ -443,9 +443,9 @@ class TaxPDF(FPDF):
 
     def perform_complete_write_of_one_tax_year(self, destination_path, tax_year):
 
-        List_of_person_tax_year = PersonTaxYear.objects.filter(
+        list_of_person_tax_year = PersonTaxYear.objects.filter(
             tax_year__year=tax_year
         )
 
-        for person_tax_year in List_of_person_tax_year:
+        for person_tax_year in list_of_person_tax_year:
             self.perform_complete_write_of_one_person_tax_year(destination_path=destination_path, person_tax_year=person_tax_year)
