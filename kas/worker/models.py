@@ -115,6 +115,8 @@ class Job(models.Model):
         result ttl no point in storing the result value in redis when we use this model to track state and we dont use
         result values.
         """
+        if job_kwargs is None:
+            job_kwargs = {}
         queue = django_rq.get_queue(queue, connection=redis_cursor)  # reuse same redis connection
         job = cls.objects.create(job_type=job_type, created_by=created_by,
                                  parent=parent, arguments=job_kwargs, queue=queue)
@@ -125,6 +127,7 @@ class Job(models.Model):
         job.rq_job_id = rq_job.get_id()
         job.statue = rq_job.get_status()
         job.save(update_fields=['rq_job_id', 'status'])
+
         return job
 
     def finish(self):

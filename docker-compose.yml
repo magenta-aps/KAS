@@ -35,7 +35,8 @@ services:
     volumes:
       - ./kas/:/app
       - ./data/kas:/srv/media
-    command: python manage.py rqworker high default low # listening on all three queues by default
+    #command: python manage.py rqworker high default low # listening on all three queues by default
+    command: python manage.py test kas.tests.test_jobs
 
   postgres:
     container_name: kas-db

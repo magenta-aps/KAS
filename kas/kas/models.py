@@ -200,31 +200,22 @@ class Person(HistoryMixin, models.Model):
                f"address_line_5={self.address_line_2}," \
                f"full_address={self.full_address})"
 
+# final state is either sent or failed
+tax_slip_statuses = (
+    ('created', _('KAS Selvangivelse genereret')),
+    ('sent', _('KAS Selvangivelse afsendt')), # sent means that the processing is done
+    ('post_processing', _('Afventer efterbehandling')),
+    ('failed', _('Afsendelse fejlet'))
+)
+
+
 
 class TaxSlipGenerated(models.Model):
     file = models.FileField(upload_to='reports/', null=True)
-
-    STATUS_CREATED = 1
-    STATUS_PENDING = 2
-    STATUS_SENT_TO_PROXY = 3
-    STATUS_DELIVERED_EBOKS = 4
-    STATUS_DELIVERED_SNAILMAIL = 5
-    STATUS_FAILED_DELIVERY = 6
-
-    calculations_model_options = (
-        (STATUS_CREATED, 'created'),
-        (STATUS_PENDING, 'pending'),
-        (STATUS_SENT_TO_PROXY, 'sent_to_proxy'),
-        (STATUS_DELIVERED_EBOKS, 'delivered_to_eboks'),
-        (STATUS_DELIVERED_SNAILMAIL, 'delivered_to_snailmail'),
-        (STATUS_FAILED_DELIVERY, 'failed'),
-    )
-
-    status = models.SmallIntegerField(
-        verbose_name=('created'),
-        choices=calculations_model_options,
-        default=STATUS_CREATED
-    )
+    status = models.TextField(choices=tax_slip_statuses, default='created', blank=True)
+    post_processing_status = models.TextField(default='', blank=True)
+    recipient_status = models.TextField(default='', blank=True)
+    message_id = models.TextField(blank=True, default='') #eboks message_id
 
 
 class PersonTaxYear(HistoryMixin, models.Model):
