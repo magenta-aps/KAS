@@ -84,7 +84,7 @@ class JobsTest(TransactionTestCase):
     def setUp(self) -> None:
         self.tax_year = TaxYear.objects.create(year=2020)
 
-        self.pension_company = PensionCompany.objects.create(name='test', cvr=2)
+        self.pension_company = PensionCompany.objects.create(name='test', res=2)
         report_file = ContentFile("test_report")
         for i in range(1, 8):
             person = Person.objects.create(cpr='111111111{}'.format(i))
