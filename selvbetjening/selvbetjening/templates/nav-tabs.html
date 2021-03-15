@@ -7,10 +7,10 @@
                     <a href="{% url 'selvbetjening:policyview' year=newest_prior_year %}" class="nav-link {% if active == "view-prior" %}active{% endif %}">{% trans 'KAS-opgørelser fra tidligere år' %}</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'selvbetjening:policyview' %}" class="nav-link {% if active == "view-current" %}active{% endif %}">{% blocktrans %}KAS-opgørelser fra {{year}}{% endblocktrans %}}</a>
+                    <a href="{% url 'selvbetjening:policyview' %}" class="nav-link {% if active == "view-current" %}active{% endif %}">{% blocktrans %}KAS-opgørelser fra {{year}}{% endblocktrans %}</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'selvbetjening:policyedit' %}" class="nav-link {% if active == "edit-current" %}active{% endif %}">{% blocktrans %}Ret KAS-opgørelse fra {{year}}{% endblocktrans %}}</a>
+                    <a href="{% url 'selvbetjening:policyedit' %}" class="nav-link {% if active == "edit-current" %}active{% endif %}">{% blocktrans %}Ret KAS-opgørelse fra {{year}}{% endblocktrans %}</a>
                 </li>
             </ul>
         </div>

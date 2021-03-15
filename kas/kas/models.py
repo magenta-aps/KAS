@@ -1,3 +1,4 @@
+import calendar
 import math
 
 from django.conf import settings
@@ -11,7 +12,6 @@ from django.forms import model_to_dict
 from django.utils.translation import gettext as _
 from simple_history.models import HistoricalRecords
 from django.db.models import Sum
-import calendar
 
 
 class HistoryMixin(object):
@@ -114,6 +114,11 @@ class PensionCompany(models.Model):
         default=False,
     )
 
+    agreement_present = models.BooleanField(
+        default=False,
+        verbose_name=_("Foreligger der en aftale med skattestyrelsen")
+    )
+
     def __str__(self):
         return f"{self.__class__.__name__}(name={self.name}, res={self.res})"
 
@@ -126,6 +131,7 @@ class TaxYear(models.Model):
         help_text=_('Skatteår'),
         unique=True,
         null=False,
+        blank=False,
         validators=(MinValueValidator(limit_value=2000),)
     )
 
@@ -235,7 +241,8 @@ class PersonTaxYear(HistoryMixin, models.Model):
     tax_year = models.ForeignKey(
         TaxYear,
         on_delete=models.PROTECT,
-        null=False
+        null=False,
+        blank=False,
     )
 
     person = models.ForeignKey(
@@ -256,6 +263,8 @@ class PersonTaxYear(HistoryMixin, models.Model):
 
     @property
     def days_in_year_factor(self):
+        if self.number_of_days is None:
+            return 1
         return self.number_of_days / self.tax_year.days_in_year
 
     def __str__(self):

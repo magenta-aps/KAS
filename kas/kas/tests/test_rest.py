@@ -76,7 +76,7 @@ class TaxYearTest(RestTest):
         response = self.client.get(self.url)
         self.assertEquals(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
-            [{'year': year.year, 'id': year.id} for year in TaxYear.objects.all()],
+            [{'year': year.year, 'id': year.id, 'days_in_year': year.days_in_year} for year in TaxYear.objects.all()],
             response.json()
         )
 
@@ -86,10 +86,10 @@ class TaxYearTest(RestTest):
         self.authenticate()
         response = self.client.get(f"{self.url}{year2020.id}/")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertDictEqual({'year': 2020, 'id': year2020.id}, response.json())
+        self.assertDictEqual({'year': 2020, 'id': year2020.id, 'days_in_year': 366}, response.json())
         response = self.client.get(f"{self.url}{year2021.id}/")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertDictEqual({'year': 2021, 'id': year2021.id}, response.json())
+        self.assertDictEqual({'year': 2021, 'id': year2021.id, 'days_in_year': 365}, response.json())
 
     def test_get_filter(self):
         year2020 = TaxYear.objects.create(year=2020)
@@ -97,13 +97,16 @@ class TaxYearTest(RestTest):
         self.authenticate()
         response = self.client.get(f"{self.url}?year=2020")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertCountEqual([{'year': 2020, 'id': year2020.id}], response.json())
+        self.assertCountEqual([{'year': 2020, 'id': year2020.id, 'days_in_year': year2020.days_in_year}], response.json())
         response = self.client.get(f"{self.url}?year_lt=2021")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertCountEqual([{'year': 2020, 'id': year2020.id}], response.json())
+        self.assertCountEqual([{'year': 2020, 'id': year2020.id, 'days_in_year': year2020.days_in_year}], response.json())
         response = self.client.get(f"{self.url}?year_lt=2022")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertCountEqual([{'year': 2020, 'id': year2020.id}, {'year': 2021, 'id': year2021.id}], response.json())
+        self.assertCountEqual([
+            {'year': 2020, 'id': year2020.id, 'days_in_year': year2020.days_in_year},
+            {'year': 2021, 'id': year2021.id, 'days_in_year': year2021.days_in_year}
+        ], response.json())
 
     def test_create_one(self):
         # Create one item, test the response and the created object
@@ -111,7 +114,7 @@ class TaxYearTest(RestTest):
         item = {'year': 2021}
         response = self.client.post(self.url, json.dumps(item), content_type='application/json; charset=utf-8')
         self.assertEquals(201, response.status_code, response.content)
-        self.assertDictEqual(item, self.strip_id(response.json()))
+        self.assertDictEqual({**item, 'days_in_year': 365}, self.strip_id(response.json()))
         self.assertEquals(1, TaxYear.objects.count())
         self.assertEquals(item['year'], TaxYear.objects.first().year)
 
@@ -222,7 +225,7 @@ class PensionCompanyTest(RestTest):
         self.assertEquals(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
-                {**{key: getattr(person, key) for key in ['res', 'name', 'address', 'phone', 'email', 'agreement_present', 'domestic_or_foreign', 'accepts_payments']}, 'id': person.id}
+                {**{key: getattr(person, key) for key in ['res', 'name', 'address', 'phone', 'email', 'agreement_present', 'domestic_or_foreign', 'accepts_payments']}, 'id': person.id, **self.extra_fields}
                 for person in PensionCompany.objects.all()
             ],
             response.json()
@@ -292,12 +295,14 @@ class PersonTaxYearTest(RestTest):
         )
         PersonTaxYear.objects.create(
             person=person,
-            tax_year=TaxYear.objects.create(year=2020)
+            tax_year=TaxYear.objects.create(year=2020),
+            number_of_days=366,
         )
         PersonTaxYear.objects.create(
             person=person,
             tax_year=TaxYear.objects.create(year=2021),
-            fully_tax_liable=False
+            fully_tax_liable=False,
+            number_of_days=365,
         )
         extra = {}
         self.authenticate()
@@ -305,7 +310,15 @@ class PersonTaxYearTest(RestTest):
         self.assertEquals(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
-                {'person': person.cpr, 'tax_year': person_tax_year.tax_year.year, 'id': person_tax_year.id, 'fully_tax_liable': person_tax_year.fully_tax_liable, **extra}
+                {
+                    'person': person.cpr,
+                    'tax_year': person_tax_year.tax_year.year,
+                    'id': person_tax_year.id,
+                    'fully_tax_liable': person_tax_year.fully_tax_liable,
+                    'days_in_year_factor': person_tax_year.days_in_year_factor,
+                    'number_of_days': person_tax_year.number_of_days,
+                    **extra
+                }
                 for person_tax_year in PersonTaxYear.objects.all()
             ],
             response.json()
@@ -319,11 +332,13 @@ class PersonTaxYearTest(RestTest):
             person=person,
             tax_year=TaxYear.objects.create(year=2020),
             fully_tax_liable=False,
+            number_of_days=366,
         )
         person_tax_year2 = PersonTaxYear.objects.create(
             person=person,
             tax_year=TaxYear.objects.create(year=2021),
             fully_tax_liable=True,
+            number_of_days=365,
         )
         extra = {}
         self.authenticate()
@@ -334,6 +349,8 @@ class PersonTaxYearTest(RestTest):
             'tax_year': person_tax_year1.tax_year.year,
             'id': person_tax_year1.id,
             'fully_tax_liable': person_tax_year1.fully_tax_liable,
+            'days_in_year_factor': person_tax_year1.days_in_year_factor,
+            'number_of_days': person_tax_year1.number_of_days,
             **extra
         }, response.json())
         response = self.client.get(f"{self.url}{person_tax_year2.id}/")
@@ -343,6 +360,8 @@ class PersonTaxYearTest(RestTest):
             'tax_year': person_tax_year2.tax_year.year,
             'id': person_tax_year2.id,
             'fully_tax_liable': person_tax_year2.fully_tax_liable,
+            'days_in_year_factor': person_tax_year2.days_in_year_factor,
+            'number_of_days': person_tax_year2.number_of_days,
             **extra
         }, response.json())
 
@@ -351,11 +370,13 @@ class PersonTaxYearTest(RestTest):
             person=Person.objects.create(cpr='1234567890'),
             tax_year=TaxYear.objects.create(year=2020),
             fully_tax_liable=True,
+            number_of_days=366,
         )
         person_tax_year2 = PersonTaxYear.objects.create(
             person=Person.objects.create(cpr='1234567891'),
             tax_year=TaxYear.objects.create(year=2021),
             fully_tax_liable=False,
+            number_of_days=365,
         )
         extra = {}
         self.authenticate()
@@ -366,6 +387,8 @@ class PersonTaxYearTest(RestTest):
             'tax_year': person_tax_year1.tax_year.year,
             'id': person_tax_year1.id,
             'fully_tax_liable': person_tax_year1.fully_tax_liable,
+            'days_in_year_factor': person_tax_year1.days_in_year_factor,
+            'number_of_days': person_tax_year1.number_of_days,
             **extra
         }], response.json())
         response = self.client.get(f"{self.url}?year=2021")
@@ -375,6 +398,8 @@ class PersonTaxYearTest(RestTest):
             'tax_year': person_tax_year2.tax_year.year,
             'id': person_tax_year2.id,
             'fully_tax_liable': person_tax_year2.fully_tax_liable,
+            'days_in_year_factor': person_tax_year2.days_in_year_factor,
+            'number_of_days': person_tax_year2.number_of_days,
             **extra
         }], response.json())
         response = self.client.get(f"{self.url}?cpr=1234567890&year=2020")
@@ -384,6 +409,8 @@ class PersonTaxYearTest(RestTest):
             'tax_year': person_tax_year1.tax_year.year,
             'id': person_tax_year1.id,
             'fully_tax_liable': person_tax_year1.fully_tax_liable,
+            'days_in_year_factor': person_tax_year1.days_in_year_factor,
+            'number_of_days': person_tax_year1.number_of_days,
             **extra
         }], response.json())
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2020")
@@ -398,7 +425,12 @@ class PersonTaxYearTest(RestTest):
         item = {'person': '1234567890', 'tax_year': 2020}
         response = self.client.post(self.url, json.dumps(item), content_type='application/json; charset=utf-8')
         self.assertEquals(201, response.status_code, response.content)
-        self.assertDictEqual({**item, 'fully_tax_liable': True}, self.strip_id(response.json()))
+        self.assertDictEqual({
+            **item,
+            'fully_tax_liable': True,
+            'days_in_year_factor': 1,
+            'number_of_days': None
+        }, self.strip_id(response.json()))
         self.assertEquals(1, PersonTaxYear.objects.count())
         self.assertEquals(person.cpr, PersonTaxYear.objects.first().person.cpr)
         self.assertEquals(tax_year.year, PersonTaxYear.objects.first().tax_year.year)
@@ -444,7 +476,8 @@ class PolicyTaxYearTest(RestTest):
         )
         person_tax_year = PersonTaxYear.objects.create(
             person=person,
-            tax_year=TaxYear.objects.create(year=2020)
+            tax_year=TaxYear.objects.create(year=2020),
+            number_of_days=366,
         )
         PolicyTaxYear.objects.create(
             policy_number='1234',
@@ -483,6 +516,10 @@ class PolicyTaxYearTest(RestTest):
                     'applied_deduction_from_previous_years': policy_tax_year.applied_deduction_from_previous_years,
                     'from_pension': policy_tax_year.from_pension,
                     'policy_documents': [],
+                    'year_adjusted_amount': policy_tax_year.year_adjusted_amount,
+                    'calculated_result': policy_tax_year.calculated_result,
+                    'estimated_amount': policy_tax_year.estimated_amount,
+                    'foreign_paid_amount_actual': policy_tax_year.foreign_paid_amount_actual,
                     **extra
                 }
                 for policy_tax_year in PolicyTaxYear.objects.all()
@@ -494,7 +531,8 @@ class PolicyTaxYearTest(RestTest):
         person = Person.objects.create(cpr='1234567890')
         person_tax_year = PersonTaxYear.objects.create(
             person=person,
-            tax_year=TaxYear.objects.create(year=2020)
+            tax_year=TaxYear.objects.create(year=2020),
+            number_of_days=366,
         )
         pension_company = PensionCompany.objects.create(
             res=12345678,
@@ -537,6 +575,10 @@ class PolicyTaxYearTest(RestTest):
             'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year1.from_pension,
             'policy_documents': [],
+            'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
+            'calculated_result': policy_tax_year1.calculated_result,
+            'estimated_amount': policy_tax_year1.estimated_amount,
+            'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
         }, response.json())
 
         response = self.client.get(f"{self.url}{policy_tax_year2.id}/")
@@ -554,16 +596,22 @@ class PolicyTaxYearTest(RestTest):
             'applied_deduction_from_previous_years': policy_tax_year2.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year2.from_pension,
             'policy_documents': [],
+            'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
+            'calculated_result': policy_tax_year1.calculated_result,
+            'estimated_amount': policy_tax_year1.estimated_amount,
+            'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
         }, response.json())
 
     def test_get_filter(self):
         person_tax_year1 = PersonTaxYear.objects.create(
             person=Person.objects.create(cpr='1234567890'),
-            tax_year=TaxYear.objects.create(year=2020)
+            tax_year=TaxYear.objects.create(year=2020),
+            number_of_days=366,
         )
         person_tax_year2 = PersonTaxYear.objects.create(
             person=Person.objects.create(cpr='1234567891'),
-            tax_year=TaxYear.objects.create(year=2021)
+            tax_year=TaxYear.objects.create(year=2021),
+            number_of_days=365,
         )
         pension_company = PensionCompany.objects.create(
             res=12345678,
@@ -607,6 +655,10 @@ class PolicyTaxYearTest(RestTest):
             'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year1.from_pension,
             'policy_documents': [],
+            'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
+            'calculated_result': policy_tax_year1.calculated_result,
+            'estimated_amount': policy_tax_year1.estimated_amount,
+            'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
         }], response.json())
 
         response = self.client.get(f"{self.url}?year=2020")
@@ -624,6 +676,10 @@ class PolicyTaxYearTest(RestTest):
             'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year1.from_pension,
             'policy_documents': [],
+            'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
+            'calculated_result': policy_tax_year1.calculated_result,
+            'estimated_amount': policy_tax_year1.estimated_amount,
+            'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
         }], response.json())
 
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2021")
@@ -641,6 +697,10 @@ class PolicyTaxYearTest(RestTest):
             'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year2.from_pension,
             'policy_documents': [],
+            'year_adjusted_amount': policy_tax_year2.year_adjusted_amount,
+            'calculated_result': policy_tax_year2.calculated_result,
+            'estimated_amount': policy_tax_year2.estimated_amount,
+            'foreign_paid_amount_actual': policy_tax_year2.foreign_paid_amount_actual,
         }], response.json())
 
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2020")
@@ -651,7 +711,8 @@ class PolicyTaxYearTest(RestTest):
         # Update one item, test the response and the created object
         person_tax_year = PersonTaxYear.objects.create(
             person=Person.objects.create(cpr='1234567890'),
-            tax_year=TaxYear.objects.create(year=2021)
+            tax_year=TaxYear.objects.create(year=2021),
+            number_of_days=365,
         )
         pension_company = PensionCompany.objects.create(
             res=12345678,
@@ -672,6 +733,7 @@ class PolicyTaxYearTest(RestTest):
             'from_pension': True,
         }
         response = self.client.patch(f"{self.url}{policy_tax_year.id}/", json.dumps(item), content_type='application/json; charset=utf-8')
+        policy_tax_year.refresh_from_db()
         self.assertEquals(200, response.status_code, response.content)
         self.assertDictEqual(
             {
@@ -683,6 +745,11 @@ class PolicyTaxYearTest(RestTest):
                 'available_deduction_from_previous_years': policy_tax_year.available_deduction_from_previous_years,
                 'applied_deduction_from_previous_years': policy_tax_year.applied_deduction_from_previous_years,
                 'policy_documents': [],
+                'year_adjusted_amount': policy_tax_year.year_adjusted_amount,
+                'calculated_result': policy_tax_year.calculated_result,
+                'estimated_amount': policy_tax_year.estimated_amount,
+                'foreign_paid_amount_actual': policy_tax_year.foreign_paid_amount_actual,
+
             },
             self.strip_id(response.json())
         )
@@ -696,7 +763,8 @@ class PolicyTaxYearTest(RestTest):
         # Create an item with invalid input and expect errors
         person_tax_year = PersonTaxYear.objects.create(
             person=Person.objects.create(cpr='1234567890'),
-            tax_year=TaxYear.objects.create(year=2021)
+            tax_year=TaxYear.objects.create(year=2021),
+            number_of_days=365,
         )
         pension_company = PensionCompany.objects.create(
             res=12345678,
@@ -736,7 +804,8 @@ class PolicyDocumentTest(RestTest):
             self_reported_amount=250,
             person_tax_year=PersonTaxYear.objects.create(
                 person=Person.objects.create(cpr='1234567890'),
-                tax_year=TaxYear.objects.create(year=2021)
+                tax_year=TaxYear.objects.create(year=2021),
+                number_of_days=365,
             ),
             pension_company=PensionCompany.objects.create(
                 res=12345678,
@@ -772,7 +841,8 @@ class PolicyDocumentTest(RestTest):
             self_reported_amount=250,
             person_tax_year=PersonTaxYear.objects.create(
                 person=Person.objects.create(cpr='1234567890'),
-                tax_year=TaxYear.objects.create(year=2021)
+                tax_year=TaxYear.objects.create(year=2021),
+                number_of_days=365,
             ),
             pension_company=PensionCompany.objects.create(
                 res=12345678,

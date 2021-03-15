@@ -26,7 +26,7 @@ class Command(BaseCommand):
         ]
 
         person_tax_years = [
-            PersonTaxYear.objects.get_or_create(person=person, tax_year=tax_year)[0]
+            PersonTaxYear.objects.get_or_create(person=person, tax_year=tax_year, defaults={'number_of_days': tax_year.days_in_year})[0]
             for (person, tax_year) in itertools.product(persons, tax_years)
         ]
 
@@ -34,7 +34,7 @@ class Command(BaseCommand):
         for person_tax_year in person_tax_years:
             for pension_company in pension_companies:
                 p += 1
-                PolicyTaxYear.objects.get_or_create(
+                policy_tax_year, c = PolicyTaxYear.objects.get_or_create(
                     person_tax_year=person_tax_year,
                     pension_company=pension_company,
                     defaults={
@@ -42,3 +42,4 @@ class Command(BaseCommand):
                         'prefilled_amount': randint(0, 50000)
                     }
                 )
+                policy_tax_year.recalculate()

@@ -53,12 +53,12 @@
                             <tr>
                                 <td class="col-8-sm">{% trans 'Kapitalafkast PBL (DK) § 53 A' %}</td>
                                 <td class="col-3-sm">{{ policy.self_reported_amount|default:policy.prefilled_amount }}</td>
-                                <td class="col-1-sm">201</td>
+                                <td class="col-1-sm">KAS-201</td>
                             </tr>
                             <tr>
                                 <td class="col-8-sm">{% trans 'Forudbetalt kapitalafkastskat' %}</td>
                                 <td class="col-3-sm">{{ policy.preliminary_paid_amount|default:0 }}</td>
-                                <td class="col-1-sm">205</td>
+                                <td class="col-1-sm">KAS-205</td>
                             </tr>
                             <tr>
                                 <td class="col-8-sm">{% trans 'Hævet på pensionsordning' %}</td>
@@ -70,12 +70,12 @@
                             <tr>
                                 <td class="col-8-sm">{% trans 'Betalt kapitalafkastskat i udlandet' %}</td>
                                 <td class="col-3-sm">{{ policy.foreign_paid_amount_self_reported|default:0 }}</td>
-                                <td class="col-1-sm">208</td>
+                                <td class="col-1-sm">KAS-208</td>
                             </tr>
                             <tr>
-                                <td class="col-8-sm">{% trans 'Negativt kapilatafkast fra tidligere år' %}</td>
+                                <td class="col-8-sm">{% trans 'Negativt kapitalafkast fra tidligere år' %}</td>
                                 <td class="col-3-sm">{{ policy.deduction_from_previous_years|default:0 }}</td>
-                                <td class="col-1-sm">208</td>
+                                <td class="col-1-sm"></td>
                             </tr>
                             {% for document in policy.policy_documents %}
                             <tr>
@@ -92,6 +92,8 @@
                             {% endfor %}
                         </tbody>
                     </table>
+
+                    {% include 'calculation.html' %}
                 </div>
             </div>
         </div>
@@ -117,17 +119,17 @@
                         <tr>
                             <td class="col-8-sm">{% trans 'Kapitalafkast PBL (DK) § 53 A' %}</td>
                             <td class="col-3-sm">{{ summary.self_reported_amount|default:summary.prefilled_amount }}</td>
-                            <td class="col-1-sm">201</td>
+                            <td class="col-1-sm">KAS-201</td>
                         </tr>
                         <tr>
                             <td class="col-8-sm">{% trans 'Forudbetalt kapitalafkastskat' %}</td>
                             <td class="col-3-sm">{{ summary.preliminary_paid_amount|default:0 }}</td>
-                            <td class="col-1-sm">205</td>
+                            <td class="col-1-sm">KAS-205</td>
                         </tr>
                         <tr>
                             <td class="col-8-sm">{% trans 'Betalt kapitalafkastskat i udlandet' %}</td>
                             <td class="col-3-sm">{{ summary.foreign_paid_amount_self_reported|default:0 }}</td>
-                            <td class="col-1-sm">208</td>
+                            <td class="col-1-sm">KAS-208</td>
                         </tr>
                         </tbody>
                     </table>

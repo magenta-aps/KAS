@@ -18,6 +18,7 @@ class RestClient(object):
         if response.status_code == 204:
             return None
         elif response.ok:
+            print(response.json())
             return response.json()
         else:
             response.raise_for_status()
@@ -63,10 +64,24 @@ class RestClient(object):
         return items[0]
 
     def get_person_tax_years(self, cpr):
-        return self.get('person_tax_year', cpr=cpr)
+        person_tax_years = self.get('person_tax_year', cpr=cpr)
+        for p in person_tax_years:
+            p['person_tax_year'] = self.get_tax_year(p['tax_year'])
+
+    def get_tax_year(self, year):
+        tax_years = self.get('tax_year', year=year)
+        return tax_years[0] if len(tax_years) else None
+
+    def get_person_tax_year(self, id):
+        person_tax_year = self.get(f"person_tax_year/{id}")
+        person_tax_year['tax_year'] = self.get_tax_year(person_tax_year['tax_year'])
+        return person_tax_year
 
     def get_policies(self, cpr, year):
-        return self.get('policy_tax_year', cpr=cpr, year=year)
+        policies = self.get('policy_tax_year', cpr=cpr, year=year)
+        for p in policies:
+            p['person_tax_year'] = self.get_person_tax_year(p['person_tax_year'])
+        return policies
 
     def post_policy(self, id, policy):
         policy_response = self.patch(

@@ -34,7 +34,7 @@ class OpenId:
 
     @staticmethod
     def clear_session(session):
-        for key in ['oid_state', 'oid_nonce', 'user_info', 'login_method', 'has_checked_cvr']:
+        for key in ['oid_state', 'oid_nonce', 'user_info', 'login_method']:
             if key in session:
                 del session[key]
         session.save()
