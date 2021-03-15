@@ -58,13 +58,13 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
             'available_deduction_from_previous_years', 'year_adjusted_amount'
         ]
         read_only_fields = [
-            'id', 'policy_number', 'pension_company', 'person_tax_year', 'policy_documents',
+            'id', 'pension_company', 'person_tax_year', 'policy_documents',
             'applied_deduction_from_previous_years', 'available_deduction_from_previous_years'
         ]
         depth = 2
 
     person_tax_year = serializers.PrimaryKeyRelatedField(queryset=PersonTaxYear.objects.all())
-    pension_company = PensionCompanySerializer(read_only=True)
+    pension_company = serializers.PrimaryKeyRelatedField(queryset=PensionCompany.objects.all())
     policy_documents = PolicyDocumentSerializer(many=True, read_only=True)
 
     def create(self, validated_data):

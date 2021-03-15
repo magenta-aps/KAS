@@ -1,48 +1,78 @@
 import re
 
-from django.forms import forms, fields, widgets
+from django.core.exceptions import ValidationError
+from django.forms import forms, fields, widgets, Field
 
 
 class PolicyForm(forms.Form):
 
     id = fields.IntegerField(
         widget=widgets.HiddenInput(),
-        disabled=True
+        disabled=True,
+        required=False,
     )
     policy_number = fields.CharField(
         widget=widgets.HiddenInput(),
-        disabled=True
+        disabled=True,
+        required=False,
+    )
+
+    pension_company_id = fields.IntegerField(
+        widget=widgets.Select(
+            choices=[(None, "--- angiv navn ---"), (1, "Selskab 1"), (2, "Selskab 2")],
+            attrs={'class': 'company_select form-control', 'autocomplete': 'off'}
+        ),
+        required=False,
+    )
+    pension_company_name = fields.CharField(
+        widget=widgets.TextInput(
+            attrs={'class': 'company_explicit form-control', 'autocomplete': 'off'}
+        ),
+        required=False,
+    )
+    policy_number_new = fields.CharField(
+        widget=widgets.TextInput(
+            attrs={'autocomplete': 'off', 'class': 'form-control'}
+        ),
+        required=False,
     )
 
     prefilled_amount = fields.IntegerField(
         min_value=0,
         required=False,
-        disabled=True
+        disabled=True,
+        widget=widgets.NumberInput(
+            attrs={'autocomplete': 'off', 'class': 'form-control'}
+        ),
     )
 
     self_reported_amount = fields.IntegerField(
         min_value=0,
-        required=False
+        required=False,
+        widget=widgets.NumberInput(
+            attrs={'autocomplete': 'off', 'class': 'form-control'}
+        ),
     )
 
     preliminary_paid_amount = fields.IntegerField(
         min_value=0,
-        required=False
+        required=False,
+        widget=widgets.NumberInput(
+            attrs={'autocomplete': 'off', 'class': 'form-control'}
+        ),
     )
 
     from_pension = fields.BooleanField(
         widget=widgets.RadioSelect(choices=[(False, 'Nej'), (True, 'Ja')]),
-        required=False
+        required=False,
     )
 
     foreign_paid_amount_self_reported = fields.IntegerField(
         min_value=0,
-        required=False
-    )
-
-    deduction_from_previous_years = fields.IntegerField(
-        min_value=0,
-        required=False
+        required=False,
+        widget=widgets.NumberInput(
+            attrs={'autocomplete': 'off', 'class': 'form-control'}
+        ),
     )
 
     def __init__(self, *args, **kwargs):
@@ -121,3 +151,27 @@ class PolicyForm(forms.Form):
     def get_nonfile_data(self):
         if self.is_bound:
             return {k: v for k, v in self.cleaned_data.items() if not k.startswith('file_')}
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        # For the extra form (the one that creates a new policy_tax_year), if any field is set, the policy_number_new field is required
+        extra_form_has_data = False
+        if cleaned_data['id'] is None:
+            for value in cleaned_data.values():
+                if value not in ('', None):
+                    extra_form_has_data = True
+                    break
+
+        if extra_form_has_data:
+            errors = {}
+            if cleaned_data['policy_number_new'] in (None, ''):
+                for value in cleaned_data.values():
+                    if value not in ('', None):
+                        errors['policy_number_new'] = [ValidationError(Field.default_error_messages['required'])]
+            if cleaned_data['pension_company_id'] is None and cleaned_data['pension_company_name'] in (None, ''):
+                for value in cleaned_data.values():
+                    if value not in ('', None):
+                        errors['pension_company_name'] = [ValidationError(Field.default_error_messages['required'])]
+            if len(errors):
+                raise ValidationError(errors)
+        return cleaned_data
