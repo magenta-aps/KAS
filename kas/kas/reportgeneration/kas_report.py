@@ -200,7 +200,7 @@ class TaxPDF(FPDF):
         # Adressing reciever
         self.set_xy(self.address_field.get('x'), self.address_field.get('y'))
         self.multi_cell(self.address_field.get('w'), 3, border=0,
-                        txt=self.reciever_name+"\n"+self.full_reciever_address)
+                        txt=self.reciever_name or ''+"\n"+self.full_reciever_address)
 
         # Adressing department
         self.set_xy(self.address_field.get('x'), self.address_field.get('y')+12)
@@ -424,7 +424,7 @@ class TaxPDF(FPDF):
         policy_file_name = f'{destination_path}Y_{tax_year}_{person_number}.pdf'
 
         for policy in list_of_policies:
-            policies.append({'policy': policy.pension_company.name+'-'+policy.policy_number})
+            policies.append({'policy': policy.pension_company.name or ''+'-'+policy.policy_number})
 
         policies.append({'policy': ''})
 
