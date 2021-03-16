@@ -153,7 +153,7 @@ class LoginCallback(TemplateView):
                 print(f"user_info_dict: {user_info_dict}")
                 request.session['user_info'] = user_info_dict
 
-                request.session['user_info']['CPR'] = '0101010101'
+                # request.session['user_info']['CPR'] = '0101010101'
 
                 request.session['raw_id_token'] = resp["id_token"].jwt
                 # always delete the state so it is not reused
