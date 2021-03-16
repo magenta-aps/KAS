@@ -105,6 +105,7 @@ KAS Unittest:
     POSTGRES_PASSWORD: kas
     POSTGRES_DB: kas
     POSTGRES_HOST: kas-db
+    REST_HOST: http://kas:8000
     REST_TOKEN: 1799c88d-10e6-489d-8fe9-adeb2fd8a36f
     EBOKS_DISPATCH_BULK_SIZE: 100
     EBOKS_CLIENT_CERTIFICATES: ""
@@ -140,6 +141,7 @@ Selvbetjening Unittest:
     POSTGRES_DB: selvbetjening
     POSTGRES_HOST: kas-db
     DJANGO_LANGUAGE_COOKIE_DOMAIN: localhost
+    REST_HOST: http://kas:8000
     REST_TOKEN: 1799c88d-10e6-489d-8fe9-adeb2fd8a36f
     OPENID_ENABLED: "false"
     OPENID_ISSUER: ""
