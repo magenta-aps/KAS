@@ -22,11 +22,10 @@ def get_job_types():
             'function': 'kas.jobs.import_r75',
             'test_only': False,
         },
-        'GenerateReportsForYear':{
-          'label': _('Generere KAS selvangivelser'),
-          'form_class': YearPkForm,
-          'function': 'kas.jobs.generate_reports_for_year'
-
+        'GenerateReportsForYear': {
+            'label': _('Generere KAS selvangivelser'),
+            'form_class': YearPkForm,
+            'function': 'kas.jobs.generate_reports_for_year'
         },
         'DispatchTaxYear': {
             'label': ('Afsendelse af Kas opgørelse for et given år'),
