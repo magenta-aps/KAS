@@ -20,6 +20,10 @@ if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] || [ "$TEST" = true ] 
   if [ "$CREATE_USERS" = true ]; then
     echo 'creating users'
     python manage.py create_rest_user ${REST_TOKEN}
+    if [ "x${ADMIN_PASSWORD}" != "x" ]; then
+      echo 'Create admin user / setting admin password'
+      python manage.py create_admin_user ${ADMIN_PASSWORD}
+    fi
   fi
   if [ "$TEST" = true ]; then
     echo 'running tests!'

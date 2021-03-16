@@ -2,6 +2,7 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from eskat.models import MockModels
+from eskat.mockupdata import import_default_mockup_data
 
 import json
 import os
@@ -18,10 +19,9 @@ class Command(BaseCommand):
     help = 'Imports mockup data into the mockup tables for eSkat'
 
     def handle(self, *args, **kwargs):
-        self.import_mock_mandtal()
-        self.import_mock_beregninger()
-        self.import_mock_r75()
+        import_default_mockup_data()
 
+    # Legacy method for importing from json files
     def import_mock_mandtal(self):
 
         model = MockModels.MockKasMandtal
@@ -41,6 +41,7 @@ class Command(BaseCommand):
                     new_obj = model(**create_args)
                     new_obj.save()
 
+    # Legacy method for importing from json files
     def import_mock_beregninger(self):
 
         model = MockModels.MockKasBeregningerX
@@ -84,6 +85,7 @@ class Command(BaseCommand):
                     new_obj = model(**create_args)
                     new_obj.save()
 
+    # Legacy method for importing from json files
     def import_mock_r75(self):
 
         model = MockModels.MockR75PrivatePension

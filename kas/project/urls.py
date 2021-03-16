@@ -8,8 +8,8 @@ from kas.viewsets import router
 
 urlpatterns = [
     path('django-admin/', admin.site.urls),
-    path('login/', LoginView.as_view(template_name='kas/login.html'), name='login'),
-    path('logout/', LogoutView.as_view(next_page='login/'), name='logout'),
+    path('accounts/login/', LoginView.as_view(template_name='kas/login.html'), name='login'),
+    path('accounts/logout/', LogoutView.as_view(next_page='login/'), name='logout'),
 
     path('worker/', include('worker.urls', namespace='worker')),
     path('rest/', include(router.urls)),

@@ -41,7 +41,7 @@ class JobSerializer(LocalizeDateModelSerializer):
         rep['created_by'] = instance.created_by.username
         rep['progress'] = render_to_string('worker/includes/progress_bar.html', context={'job': instance})
         rep['detail_url'] = '<a href="{}">{}</a>'.format(reverse('worker:job_detail', kwargs={'uuid': instance.uuid}),
-                                                         instance.pretty_job_type)
+                                                         instance.pretty_job_title)
         return rep
 
     class Meta:
