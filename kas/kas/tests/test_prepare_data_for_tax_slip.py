@@ -1,9 +1,12 @@
 import os
+from builtins import len
 
 from django.test import TestCase
 from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear
 from kas.reportgeneration.kas_report import TaxSlipHandling
 import tempfile
+
+from kas.kas.reportgeneration.kas_report import TaxPDF
 
 
 class DeductionTest(TestCase):
@@ -171,7 +174,7 @@ class DeductionTest(TestCase):
 
 
 
-        pdf_documen = TaxPDF()
+        pdf_documen = TaxSlipHandling()
         pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2020)
 
         filelist1 = os.listdir(self.test_dir)

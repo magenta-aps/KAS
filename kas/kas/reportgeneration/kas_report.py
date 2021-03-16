@@ -28,6 +28,9 @@ class TaxPDF(FPDF):
     sender_postnumber = '3900 Nuuk'
 
     document_header = {'gl': 'GL-OVERSKRIFT', 'dk': 'DK-OVERSKRIFT'}
+
+
+
     text2 = {'gl': '{}-imut nammineerluni nalunaarsuinermut ilanngussaq ', 'dk': 'Bilag til Selvangivelse for {}'}
     text3 = {'gl': 'Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pillugu ilanngussaq',
              'dk': 'Bilag vedrørende beskatning af visse kapitalafkast'}
@@ -37,7 +40,7 @@ class TaxPDF(FPDF):
     text7 = {'gl': 'Akileraaruseriffik, oqarasuaat mail-ilu:\n'
                    'Akileraartarnermut Aqutsisoqarfik,\n'
                    'Postboks 1605, 3900 Nuuk. tlf. 346510, Email:tax@nanoq.gl',
-             'dk': 'Kontakt: Skattestyrelsen,\n Postboks 1605, 3900 Nuuk. Tlf. 346510,\n Email:tax@nanoq.gl'}
+             'dk': 'Kontakt: Skattestyrelsen,\nPostboks 1605, 3900 Nuuk. Tlf. 346510,\nEmail:tax@nanoq.gl'}
     text8 = {'gl': 'Nittartagaq iserfissaq', 'dk': 'Tast selv internet'}
     text9 = {'gl': 'Kode isissutissaq', 'dk': 'Tast selv kode'}
     text10 = {'gl': 'GL-Vejledning til selvangivelse af visse udenlandske pensionsordninger (som fx afkast fra pensionsordninger og livsforsikringer)',
@@ -79,6 +82,11 @@ class TaxPDF(FPDF):
     text15 = {'gl': 'Pigisanit pissarsiat PBL (DK) § 53 A', 'dk': 'Kapitalafkast PBL (DK) § 53 A'}
     text16 = {'gl': 'Aningaasat\n koruuninngorlugit', 'dk': 'Beløb i kroner'}
     text17 = {'gl': 'Aningaasat\n koruuninngorlugit', 'dk': 'Beløb i kroner'}
+
+    text17A = {'gl': 'GL-Feltnavn\n ', 'dk': 'Feltnavn\n '}
+    text17B = {'gl': 'GL-Fortrykt\n ', 'dk': 'Fortrykt\n '}
+    text17C = {'gl': 'GL-Selvangivet\n ', 'dk': 'Selvangivet\n '}
+
     text18 = {'gl': 'Sammisap \nnormua', 'dk': 'Felt nr.\n '}
     text19 = {'gl': 'Pigisanit pissarsiat akileraarutaat', 'dk': 'Kapitalafkastskat'}
     text20 = {'gl': 'Pigisanit pissarsiat akileraarutaannik akiliigallarsimaguit aningaasartaat uani allassavatit. '
@@ -100,15 +108,22 @@ class TaxPDF(FPDF):
                     'inatsisaanni § 9-mi aalajangersakkat malillugit akisussaassuseqarluni nalunaarneqartussaapput.',
               'dk': 'Oplysninger afgives under ansvar i henhold til bestemmelserne i § 9 i '
                     'Inatsisartutlov om beskatning af visse kapitalafkast'}
-    text26A = {'gl': 'GL - De har ikke haft bopæl i Grønland i hele året og derfor skal de ikke betale skat for hele året. Skatten beregnes forholdmessigt efter antallet af dage med bopæl i landet ud af det aktuelle antal dage i året. A UD AF B',
-              'dk': 'De har ikke haft bopæl i Grønland i hele året og derfor skal de ikke betale skat for hele året. Skatten beregnes forholdmessigt efter antallet af dage med bopæl i landet ud af det aktuelle antal dage i året. A UD AF B'}
-    text26B = {'gl': 'GL - Egen indbetaling til udenlandsk pensionsordning',
-               'dk': 'Egen indbetaling til udenlandsk pensionsordning'}
-    text26C = {'gl': 'GL - Tilgængeligt fradrag fra andre år',
-               'dk': 'Tilgængeligt fradrag fra andre år'}
-
-
-
+    text26A ={'gl':'GL-De har ikke haft bopæl i Grønland i hele året og derfor skal de ikke betale skat for hele året. '
+                   'Skatten beregnes forholdmessigt efter antallet af dage med bopæl i landet ud af det aktuelle '
+                   'antal dage i året. I nedenstående indberetninger angives det beregningsgrundlag, '
+                   'der benyttes som basis for fastsættelse af skatten. De er fastsat til at være skattepligtig i 50% af året)',
+              'dk': 'De har ikke haft bopæl i Grønland i hele året og derfor skal de ikke betale skat for hele året. '
+                    'Skatten beregnes forholdmessigt efter antallet af dage med bopæl i landet ud af det aktuelle '
+                    'antal dage i året. I nedenstående indberetninger angives det beregningsgrundlag, '
+                    'der benyttes som basis for fastsættelse af skatten. De er fastsat til at være skattepligtig i 50% af året'}
+    text26B = {'gl': 'GL - Egen indbetaling til pensionsordninger i andre lande, angiv landet, som pensionsordningen er hjemmehørende i, samt størrelsen på det indskudte beløb',
+               'dk': 'Egen indbetaling til pensionsordninger i andre lande, angiv landet, som pensionsordningen er hjemmehørende i, samt størrelsen på det indskudte beløb'}
+    text26C = {'gl': 'GL - Fremført negativt afkast fra tidligere år',
+               'dk': 'Fremført negativt afkast fra tidligere år'}
+    text26D = {'gl': '* GL-Skatten for denne pensionsordning betales automatisk af pensionsselskabet',
+               'dk': '* Skatten for denne pensionsordning betales automatisk af pensionsselskabet'}
+    text26E = {'gl': 'GL-Er der yderligere information, som skal selvangives i forbindelse med udfyldelsen af KAS-selvangivelse',
+               'dk': 'Er der yderligere information, som skal selvangives i forbindelse med udfyldelsen af KAS-selvangivelse'}
 
 
     text27 = {'gl': 'Sumiiffik / Oqarasuaat', 'dk': 'Sted/tlf'}
@@ -271,8 +286,14 @@ class TaxPDF(FPDF):
         self.multi_cell(self.std_document_width, 5, self.text14[language].format(self.request_pay, self.pay_date), border=0)
         self.yposition = self.get_y()
 
-        self.set_font('arial', '', 8.5)
-        self.yposition += 15
+        self.yposition += 20
+
+        year_adjusted_text = ''
+        if not self.fully_tax_liable:
+            year_adjusted_text = self.text26A[language]
+        self.set_xy(self.left_margin, self.yposition)
+        self.multi_cell(self.std_document_width, 5, txt=year_adjusted_text, border=0, align='L')
+        self.yposition = self.get_y()
 
         self.add_page()
 
@@ -280,8 +301,15 @@ class TaxPDF(FPDF):
         c2w = 30
         c3w = 30
         c4w = 27
+        policys_per_page=4
+        policy_index=0
 
         for policy in self.policies:
+
+            if policy_index == policys_per_page:
+                self.add_page()
+                policy_index = 0
+            policy_index += 1
             headerheight = 10
             columnheaderheight = 5
             self.set_font('arial', 'B', 12)
@@ -291,11 +319,11 @@ class TaxPDF(FPDF):
 
             self.set_font('arial', 'B', 10)
             self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(h=columnheaderheight, align='L', w=c1w, txt='Feltnavn\n ', border=1)
+            self.multi_cell(h=columnheaderheight, align='L', w=c1w, txt=self.text17A[language], border=1)
             self.set_xy(self.left_margin+c1w, self.yposition)
-            self.multi_cell(h=columnheaderheight, align='C', w=c2w, txt='Fortrykt\n ', border=1)
+            self.multi_cell(h=columnheaderheight, align='C', w=c2w, txt=self.text17B[language], border=1)
             self.set_xy(self.left_margin+c1w+c2w, self.yposition)
-            self.multi_cell(h=columnheaderheight, align='C', w=c3w, txt='Selvangivet\n ', border=1)
+            self.multi_cell(h=columnheaderheight, align='C', w=c3w, txt=self.text17C[language], border=1)
             self.set_xy(self.left_margin+c1w+c2w+c3w, self.yposition)
             self.multi_cell(h=columnheaderheight, align='C', w=c4w, txt=self.text18[language], border=1)
             self.yposition += 10
@@ -309,60 +337,43 @@ class TaxPDF(FPDF):
             self.set_xy(self.left_margin+c1w+c2w, self.yposition)
             self.multi_cell(h=rowheight, align='L', w=c3w, txt='', border=1)
             self.set_xy(self.left_margin+c1w+c2w+c3w, self.yposition)
-            self.multi_cell(h=rowheight, align='L', w=c4w, txt='KAS-201', border=1)
-            self.yposition += rowheight
-
-            self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(h=rowheight, align='L', w=c1w, txt='<<Hævet på pensionsordning>>', border=1)#Her skal angives om der foreligger en aftale
-            self.set_xy(self.left_margin+c1w, self.yposition)
-            self.multi_cell(h=rowheight, align='C', w=c2w, txt=str(policy.get('agreement_present')), border=1)
-            self.set_xy(self.left_margin+c1w+c2w, self.yposition)
-            self.multi_cell(h=rowheight, align='L', w=c3w, txt='', border=1, fill = True)
-            self.set_xy(self.left_margin+c1w+c2w+c3w, self.yposition)
-            self.multi_cell(h=rowheight, align='L', w=c4w, txt='', border=1)
-            self.yposition += rowheight
-
-            self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(h=rowheight, align='L', w=c1w, txt='Betalt kapitalafkastskat i udlandet', border=1)#Har angives om der er betalt i udlandet
-            self.set_xy(self.left_margin+c1w, self.yposition)
-            self.multi_cell(h=rowheight, align='L', w=c2w, txt='', border=1, fill = True)
-            self.set_xy(self.left_margin+c1w+c2w, self.yposition)
-            self.multi_cell(h=rowheight, align='L', w=c3w, txt='', border=1)
-            self.set_xy(self.left_margin+c1w+c2w+c3w, self.yposition)
-            self.multi_cell(h=rowheight, align='L', w=c4w, txt='KAS-208', border=1)
+            self.multi_cell(h=rowheight, align='C', w=c4w, txt='KAS-201', border=1)
             self.yposition += rowheight
             self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(h=rowheight, align='L', w=c1w, txt=self.text26C[language], border=1)#Har angives ledetekst om negativt fra tidligere år
+            self.multi_cell(h=rowheight, align='L', w=c1w, txt=self.text26C[language], border=1)
             self.set_xy(self.left_margin+c1w, self.yposition)
             available_negative_return = policy.get('available_negative_return')
             if available_negative_return is None:
                 available_negative_return = 0
             self.multi_cell(h=rowheight, align='C', w=c2w, txt=str(available_negative_return), border=1)
             self.set_xy(self.left_margin+c1w+c2w, self.yposition)
-            self.multi_cell(h=rowheight, align='L', w=c3w, txt='', border=1, fill = True)
+            self.multi_cell(h=rowheight, align='C', w=c3w, txt='', border=1, fill = False)
             self.set_xy(self.left_margin+c1w+c2w+c3w, self.yposition)
             self.multi_cell(h=rowheight, align='L', w=c4w, txt='', border=1)
+            self.yposition = self.get_y()
+            self.set_xy(self.left_margin, self.yposition)
+            if policy.get('agreement_present'):
+                self.multi_cell(self.std_document_width, 5, txt=self.text26D[language], border=0)
             self.yposition += 15
 
         self.add_page()
-
-        elementheight = 15
-        year_adjusted_text = ''
-        if not self.fully_tax_liable:
-            year_adjusted_text = self.text26A[language]
+        self.multi_cell(self.std_document_width, 5, '', border=0)
+        self.yposition = self.get_y()
 
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, txt=year_adjusted_text, border=0, align='L')
-        self.yposition += elementheight
+        self.multi_cell(self.std_document_width, 5, txt=self.text26E[language], border=1)
+        self.set_xy(self.left_margin, self.yposition)
+        self.multi_cell(self.std_document_width, 60, txt='', border=1)
+        self.yposition = self.get_y()
+        self.yposition += 20
 
-        c1w = 103
-        c2w = 57
         elementheight = 45
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(h=10, align='L', w=c1w, txt=self.text26B[language], border=1)
-        self.set_xy(self.left_margin+c1w, self.yposition)
-        self.multi_cell(h=10, align='C', w=c2w, txt='', border=1)
-        self.yposition += elementheight
+        self.multi_cell(self.std_document_width, 5, txt=self.text26B[language], border=1)
+        self.set_xy(self.left_margin, self.yposition)
+        self.multi_cell(self.std_document_width, 40, txt='', border=1)
+        self.yposition = self.get_y()
+        self.yposition += 20
 
         elementtop = self.yposition
         elementheight = 30
@@ -433,15 +444,6 @@ class TaxPDF(FPDF):
             single_policy['year_adjusted_amount'] = policy.year_adjusted_amount
             single_policy['available_negative_return'] = policy.available_negative_return
             policies.append(single_policy)
-
-        single_policy = {}
-        single_policy['policy'] = ''
-        single_policy['preliminary_paid_amount'] = ''
-        single_policy['prefilled_amount'] = ''
-        single_policy['agreement_present'] = ''
-        single_policy['year_adjusted_amount'] = ''
-
-        policies.append(single_policy)
 
         self.set_parameters(tax_year, tax_return_date_limit, request_pay, pay_date, person_number,
                     reciever_name, reciever_address_line_1, reciever_address_line_2,
