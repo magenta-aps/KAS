@@ -61,12 +61,12 @@
             <main>
                 <nav class="top-navigation">
                     <div class="userinfo">
-                        {% if logged_in.navn %}
-                            <span>{% blocktrans %}Logget ind som {{cpr}}{% endblocktrans %}</span>
+                        {% if name %}
+                            <span>{% blocktrans %}Logget ind som {{ name }}{% endblocktrans %}</span>
                         {% endif %}
-                        {% if cpr or cvr %}
-                            <a href="{% url 'sullissivik:logout' %}">{% trans 'Log ud' %}</a>
-                        {% endif %}
+                        {# {% if cpr %} #}
+                        {#     <a href="{% url 'sullissivik:openid:logout' %}">{% trans 'Log ud' %}</a> #}
+                        {# {% endif %} #}
                     </div>
                 </nav>
                 {% block content %}

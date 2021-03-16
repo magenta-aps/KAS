@@ -13,5 +13,4 @@ ungettext_lazy(
     'Ensure this filename has at most %(max)d characters (it has %(length)d).',
     'max'
 )
-_('Please either submit a file or check the clear checkbox, not both.')
 _('Select a valid choice. %(value)s is not one of the available choices.')

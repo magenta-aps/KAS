@@ -1,5 +1,6 @@
 import json as jsonlib
 import locale
+import math
 import re
 from html import unescape
 
@@ -21,6 +22,14 @@ def split(text, filter):
 @register.filter
 def json(data):
     return jsonlib.dumps(data)
+
+
+@register.filter
+def max(text, filter):
+    try:
+        return math.max(int(text), int(filter))
+    except TypeError:
+        return text
 
 
 @register.filter

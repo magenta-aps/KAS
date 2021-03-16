@@ -68,10 +68,6 @@ a:visited {
     color: #31495b;
     cursor: pointer
 }
-a:active,
-a:hover {
-    opacity: .5
-}
 
 /* Text */
 
