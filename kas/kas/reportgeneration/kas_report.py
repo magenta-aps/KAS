@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from builtins import str, setattr
+from builtins import str, setattr, len
 
 from fpdf import FPDF
 
@@ -11,12 +11,10 @@ class TaxPDF(FPDF):
     std_document_width = 171
     left_margin = 17.0
     default_line_width = 0.2
+
     contact_info_table_cell = {'h': 5, 'w': 50}
-
     contact_info_table = {'x': 90.0, 'y': 27.0}
-
     address_field = {'w': 70, 'x': 17, 'y': 37}
-
     signature_table_cell = {'w': 57, 'h': 10}
 
     element_height_1 = 5
@@ -102,8 +100,17 @@ class TaxPDF(FPDF):
                     'inatsisaanni § 9-mi aalajangersakkat malillugit akisussaassuseqarluni nalunaarneqartussaapput.',
               'dk': 'Oplysninger afgives under ansvar i henhold til bestemmelserne i § 9 i '
                     'Inatsisartutlov om beskatning af visse kapitalafkast'}
-    text26A = {'gl': 'De har ikke haft bopæl i Grønland i hele året og derfor skal de ikke betale skat for hele året. Skatten beregnes forholdmessigt efter antallet af dage med bopæl i landet ud af det aktuelle antal dage i året. A UD AF B',
+    text26A = {'gl': 'GL - De har ikke haft bopæl i Grønland i hele året og derfor skal de ikke betale skat for hele året. Skatten beregnes forholdmessigt efter antallet af dage med bopæl i landet ud af det aktuelle antal dage i året. A UD AF B',
               'dk': 'De har ikke haft bopæl i Grønland i hele året og derfor skal de ikke betale skat for hele året. Skatten beregnes forholdmessigt efter antallet af dage med bopæl i landet ud af det aktuelle antal dage i året. A UD AF B'}
+    text26B = {'gl': 'GL - Egen indbetaling til udenlandsk pensionsordning',
+               'dk': 'Egen indbetaling til udenlandsk pensionsordning'}
+    text26C = {'gl': 'GL - Tilgængeligt fradrag fra andre år',
+               'dk': 'Tilgængeligt fradrag fra andre år'}
+
+
+
+
+
     text27 = {'gl': 'Sumiiffik / Oqarasuaat', 'dk': 'Sted/tlf'}
     text28 = {'gl': 'Ulloq', 'dk': 'Dato'}
     text29 = {'gl': 'Atsiorneq', 'dk': 'Underskrift'}
@@ -122,11 +129,12 @@ class TaxPDF(FPDF):
     reciever_address_l4 = '-'
     reciever_address_l5 = '-'
     full_reciever_address = ''
+    fully_tax_liable = True
     policies = ['']
 
     def set_parameters(self, tax_year='-', tax_return_date_limit='', request_pay='', pay_date='', person_number='-',
                        reciever_name='', reciever_address_l1='', reciever_address_l2='', reciever_address_l3='',
-                       reciever_address_l4='', reciever_address_l5='', adjustmentfactor=1, policies=['']):
+                       reciever_address_l4='', reciever_address_l5='', fully_tax_liable=True, policies=['']):
         self.tax_year = tax_year
         self.tax_return_date_limit = tax_return_date_limit
         self.request_pay = request_pay
@@ -144,6 +152,7 @@ class TaxPDF(FPDF):
         if reciever_address_l5 is not None:
             self.full_reciever_address += reciever_address_l5
 
+        self.fully_tax_liable = fully_tax_liable
         self.policies = policies
         self.default_line_width = self.line_width
 
@@ -229,44 +238,37 @@ class TaxPDF(FPDF):
         self.set_xy(self.left_margin, self.yposition)
 
         self.set_font('arial', 'B', 8.5)
-        self.multi_cell(self.std_document_width, 5, self.text10[language], border=1)
+        self.multi_cell(self.std_document_width, 5, self.text10[language], border=0)
         self.yposition = self.get_y()
 
         self.set_font('arial', '', 8.5)
-        elementheight = self.element_height_2
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, self.text11[language].format(self.tax_return_date_limit), 1)
+        self.multi_cell(self.std_document_width, 5, self.text11[language].format(self.tax_return_date_limit), border=0)
         self.yposition = self.get_y()
 
 
-        elementheight = self.element_height_3
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, self.text12[language], 1)
+        self.multi_cell(self.std_document_width, 5, self.text12[language], border=0)
         self.yposition = self.get_y()
 
-        elementheight = self.element_height_4
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, self.text13[language].format(self.tax_return_date_limit), 1)
+        self.multi_cell(self.std_document_width, 5, self.text13[language].format(self.tax_return_date_limit), border=0)
         self.yposition = self.get_y()
 
-        elementheight = self.element_height_5
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, self.text13A[language].format(self.request_pay, self.pay_date), 1)
+        self.multi_cell(self.std_document_width, 5, self.text13A[language].format(self.request_pay, self.pay_date), border=0)
         self.yposition = self.get_y()
 
-        elementheight = self.element_height_5
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, self.text13B[language].format(self.request_pay, self.pay_date), 1)
+        self.multi_cell(self.std_document_width, 5, self.text13B[language].format(self.request_pay, self.pay_date), border=0)
         self.yposition = self.get_y()
 
-        elementheight = self.element_height_5
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, self.text13C[language].format(self.request_pay, self.pay_date), 1)
+        self.multi_cell(self.std_document_width, 5, self.text13C[language].format(self.request_pay, self.pay_date), border=0)
         self.yposition = self.get_y()
 
-        elementheight = self.element_height_5
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, self.text14[language].format(self.request_pay, self.pay_date), 1)
+        self.multi_cell(self.std_document_width, 5, self.text14[language].format(self.request_pay, self.pay_date), border=0)
         self.yposition = self.get_y()
 
         self.set_font('arial', '', 8.5)
@@ -275,19 +277,17 @@ class TaxPDF(FPDF):
         self.add_page()
 
         c1w = 73
-        c2w = 35
-        c3w = 35
-        c4w = 17
+        c2w = 30
+        c3w = 30
+        c4w = 27
 
         for policy in self.policies:
             headerheight = 10
             columnheaderheight = 5
-            rowheight = 5
             self.set_font('arial', 'B', 12)
             self.set_xy(self.left_margin, self.yposition)
             self.multi_cell(h=headerheight, align='C', w=c1w+c2w+c3w+c4w, txt=policy.get('policy'), border=1)
             self.yposition += headerheight
-
 
             self.set_font('arial', 'B', 10)
             self.set_xy(self.left_margin, self.yposition)
@@ -313,12 +313,6 @@ class TaxPDF(FPDF):
             self.yposition += rowheight
 
             self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(h=headerheight, align='L', w=c1w, txt='<<Forudbetalt kapitalafkast>>', border=1)#Fjernes, da den ikke giver mening i år
-            self.set_xy(self.left_margin+c1w, self.yposition)
-            self.multi_cell(h=rowheight, align='C', w=c2w, txt='FJERNES', border=1)
-            self.yposition += rowheight
-
-            self.set_xy(self.left_margin, self.yposition)
             self.multi_cell(h=rowheight, align='L', w=c1w, txt='<<Hævet på pensionsordning>>', border=1)#Her skal angives om der foreligger en aftale
             self.set_xy(self.left_margin+c1w, self.yposition)
             self.multi_cell(h=rowheight, align='C', w=c2w, txt=str(policy.get('agreement_present')), border=1)
@@ -338,9 +332,12 @@ class TaxPDF(FPDF):
             self.multi_cell(h=rowheight, align='L', w=c4w, txt='KAS-208', border=1)
             self.yposition += rowheight
             self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(h=rowheight, align='L', w=c1w, txt='<<Negativt kapitalafkast fra tidligere år>>', border=1)#Har angives ledetekst om negativt fra tidligere år
+            self.multi_cell(h=rowheight, align='L', w=c1w, txt=self.text26C[language], border=1)#Har angives ledetekst om negativt fra tidligere år
             self.set_xy(self.left_margin+c1w, self.yposition)
-            self.multi_cell(h=rowheight, align='L', w=c2w, txt='', border=1)
+            available_negative_return = policy.get('available_negative_return')
+            if available_negative_return is None:
+                available_negative_return = 0
+            self.multi_cell(h=rowheight, align='C', w=c2w, txt=str(available_negative_return), border=1)
             self.set_xy(self.left_margin+c1w+c2w, self.yposition)
             self.multi_cell(h=rowheight, align='L', w=c3w, txt='', border=1, fill = True)
             self.set_xy(self.left_margin+c1w+c2w+c3w, self.yposition)
@@ -349,15 +346,24 @@ class TaxPDF(FPDF):
 
         self.add_page()
 
+        elementheight = 15
         year_adjusted_text = ''
-        #if self.policies[0].year_adjusted_amount > 365:
-        year_adjusted_text = self.text26A[language]
+        if not self.fully_tax_liable:
+            year_adjusted_text = self.text26A[language]
 
         self.set_xy(self.left_margin, self.yposition)
         self.multi_cell(self.std_document_width, 5, txt=year_adjusted_text, border=0, align='L')
-
-
         self.yposition += elementheight
+
+        c1w = 103
+        c2w = 57
+        elementheight = 45
+        self.set_xy(self.left_margin, self.yposition)
+        self.multi_cell(h=10, align='L', w=c1w, txt=self.text26B[language], border=1)
+        self.set_xy(self.left_margin+c1w, self.yposition)
+        self.multi_cell(h=10, align='C', w=c2w, txt='', border=1)
+        self.yposition += elementheight
+
         elementtop = self.yposition
         elementheight = 30
         self.set_xy(self.left_margin, self.yposition)
@@ -408,6 +414,7 @@ class TaxPDF(FPDF):
         reciever_address_line_3 = person_tax_year.person.address_line_3
         reciever_address_line_4 = person_tax_year.person.address_line_4
         reciever_address_line_5 = person_tax_year.person.address_line_5
+        fully_tax_liable = person_tax_year.fully_tax_liable
 
         policies = []
 
@@ -419,26 +426,29 @@ class TaxPDF(FPDF):
 
         for policy in list_of_policies:
             single_policy = {}
-
             single_policy['policy'] = (policy.pension_company.name+'-'+policy.policy_number)
-
-            #policies.append({'policy': policy.pension_company.name+'-'+policy.policy_number})
             single_policy['preliminary_paid_amount'] = policy.preliminary_paid_amount
             single_policy['prefilled_amount'] = policy.prefilled_amount
             single_policy['agreement_present'] = policy.pension_company.agreement_present
             single_policy['year_adjusted_amount'] = policy.year_adjusted_amount
+            single_policy['available_negative_return'] = policy.available_negative_return
             policies.append(single_policy)
 
-        policies.append(single_policy)
+        single_policy = {}
+        single_policy['policy'] = ''
+        single_policy['preliminary_paid_amount'] = ''
+        single_policy['prefilled_amount'] = ''
+        single_policy['agreement_present'] = ''
+        single_policy['year_adjusted_amount'] = ''
 
-        adjustmentfactor = 5
+        policies.append(single_policy)
 
         self.set_parameters(tax_year, tax_return_date_limit, request_pay, pay_date, person_number,
                     reciever_name, reciever_address_line_1, reciever_address_line_2,
                     reciever_address_line_3, reciever_address_line_4,
-                    reciever_address_line_5, adjustmentfactor, policies)
+                    reciever_address_line_5, fully_tax_liable, policies)
 
-        #self.print_tax_slip('gl')
+        self.print_tax_slip('gl')
         self.print_tax_slip('dk')
         self.write_tax_slip_to_disk(policy_file_name)
 
@@ -447,6 +457,7 @@ class TaxPDF(FPDF):
         person_tax_year.tax_slip = ts
         person_tax_year.save()
 
+class TaxSlipHandling(FPDF):
     def perform_complete_write_of_one_tax_year(self, destination_path, tax_year):
 
         list_of_person_tax_year = PersonTaxYear.objects.filter(
@@ -454,4 +465,5 @@ class TaxPDF(FPDF):
         )
 
         for person_tax_year in list_of_person_tax_year:
-            self.perform_complete_write_of_one_person_tax_year(destination_path=destination_path, person_tax_year=person_tax_year)
+            pdf_documen = TaxPDF()
+            pdf_documen.perform_complete_write_of_one_person_tax_year(destination_path=destination_path, person_tax_year=person_tax_year)
