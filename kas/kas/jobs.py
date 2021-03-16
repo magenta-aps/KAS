@@ -183,8 +183,9 @@ def import_r75(job):
 @job_decorator
 def generate_reports_for_year(job):
     pdf_generator = TaxPDF()
-    total_count = PersonTaxYear.objects.filter(tax_year__pk=job.arguments['year_pk']).count()
-    for i, person_tax_year in enumerate(PersonTaxYear.objects.filter(tax_year__pk=job.arguments['year_pk']).iterator(), 1):
+    qs = PersonTaxYear.objects.filter(tax_year__pk=job.arguments['year_pk'])
+    total_count = qs.count()
+    for i, person_tax_year in enumerate(qs.iterator(), 1):
         pdf_generator.perform_complete_write_of_one_person_tax_year('', person_tax_year)
         job.set_progress(i, total_count)
 
