@@ -26,7 +26,8 @@ class RestClient(object):
         response = requests.get(
             f"{settings.REST_HOST}/rest/{path}/",
             params=params,
-            headers=self.headers
+            headers=self.headers,
+            verify=settings.REST_CERT,
         )
         return self._handle_response(response)
 
@@ -35,7 +36,8 @@ class RestClient(object):
             f"{settings.REST_HOST}/rest/{path}/",
             data=data,
             headers=self.headers,
-            files=files
+            files=files,
+            verify=settings.REST_CERT,
         )
         return self._handle_response(response)
 
@@ -43,7 +45,8 @@ class RestClient(object):
         response = requests.patch(
             f"{settings.REST_HOST}/rest/{path}/",
             data=data,
-            headers=self.headers
+            headers=self.headers,
+            verify=settings.REST_CERT,
         )
         return self._handle_response(response)
 
@@ -51,6 +54,7 @@ class RestClient(object):
         response = requests.delete(
             f"{settings.REST_HOST}/rest/{path}/",
             headers=self.headers,
+            verify=settings.REST_CERT,
         )
         return self._handle_response(response)
 
