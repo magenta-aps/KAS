@@ -23,7 +23,6 @@ class LoginManager:
 
     def __call__(self, request):
         if self.enabled:
-            print(f"session contains: {request.session.items()}")
             white_listed_urls = self.white_listed_urls
             # When any non-whitelisted page is loaded, check if we are authenticated
             if request.path not in white_listed_urls and request.path.rstrip('/') not in white_listed_urls:
