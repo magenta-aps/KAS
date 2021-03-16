@@ -5,7 +5,7 @@ def get_job_types():
     """
     :returns a registry dictionary with label and form_class for each job type
     """
-    from worker.forms import MandtalImportJobForm, R75ImportJobForm, DispatchTaxYearForm, ConfirmForm
+    from worker.forms import MandtalImportJobForm, R75ImportJobForm, DispatchTaxYearForm, ConfirmForm, YearPkForm
     return {
         'ImportMandtalJob': {
             'label': _('Import af mandtal'),  # translated label
@@ -22,7 +22,11 @@ def get_job_types():
             'function': 'kas.jobs.import_r75',
             'test_only': False,
         },
-
+        'GenerateReportsForYear': {
+            'label': _('Generere KAS selvangivelser'),
+            'form_class': YearPkForm,
+            'function': 'kas.jobs.generate_reports_for_year'
+        },
         'DispatchTaxYear': {
             'label': ('Afsendelse af Kas opgørelse for et given år'),
             'form_class': DispatchTaxYearForm,

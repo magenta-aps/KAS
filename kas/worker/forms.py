@@ -76,13 +76,16 @@ class R75ImportJobForm(YearAndSourceForm):
     pass
 
 
-class DispatchTaxYearForm(BootstrapForm):
+class YearPkForm(BootstrapForm):
     year_pk = forms.ChoiceField(choices=[], required=True)
-    title = forms.CharField(label=_('Titel'), help_text=_('Vil blive brugt som title feltet i e-boks'))
 
     def __init__(self, *args, **kwargs):
-        super(DispatchTaxYearForm, self).__init__(*args, **kwargs)
+        super(YearPkForm, self).__init__(*args, **kwargs)
         self.fields['year_pk'].choices = ((year.pk, str(year)) for year in TaxYear.objects.all())
+
+
+class DispatchTaxYearForm(BootstrapForm):
+    title = forms.CharField(label=_('Titel'), help_text=_('Vil blive brugt som title feltet i e-boks'))
 
 
 # A simple form with just confirm or cancel submit buttons

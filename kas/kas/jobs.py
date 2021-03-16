@@ -9,6 +9,8 @@ from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCom
 from requests.exceptions import HTTPError, ConnectionError
 from rq import get_current_job
 from time import sleep
+
+from kas.reportgeneration.kas_report import TaxPDF
 from worker.models import job_decorator, Job
 
 import base64
@@ -176,6 +178,16 @@ def import_r75(job):
             {'label': 'Opdateret', 'value': policies_updated}
         ]}
     ]}
+
+
+@job_decorator
+def generate_reports_for_year(job):
+    pdf_generator = TaxPDF()
+    qs = PersonTaxYear.objects.filter(tax_year__pk=job.arguments['year_pk'])
+    total_count = qs.count()
+    for i, person_tax_year in enumerate(qs.iterator(), 1):
+        pdf_generator.perform_complete_write_of_one_person_tax_year('', person_tax_year)
+        job.set_progress(i, total_count)
 
 
 def chunks(lst, size):
