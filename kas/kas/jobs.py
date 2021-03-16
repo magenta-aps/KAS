@@ -1,9 +1,11 @@
+from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension
-from eskat.models import get_kas_mandtal_model, get_r75_private_pension_model
-from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated
+from eskat.models import MockModels, EskatModels
 from kas.eboks import EboksClient, EboksDispatchGenerator
+from kas.management.commands.create_initial_years import Command as CreateInitialYears
+from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated
 from requests.exceptions import HTTPError, ConnectionError
 from rq import get_current_job
 from time import sleep
@@ -15,51 +17,70 @@ import base64
 @job_decorator
 def import_mandtal(job):
     year = job.arguments['year']
+
+    job.pretty_title = '%s - %s' % (job.pretty_job_type, year)
+    job.save()
+
     tax_year = TaxYear.objects.get(year=year)
     number_of_progress_segments = 2
     progress_factor = 1 / number_of_progress_segments
-    mandtal_created, mandtal_updated = ImportedKasMandtal.import_year(year, job, progress_factor, 0)
 
-    qs = get_kas_mandtal_model().objects.filter(skatteaar=year)
+    if job.arguments['source_model'] == "mockup":
+        source_model = MockModels.MockKasMandtal
+    elif job.arguments['source_model'] == "eskat":
+        source_model = EskatModels.KasMandtal
+    else:
+        source_model = None
+
+    mandtal_created, mandtal_updated = ImportedKasMandtal.import_year(
+        year, job, progress_factor, 0,
+        source_model=source_model
+    )
+
+    qs = ImportedKasMandtal.objects.filter(skatteaar=year)
     count = qs.count()
-    progress_start = 0.5
+    progress_start = 50
     (persons_created, persons_updated) = (0, 0)
     (persontaxyears_created, persontaxyears_updated) = (0, 0)
 
-    for i, item in enumerate(qs.iterator()):
+    with transaction.atomic():
+        for i, item in enumerate(qs.iterator()):
 
-        person_data = {
-            'cpr': item.cpr,
-            'municipality_name': item.kommune,
-            'municipality_code': item.kommune_no,
-            'address_line_1': item.adresselinje1,
-            'address_line_2': item.adresselinje2,
-            'address_line_3': item.adresselinje3,
-            'address_line_4': item.adresselinje4,
-            'address_line_5': item.adresselinje5,
-            'full_address': item.fuld_adresse,
-        }
+            person_data = {
+                'cpr': item.cpr,
+                'municipality_name': item.kommune,
+                'municipality_code': item.kommune_no,
+                'address_line_1': item.adresselinje1,
+                'address_line_2': item.adresselinje2,
+                'address_line_3': item.adresselinje3,
+                'address_line_4': item.adresselinje4,
+                'address_line_5': item.adresselinje5,
+                'full_address': item.fuld_adresse,
+            }
 
-        (person, status) = Person.update_or_create(person_data, 'cpr')
-        if status == Person.CREATED:
-            persons_created += 1
-        elif status == Person.UPDATED:
-            persons_updated += 1
+            person, status = Person.update_or_create(person_data, 'cpr')
+            if status == Person.CREATED:
+                persons_created += 1
+            elif status == Person.UPDATED:
+                persons_updated += 1
 
-        person_tax_year_data = {
-            'person': person,
-            'tax_year': tax_year,
-            'number_of_days': item.skattedage,
-            'fully_tax_liable': item.skatteomfang is not None and item.skatteomfang.lower() == 'fuld skattepligtig',
-        }
+            person_tax_year_data = {
+                'person': person,
+                'tax_year': tax_year,
+                'number_of_days': item.skattedage,
+                'fully_tax_liable': item.skatteomfang is not None and item.skatteomfang.lower() == 'fuld skattepligtig',
+            }
 
-        (person_tax_year, status) = PersonTaxYear.update_or_create(person_tax_year_data, 'tax_year', 'person')
-        if status == PersonTaxYear.CREATED:
-            persontaxyears_created += 1
-        elif status == PersonTaxYear.UPDATED:
-            persontaxyears_updated += 1
+            (person_tax_year, status) = PersonTaxYear.update_or_create(person_tax_year_data, 'tax_year', 'person')
+            if status == PersonTaxYear.CREATED:
+                persontaxyears_created += 1
+            elif status == PersonTaxYear.UPDATED:
+                persontaxyears_updated += 1
 
-        job.set_progress_pct(progress_start + (i / count) * (100 * progress_factor))
+            if i % 1000 == 0:
+                progress = progress_start + (i / count) * (100 * progress_factor)
+                # Save this using 2nd db handle that is not inside the transaction
+                job.set_progress_pct(progress, using='second_default')
 
     job.result = {'summary': [
         {'label': 'Rå Mandtal-objekter', 'value': [
@@ -80,46 +101,70 @@ def import_mandtal(job):
 @job_decorator
 def import_r75(job):
     year = job.arguments['year']
+
+    job.pretty_title = '%s - %s' % (job.pretty_job_type, year)
+    job.save()
+
     tax_year = TaxYear.objects.get(year=year)
     number_of_progress_segments = 2
     progress_factor = 1 / number_of_progress_segments
-    (r75_created, r75_updated) = ImportedR75PrivatePension.import_year(year, job, progress_factor, 0)
 
-    progress_start = 0.5
+    if job.arguments['source_model'] == "mockup":
+        source_model = MockModels.MockR75PrivatePension
+    elif job.arguments['source_model'] == "eskat":
+        source_model = EskatModels.R75PrivatePension
+    else:
+        source_model = None
+
+    (r75_created, r75_updated) = ImportedR75PrivatePension.import_year(
+        year, job, progress_factor, 0,
+        source_model=source_model
+    )
+
+    progress_start = 50
     persons_created = 0
     person_tax_years_created = 0
     (policies_created, policies_updated) = (0, 0)
 
-    qs = get_r75_private_pension_model().objects.filter(tax_year=year)
+    qs = ImportedR75PrivatePension.objects.filter(tax_year=year)
     count = qs.count()
-    for i, item in enumerate(qs):
 
-        person, c = Person.objects.get_or_create(cpr=item.cpr)
-        if c:
-            persons_created += 1
-        person_tax_year, c = PersonTaxYear.objects.get_or_create(person=person, tax_year=tax_year)
-        if c:
-            person_tax_years_created += 1
+    with transaction.atomic():
+        for i, item in enumerate(qs):
 
-        res = int(item.res)
-        pension_company, c = PensionCompany.objects.get_or_create(**{'res': res})
+            person, c = Person.objects.get_or_create(cpr=item.cpr)
+            if c:
+                persons_created += 1
+            person_tax_year, c = PersonTaxYear.objects.get_or_create(
+                person=person, tax_year=tax_year,
+                # Default to any person created here having 0 taxable days
+                defaults={'number_of_days': 0}
+            )
+            if c:
+                person_tax_years_created += 1
 
-        policy_data = {
-            'person_tax_year': person_tax_year,
-            'pension_company': pension_company,
-            'policy_number': item.pkt,
-            'prefilled_amount': item.beloeb,
-        }
-        (policy_tax_year, status) = PolicyTaxYear.update_or_create(policy_data, 'person_tax_year', 'pension_company', 'policy_number')
+            res = int(item.res)
+            pension_company, c = PensionCompany.objects.get_or_create(**{'res': res})
 
-        if status in (PersonTaxYear.CREATED, PersonTaxYear.UPDATED):
-            policy_tax_year.recalculate()
-            if status == PersonTaxYear.CREATED:
-                policies_created += 1
-            elif status == PersonTaxYear.UPDATED:
-                policies_updated += 1
+            policy_data = {
+                'person_tax_year': person_tax_year,
+                'pension_company': pension_company,
+                'policy_number': item.pkt,
+                'prefilled_amount': item.beloeb,
+            }
+            (policy_tax_year, status) = PolicyTaxYear.update_or_create(policy_data, 'person_tax_year', 'pension_company', 'policy_number')
 
-        job.set_progress_pct(progress_start + (i / count) * (100 * progress_factor))
+            if status in (PersonTaxYear.CREATED, PersonTaxYear.UPDATED):
+                policy_tax_year.recalculate()
+                if status == PersonTaxYear.CREATED:
+                    policies_created += 1
+                elif status == PersonTaxYear.UPDATED:
+                    policies_updated += 1
+
+            if i % 100 == 0:
+                progress = progress_start + (i / count) * (100 * progress_factor)
+                # Save progress using 2nd db handle not affected by transaction
+                job.set_progress_pct(progress, using='second_default')
 
     job.result = {'summary': [
         {'label': 'Rå R75-objekter', 'value': [
@@ -280,3 +325,28 @@ def dispatch_eboks_tax_slips(job):
 
     if has_more:
         Job.schedule_job(dispatch_eboks_tax_slips, 'dispatch_tax_year_child', job.parent.created_by, parent=job.parent)
+
+
+@job_decorator
+def clear_test_data(job):
+    if settings.ENVIRONMENT == "production":
+        raise Exception("Will not clear data in production")
+
+    for model in (
+        ImportedKasMandtal,
+        ImportedR75PrivatePension,
+        MockModels.MockKasMandtal,
+        MockModels.MockR75PrivatePension,
+        PolicyTaxYear,
+        PersonTaxYear,
+        Person,
+        TaxYear
+    ):
+        model.objects.all().delete()
+
+    CreateInitialYears().handle()
+
+    return {
+        'status': 'OK',
+        'message': 'Data nulstillet',
+    }

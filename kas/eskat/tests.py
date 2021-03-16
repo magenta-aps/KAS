@@ -1,4 +1,4 @@
-from django.test import TestCase, override_settings
+from django.test import TransactionTestCase, override_settings
 from eskat.management.commands.import_eskat_mockup_data import Command
 from eskat.models import MockModels
 
@@ -9,10 +9,9 @@ import eskat.models as eskat_models
 
 # Make sure this test never uses the production eSkat database
 @override_settings(ENVIRONMENT="development")
-class EskatModelsTestCase(TestCase):
+class EskatModelsTestCase(TransactionTestCase):
 
     imported_tables = (
-        eskat_models.ImportedKasBeregningerX,
         eskat_models.ImportedKasMandtal,
         eskat_models.ImportedR75PrivatePension,
     )
@@ -54,7 +53,6 @@ class EskatModelsTestCase(TestCase):
 
     def test_mockup_data_present(self):
 
-        self.assertGreater(MockModels.MockKasBeregningerX.objects.count(), 0)
         self.assertGreater(MockModels.MockKasMandtal.objects.count(), 0)
         self.assertGreater(MockModels.MockR75PrivatePension.objects.count(), 0)
 

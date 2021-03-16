@@ -1,0 +1,15 @@
+{% load i18n %}
+<table class="table job-summary">
+    <thead>
+        <tr>
+            <td>{% trans "Resultat" %}</td>
+            <td>{% trans "Besked" %}</td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ result.status }}</td>
+            <td>{{ result.message }}</td>
+        </tr>
+    </tbody>
+</table>
