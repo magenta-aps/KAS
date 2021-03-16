@@ -47,6 +47,24 @@ button[type=submit]:active, button[type=submit]:hover {
     background-color: #fbb84f;
 }
 
+a.btn-primary,
+a.btn-primary:visited,
+button.btn-primary,
+button.btn-primary:visited {
+    background-color: #f6c443 !important;
+    color: #31495b;
+    border: 0 none;
+    border-radius: 0;
+}
+
+a.btn-primary:hover,
+a.btn-primary:active,
+button.btn-primary:hover,
+button.btn-primary:active {
+    background-color: #31495b !important;
+    color: #fff;
+}
+
 div.SumoSelect > .CaptionCont {
     border-radius: 0;
 }

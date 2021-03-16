@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-15 13:16+0000\n"
+"POT-Creation-Date: 2021-03-16 15:52+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -48,23 +48,19 @@ msgstr ""
 
 #: templates/base.html:65
 #, python-format
-msgid "Logget ind som %(cpr)s"
-msgstr ""
-
-#: templates/base.html:68
-msgid "Log ud"
+msgid "Logget ind som %(name)s"
 msgstr ""
 
 #: templates/calculation.html:3
 msgid "Beregning"
 msgstr ""
 
-#: templates/calculation.html:7 templates/form.html:38 templates/view.html:47
+#: templates/calculation.html:7 templates/form.html:52 templates/view.html:47
 #: templates/view.html:114
 msgid "Feltnavn"
 msgstr ""
 
-#: templates/calculation.html:8 templates/form.html:39
+#: templates/calculation.html:8 templates/form.html:53
 msgid "Beskrivelse"
 msgstr ""
 
@@ -85,109 +81,114 @@ msgid "Beløb justeret for skatteår"
 msgstr ""
 
 #: templates/calculation.html:29
-msgid "Sum ikke anvendt negativt afkast"
+msgid "Skattegrundlag før eventuelt negativt afkast."
 msgstr ""
 
 #: templates/calculation.html:34
-msgid "Anvendt negativt afkast"
+msgid "Sum ikke anvendt negativt afkast"
 msgstr ""
 
 #: templates/calculation.html:39
+msgid "Anvendt negativt afkast"
+msgstr ""
+
+#: templates/calculation.html:44
 msgid "Skattepligtigt beløb / skattegrundlag"
 msgstr ""
 
-#: templates/form.html:25
+#: templates/form.html:13
+msgid "Vejledning"
+msgstr ""
+
+#: templates/form.html:41
 msgid "Angiv ny police"
 msgstr ""
 
-#: templates/form.html:27
+#: templates/form.html:43
 #, python-format
-msgid ""
-"\n"
-"                        %(company)s, Police nr %(policy)s\n"
-"                        "
+msgid "%(company)s, Police nr %(policy)s"
 msgstr ""
 
-#: templates/form.html:40
+#: templates/form.html:54
 msgid "Felt"
 msgstr ""
 
-#: templates/form.html:41 templates/view.html:49 templates/view.html:116
+#: templates/form.html:55 templates/view.html:49 templates/view.html:116
 msgid "Felt nr."
 msgstr ""
 
-#: templates/form.html:47
+#: templates/form.html:61
 msgid "Pensionsselskab"
 msgstr ""
 
-#: templates/form.html:56
+#: templates/form.html:70
 msgid "Policenummer"
 msgstr ""
 
-#: templates/form.html:66 templates/view.html:54 templates/view.html:121
+#: templates/form.html:80 templates/view.html:54 templates/view.html:121
 msgid "Kapitalafkast PBL (DK) § 53 A"
 msgstr ""
 
-#: templates/form.html:69
+#: templates/form.html:83
 #, python-format
 msgid "Vores beregning: %(value)s"
 msgstr ""
 
-#: templates/form.html:73
+#: templates/form.html:87
 msgid "Beløb:"
 msgstr ""
 
-#: templates/form.html:73
+#: templates/form.html:87
 msgid "Deres rettelse:"
 msgstr ""
 
-#: templates/form.html:81
+#: templates/form.html:95
 msgid "Forudbetalt kapitalafkast"
 msgstr ""
 
-#: templates/form.html:82
+#: templates/form.html:96
 msgid ""
 "Har De allerede betalt foreløbig kapitalafkastskat angives beløbet her. Husk "
 "at vedlægge dokumentation."
 msgstr ""
 
-#: templates/form.html:89 templates/view.html:64
+#: templates/form.html:103 templates/view.html:64
 msgid "Hævet på pensionsordning"
 msgstr ""
 
-#: templates/form.html:90
+#: templates/form.html:104
 msgid "Er kapitalafkastskatten hævet fra pensionsordning?"
 msgstr ""
 
-#: templates/form.html:99 templates/view.html:71 templates/view.html:131
+#: templates/form.html:113 templates/view.html:71 templates/view.html:131
 msgid "Betalt kapitalafkastskat i udlandet"
 msgstr ""
 
-#: templates/form.html:100
+#: templates/form.html:114
 msgid ""
 "Anmoder De om nedslag for betalt kapitalafkastskat i udlandet angives den "
 "betalte skat og dokumentation vedlægges selvangivelsen"
 msgstr ""
 
-#: templates/form.html:107
+#: templates/form.html:121
 msgid "Dokumentation for betalt kapitalafkastskat"
 msgstr ""
 
-#: templates/form.html:110
+#: templates/form.html:124
 msgid "Vedhæft dokumentation for allerede betalt kapitalafkastskat i udlandet."
 msgstr ""
 
-#: templates/form.html:112
+#: templates/form.html:126
 msgid ""
 "Vedhæft dokumentation for allerede betalt kapitalafkastskat. Dokumentation "
 "for betaling både i Grønland og i udlandet kan vedhæftes her."
 msgstr ""
 
-#: templates/form.html:134
+#: templates/form.html:148
 msgid "Fjern"
 msgstr ""
 
-#: templates/form.html:160
+#: templates/form.html:174
 msgid "Indsend"
 msgstr ""
 
@@ -203,6 +204,14 @@ msgstr ""
 #: templates/nav-tabs.html:13
 #, python-format
 msgid "Ret KAS-opgørelse fra %(year)s"
+msgstr ""
+
+#: templates/submitted.html:9
+msgid "Selvangivelse opdateret. Tryk på knappen for at åbne formularen igen"
+msgstr ""
+
+#: templates/submitted.html:12
+msgid "Åbn selvangivelse"
 msgstr ""
 
 #: templates/view.html:13
@@ -226,7 +235,7 @@ msgstr ""
 msgid "Opsummering"
 msgstr ""
 
-#: views.py:92
+#: views.py:110
 msgid "--- angiv navn ---"
 msgstr ""
 

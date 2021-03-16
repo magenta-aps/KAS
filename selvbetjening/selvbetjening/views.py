@@ -78,10 +78,28 @@ class SetLanguageView(View):
         return response
 
 
-class PolicyFormView(FormView):
+class HasUserMixin(object):
+
+    @property
+    def cpr(self):
+        return self.request.session['user_info']['CPR']
+
+    @property
+    def name(self):
+        return self.request.session['user_info'].get('PersonName')
+
+    def get_context_data(self, **kwargs):
+        return super(HasUserMixin, self).get_context_data(**{
+            'cpr': self.cpr,
+            'name': self.name,
+            **kwargs
+        })
+
+
+class PolicyFormView(HasUserMixin, FormView):
     template_name = 'form.html'
     success_url = ''
-    form_class = formset_factory(PolicyForm, min_num=1, extra=1)
+    form_class = formset_factory(PolicyForm, min_num=0, extra=1)
 
     def get(self, request, *args, **kwargs):
         self.load_initial()
@@ -98,13 +116,9 @@ class PolicyFormView(FormView):
         context = {
             **kwargs,
             'year': date.today().year - 1,
-            'data': {str(item['id']): item for item in self.request.session['policy_tax_years']}
+            'data': {str(item['id']): item for item in self.request.session['policy_tax_years']},
         }
         return super(PolicyFormView, self).get_context_data(**context)
-
-    @property
-    def cpr(self):
-        return self.request.session['user_info']['CPR']
 
     @property
     def year(self):
@@ -162,15 +176,12 @@ class PolicyFormView(FormView):
                         'files': policyform.get_filled_files(),
                         'existing_files': existing_files_data,
                     })
-        return redirect(reverse('selvbetjening:policyview', args=[date.today().year - 1]))
+        # return redirect(reverse('selvbetjening:policyview', args=[date.today().year - 1]))
+        return redirect(reverse('selvbetjening:policy-submitted'))
 
 
-class PolicyDetailView(TemplateView):
+class PolicyDetailView(HasUserMixin, TemplateView):
     template_name = 'view.html'
-
-    @property
-    def cpr(self):
-        return self.request.session['user_info']['CPR']
 
     def get_context_data(self, **kwargs):
         client = RestClient()
@@ -197,7 +208,7 @@ class PolicyDetailView(TemplateView):
                     'foreign_paid_amount_actual', 'applied_deduction_from_previous_years',
                     'calculated_result'
                 ]
-            }
+            },
         }
 
         if year < nowyear:
@@ -211,3 +222,7 @@ class PolicyDetailView(TemplateView):
             context['years'] = years
 
         return context
+
+
+class PolicySubmittedView(TemplateView):
+    template_name = 'submitted.html'
