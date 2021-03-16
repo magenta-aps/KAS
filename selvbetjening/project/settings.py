@@ -122,7 +122,7 @@ LOGIN_UNAUTH_REDIRECT = 'sullissivik:openid:login'  # url reverse name to redire
 LOGIN_DEFAULT_REDIRECT = 'selvbetjening:policyview'  # url reverse name to redirect to when logged in (unless another is explicitly specified in params)
 LOGIN_REQUIREMENT_WHITELIST = ['/favicon.ico']
 
-REST_HOST = 'http://kas:8000'
+REST_HOST = os.environ['REST_HOST']
 REST_TOKEN = os.environ['REST_TOKEN']
 
 DEFAULT_CPR = os.environ.get('DEFAULT_CPR', None)
