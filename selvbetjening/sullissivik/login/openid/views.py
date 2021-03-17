@@ -150,6 +150,7 @@ class LoginCallback(TemplateView):
                 userinfo = client.do_user_info_request(state=request.session['oid_state'])
                 user_info_dict = userinfo.to_dict()
                 request.session['user_info'] = user_info_dict
+                print(f"user_info_dict: {user_info_dict}")
                 request.session['raw_id_token'] = resp["id_token"].jwt
                 # always delete the state so it is not reused
                 del request.session['oid_state']
