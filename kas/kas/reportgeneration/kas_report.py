@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from django.core.files.base import ContentFile
-
 import math
 
 from fpdf import FPDF
