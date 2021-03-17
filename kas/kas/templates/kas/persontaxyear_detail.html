@@ -4,7 +4,7 @@
 {% block content %}
   <h1>{{ person_tax_year.person.name }} i år {{view.year}}</h1>
 
-  <h2>Policer</h2>
+  <h2>{% trans 'Policer' %}</h2>
   {% if person_tax_year.policytaxyear_set.count %}
   <ul>
   {% for policy in person_tax_year.policytaxyear_set.all %}
