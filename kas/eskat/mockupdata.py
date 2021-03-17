@@ -28,17 +28,17 @@ def person_uuid(cpr, year):
     ))
 
 
-def r75_sekvens_uuid(cpr, year):
+def r75_sekvens_uuid(cpr, year, pkt, res):
     return str(uuid.uuid5(
         uuid.NAMESPACE_URL,
-        'https://test.aka.nanoq.gl/mockupdata/r75/sekvens/%s/%s' % (cpr, year)
+        'https://test.aka.nanoq.gl/mockupdata/r75/sekvens/%s/%s/%s/%s' % (cpr, year, res, pkt)
     ))
 
 
-def r75_indeks_uuid(cpr, year):
+def r75_indeks_uuid(cpr, year, pkt, res):
     return str(uuid.uuid5(
         uuid.NAMESPACE_URL,
-        'https://test.aka.nanoq.gl/mockupdata/r75/indekx/%s/%s' % (cpr, year)
+        'https://test.aka.nanoq.gl/mockupdata/r75/indekx/%s/%s/%s/%s' % (cpr, year, res, pkt)
     ))
 
 
@@ -73,21 +73,21 @@ def create_person(
     }
 
     for policy in policies:
-        if "pkt" not in policy:
-            policy["pkt"] = "6471"
-
         if "res" not in policy:
-            policy["res"] = next_unique_res()
+            policy["res"] = "6471"
+
+        if "pkt" not in policy:
+            policy["pkt"] = next_unique_res()
 
         for year, beloeb in policy["years"].items():
             # Make sure we create a mandtal entry for the person for this year
-            if year not in person_years:
+            if int(year) not in person_years:
                 person_years[year] = {}
 
             policy_data = {
                 "pt_census_guid": person_uuid(cpr, year),
-                "r75_ctl_sekvens_guid": r75_sekvens_uuid(cpr, year),
-                "r75_ctl_indeks_guid": r75_indeks_uuid(cpr, year),
+                "r75_ctl_sekvens_guid": r75_sekvens_uuid(cpr, year, policy["res"], policy["pkt"]),
+                "r75_ctl_indeks_guid": r75_indeks_uuid(cpr, year, policy["res"], policy["pkt"]),
                 "idx_nr": 5500121,
                 "dato": "%04d0116" % (year),
                 "pkt": policy["pkt"],
@@ -99,6 +99,8 @@ def create_person(
                 defaults=policy_data,
                 tax_year=year,
                 cpr=cpr,
+                pkt=policy["pkt"],
+                res=policy["res"],
             )
 
     for year, person_year_data in person_years.items():
@@ -131,7 +133,7 @@ def import_default_mockup_data():
     create_person(
         "Borger med 0 afkast",
         policies=[
-            {"pkt": 6471, "years": {
+            {"res": 6471, "years": {
                 2018: 0,
                 2019: 0,
                 2020: 0
@@ -142,7 +144,7 @@ def import_default_mockup_data():
     create_person(
         "Borger med ikke dækkende negativt afkast",
         policies=[
-            {"pkt": 6471, "years": {
+            {"res": 6471, "years": {
                 2018: -2000,
                 2019: 1000,
                 2020: 2500,
@@ -153,7 +155,7 @@ def import_default_mockup_data():
     create_person(
         "Borger med dækkende negativt afkast",
         policies=[
-            {"pkt": 6471, "years": {
+            {"res": 6471, "years": {
                 2018: -5000,
                 2019: 1000,
                 2020: 2500,
@@ -164,7 +166,7 @@ def import_default_mockup_data():
     create_person(
         "Borger uden negativt afkast",
         policies=[
-            {"pkt": 6471, "years": {
+            {"res": 6471, "years": {
                 2018: 1000,
                 2019: 2000,
                 2020: 3000,
@@ -175,13 +177,13 @@ def import_default_mockup_data():
     create_person(
         "Borger med police hos PFA + andre",
         policies=[
-            {"pkt": 6471, "years": {
+            {"res": 6471, "years": {
                 2018: 1000,
                 2019: 2000,
                 2020: 3000,
             }},
             # 55143315 is PFA
-            {"pkt": 55143315, "years": {
+            {"res": 55143315, "years": {
                 2018: 1000,
                 2019: 2000,
                 2020: 3000,
@@ -198,7 +200,7 @@ def import_default_mockup_data():
     create_person(
         "Borger med kun positivt afkast i 2020",
         policies=[
-            {"pkt": 6471, "years": {
+            {"res": 6471, "years": {
                 2020: 3000,
             }},
         ]
@@ -207,7 +209,7 @@ def import_default_mockup_data():
     create_person(
         "Borger med kun negativt afkast i 2020",
         policies=[
-            {"pkt": 6471, "years": {
+            {"res": 6471, "years": {
                 2020: -3000,
             }},
         ]
@@ -217,7 +219,7 @@ def import_default_mockup_data():
         "Borger der ikke er fuldt skattepligtig",
         person_extra={"skatteomfang": "ikke fuld skattepligtig"},
         policies=[
-            {"pkt": 6471, "years": {
+            {"res": 6471, "years": {
                 2018: 1000,
                 2019: 2000,
                 2020: 3000,
@@ -230,7 +232,7 @@ def import_default_mockup_data():
         person_extra={"skatteomfang": "ikke fuld skattepligtig"},
         person_years={2020: {"skattedage": 150}},
         policies=[
-            {"pkt": 6471, "years": {
+            {"res": 6471, "years": {
                 2018: 1000,
                 2019: 2000,
                 2020: 3000,
@@ -243,7 +245,7 @@ def import_default_mockup_data():
         person_extra={"skatteomfang": "ikke fuld skattepligtig"},
         person_years={2019: {"skattedage": 73}},
         policies=[
-            {"pkt": 6471, "years": {
+            {"res": 6471, "years": {
                 2019: -5000,
                 2020: 3000,
             }},
@@ -253,9 +255,9 @@ def import_default_mockup_data():
     create_person(
         "Borger med negativt afkast og nuværende år påvirket af antal dage",
         person_extra={"skatteomfang": "ikke fuld skattepligtig"},
-        person_years={2018: {"skattedage": 73}, 2019: {"skattedage": 146}},
+        person_years={2019: {"skattedage": 73}, 2020: {"skattedage": 146}},
         policies=[
-            {"pkt": 6471, "years": {
+            {"res": 6471, "years": {
                 2019: -5000,
                 2020: 3000,
             }},
@@ -267,7 +269,7 @@ def import_default_mockup_data():
         person_extra={"skatteomfang": "ikke fuld skattepligtig"},
         person_years={2018: {"skattedage": 73}, 2019: {"skattedage": 146}},
         policies=[
-            {"pkt": 6471, "years": {
+            {"res": 6471, "years": {
                 2009: -100000,
                 2018: 1000,
                 2019: 1000,
@@ -292,6 +294,17 @@ def import_default_mockup_data():
             {"pkt": 55143315, "years": {
                 2018: -1000,
                 2019: -2500,
+                2020: 3000,
+            }},
+        ]
+    )
+
+    create_person(
+        "Borger med negativt afkast fordelt over flere år",
+        policies=[
+            {"res": 6471, "years": {
+                2018: -600,
+                2019: -1000,
                 2020: 3000,
             }},
         ]

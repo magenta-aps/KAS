@@ -313,7 +313,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     )
 
     prefilled_amount = models.BigIntegerField(
-        verbose_name=_('Beløb rapporteret fra forsikringsselskab'),
+        verbose_name=_('Beløb rapporteret fra pensionsselskab'),
         blank=True,
         null=True
     )
@@ -333,7 +333,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     ACTIVE_AMOUNT_ESTIMATED = 2
     ACTIVE_AMOUNT_SELF_REPORTED = 3
 
-    calculations_model_options = (
+    active_amount_options = (
         (ACTIVE_AMOUNT_PREFILLED, prefilled_amount.verbose_name),
         (ACTIVE_AMOUNT_ESTIMATED, estimated_amount.verbose_name),
         (ACTIVE_AMOUNT_SELF_REPORTED, self_reported_amount.verbose_name),
@@ -341,7 +341,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     active_amount = models.SmallIntegerField(
         verbose_name=_('Beløb brugt til beregning'),
-        choices=calculations_model_options,
+        choices=active_amount_options,
         default=ACTIVE_AMOUNT_PREFILLED
     )
 
@@ -622,6 +622,55 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         return result['transferred_negative_payout__sum'] or 0
 
     @property
+    def previous_year_deduction_table_data(self):
+        years = []
+        policy_pks = []
+        available_by_year = {}
+        used_by_year = {}
+        for_year_total = {}
+
+        for x in self.same_policy_qs.order_by('person_tax_year__tax_year__year'):
+            years.append(x.year)
+            policy_pks.append(x.pk)
+            available_by_year[x.year] = min(x.year_adjusted_amount, 0) * -1
+            used_by_year[x.year] = 0
+            for_year_total[x.year] = 0
+
+        used_matrix = {}
+
+        for x in PreviousYearNegativePayout.objects.filter(used_from__in=policy_pks):
+            if x.from_year not in used_matrix:
+                used_matrix[x.from_year] = {}
+
+            # Store used amount in matrix
+            used_matrix[x.from_year][x.for_year] = x.transferred_negative_payout
+            # Adjust spent amount for the from year
+            used_by_year[x.from_year] = used_by_year[x.from_year] + x.transferred_negative_payout
+            # Adjust used amount for the for year
+            for_year_total[x.for_year] = for_year_total[x.for_year] + x.transferred_negative_payout
+
+        result = {}
+
+        # create a year x year table
+        for x in years:
+            used_in = {}
+
+            for y in years:
+                if x >= y:
+                    used_in[y] = "-"
+                else:
+                    used_in[y] = used_matrix.get(x, {}).get(y, 0)
+
+            result[x] = {
+                'available': available_by_year[x],
+                'used_by_year': used_in,
+                'remaining': available_by_year[x] - used_by_year[x],
+                'used_total': for_year_total[x]
+            }
+
+        return result
+
+    @property
     def sum_of_deducted_amount(self):
         # Return the amount of this years deduction (losses used as deductions in other years)
         result = self.payouts_using.aggregate(Sum('transferred_negative_payout'))
@@ -666,6 +715,14 @@ class PreviousYearNegativePayout(models.Model):
         blank=True,
         default=0,
     )
+
+    @property
+    def from_year(self):
+        return self.used_from.year
+
+    @property
+    def for_year(self):
+        return self.used_for.year
 
     def __str__(self):
         return f'used from :{self.used_from} used for :{self.used_for} payout :{self.transferred_negative_payout}'
