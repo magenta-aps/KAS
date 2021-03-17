@@ -63,6 +63,7 @@ class PolicyForm(forms.Form):
     from_pension = fields.BooleanField(
         widget=widgets.RadioSelect(choices=[(False, 'Nej'), (True, 'Ja')]),
         required=False,
+        initial=False,
     )
 
     foreign_paid_amount_self_reported = fields.IntegerField(
