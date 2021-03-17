@@ -216,12 +216,28 @@ tax_slip_statuses = (
 # final state is either sent or failed
 
 
+def taxslip_path_by_year(instance, filename):
+    return 'reports/{filename}'.format(filename=filename)
+
+
 class TaxSlipGenerated(models.Model):
-    file = models.FileField(upload_to='reports/', null=True)
+    file = models.FileField(upload_to=taxslip_path_by_year, null=True)
     status = models.TextField(choices=tax_slip_statuses, default='created', blank=True)
     post_processing_status = models.TextField(default='', blank=True)
     recipient_status = models.TextField(default='', blank=True)
     message_id = models.TextField(blank=True, default='')  # eboks message_id
+
+    @property
+    def delivery_method(self):
+        if self.status == 'sent':
+            if self.recipient_status == '':
+                return _('E-boks')
+            elif self.recipient_status == 'dead':
+                return None
+            else:
+                # exempt, minor, invalid
+                if self.post_processing_status in ('address resolved', 'remote printed'):
+                    return _('Fjernprint')
 
 
 class PersonTaxYear(HistoryMixin, models.Model):

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from django.core.files.base import ContentFile
 from fpdf import FPDF
 
 from kas.models import PolicyTaxYear, PersonTaxYear, TaxSlipGenerated
@@ -436,8 +437,8 @@ class TaxPDF(FPDF):
         self.print_tax_slip('dk')
         self.write_tax_slip_to_disk(policy_file_name)
 
-        ts = TaxSlipGenerated.objects.create(file=policy_file_name)
-        ts.save()
+        ts = TaxSlipGenerated()
+        ts.file.save(content=ContentFile(self.output(dest='S').encode('latin-1')), name=policy_file_name)
         person_tax_year.tax_slip = ts
         person_tax_year.save()
 
