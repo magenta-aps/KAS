@@ -14,6 +14,8 @@ from worker.forms import JobTypeSelectForm
 from worker.models import Job
 from worker.serializers import JobSerializer
 
+import importlib
+
 
 class JobListTemplateView(BootstrapTableMixin, TemplateView):
     template_name = 'worker/job_list.html'
@@ -50,30 +52,37 @@ class JobTypeSelectFormView(LoginRequiredMixin, FormView):
 class StartJobView(LoginRequiredMixin, FormView):
     template_name = 'worker/job_create_form.html'
 
+    cached_job_data = None
+
+    def job_data(self):
+        if self.cached_job_data is None:
+            self.cached_job_data = get_job_types()[self.kwargs['job_type']]
+        return self.cached_job_data
+
     def get_context_data(self, **kwargs):
         ctx = super(StartJobView, self).get_context_data(**kwargs)
         ctx.update({
-            'pretty_job_title': get_job_types()[self.kwargs['job_type']]['label']
+            'job_data': self.job_data(),
+            'pretty_job_title': self.job_data()['label']
         })
         return ctx
 
     def get_form_class(self):
         try:
-            return get_job_types()[self.kwargs['job_type']]['form_class']
+            return self.job_data()['form_class']
         except IndexError:
             raise Http404('No such job type')
 
     def form_valid(self, form):
         function = None
-        if self.kwargs['job_type'] == 'ImportMandtalJob':
-            from kas.jobs import import_mandtal
-            function = import_mandtal
-        elif self.kwargs['job_type'] == 'ImportR75Job':
-            from kas.jobs import import_r75
-            function = import_r75
-        elif self.kwargs['job_type'] == 'DispatchTaxYear':
-            from kas.jobs import dispatch_tax_year
-            function = dispatch_tax_year
+
+        # Todo: Raise a validation error if something goes wrong here?
+        function_string = self.job_data().get('function', None)
+        if function_string:
+            module_string, function_name = function_string.rsplit('.', 1)
+            module = importlib.import_module(module_string)
+            function = getattr(module, function_name)
+
         if function:
             Job.schedule_job(function=function,
                              job_type=self.kwargs['job_type'],

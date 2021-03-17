@@ -26,6 +26,11 @@
         <td>{{ policy.year_adjusted_amount }}</td>
     </tr>
     <tr>
+        <td>{% trans 'Skattegrundlag før eventuelt negativt afkast.' %}</td>
+        <td></td>
+        <td>{{ policy.year_adjusted_amount|max:0 }}</td>
+    </tr>
+    <tr>
         <td>{% trans 'Sum ikke anvendt negativt afkast' %}</td>
         <td></td>
         <td>{{ policy.available_deduction_from_previous_years }}</td>

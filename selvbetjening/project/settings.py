@@ -27,6 +27,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django_cookies_samesite.middleware.CookiesSameSite',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -119,11 +120,12 @@ LOGGING = {
 
 LOGOUT_REDIRECT = 'sullissivik:openid:login'  # url reverse name to redirect to when logged out
 LOGIN_UNAUTH_REDIRECT = 'sullissivik:openid:login'  # url reverse name to redirect to when not logged in
-LOGIN_DEFAULT_REDIRECT = 'selvbetjening:policyview'  # url reverse name to redirect to when logged in (unless another is explicitly specified in params)
+LOGIN_DEFAULT_REDIRECT = 'selvbetjening:policy-edit'  # url reverse name to redirect to when logged in (unless another is explicitly specified in params)
 LOGIN_REQUIREMENT_WHITELIST = ['/favicon.ico']
 
-REST_HOST = 'http://kas:8000'
+REST_HOST = os.environ['REST_HOST']
 REST_TOKEN = os.environ['REST_TOKEN']
+# REST_CA_CERT = os.environ['REST_CA_CERT']
 
 DEFAULT_CPR = os.environ.get('DEFAULT_CPR', None)
 

@@ -1,0 +1,20 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+
+{% block content %}
+  <h1>List over personer i år {{view.year}}</h1>
+  {% if personstaxyears %}
+  <ul>
+    {% for personstaxyear in personstaxyears %}
+      <li>
+        <a href="{% url 'kas:person_in_year' view.year personstaxyear.person.pk %}">{{ personstaxyear.person.name }} - {{ personstaxyear.policytaxyear_set.count }} police(r)</a>
+      </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+    <p>Ingen personer fundet for år {{view.year}}</p>
+  {% endif %}
+
+{% include 'includes/pager.html' %}
+
+{% endblock %}

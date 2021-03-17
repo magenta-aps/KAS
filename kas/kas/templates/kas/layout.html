@@ -1,4 +1,5 @@
 {% load static %}
+{% load i18n %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -17,7 +18,14 @@
     <title>KAS</title>
 </head>
 <body>
+    <nav class="nav d-flex p-2">
+        <a class="p-2 text-muted" href="{% url 'kas:frontpage' %}">{% trans 'Forside' %}</a>
+        <a class="p-2 text-muted" href="{% url 'worker:job_list' %}">{% trans 'Jobadministration' %}</a>
+    </nav>
+    <hr class="p-0 m-0">
+    <div class="p-4">
 {% block content %}
 {% endblock %}
+    </div>
 </body>
 </html>

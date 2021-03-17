@@ -66,6 +66,14 @@ services:
     environment:
       - ESKAT_USER=username
       - ESKAT_PASSWORD=password
+      - ESKAT_PORT=16524
+      - ESKAT_DB=DBSERVICE_AKA_KAS_GPS
+  worker:
+    environment:
+      - ESKAT_USER=username
+      - ESKAT_PASSWORD=password
+      - ESKAT_PORT=16524
+      - ESKAT_DB=DBSERVICE_AKA_KAS_GPS
 ```
 
 The username and password to use can be found in BitWarden under the key `KAS login til eSkat database (10.240.79.23)`.

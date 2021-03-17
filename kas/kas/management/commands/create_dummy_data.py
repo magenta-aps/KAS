@@ -34,11 +34,12 @@ class Command(BaseCommand):
         for person_tax_year in person_tax_years:
             for pension_company in pension_companies:
                 p += 1
+                policy_number = f"{person_tax_year.person.cpr}-{person_tax_year.tax_year.year}-{p}"
                 policy_tax_year, c = PolicyTaxYear.objects.get_or_create(
                     person_tax_year=person_tax_year,
                     pension_company=pension_company,
+                    policy_number=policy_number,
                     defaults={
-                        'policy_number': f"{person_tax_year.person.cpr}-{person_tax_year.tax_year.year}-{p}",
                         'prefilled_amount': randint(0, 50000)
                     }
                 )

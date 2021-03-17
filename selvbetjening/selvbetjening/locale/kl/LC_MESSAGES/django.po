@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-09 16:19+0000\n"
+"POT-Creation-Date: 2021-03-16 15:52+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -13,38 +13,67 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: templates/base.html:65
-#, python-format
-msgid "Logget ind som %(cpr)s"
+#: strings.py:6
+msgid "This field is required."
 msgstr ""
 
-#: templates/base.html:68
-msgid "Log ud"
+#: strings.py:7
+msgid "Enter a whole number."
+msgstr ""
+
+#: strings.py:8
+msgid "No file was submitted. Check the encoding type on the form."
+msgstr ""
+
+#: strings.py:9
+msgid "No file was submitted."
+msgstr ""
+
+#: strings.py:10
+msgid "The submitted file is empty."
+msgstr ""
+
+#: strings.py:12
+#, python-format
+msgid "Ensure this filename has at most %(max)d character (it has %(length)d)."
+msgid_plural ""
+"Ensure this filename has at most %(max)d characters (it has %(length)d)."
+msgstr[0] ""
+msgstr[1] ""
+
+#: strings.py:16
+msgid "Please either submit a file or check the clear checkbox, not both."
+msgstr ""
+
+#: strings.py:17
+#, python-format
+msgid "Select a valid choice. %(value)s is not one of the available choices."
+msgstr ""
+
+#: templates/base.html:65
+#, python-format
+msgid "Logget ind som %(name)s"
 msgstr ""
 
 #: templates/calculation.html:3
 msgid "Beregning"
 msgstr ""
 
-#: templates/calculation.html:7 templates/form.html:33 templates/view.html:47
-#: templates/view.html:113
+#: templates/calculation.html:7 templates/form.html:52 templates/view.html:47
+#: templates/view.html:114
 msgid "Feltnavn"
 msgstr "Feltnavn [kl]"
 
-#: templates/calculation.html:8 templates/form.html:34
+#: templates/calculation.html:8 templates/form.html:53
 msgid "Beskrivelse"
 msgstr ""
 
-#: templates/calculation.html:9 templates/view.html:48 templates/view.html:114
+#: templates/calculation.html:9 templates/view.html:48 templates/view.html:115
 msgid "Værdi"
 msgstr "VÆRDI"
 
 #: templates/calculation.html:14
 msgid "Antal skattepligtige dage i skatteår"
-msgstr ""
-
-#: templates/calculation.html:15
-msgid "Antal dage i året (skudår har en ekstra dag)"
 msgstr ""
 
 #: templates/calculation.html:19
@@ -56,99 +85,114 @@ msgid "Beløb justeret for skatteår"
 msgstr ""
 
 #: templates/calculation.html:29
-msgid "Skattegrundlag før eventuelt negativt afkast"
+msgid "Skattegrundlag før eventuelt negativt afkast."
 msgstr ""
 
 #: templates/calculation.html:34
-msgid "Anvendt negativt afkast"
+msgid "Sum ikke anvendt negativt afkast"
 msgstr ""
 
 #: templates/calculation.html:39
+msgid "Anvendt negativt afkast"
+msgstr ""
+
+#: templates/calculation.html:44
 msgid "Skattepligtigt beløb / skattegrundlag"
 msgstr ""
 
-#: templates/form.html:35
+#: templates/form.html:13
+msgid "Vejledning"
+msgstr ""
+
+#: templates/form.html:41
+msgid "Angiv ny police"
+msgstr ""
+
+#: templates/form.html:43
+#, python-format
+msgid "%(company)s, Police nr %(policy)s"
+msgstr ""
+
+#: templates/form.html:54
 msgid "Felt"
 msgstr ""
 
-#: templates/form.html:36 templates/view.html:49 templates/view.html:115
+#: templates/form.html:55 templates/view.html:49 templates/view.html:116
 msgid "Felt nr."
 msgstr ""
 
-#: templates/form.html:41 templates/view.html:54 templates/view.html:120
+#: templates/form.html:61
+msgid "Pensionsselskab"
+msgstr ""
+
+#: templates/form.html:70
+msgid "Policenummer"
+msgstr ""
+
+#: templates/form.html:80 templates/view.html:54 templates/view.html:121
 msgid "Kapitalafkast PBL (DK) § 53 A"
 msgstr ""
 
-#: templates/form.html:42
+#: templates/form.html:83
 #, python-format
 msgid "Vores beregning: %(value)s"
 msgstr "Vores beregning: %(value)s [kl]"
 
-#: templates/form.html:43
+#: templates/form.html:87
+msgid "Beløb:"
+msgstr ""
+
+#: templates/form.html:87
 msgid "Deres rettelse:"
 msgstr ""
 
-#: templates/form.html:49
+#: templates/form.html:95
 msgid "Forudbetalt kapitalafkast"
 msgstr ""
 
-#: templates/form.html:50
+#: templates/form.html:96
 msgid ""
 "Har De allerede betalt foreløbig kapitalafkastskat angives beløbet her. Husk "
 "at vedlægge dokumentation."
 msgstr ""
 
-#: templates/form.html:51 templates/form.html:69 templates/form.html:75
-msgid "Beløb:"
-msgstr ""
-
-#: templates/form.html:57 templates/view.html:64
+#: templates/form.html:103 templates/view.html:64
 msgid "Hævet på pensionsordning"
 msgstr ""
 
-#: templates/form.html:58
+#: templates/form.html:104
 msgid "Er kapitalafkastskatten hævet fra pensionsordning?"
 msgstr ""
 
-#: templates/form.html:67 templates/view.html:71 templates/view.html:130
+#: templates/form.html:113 templates/view.html:71 templates/view.html:131
 msgid "Betalt kapitalafkastskat i udlandet"
 msgstr ""
 
-#: templates/form.html:68
+#: templates/form.html:114
 msgid ""
 "Anmoder De om nedslag for betalt kapitalafkastskat i udlandet angives den "
 "betalte skat og dokumentation vedlægges selvangivelsen"
 msgstr ""
 
-#: templates/form.html:73 templates/view.html:76
-msgid "Negativt kapitalafkast fra tidligere år"
-msgstr ""
-
-#: templates/form.html:74
-msgid ""
-"Negative kapitalafkast (tab) fra tidligere år kan fratrækkes det beskattede "
-"beløb for i år"
-msgstr ""
-
-#: templates/form.html:79
+#: templates/form.html:121
 msgid "Dokumentation for betalt kapitalafkastskat"
 msgstr ""
 
-#: templates/form.html:82
+#: templates/form.html:124
 msgid "Vedhæft dokumentation for allerede betalt kapitalafkastskat i udlandet."
 msgstr ""
 
-#: templates/form.html:84
+#: templates/form.html:126
 msgid ""
 "Vedhæft dokumentation for allerede betalt kapitalafkastskat. Dokumentation "
 "for betaling både i Grønland og i udlandet kan vedhæftes her."
 msgstr ""
 
-#: templates/form.html:106
+#: templates/form.html:148
 msgid "Fjern"
 msgstr ""
 
-#: templates/form.html:132
+#: templates/form.html:174
 msgid "Indsend"
 msgstr ""
 
@@ -166,21 +210,37 @@ msgstr ""
 msgid "Ret KAS-opgørelse fra %(year)s"
 msgstr ""
 
+#: templates/submitted.html:9
+msgid "Selvangivelse opdateret. Tryk på knappen for at åbne formularen igen"
+msgstr ""
+
+#: templates/submitted.html:12
+msgid "Åbn selvangivelse"
+msgstr ""
+
 #: templates/view.html:13
 #, python-format
 msgid "Udtræk for %(year)s"
 msgstr "UDTRÆK FOR %(year)s"
 
-#: templates/view.html:59 templates/view.html:125
+#: templates/view.html:59 templates/view.html:126
 msgid "Forudbetalt kapitalafkastskat"
+msgstr ""
+
+#: templates/view.html:76
+msgid "Negativt kapitalafkast fra tidligere år"
 msgstr ""
 
 #: templates/view.html:83 templates/view.html:89
 msgid "Dokumentation"
 msgstr ""
 
-#: templates/view.html:105
+#: templates/view.html:106
 msgid "Opsummering"
+msgstr ""
+
+#: views.py:110
+msgid "--- angiv navn ---"
 msgstr ""
 
 #~ msgid "common.logout"

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from kas.models import PensionCompany, TaxYear, Person, PersonTaxYear, PolicyTaxYear, PolicyDocument
+from kas.models import PensionCompany, TaxYear, Person, PersonTaxYear, PolicyTaxYear, PolicyDocument, TaxSlipGenerated
 
 
 class PensionCompanyAdmin(admin.ModelAdmin):
@@ -43,3 +43,14 @@ class PolicyDocumentAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PolicyDocument, PolicyDocumentAdmin)
+
+
+class TaxSlipGeneratedAdmin(admin.ModelAdmin):
+    list_display = ('persontaxyear', 'status', 'delivery_method')
+    list_filter = ('persontaxyear__tax_year', )
+
+    def delivery_method(self, obj):
+        return obj.delivery_method
+
+
+admin.site.register(TaxSlipGenerated, TaxSlipGeneratedAdmin)

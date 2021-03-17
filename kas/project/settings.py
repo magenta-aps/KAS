@@ -88,6 +88,10 @@ DATABASES = {
     },
 }
 
+# Make a copy of the default database handle that can be used for
+# avoiding transaction issues during imports
+DATABASES['second_default'] = DATABASES['default'].copy()
+
 DATABASE_ROUTERS = ['eskat.database_routers.ESkatRouter']
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -116,7 +120,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 UPLOAD_PATH = '/uploads'
-MEDIA_ROOT = "/srv/media"
+MEDIA_ROOT = "/srv/media/"
 MEDIA_URL = "/media/"
 
 LOGGING = {

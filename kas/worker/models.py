@@ -24,6 +24,7 @@ status_choices = (
 
 class Job(models.Model):
     uuid = models.UUIDField(default=uuid4, blank=True, primary_key=True)
+    pretty_title = models.CharField(max_length=255, blank=True, null=True)
     arguments = JSONField(default=dict)
     created_by = models.ForeignKey(get_user_model(), on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
@@ -74,6 +75,10 @@ class Job(models.Model):
         return self.job_type_dict['label']
 
     @property
+    def pretty_job_title(self):
+        return self.pretty_title or self.pretty_job_type
+
+    @property
     def duration(self):
         if self.started_at is not None:
             if self.end_at is not None:
@@ -95,12 +100,12 @@ class Job(models.Model):
     def pretty_progress(self):
         return '{}%'.format(max(self.progress, 0))
 
-    def set_progress(self, count, total):
-        self.set_progress_pct((count / total) * 100)
+    def set_progress(self, count, total, **kwargs):
+        self.set_progress_pct((count / total) * 100, **kwargs)
 
-    def set_progress_pct(self, progress):
+    def set_progress_pct(self, progress, **kwargs):
         self.progress = progress
-        self.save(update_fields=['progress'])
+        self.save(update_fields=['progress'], **kwargs)
 
     @classmethod
     def schedule_job(cls, function, job_type, created_by, job_kwargs=None, queue='default', parent=None, depends_on=None):
@@ -122,7 +127,7 @@ class Job(models.Model):
                                  parent=parent, arguments=job_kwargs, queue=queue)
         if depends_on:
             depends_on = depends_on.get_rq_job()
-        rq_job = queue.enqueue(function, result_ttl=0, depends_on=depends_on, meta={'job_uuid': job.uuid})
+        rq_job = queue.enqueue(function, result_ttl=0, depends_on=depends_on, meta={'job_uuid': job.uuid}, job_timeout=3600)
 
         job.rq_job_id = rq_job.get_id()
         job.statue = rq_job.get_status()

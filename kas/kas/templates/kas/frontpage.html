@@ -1,0 +1,97 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+
+{% block content %}
+<h2>{% trans 'Personer og policer' %}</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th></th>
+            {% for year in years%}
+            <th><a href="{% url 'kas:persons_in_year' year %}">{{ year }}</a></th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th>{% trans 'Personer' %}</th>
+            {% for count in persons %}
+            <td>{{ count }}</td>
+            {% endfor %}
+        </tr>
+        <tr>
+            <th>{% trans 'Policer' %}</th>
+            {% for count in policies %}
+            <td>{{ count }}</td>
+            {% endfor %}
+        </tr>
+    </tbody>
+</table>
+
+<h2>{% trans 'Kildedata' %}</h2>
+
+<p>{% trans 'Data kopieret fra kildesystemer, der er klar til at blive konverteret til arbejdsdata' %}</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th></th>
+            {% for year in years%}
+            <th>{{ year }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th>{% trans 'Mandtal' %}</th>
+            {% for count in imported_mandtal %}
+            <td>{{ count }}</td>
+            {% endfor %}
+        </tr>
+        <tr>
+            <th>{% trans 'R75' %}</th>
+            {% for count in imported_r75 %}
+            <td>{{ count }}</td>
+            {% endfor %}
+        </tr>
+    </tbody>
+</table>
+
+{% if show_mockup %}
+
+<h2>{% trans 'Mockup data' %}</h2>
+
+<p>{% trans 'Mockup data der er klar til at blive importeret' %}</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th></th>
+            {% for year in years%}
+            <th>{{ year }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th>{% trans 'Mandtal' %}</th>
+            {% for count in mockup_mandtal %}
+            <td>{{ count }}</td>
+            {% endfor %}
+        </tr>
+        <tr>
+            <th>{% trans 'R75' %}</th>
+            {% for count in mockup_r75 %}
+            <td>{{ count }}</td>
+            {% endfor %}
+        </tr>
+    </tbody>
+</table>
+
+
+
+{% endif %}
+
+
+
+{% endblock %}

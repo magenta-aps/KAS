@@ -1,0 +1,175 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+
+{% block content %}
+  <h1>Police {{ policy.policy_number }} ved {{ policy.pension_company.name }} for '{{ policy.person.name }}' år {{ policy.year}}</h1>
+  <div class="p-4">
+    <table class="table table-bordered table-hover table-striped" style="width: auto;">
+        <thead>
+            <tr class="table-info">
+                <th>{% trans 'Beskrivelse' %}</th>
+                <th>{% trans 'Værdi / beløb' %}</th>
+                <th>{% trans 'Enhed' %}</th>
+                <th>{% trans 'Forklaring' %}</th>
+
+            </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>{{ pension_company_amount_label }}</th>
+            <td class="text-right">{{ policy.prefilled_amount }}</td>
+            <td>kr</td>
+            <td>Udfyldes fra R75</td>
+          </tr>
+          <tr>
+            <th>{{ estimated_amount_label }}</th>
+            <td class="text-right">{% if policy.estimated_amount %}{{ policy.estimated_amount }}{% endif %}</td>
+            <td>kr</td>
+            <td>Udfyldes eventuelt under sagsbehandling</td>
+          </tr>
+          <tr>
+            <th>{{ self_reported_amount_label }}</th>
+            <td class="text-right">{% if policy.self_reported_amount %}{{ policy.self_reported_amount }}{% endif %}</td>
+            <td>kr</td>
+            <td>Selvangivet beløb fra borgeren</td>
+          </tr>
+          <tr class="table-info">
+            <td colspan="4" class="text-center">Beløb brugt til beregning: {{ policy.get_active_amount_display }}</td>
+          </tr>
+          <tr>
+            <th>Startbeløb</th>
+            <td class="text-right">{{ calculation.initial_amount }}</td>
+            <td>kr</td>
+            <td>Beløb for hele året ({{ policy.get_active_amount_display }})</td>
+          </tr>
+          <tr>
+            <th>Antal dage i {{ policy.year }}</th>
+            <td class="text-right">{{ calculation.days_in_year }}</td>
+            <td>dage</td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>Borgerens skattepligtige dage i {{ policy.year }}</th>
+            <td class="text-right">{{  calculation.taxable_days_in_year }}</td>
+            <td>dage</td>
+            <td></td>
+          </tr>
+          <tr>
+            <th>Justeringsfaktor for antal skattepligtige dage</th>
+            <td class="text-right">{{ calculation.tax_days_adjust_factor }}</td>
+            <td></td>
+            <td>Skattepligtige dage ({{ calculation.taxable_days_in_year }}) / Dage i {{ policy.year }} ({{ calculation.days_in_year }})</td>
+          </tr>
+          <tr>
+            <th>Beløb justeret for år</th>
+            <td class="text-right">{{ calculation.year_adjusted_amount }}</td>
+            <td>kr</td>
+            <td>Beløb for hele året ({{ calculation.initial_amount }}) &times; Justeringsfaktor for antal dage ({{ calculation.tax_days_adjust_factor }})</td>
+          </tr>
+          <tr>
+            <th>Tilgængeligt negativt afkast</th>
+            <td class="text-right">{{ calculation.available_negative_return }}</td>
+            <td>kr</td>
+            <td>Se tabel nedenfor</td>
+          </tr>
+          <tr>
+            <th>Anvendt negativt afkast</th>
+            <td class="text-right">{{ calculation.used_negative_return }}</td>
+            <td>kr</td>
+            <td>Maksimalt det fulde skattepligtige beløb</td>
+          </tr>
+          <tr>
+            <th>Skattegrundlag efter justering for negativt afkast</th>
+            <td class="text-right">{{ calculation.taxable_amount }}</td>
+            <td>kr</td>
+            <td>Beløb justeret for dage ({{ calculation.year_adjusted_amount }}) - anvendt negativt afkast ({{ calculation.used_negative_return }})</td>
+          </tr>
+          <tr>
+            <th>Skat før fraregning af skat betalt i udlandet</th>
+            <td class="text-right">{{ calculation.full_tax }}</td>
+            <td>kr</td>
+            <td>15,3% af skattegrundlag efter justering for negativt afkast ({{ calculation.taxable_amount }})</td>
+          </tr>
+          <tr>
+            <th>Skat betalt i udlandet</th>
+            <td class="text-right">{{ calculation.foreign_paid_amount }}</td>
+            <td>kr</td>
+            <td>Selvangivet beløb</td>
+          </tr>
+          <tr>
+            <th>Skat fratrukket betaling i udland</th>
+            <td class="text-right">{{ calculation.tax_with_deductions }}</td>
+            <td>kr</td>
+            <td>Skat før fraregning af skat betalt i udlandet ({{ calculation.full_tax }}) - Skat betalt i udlandet ({{ calculation.foreign_paid_amount }})</td>
+          </tr>
+        </tbody>
+    </table>
+  </div>
+  <p><strong>I alt til betaling: {{ calculation.tax_with_deductions }} kr</strong></p>
+
+<h2>Anvendt negativt afkast</h2>
+
+{% with marked_year=policy.year %}
+<div class="p-4">
+  <table class="table table-bordered table-hover table-sm" style="width: auto;">
+    <thead>
+      <tr class="table-info">
+        <th colspan="2"></th>
+        <th colspan="{{ used_negativ_table|length|add:-1 }}" class="text-center">Anvendt i år</th>
+        <th></th>
+      </tr>
+      <tr>
+        <th class="table-info">År</th>
+        <th class="table-info">Negativt afkast</th>
+        {% for year in used_negativ_table.keys %}
+        {% if not forloop.first %}
+        <th class="table-{% if marked_year == year %}primary{% else %}info{% endif %}">{{ year }}</th>
+        {% endif %}
+        {% endfor %}
+        <th class="table-info">Resterende</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for year, data in used_negativ_table.items %}
+      {% if not forloop.last %}
+      <tr>
+        <th>{{ year }}</th>
+        <td class="text-right">{{ data.available }}</td>
+        {% for year2, value in data.used_by_year.items %}
+        {% if not forloop.first %}
+        {% if value == "-" %}
+        <td class="table-secondary"></td>
+        {% else %}
+        <td class="text-right{% if marked_year == year2 %} table-success{% endif %}">{{ value }}</td>
+        {% endif %}
+        {% endif %}
+        {% endfor%}
+        <td class="text-right">{{ data.remaining }}</td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+      <tr>
+        <th colspan="2">Totalt anvendt</th>
+        {% for year, data in used_negativ_table.items %}
+        {% if not forloop.first %}
+        <td class="text-right{% if marked_year == year %} table-success{% endif %}">{{ data.used_total }}</td>
+        {% endif %}
+        {% endfor %}
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endwith %}
+
+<h2>Andre år</h2>
+
+<p>Samme police i andre år:</p>
+<ul>
+{% for x in policy.same_policy_qs.all %}
+  <li><a href="{% url 'kas:policy_detail' x.pk %}">{{x.year}}</a></li>
+{% endfor %}
+</ul>
+
+{% endblock %}
+
