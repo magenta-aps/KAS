@@ -117,7 +117,6 @@ class PolicyTaxYearDetailView(LoginRequiredMixin, DetailView):
         result['calculation'] = policy.get_calculation()
 
         amount_choices_by_value = {x[0]: x[1] for x in PolicyTaxYear.active_amount_options}
-        print(amount_choices_by_value)
 
         result['pension_company_amount_label'] = amount_choices_by_value[PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED]
         result['estimated_amount_label'] = amount_choices_by_value[PolicyTaxYear.ACTIVE_AMOUNT_ESTIMATED]
