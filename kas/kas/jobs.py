@@ -5,7 +5,8 @@ from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension
 from eskat.models import MockModels, EskatModels
 from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.management.commands.create_initial_years import Command as CreateInitialYears
-from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated
+from kas.management.commands.import_default_pension_companies import Command as CreateInitialPensionComanies
+from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated, PreviousYearNegativePayout
 from requests.exceptions import HTTPError, ConnectionError
 from rq import get_current_job
 from time import sleep
@@ -50,6 +51,7 @@ def import_mandtal(job):
 
             person_data = {
                 'cpr': item.cpr,
+                'name': item.navn,
                 'municipality_name': item.kommune,
                 'municipality_code': item.kommune_no,
                 'address_line_1': item.adresselinje1,
@@ -349,14 +351,17 @@ def clear_test_data(job):
         ImportedR75PrivatePension,
         MockModels.MockKasMandtal,
         MockModels.MockR75PrivatePension,
+        PreviousYearNegativePayout,
         PolicyTaxYear,
         PersonTaxYear,
         Person,
-        TaxYear
+        TaxYear,
+        PensionCompany,
     ):
         model.objects.all().delete()
 
     CreateInitialYears().handle()
+    CreateInitialPensionComanies().handle()
 
     return {
         'status': 'OK',
