@@ -174,14 +174,17 @@ class DeductionTest(TestCase):
             preliminary_paid_amount=9,
         )
 
+        self.test_dir = tempfile.mkdtemp()+'/'
+
         pdf_documen = TaxSlipHandling()
         pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2020)
 
         filelist1 = os.listdir(self.test_dir)
 
-        self.assertEqual(2, len(filelist1))
+        self.assertEqual(3, len(filelist1))
         self.assertEqual(True, 'Y_2020_1234567890.pdf' in filelist1)
         self.assertEqual(True, 'Y_2020_1234567891.pdf' in filelist1)
+        self.assertEqual(True, 'Y_2020_1234567897.pdf' in filelist1)
 
         self.test_dir = tempfile.mkdtemp()+'/'
         pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2019)

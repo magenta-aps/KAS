@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from builtins import str
+import math
+from builtins import str, float
 
 from fpdf import FPDF
 
@@ -345,8 +346,9 @@ class TaxPDF(FPDF):
             self.multi_cell(h=rowheight, align='L', w=c1w, txt=self.text15[language], border=1)
             self.set_xy(self.left_margin+c1w, self.yposition)
             actual_amount = str(policy.get('prefilled_amount'))
+            self.tax_days_adjust_factor = 0.8
             if not self.fully_tax_liable:
-                actual_amount = actual_amount * self.tax_days_adjust_factor
+                actual_amount = math.floor(float(actual_amount) * self.tax_days_adjust_factor)
             self.multi_cell(h=rowheight, align='C', w=c2w, txt=str(actual_amount), border=1)
             self.set_xy(self.left_margin+c1w+c2w, self.yposition)
             self.multi_cell(h=rowheight, align='L', w=c3w, txt='', border=1)
