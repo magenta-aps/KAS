@@ -18,7 +18,7 @@ class TaxYearViewSet(viewsets.ModelViewSet):
 
 
 class PersonFilter(filters.FilterSet):
-    cpr = filters.NumberFilter(field_name="cpr")
+    cpr = filters.CharFilter(field_name="cpr")
 
 
 class PersonViewSet(viewsets.ModelViewSet):

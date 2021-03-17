@@ -139,7 +139,7 @@ class PolicyFormView(HasUserMixin, FormView):
             )
             policy_tax_years.sort(key=lambda k: str(k['pension_company']['res']))
         else:
-            policy_tax_years = []
+            return redirect(reverse('selvbetjening:policy-not-found'))
         self.request.session['policy_tax_years'] = policy_tax_years
         pension_companies = client.get_pension_companies()
         self.request.session['pension_companies'] = pension_companies
@@ -163,7 +163,11 @@ class PolicyFormView(HasUserMixin, FormView):
                     policyform_data['policy_number'] = policyform_data['policy_number_new']
                     person_tax_year = self.request.session.get('person_tax_year')
                     if person_tax_year is None:
-                        person_tax_year = client.create_person_tax_year(self.cpr, self.year)
+                        person_tax_year = client.get_person_tax_year(self.cpr, self.year)
+                        if person_tax_year is not None:
+                            self.request.session['person_tax_year'] = person_tax_year
+                        else:
+                            return redirect(reverse('selvbetjening:policy-not-found'))
                     policyform_data['person_tax_year'] = person_tax_year['id']
                     client.create_policy({
                         **policyform_data,
@@ -222,7 +226,3 @@ class PolicyDetailView(HasUserMixin, TemplateView):
             context['years'] = years
 
         return context
-
-
-class PolicySubmittedView(TemplateView):
-    template_name = 'submitted.html'
