@@ -38,7 +38,6 @@ class PolicyForm(forms.Form):
     )
 
     prefilled_amount = fields.IntegerField(
-        min_value=0,
         required=False,
         disabled=True,
         widget=widgets.NumberInput(
@@ -47,7 +46,6 @@ class PolicyForm(forms.Form):
     )
 
     self_reported_amount = fields.IntegerField(
-        min_value=0,
         required=False,
         widget=widgets.NumberInput(
             attrs={'autocomplete': 'off', 'class': 'form-control'}
