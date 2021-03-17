@@ -160,4 +160,15 @@
   </table>
 </div>
 {% endwith %}
+
+<h2>Andre år</h2>
+
+<p>Samme police i andre år:</p>
+<ul>
+{% for x in policy.same_policy_qs.all %}
+  <li><a href="{% url 'kas:policy_detail' x.pk %}">{{x.year}}</a></li>
+{% endfor %}
+</ul>
+
 {% endblock %}
+

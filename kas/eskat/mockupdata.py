@@ -298,3 +298,14 @@ def import_default_mockup_data():
             }},
         ]
     )
+
+    create_person(
+        "Borger med negativt afkast fordelt over flere år",
+        policies=[
+            {"res": 6471, "years": {
+                2018: -600,
+                2019: -1000,
+                2020: 3000,
+            }},
+        ]
+    )
