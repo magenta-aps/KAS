@@ -35,13 +35,15 @@ class DeductionTest(TestCase):
         person_tax_year_p1_2019 = PersonTaxYear.objects.create(
             person=person1,
             tax_year=tax_year_2019,
-            fully_tax_liable=True
+            fully_tax_liable=True,
+            number_of_days=365
         )
 
         person_tax_year_p1_2020 = PersonTaxYear.objects.create(
             person=person1,
             tax_year=tax_year_2020,
-            fully_tax_liable=True
+            fully_tax_liable=True,
+            number_of_days=365
         )
 
         PolicyTaxYear.objects.create(
@@ -82,7 +84,7 @@ class DeductionTest(TestCase):
             policy_number='1234',
             person_tax_year=person_tax_year_p2_2020,
             pension_company=pension_company1,
-            prefilled_amount=402.46,
+            prefilled_amount=402,
             self_reported_amount=142,
             preliminary_paid_amount=9,
         )
@@ -90,7 +92,8 @@ class DeductionTest(TestCase):
         person_tax_year_p3_2020 = PersonTaxYear.objects.create(
             person=person3,
             tax_year=tax_year_2020,
-            fully_tax_liable=True
+            fully_tax_liable=True,
+            number_of_days=365
         )
 
         PolicyTaxYear.objects.create(

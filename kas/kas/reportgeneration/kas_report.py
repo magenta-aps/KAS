@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import math
-from builtins import str, float
 
 from fpdf import FPDF
 
@@ -345,7 +344,7 @@ class TaxPDF(FPDF):
             self.set_xy(self.left_margin, self.yposition)
             self.multi_cell(h=rowheight, align='L', w=c1w, txt=self.text15[language], border=1)
             self.set_xy(self.left_margin+c1w, self.yposition)
-            actual_amount = str(policy.get('prefilled_amount'))
+            actual_amount = policy.get('prefilled_amount')
             self.tax_days_adjust_factor = 0.8
             if not self.fully_tax_liable:
                 actual_amount = math.floor(float(actual_amount) * self.tax_days_adjust_factor)
@@ -456,13 +455,15 @@ class TaxPDF(FPDF):
                     .get('tax_days_adjust_factor')
                 firstPolicy = True
 
-            single_policy = {}
-            single_policy['policy'] = (policy.pension_company.name+'-'+policy.policy_number)
-            single_policy['preliminary_paid_amount'] = policy.preliminary_paid_amount
-            single_policy['prefilled_amount'] = policy.prefilled_amount
-            single_policy['agreement_present'] = policy.pension_company.agreement_present
-            single_policy['year_adjusted_amount'] = policy.year_adjusted_amount
-            single_policy['available_negative_return'] = policy.available_negative_return
+            single_policy = {
+                'policy': (policy.pension_company.name+' - '+policy.policy_number),
+                'preliminary_paid_amount': policy.preliminary_paid_amount,
+                'prefilled_amount': policy.prefilled_amount,
+                'agreement_present': policy.pension_company.agreement_present,
+                'year_adjusted_amount': policy.year_adjusted_amount,
+                'available_negative_return': policy.available_negative_return
+            }
+
             policies.append(single_policy)
 
         self.set_parameters(tax_year, tax_return_date_limit, request_pay, pay_date, person_number,
