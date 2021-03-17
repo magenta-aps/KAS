@@ -1,14 +1,14 @@
 {% extends 'kas/layout.html' %}
 {% load i18n %}
-{% block content %}
 
+{% block content %}
 <h2>{% trans 'Personer og policer' %}</h2>
 <table class="table">
     <thead>
         <tr>
             <th></th>
             {% for year in years%}
-            <th>{{ year }}</th>
+            <th><a href="{% url 'kas:persons_in_year' year %}">{{ year }}</a></th>
             {% endfor %}
         </tr>
     </thead>

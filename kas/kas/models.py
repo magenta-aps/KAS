@@ -632,7 +632,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         for x in self.same_policy_qs.order_by('person_tax_year__tax_year__year'):
             years.append(x.year)
             policy_pks.append(x.pk)
-            available_by_year[x.year]=min(x.year_adjusted_amount, 0) * -1
+            available_by_year[x.year] = min(x.year_adjusted_amount, 0) * -1
             used_by_year[x.year] = 0
             for_year_total[x.year] = 0
 
@@ -669,7 +669,6 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             }
 
         return result
-
 
     @property
     def sum_of_deducted_amount(self):

@@ -1,0 +1,17 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+
+{% block content %}
+  <h1>{{ person_tax_year.person.name }} i år {{view.year}}</h1>
+
+  <h2>Policer</h2>
+  {% if person_tax_year.policytaxyear_set.count %}
+  <ul>
+  {% for policy in person_tax_year.policytaxyear_set.all %}
+    <li><a href="{% url 'kas:policy_detail' policy.pk %}">{{ policy.pension_company.name }} - {{ policy.policy_number }} - Før beregning: {{ policy.initial_amount }}, anvendt negativt: {{ policy.applied_deduction_from_previous_years }}, beregnet skat: {{ policy.calculated_result }}</a></li>
+  {% endfor %}
+  </ul>
+  {% else %}
+  <p>Ingen policer fundet</p>
+  {% endif %}
+{% endblock %}
