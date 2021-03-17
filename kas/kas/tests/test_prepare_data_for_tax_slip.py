@@ -6,17 +6,19 @@ from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTax
 from kas.reportgeneration.kas_report import TaxSlipHandling
 import tempfile
 
-from kas.kas.reportgeneration.kas_report import TaxPDF
-
 
 class DeductionTest(TestCase):
 
     # Validate that losses can be used as deductions in future years, until all is used.
     # Validate than when all losses us used, other years can be used as basis for the deduction
     def test_Using_up_loss_from_2019(self):
-        person1 = Person.objects.create(cpr='1234567890', municipality_code=956, municipality_name='Sermersooq', address_line_2='Mut aqqut 13', address_line_4='3900 Nuuk', name='Andersine And')
-        person2 = Person.objects.create(cpr='1234567891', municipality_code=956, municipality_name='Sermersooq', address_line_2='Mut aqqut 15', address_line_4='3900 Nuuk', name='Anders And')
-        person3 = Person.objects.create(cpr='1234567897', municipality_code=956, municipality_name='Sermersooq', address_line_2='Mut aqqut 17', address_line_4='3900 Nuuk', name='Joakim Von And')
+        person1 = Person.objects.create(cpr='1234567890', municipality_code=956, municipality_name='Sermersooq',
+                                        address_line_2='Mut aqqut 13', address_line_4='3900 Nuuk', name='Andersine And')
+        person2 = Person.objects.create(cpr='1234567891', municipality_code=956, municipality_name='Sermersooq',
+                                        address_line_2='Mut aqqut 15', address_line_4='3900 Nuuk', name='Anders And')
+        person3 = Person.objects.create(cpr='1234567897', municipality_code=956, municipality_name='Sermersooq',
+                                        address_line_2='Mut aqqut 17', address_line_4='3900 Nuuk',
+                                        name='Joakim Von And')
         pension_company1 = PensionCompany.objects.create(
             name='Pensionsselskab uden aftale A/S',
             address='Foobarvej 42',
@@ -72,6 +74,7 @@ class DeductionTest(TestCase):
         person_tax_year_p2_2020 = PersonTaxYear.objects.create(
             person=person2,
             tax_year=tax_year_2020,
+            number_of_days=150,
             fully_tax_liable=False
         )
 
@@ -79,11 +82,10 @@ class DeductionTest(TestCase):
             policy_number='1234',
             person_tax_year=person_tax_year_p2_2020,
             pension_company=pension_company1,
-            prefilled_amount=400,
+            prefilled_amount=402.46,
             self_reported_amount=142,
             preliminary_paid_amount=9,
         )
-
 
         person_tax_year_p3_2020 = PersonTaxYear.objects.create(
             person=person3,
@@ -171,8 +173,6 @@ class DeductionTest(TestCase):
             self_reported_amount=142,
             preliminary_paid_amount=9,
         )
-
-
 
         pdf_documen = TaxSlipHandling()
         pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2020)
