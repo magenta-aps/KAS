@@ -8,15 +8,15 @@ from django.template import Engine, Context
 from django.urls import reverse
 from django.utils import translation
 from django.utils.datetime_safe import date
+from django.utils.translation import gettext as _
 from django.utils.translation.trans_real import DjangoTranslation
 from django.views import View
 from django.views.decorators.cache import cache_control
 from django.views.generic import FormView, TemplateView
 from django.views.i18n import JavaScriptCatalog
-
+from selvbetjening.exceptions import PersonNotFoundException
 from selvbetjening.forms import PolicyForm
 from selvbetjening.restclient import RestClient
-from django.utils.translation import gettext as _
 
 
 class CustomJavaScriptCatalog(JavaScriptCatalog):
@@ -102,7 +102,10 @@ class PolicyFormView(HasUserMixin, FormView):
     form_class = formset_factory(PolicyForm, min_num=0, extra=1)
 
     def get(self, request, *args, **kwargs):
-        self.load_initial()
+        try:
+            self.load_initial()
+        except PersonNotFoundException:
+            return redirect(reverse('selvbetjening:person-not-found'))
         return super(PolicyFormView, self).get(request, *args, **kwargs)
 
     def get_form(self, form_class=None):
@@ -139,7 +142,7 @@ class PolicyFormView(HasUserMixin, FormView):
             )
             policy_tax_years.sort(key=lambda k: str(k['pension_company']['res']))
         else:
-            return redirect(reverse('selvbetjening:policy-not-found'))
+            raise PersonNotFoundException()
         self.request.session['policy_tax_years'] = policy_tax_years
         pension_companies = client.get_pension_companies()
         self.request.session['pension_companies'] = pension_companies
@@ -167,7 +170,7 @@ class PolicyFormView(HasUserMixin, FormView):
                         if person_tax_year is not None:
                             self.request.session['person_tax_year'] = person_tax_year
                         else:
-                            return redirect(reverse('selvbetjening:policy-not-found'))
+                            return redirect(reverse('selvbetjening:person-not-found'))
                     policyform_data['person_tax_year'] = person_tax_year['id']
                     client.create_policy({
                         **policyform_data,

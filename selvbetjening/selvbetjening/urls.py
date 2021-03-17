@@ -9,7 +9,7 @@ urlpatterns = [
     url(r'^$', RedirectView.as_view(url='/policy/edit/')),
     url(r'^policy/edit/', PolicyFormView.as_view(), name='policy-edit'),
     url(r'^policy/submitted/', TemplateView.as_view(template_name='submitted.html'), name='policy-submitted'),
-    url(r'^policy/no_person_data/', TemplateView.as_view(template_name='not_found.html'), name='policy-not-found'),
+    url(r'^policy/no_person_data/', TemplateView.as_view(template_name='not_found.html'), name='person-not-found'),
     url(
         r'^language/(?P<locale>[a-z]{2})',
         CustomJavaScriptCatalog.as_view(domain='django', packages=['selvbetjening']),
