@@ -275,3 +275,24 @@ def import_default_mockup_data():
             }},
         ]
     )
+
+    # Kan logges ind på test med certifikat fra
+    # https://www.nets.eu/dk-da/kundeservice/nemid-tjenesteudbyder/Documents/TU-pakken/Tools/Testcertifikater/OCES%20II/MOCES_cpr_gyldig_2022.p12
+    # Password: Test1234
+    # Dette er ikke hemmeligt
+    create_person(
+        "Person som kan logges ind på test",
+        cpr='1802602810',
+        policies=[
+            {"pkt": 6471, "years": {
+                2018: 1000,
+                2019: 2000,
+                2020: 3000,
+            }},
+            {"pkt": 55143315, "years": {
+                2018: -1000,
+                2019: -2500,
+                2020: 3000,
+            }},
+        ]
+    )
