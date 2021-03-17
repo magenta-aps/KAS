@@ -52,4 +52,5 @@ class TaxSlipGeneratedAdmin(admin.ModelAdmin):
     def delivery_method(self, obj):
         return obj.delivery_method
 
+
 admin.site.register(TaxSlipGenerated, TaxSlipGeneratedAdmin)
