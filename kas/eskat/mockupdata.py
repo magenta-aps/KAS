@@ -81,7 +81,7 @@ def create_person(
 
         for year, beloeb in policy["years"].items():
             # Make sure we create a mandtal entry for the person for this year
-            if year not in person_years:
+            if int(year) not in person_years:
                 person_years[year] = {}
 
             policy_data = {
@@ -255,7 +255,7 @@ def import_default_mockup_data():
     create_person(
         "Borger med negativt afkast og nuværende år påvirket af antal dage",
         person_extra={"skatteomfang": "ikke fuld skattepligtig"},
-        person_years={2018: {"skattedage": 73}, 2019: {"skattedage": 146}},
+        person_years={2019: {"skattedage": 73}, 2020: {"skattedage": 146}},
         policies=[
             {"res": 6471, "years": {
                 2019: -5000,
