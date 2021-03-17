@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+from django.core.files.base import ContentFile
+
 import math
 
 from fpdf import FPDF
@@ -215,7 +218,7 @@ class TaxPDF(FPDF):
         # Adressing reciever
         self.set_xy(self.address_field.get('x'), self.address_field.get('y'))
         self.multi_cell(self.address_field.get('w'), 3, border=0,
-                        txt=self.reciever_name+"\n"+self.full_reciever_address)
+                        txt=self.reciever_name or ''+"\n"+self.full_reciever_address)
 
         # Adressing department
         self.set_xy(self.address_field.get('x'), self.address_field.get('y')+12)
