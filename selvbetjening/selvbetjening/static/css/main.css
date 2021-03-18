@@ -131,6 +131,7 @@ table {
 .row {
     position: relative;
     padding: 0.5em 0;
+    margin-left: 0 !important;
 }
 .row [class^=col] {
     float: left;

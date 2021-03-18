@@ -52,21 +52,7 @@ class PolicyForm(forms.Form):
         ),
     )
 
-    preliminary_paid_amount = fields.IntegerField(
-        min_value=0,
-        required=False,
-        widget=widgets.NumberInput(
-            attrs={'autocomplete': 'off', 'class': 'form-control'}
-        ),
-    )
-
-    from_pension = fields.BooleanField(
-        widget=widgets.RadioSelect(choices=[(False, 'Nej'), (True, 'Ja')]),
-        required=False,
-        initial=False,
-    )
-
-    foreign_paid_amount_self_reported = fields.IntegerField(
+    self_reported_used_deduction = fields.IntegerField(
         min_value=0,
         required=False,
         widget=widgets.NumberInput(
@@ -163,14 +149,29 @@ class PolicyForm(forms.Form):
 
         if extra_form_has_data:
             errors = {}
-            if cleaned_data['policy_number_new'] in (None, ''):
-                for value in cleaned_data.values():
-                    if value not in ('', None):
-                        errors['policy_number_new'] = [ValidationError(Field.default_error_messages['required'])]
-            if cleaned_data['pension_company_id'] is None and cleaned_data['pension_company_name'] in (None, ''):
-                for value in cleaned_data.values():
-                    if value not in ('', None):
-                        errors['pension_company_name'] = [ValidationError(Field.default_error_messages['required'])]
+
+            for fieldnames in [['policy_number_new'], ['self_reported_amount'], ['pension_company_id', 'pension_company_name']]:
+                if len([True for x in fieldnames if cleaned_data[x] in ('', None)]) == len(fieldnames):
+                    for value in cleaned_data.values():
+                        if value not in ('', None):
+                            errors[fieldnames[0]] = [ValidationError(Field.default_error_messages['required'])]
+
             if len(errors):
                 raise ValidationError(errors)
         return cleaned_data
+
+
+class PersonTaxYearForm(forms.Form):
+
+    foreign_pension_notes = fields.CharField(
+        widget=widgets.Textarea(
+            attrs={'autocomplete': 'off', 'class': 'form-control'}
+        ),
+        required=False,
+    )
+    general_notes = fields.CharField(
+        widget=widgets.Textarea(
+            attrs={'autocomplete': 'off', 'class': 'form-control'}
+        ),
+        required=False,
+    )
