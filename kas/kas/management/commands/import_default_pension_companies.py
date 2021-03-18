@@ -15,6 +15,10 @@ INPUT_FILE = os.path.join(DATA_DIR, "Pensionsudbydere i eSkat.csv")
 class Command(BaseCommand):
     help = 'Imports mockup data into the mockup tables for eSkat'
 
+    companies_with_deals = (
+        'PFA Pension',
+    )
+
     def handle(self, *args, **kwargs):
         with open(INPUT_FILE) as csvfile:
             csvreader = csv.reader(csvfile)
@@ -36,7 +40,8 @@ class Command(BaseCommand):
                         'name': row[1],
                         'address': row[2],
                         'domestic_or_foreign': dof,
-                        'accepts_payments': True if row[4].lower() == "y" else False
+                        'accepts_payments': True if row[4].lower() == "y" else False,
+                        'agreement_present': (row[1] in self.companies_with_deals)
                     },
                     res=row[0],
                 )

@@ -11,7 +11,18 @@ class JobTypeSelectForm(BootstrapForm):
 
     def __init__(self, *args, **kwargs):
         super(JobTypeSelectForm, self).__init__(*args, **kwargs)
-        self.fields['job_type'].choices = ((k, v['label'])for k, v in get_job_types().items())
+        if settings.ENVIRONMENT == "production":
+            self.fields['job_type'].choices = (
+                (k, v['label'])
+                for k, v in get_job_types().items()
+                if not v.get('not_in_dropdown', False) and not v.get('test_only', False)
+            )
+        else:
+            self.fields['job_type'].choices = (
+                (k, v['label'])
+                for k, v in get_job_types().items()
+                if not v.get('not_in_dropdown', False)
+            )
 
 
 class YearForm(BootstrapForm):

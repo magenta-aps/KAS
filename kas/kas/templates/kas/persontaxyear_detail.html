@@ -4,6 +4,57 @@
 {% block content %}
   <h1>{{ person_tax_year.person.name }} i år {{view.year}}</h1>
 
+  {% if person_tax_year.tax_slip %}
+  <h2><a href="{% url 'kas:get_pdf' view.year person_tax_year.person.pk %}">Hent selvangivelse PDF</a></h2>
+  {% endif %}
+
+  <h2>Stamdata</h2>
+  <table class="table table-bordered table-sm" style="width: auto;">
+    <thead>
+      <tr>
+        <th>Felt</th>
+        <th>Værdi</th>
+      </tr>
+    </thead>
+    {% with person=person_tax_year.person %}
+    <tbody>
+      <tr>
+        <th>Cpr</th>
+        <td>{{ person.cpr }}</td>
+      </tr>
+      <tr>
+        <th>Navn</th>
+        <td>{{ person.name }}</td>
+      </tr>
+      <tr>
+        <th>Kommunekode</th>
+        <td>{{ person.municipality_code }}</td>
+      </tr>
+      <tr>
+        <th>Kommunenavn</th>
+        <td>{{ person.municipality_name }}</td>
+      </tr>
+      <tr>
+        <th>Addrese</th>
+        <td><pre>{{ joined_address }}</pre></td>
+      </tr>
+      <tr>
+        <th>Adresse på én linie</th>
+        <td>{{ person.full_address|default:"" }}</td>
+      </tr>
+      <tr>
+        <th>Skatteomfang</th>
+        <td>{% if person_tax_year.fully_tax_liable %}Fuld skattepligtig{% else %}Ikke fuld skattepligtig{% endif%}</td>
+      </tr>
+      <tr>
+        <th>Skattedage i {{ view.year }}</th>
+        <td>{{ person_tax_year.number_of_days }}</td>
+      </tr>
+    </tbody>
+    {% endwith %}
+  </table>
+
+
   <h2>{% trans 'Policer' %}</h2>
   {% if person_tax_year.policytaxyear_set.count %}
   <ul>

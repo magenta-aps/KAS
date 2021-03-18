@@ -8,13 +8,11 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
-from worker.job_registry import get_job_types
+from worker.job_registry import get_job_types, resolve_job_function
 from kas.view_mixins import BootstrapTableMixin
 from worker.forms import JobTypeSelectForm
 from worker.models import Job
 from worker.serializers import JobSerializer
-
-import importlib
 
 
 class JobListTemplateView(BootstrapTableMixin, TemplateView):
@@ -52,12 +50,8 @@ class JobTypeSelectFormView(LoginRequiredMixin, FormView):
 class StartJobView(LoginRequiredMixin, FormView):
     template_name = 'worker/job_create_form.html'
 
-    cached_job_data = None
-
     def job_data(self):
-        if self.cached_job_data is None:
-            self.cached_job_data = get_job_types()[self.kwargs['job_type']]
-        return self.cached_job_data
+        return get_job_types()[self.kwargs['job_type']]
 
     def get_context_data(self, **kwargs):
         ctx = super(StartJobView, self).get_context_data(**kwargs)
@@ -78,10 +72,7 @@ class StartJobView(LoginRequiredMixin, FormView):
 
         # Todo: Raise a validation error if something goes wrong here?
         function_string = self.job_data().get('function', None)
-        if function_string:
-            module_string, function_name = function_string.rsplit('.', 1)
-            module = importlib.import_module(module_string)
-            function = getattr(module, function_name)
+        function = resolve_job_function(function_string)
 
         if function:
             Job.schedule_job(function=function,

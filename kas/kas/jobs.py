@@ -13,6 +13,7 @@ from time import sleep
 
 from kas.reportgeneration.kas_report import TaxPDF
 from worker.models import job_decorator, Job
+from worker.job_registry import get_job_types, resolve_job_function
 
 import base64
 
@@ -185,7 +186,7 @@ def import_r75(job):
 @job_decorator
 def generate_reports_for_year(job):
     pdf_generator = TaxPDF()
-    qs = PersonTaxYear.objects.filter(tax_year__pk=job.arguments['year_pk'])
+    qs = PersonTaxYear.get_pdf_recipients_for_year_qs(job.arguments['year_pk'])
     total_count = qs.count()
     for i, person_tax_year in enumerate(qs.iterator(), 1):
         pdf_generator.perform_complete_write_of_one_person_tax_year('', person_tax_year)
@@ -367,3 +368,60 @@ def clear_test_data(job):
         'status': 'OK',
         'message': 'Data nulstillet',
     }
+
+
+def dispatch_chained_jobs(list_of_jobs, parent_job):
+    total_jobs = len(list_of_jobs)
+
+    parent_job.pretty_title = '%s - %s jobs' % (parent_job.pretty_job_type, total_jobs)
+
+    previous_job = None
+    for i, pair in enumerate(list_of_jobs):
+        job_type, arguments = pair
+        job_data = get_job_types()[job_type]
+        function = resolve_job_function(job_data['function'])
+
+        new_job = Job.schedule_job(
+            function=function,
+            job_type=job_type,
+            created_by=parent_job.created_by,
+            parent=parent_job,
+            depends_on=previous_job,
+            job_kwargs=arguments
+        )
+        previous_job = new_job
+
+    return {
+        'status': 'OK',
+        'message': '%d jobs scheduled' % (total_jobs),
+    }
+
+
+@job_decorator
+def reset_to_mockup_data(job):
+    dispatch_chained_jobs([
+        ('ClearTestData', {}),
+        ('ImportEskatMockup', {}),
+        ('ImportAllMockupMandtal', {}),
+        ('ImportAllMockupR75', {}),
+    ], job)
+
+
+@job_decorator
+def import_all_mandtal(job):
+    jobs = [
+        ('ImportMandtalJob', {'source_model': 'mockup', 'year': tax_year.year})
+        for tax_year in TaxYear.objects.order_by('year')
+    ]
+
+    dispatch_chained_jobs(jobs, job)
+
+
+@job_decorator
+def import_all_r75(job):
+    jobs = [
+        ('ImportR75Job', {'source_model': 'mockup', 'year': tax_year.year})
+        for tax_year in TaxYear.objects.order_by('year')
+    ]
+
+    dispatch_chained_jobs(jobs, job)

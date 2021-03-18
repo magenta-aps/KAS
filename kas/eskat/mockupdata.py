@@ -64,13 +64,22 @@ def create_person(
         "kommune": "Sermersooq",
         "navn": name,
         "adresselinje1": None,
-        "adresselinje2": name + "adresse 1",
+        "adresselinje2": name + " adresse 1",
         "adresselinje3": None,
         "adresselinje4": "3900 Sermersooq",
         "adresselinje5": None,
         "skatteomfang": "fuld skattepligtig",
         **person_extra
     }
+    person_defaults['fuld_adresse'] = ", ".join([
+        person_defaults[x] for x in (
+            'adresselinje1',
+            'adresselinje2',
+            'adresselinje3',
+            'adresselinje4',
+            'adresselinje5',
+        ) if person_defaults[x]
+    ])
 
     for policy in policies:
         if "res" not in policy:
@@ -228,8 +237,17 @@ def import_default_mockup_data():
     )
 
     create_person(
+        "Borger med 0 skattepligtige dage",
+        person_years={2020: {"skattedage": 0}},
+        policies=[
+            {"res": 6471, "years": {
+                2020: 3000,
+            }},
+        ]
+    )
+
+    create_person(
         "Borger der ikke er skattepligtig hele 2020",
-        person_extra={"skatteomfang": "ikke fuld skattepligtig"},
         person_years={2020: {"skattedage": 150}},
         policies=[
             {"res": 6471, "years": {
@@ -242,7 +260,6 @@ def import_default_mockup_data():
 
     create_person(
         "Borger med negativt afkast påvirket af antal dage",
-        person_extra={"skatteomfang": "ikke fuld skattepligtig"},
         person_years={2019: {"skattedage": 73}},
         policies=[
             {"res": 6471, "years": {
@@ -254,7 +271,6 @@ def import_default_mockup_data():
 
     create_person(
         "Borger med negativt afkast og nuværende år påvirket af antal dage",
-        person_extra={"skatteomfang": "ikke fuld skattepligtig"},
         person_years={2019: {"skattedage": 73}, 2020: {"skattedage": 146}},
         policies=[
             {"res": 6471, "years": {
@@ -266,7 +282,6 @@ def import_default_mockup_data():
 
     create_person(
         "Borger med negativt afkast for mere end 10 år siden",
-        person_extra={"skatteomfang": "ikke fuld skattepligtig"},
         person_years={2018: {"skattedage": 73}, 2019: {"skattedage": 146}},
         policies=[
             {"res": 6471, "years": {
