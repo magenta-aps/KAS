@@ -7,4 +7,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         client = EboksClient.from_settings()
-        print(client.get_client_info())
+        try:
+            print(client.get_client_info().json())
+        finally:
+            client.close()
