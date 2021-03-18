@@ -481,11 +481,6 @@ class TaxPDF(FPDF):
         person_tax_year.save()
 
 
-def wrap(person_tax_year):
-    pdf_generator = TaxPDF()
-    return pdf_generator.perform_complete_write_of_one_person_tax_year(person_tax_year)
-
-
 class TaxSlipHandling(FPDF):
 
     def perform_complete_write_of_one_tax_year(self, destination_path, tax_year):
