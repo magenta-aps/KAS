@@ -79,12 +79,12 @@
                                 <tr>
                                     <td class="col-2-sm">{% trans 'Kapitalafkast PBL (DK) § 53 A' %}</td>
                                     <td class="col-6-sm">
-                                        {% if policyform.id.value is not None %}
+                                        {% if policyform.prefilled_amount.value is not None %}
                                         {% blocktrans with policyform.prefilled_amount.value as value %}Vores beregning: {{value}}{% endblocktrans %}
                                         {% endif %}
                                     </td>
                                     <td class="col-3-sm">
-                                        <label for="{{policyform.self_reported_amount.id_for_label}}">{% if policyform.id.value is None %}{% trans 'Beløb:' %}{% else %}{% trans 'Deres rettelse:' %}{% endif %}</label>
+                                        <label for="{{policyform.self_reported_amount.id_for_label}}">{% if policyform.prefilled_amount.value is None %}{% trans 'Beløb:' %}{% else %}{% trans 'Deres rettelse:' %}{% endif %}</label>
                                         {% include 'include/field.html' with field=policyform.self_reported_amount %}
                                     </td>
                                     <td class="col-1-sm">KAS-201</td>
