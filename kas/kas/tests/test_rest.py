@@ -316,6 +316,8 @@ class PersonTaxYearTest(RestTest):
                     'fully_tax_liable': person_tax_year.fully_tax_liable,
                     'days_in_year_factor': person_tax_year.days_in_year_factor,
                     'number_of_days': person_tax_year.number_of_days,
+                    'foreign_pension_notes': person_tax_year.foreign_pension_notes,
+                    'general_notes': person_tax_year.general_notes,
                     **extra
                 }
                 for person_tax_year in PersonTaxYear.objects.all()
@@ -350,6 +352,8 @@ class PersonTaxYearTest(RestTest):
             'fully_tax_liable': person_tax_year1.fully_tax_liable,
             'days_in_year_factor': person_tax_year1.days_in_year_factor,
             'number_of_days': person_tax_year1.number_of_days,
+            'foreign_pension_notes': person_tax_year1.foreign_pension_notes,
+            'general_notes': person_tax_year1.general_notes,
             **extra
         }, response.json())
         response = self.client.get(f"{self.url}{person_tax_year2.id}/")
@@ -361,6 +365,8 @@ class PersonTaxYearTest(RestTest):
             'fully_tax_liable': person_tax_year2.fully_tax_liable,
             'days_in_year_factor': person_tax_year2.days_in_year_factor,
             'number_of_days': person_tax_year2.number_of_days,
+            'foreign_pension_notes': person_tax_year2.foreign_pension_notes,
+            'general_notes': person_tax_year2.general_notes,
             **extra
         }, response.json())
 
@@ -388,6 +394,8 @@ class PersonTaxYearTest(RestTest):
             'fully_tax_liable': person_tax_year1.fully_tax_liable,
             'days_in_year_factor': person_tax_year1.days_in_year_factor,
             'number_of_days': person_tax_year1.number_of_days,
+            'foreign_pension_notes': person_tax_year1.foreign_pension_notes,
+            'general_notes': person_tax_year1.general_notes,
             **extra
         }], response.json())
         response = self.client.get(f"{self.url}?year=2021")
@@ -399,6 +407,8 @@ class PersonTaxYearTest(RestTest):
             'fully_tax_liable': person_tax_year2.fully_tax_liable,
             'days_in_year_factor': person_tax_year2.days_in_year_factor,
             'number_of_days': person_tax_year2.number_of_days,
+            'foreign_pension_notes': person_tax_year2.foreign_pension_notes,
+            'general_notes': person_tax_year2.general_notes,
             **extra
         }], response.json())
         response = self.client.get(f"{self.url}?cpr=1234567890&year=2020")
@@ -410,6 +420,8 @@ class PersonTaxYearTest(RestTest):
             'fully_tax_liable': person_tax_year1.fully_tax_liable,
             'days_in_year_factor': person_tax_year1.days_in_year_factor,
             'number_of_days': person_tax_year1.number_of_days,
+            'foreign_pension_notes': person_tax_year1.foreign_pension_notes,
+            'general_notes': person_tax_year1.general_notes,
             **extra
         }], response.json())
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2020")
@@ -428,7 +440,9 @@ class PersonTaxYearTest(RestTest):
             **item,
             'fully_tax_liable': True,
             'days_in_year_factor': 1,
-            'number_of_days': None
+            'number_of_days': None,
+            'foreign_pension_notes': None,
+            'general_notes': None,
         }, self.strip_id(response.json()))
         self.assertEquals(1, PersonTaxYear.objects.count())
         self.assertEquals(person.cpr, PersonTaxYear.objects.first().person.cpr)
@@ -519,6 +533,7 @@ class PolicyTaxYearTest(RestTest):
                     'calculated_result': policy_tax_year.calculated_result,
                     'estimated_amount': policy_tax_year.estimated_amount,
                     'foreign_paid_amount_actual': policy_tax_year.foreign_paid_amount_actual,
+                    'self_reported_used_deduction': policy_tax_year.self_reported_used_deduction,
                     **extra
                 }
                 for policy_tax_year in PolicyTaxYear.objects.all()
@@ -578,6 +593,7 @@ class PolicyTaxYearTest(RestTest):
             'calculated_result': policy_tax_year1.calculated_result,
             'estimated_amount': policy_tax_year1.estimated_amount,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
+            'self_reported_used_deduction': policy_tax_year1.self_reported_used_deduction,
         }, response.json())
 
         response = self.client.get(f"{self.url}{policy_tax_year2.id}/")
@@ -599,6 +615,7 @@ class PolicyTaxYearTest(RestTest):
             'calculated_result': policy_tax_year1.calculated_result,
             'estimated_amount': policy_tax_year1.estimated_amount,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
+            'self_reported_used_deduction': policy_tax_year1.self_reported_used_deduction,
         }, response.json())
 
     def test_get_filter(self):
@@ -658,6 +675,7 @@ class PolicyTaxYearTest(RestTest):
             'calculated_result': policy_tax_year1.calculated_result,
             'estimated_amount': policy_tax_year1.estimated_amount,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
+            'self_reported_used_deduction': policy_tax_year1.self_reported_used_deduction,
         }], response.json())
 
         response = self.client.get(f"{self.url}?year=2020")
@@ -679,6 +697,7 @@ class PolicyTaxYearTest(RestTest):
             'calculated_result': policy_tax_year1.calculated_result,
             'estimated_amount': policy_tax_year1.estimated_amount,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
+            'self_reported_used_deduction': policy_tax_year1.self_reported_used_deduction,
         }], response.json())
 
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2021")
@@ -700,6 +719,7 @@ class PolicyTaxYearTest(RestTest):
             'calculated_result': policy_tax_year2.calculated_result,
             'estimated_amount': policy_tax_year2.estimated_amount,
             'foreign_paid_amount_actual': policy_tax_year2.foreign_paid_amount_actual,
+            'self_reported_used_deduction': policy_tax_year2.self_reported_used_deduction,
         }], response.json())
 
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2020")
@@ -748,7 +768,7 @@ class PolicyTaxYearTest(RestTest):
                 'calculated_result': policy_tax_year.calculated_result,
                 'estimated_amount': policy_tax_year.estimated_amount,
                 'foreign_paid_amount_actual': policy_tax_year.foreign_paid_amount_actual,
-
+                'self_reported_used_deduction': None,
             },
             self.strip_id(response.json())
         )

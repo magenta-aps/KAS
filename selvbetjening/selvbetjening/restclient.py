@@ -105,14 +105,25 @@ class RestClient(object):
     def create_pension_company(self, name):
         return self.post("pension_company", name=name)
 
+    def update_person_tax_year(self, id, person_tax_year):
+        person_response = self.patch(
+            f"person_tax_year/{id}",
+            **{
+                k: v for k, v in person_tax_year.items()
+                if k in [
+                    'foreign_pension_notes', 'general_notes'
+                ]
+            }
+        )
+        return person_response
+
     def update_policy(self, id, policy):
         policy_response = self.patch(
             f"policy_tax_year/{id}",
             **{
                 k: v for k, v in policy.items()
                 if k in [
-                    'self_reported_amount', 'preliminary_paid_amount', 'from_pension',
-                    'foreign_paid_amount_self_reported',
+                    'self_reported_amount', 'self_reported_used_deduction'
                 ]
             }
         )

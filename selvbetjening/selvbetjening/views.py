@@ -15,7 +15,7 @@ from django.views.decorators.cache import cache_control
 from django.views.generic import FormView, TemplateView
 from django.views.i18n import JavaScriptCatalog
 from selvbetjening.exceptions import PersonNotFoundException
-from selvbetjening.forms import PolicyForm
+from selvbetjening.forms import PolicyForm, PersonTaxYearForm
 from selvbetjening.restclient import RestClient
 
 
@@ -108,6 +108,19 @@ class PolicyFormView(HasUserMixin, FormView):
             return redirect(reverse('selvbetjening:person-not-found'))
         return super(PolicyFormView, self).get(request, *args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        extra_form = self.get_extra_form()
+        print(extra_form.is_bound)
+        if form.is_valid() and extra_form.is_valid():
+            print("valid")
+            return self.form_valid(form, extra_form)
+        else:
+            print("not valid")
+            print(form.errors)
+            print(extra_form.errors)
+            return self.form_invalid(form)
+
     def get_form(self, form_class=None):
         formset = super(PolicyFormView, self).get_form(form_class=form_class)
         choices = [(None, _("--- angiv navn ---"))] + [(company['id'], company['name']) for company in self.request.session['pension_companies']]
@@ -115,11 +128,24 @@ class PolicyFormView(HasUserMixin, FormView):
             form.fields['pension_company_id'].widget.choices = choices
         return formset
 
+    def get_extra_form(self):
+        kwargs = {
+            'initial': self.request.session['person_tax_year']
+        }
+        if self.request.method in ('POST', 'PUT'):
+            kwargs.update({
+                'data': self.request.POST,
+                'files': self.request.FILES,
+            })
+        return PersonTaxYearForm(**kwargs)
+
     def get_context_data(self, **kwargs):
         context = {
             **kwargs,
             'year': date.today().year - 1,
+            'person_tax_year': self.request.session['person_tax_year'],
             'data': {str(item['id']): item for item in self.request.session['policy_tax_years']},
+            'extra_form': self.get_extra_form(),
         }
         return super(PolicyFormView, self).get_context_data(**context)
 
@@ -150,7 +176,7 @@ class PolicyFormView(HasUserMixin, FormView):
     def get_initial(self):
         return self.request.session['policy_tax_years']
 
-    def form_valid(self, form):
+    def form_valid(self, form, extra_form):
         client = RestClient()
         for policyform in form:
             policyform_data = policyform.get_nonfile_data()
@@ -183,7 +209,7 @@ class PolicyFormView(HasUserMixin, FormView):
                         'files': policyform.get_filled_files(),
                         'existing_files': existing_files_data,
                     })
-        # return redirect(reverse('selvbetjening:policyview', args=[date.today().year - 1]))
+        client.update_person_tax_year(self.request.session['person_tax_year']['id'], extra_form.cleaned_data)
         return redirect(reverse('selvbetjening:policy-submitted'))
 
 

@@ -277,6 +277,16 @@ class PersonTaxYear(HistoryMixin, models.Model):
         default=True
     )
 
+    foreign_pension_notes = models.TextField(
+        verbose_name='Noter om pension i udlandet',
+        null=True
+    )
+
+    general_notes = models.TextField(
+        verbose_name='Yderligere noter',
+        null=True
+    )
+
     @property
     def days_in_year_factor(self):
         if self.number_of_days is None:
@@ -407,6 +417,13 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         null=True,
         default=None,
         editable=False,
+    )
+
+    self_reported_used_deduction = models.BigIntegerField(
+        verbose_name=_('Borgerønsket fradrag fra andre år'),
+        blank=True,
+        null=True,
+        default=None,
     )
 
     modified_by = models.CharField(
