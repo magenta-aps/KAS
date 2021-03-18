@@ -100,6 +100,20 @@ class TestCalculationMath(TestCase):
 
             self.assertEquals(result["tax_with_deductions"], expected_result)
 
+    def test_days_adjustment_self_reported(self):
+        amount = 1000
+
+        result = PolicyTaxYear.perform_calculation(
+            amount,
+            days_in_year=365,
+            taxable_days_in_year=int(365/5),
+            adjust_for_days_in_year=False,
+        )
+
+        self.assertEquals(result["tax_days_adjust_factor"], 1)
+        self.assertEquals(result["year_adjusted_amount"], 1000)
+        self.assertEquals(result["full_tax"], 153)
+
     def test_deductions(self):
 
         # Test with available deductions that fully cover the income

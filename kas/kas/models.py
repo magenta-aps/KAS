@@ -460,6 +460,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         taxable_days_in_year: int = 365,               # Number of days the person is paying tax in Greenland
         available_deduction_data: dict = None,         # Dict of years to available deduction amounts
         foreign_paid_amount: int = 0,                  # Amount already paid in taxes in foreign country
+        adjust_for_days_in_year: bool = True           # Perform adjustment for taxable days in year (false if self-reported)
     ) -> dict:
 
         if days_in_year not in (365, 366):
@@ -482,7 +483,10 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             raise ValueError("Foreign paid amount must be zero or higher")
 
         # Calculate taxable days adjust factor
-        tax_days_adjust_factor = taxable_days_in_year / days_in_year
+        if adjust_for_days_in_year:
+            tax_days_adjust_factor = taxable_days_in_year / days_in_year
+        else:
+            tax_days_adjust_factor = 1
 
         # Make sure initial amount is an integer
         initial_amount = int(initial_amount)
@@ -528,6 +532,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             "full_tax": full_tax,
             "tax_with_deductions": tax_with_deductions,
             "desired_deduction_data": desired_deduction_data,
+            "adjust_for_days_in_year": adjust_for_days_in_year,
         }
 
     @property
@@ -579,6 +584,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             taxable_days_in_year=self.person_tax_year.number_of_days,
             available_deduction_data=self.calculate_available_yearly_deduction(),
             foreign_paid_amount=self.foreign_paid_amount_actual,
+            adjust_for_days_in_year=self.active_amount != self.ACTIVE_AMOUNT_SELF_REPORTED
         )
 
     def calculate_available_yearly_deduction(self):
