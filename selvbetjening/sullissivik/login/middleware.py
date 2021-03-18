@@ -26,7 +26,6 @@ class LoginManager:
             white_listed_urls = self.white_listed_urls
             # When any non-whitelisted page is loaded, check if we are authenticated
             if request.path not in white_listed_urls and request.path.rstrip('/') not in white_listed_urls:
-                print("Session: %s" % str({k: v for k, v in request.session.items()}))
                 if 'user_info' not in request.session or not request.session['user_info']:
                     if not self.authenticate(request):  # The user might not have anything in his session, but he may have a cookie that can log him in anyway
                         backpage = urlquote(request.path)
