@@ -216,6 +216,7 @@ Deploy test:
   only:
     refs:
       - master
+  when: manual
   variables:
     DEPLOYMENT_NAMESPACE: kas.service-test
     SALTAPI_URL: https://ctrldev1.magenta-aps.dk/api/
