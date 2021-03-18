@@ -95,7 +95,7 @@ class YearPkForm(BootstrapForm):
         self.fields['year_pk'].choices = ((year.pk, str(year)) for year in TaxYear.objects.all())
 
 
-class DispatchTaxYearForm(BootstrapForm):
+class DispatchTaxYearForm(YearPkForm):
     title = forms.CharField(label=_('Titel'), help_text=_('Vil blive brugt som title feltet i e-boks'))
 
 
