@@ -1,10 +1,13 @@
 from django.db.models import Count
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import Http404
-from django.views.generic import TemplateView, DetailView, ListView
+from django.http import Http404, HttpResponse
+from django.views.generic import TemplateView, DetailView, ListView, View
+from django.views.generic.detail import SingleObjectMixin
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
-from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear
+from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated
+
+import os
 
 
 class FrontpageView(LoginRequiredMixin, TemplateView):
@@ -103,6 +106,21 @@ class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
 
         return obj
 
+    def get_context_data(self, *args, **kwargs):
+        result = super().get_context_data(*args, **kwargs)
+
+        obj = self.get_object()
+
+        result['joined_address'] = "\n".join([x or "" for x in (
+            obj.person.address_line_1,
+            obj.person.address_line_2,
+            obj.person.address_line_3,
+            obj.person.address_line_4,
+            obj.person.address_line_5,
+        )])
+
+        return result
+
 
 class PolicyTaxYearDetailView(LoginRequiredMixin, DetailView):
     template_name = 'kas/policytaxyear_detail.html'
@@ -125,3 +143,45 @@ class PolicyTaxYearDetailView(LoginRequiredMixin, DetailView):
         result['used_negativ_table'] = policy.previous_year_deduction_table_data
 
         return result
+
+
+class PdfDownloadView(LoginRequiredMixin, SingleObjectMixin, View):
+    model = TaxSlipGenerated
+
+    def get_object(self, queryset=None):
+        if queryset is None:
+            queryset = self.get_queryset()
+
+        year = self.kwargs.get("year", None)
+
+        if not year:
+            raise Http404("No year specified")
+
+        person_id = self.kwargs.get("person_id", None)
+
+        if not person_id:
+            raise Http404("No person specified")
+
+        try:
+            obj = queryset.get(
+                persontaxyear__tax_year__year=year,
+                persontaxyear__person=person_id
+            )
+        except queryset.model.DoesNotExist:
+            raise Http404("PDF not found")
+
+        return obj
+
+    def get(self, *args, **kwargs):
+
+        obj = self.get_object()
+        filefield = obj.file
+        file_obj = filefield.file
+
+        response = HttpResponse(
+            file_obj.read(),
+            content_type='application/pdf'
+        )
+        response['Content-Disposition'] = 'inline; filename=' + os.path.basename(obj.file.file.name)
+
+        return response

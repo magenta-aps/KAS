@@ -3,6 +3,9 @@
 
 {% block content %}
   <h1>Police {{ policy.policy_number }} ved {{ policy.pension_company.name }} for '{{ policy.person.name }}' år {{ policy.year}}</h1>
+  {% if policy.pension_company.agreement_present %}
+  <p class="bg-secondary p-2">Pensionsselskabet har aftale med Skattestyrelsn</p>
+  {% endif %}
   <div class="p-4">
     <table class="table table-bordered table-hover table-striped" style="width: auto;">
         <thead>

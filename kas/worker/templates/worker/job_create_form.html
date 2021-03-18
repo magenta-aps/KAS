@@ -19,6 +19,6 @@
                 {% endif %}
         {% endfor %}
         <input class="form-control btn btn-success" type="submit" value="{% trans 'Start job' %}">
-        <a class="btn btn-primary btn-danger" href="{% url 'worker:job_list' %}" role="button">Cancel</a>
+        <a class="btn btn-primary btn-danger" href="{% url 'worker:job_list' %}" role="button">{% trans 'Annuller'%}</a>
     </form>
 {% endblock %}

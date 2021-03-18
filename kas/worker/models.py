@@ -122,12 +122,12 @@ class Job(models.Model):
         """
         if job_kwargs is None:
             job_kwargs = {}
-        queue = django_rq.get_queue(queue, connection=redis_cursor)  # reuse same redis connection
+        rq_queue = django_rq.get_queue(queue, connection=redis_cursor)  # reuse same redis connection
         job = cls.objects.create(job_type=job_type, created_by=created_by,
                                  parent=parent, arguments=job_kwargs, queue=queue)
         if depends_on:
             depends_on = depends_on.get_rq_job()
-        rq_job = queue.enqueue(function, result_ttl=0, depends_on=depends_on, meta={'job_uuid': job.uuid}, job_timeout=3600)
+        rq_job = rq_queue.enqueue(function, result_ttl=0, depends_on=depends_on, meta={'job_uuid': job.uuid}, job_timeout=3600)
 
         job.rq_job_id = rq_job.get_id()
         job.statue = rq_job.get_status()

@@ -287,6 +287,15 @@ class PersonTaxYear(HistoryMixin, models.Model):
         null=True
     )
 
+    @classmethod
+    def get_pdf_recipients_for_year_qs(cls, tax_year_obj_or_pk):
+        return cls.objects.filter(
+            fully_tax_liable=True,
+            number_of_days__isnull=False,
+            number_of_days__gt=0,
+            tax_year=tax_year_obj_or_pk
+        )
+
     @property
     def days_in_year_factor(self):
         if self.number_of_days is None:

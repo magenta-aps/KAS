@@ -1,5 +1,7 @@
 from django.utils.translation import gettext as _
 
+import importlib
+
 
 def get_job_types():
     """
@@ -46,5 +48,37 @@ def get_job_types():
             'result_template': 'worker/includes/status_only.html',
             'function': 'kas.jobs.clear_test_data',
             'test_only': True,
-        }
+        },
+        'ResetToMockupOnly': {
+            'label': _('Nulstil til KUN mockup data'),
+            'form_class': ConfirmForm,
+            'result_template': 'worker/includes/status_only.html',
+            'function': 'kas.jobs.reset_to_mockup_data',
+            'test_only': True,
+        },
+        'ImportAllMockupMandtal': {
+            'label': _('Imporer alle mockup mandtal'),
+            'form_class': ConfirmForm,
+            'result_template': 'worker/includes/status_only.html',
+            'function': 'kas.jobs.import_all_mandtal',
+            'test_only': True,
+            'not_in_dropdown': True,
+        },
+        'ImportAllMockupR75': {
+            'label': _('Imporer alle mockup r75'),
+            'form_class': ConfirmForm,
+            'result_template': 'worker/includes/status_only.html',
+            'function': 'kas.jobs.import_all_r75',
+            'test_only': True,
+            'not_in_dropdown': True,
+        },
     }
+
+
+def resolve_job_function(string):
+
+    module_string, function_name = string.rsplit('.', 1)
+    module = importlib.import_module(module_string)
+    function = getattr(module, function_name)
+
+    return function
