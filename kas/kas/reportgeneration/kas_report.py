@@ -474,13 +474,11 @@ class TaxPDF(FPDF):
 
         self.print_tax_slip('gl')
         self.print_tax_slip('dk')
-        self.write_tax_slip_to_disk(policy_file_name)
 
         ts = TaxSlipGenerated(persontaxyear=person_tax_year)
         ts.file.save(content=ContentFile(self.output(dest='S').encode('latin-1')), name=policy_file_name)
         person_tax_year.tax_slip = ts
         person_tax_year.save()
-        ts.save()
 
 
 class TaxSlipHandling(FPDF):
