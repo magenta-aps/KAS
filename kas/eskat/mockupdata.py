@@ -1,8 +1,8 @@
+import uuid
+
 from eskat.models import MockModels
 from kas.management.commands.import_default_pension_companies import Command as PensionCompanyImport
 from kas.models import TaxYear
-import uuid
-
 
 unique_res_counter = 0
 fictitious_cprs = [ # noqa
