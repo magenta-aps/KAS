@@ -77,7 +77,7 @@ msgid "Værdi"
 msgstr ""
 
 #: templates/calculation.html:14
-msgid "Antal skattepligtige dage i skatteår"
+msgid "Antal skattepligtige dage i skatteår: %(number_of_days)s"
 msgstr ""
 
 #: templates/calculation.html:19
