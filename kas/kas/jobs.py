@@ -311,17 +311,16 @@ def dispatch_eboks_tax_slips(job):
                 slip.file.close()
             i += 1
 
-        with transaction.atomic():
+        pending_slips = {slip.message_id: slip for slip in TaxSlipGenerated.objects.filter(
+            status='post_processing').filter(
+            persontaxyear__tax_year__pk=job.parent.arguments['year_pk'])[:50]}
+        while pending_slips:
+            update_status_for_pending_dispatches(client, pending_slips)
             pending_slips = {slip.message_id: slip for slip in TaxSlipGenerated.objects.filter(
                 status='post_processing').filter(
-                persontaxyear__tax_year__pk=job.parent.arguments['year_pk']).select_for_update(skip_locked=True)[:50]}
-            while pending_slips:
-                update_status_for_pending_dispatches(client, pending_slips)
-                pending_slips = {slip.message_id: slip for slip in TaxSlipGenerated.objects.filter(
-                    status='post_processing').filter(
-                    persontaxyear__tax_year__pk=job.parent.arguments['year_pk']).select_for_update(skip_locked=True)[:50]}
-                if pending_slips:
-                    sleep(10)
+                persontaxyear__tax_year__pk=job.parent.arguments['year_pk'])[:50]}
+            if pending_slips:
+                sleep(10)
     finally:
         client.close()
 
