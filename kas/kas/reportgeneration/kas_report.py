@@ -32,8 +32,6 @@ class TaxPDF(FPDF):
 
     text2 = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinerit nunani allaniittut ilaat pillugit nammineerluni '
                    'nalunaarsuineq {}', 'dk': 'Selvangivelse af visse udenlandske pensionsordninger for {}'}
-    text3 = {'gl': '',
-             'dk': ''}
     text4 = {'gl': 'Nassitsinissamut killissarititaq {}', 'dk': 'Indsendelsesfrist senest {}'}
     text5 = {'gl': 'Inuup normua: ', 'dk': 'Personnummer: '}
     text6 = {'gl': 'Pigisanit pissarsiat akileraarutaat: ', 'dk': 'Kapitalafkastskat: '}
@@ -106,7 +104,6 @@ class TaxPDF(FPDF):
                     "naalernerani nassiutissavaa.",
               'dk': "Du vil modtage slutopgørelse {} fra Skattestyrelsen ultimo august {}. "}
     text15 = {'gl': 'Pigisanit pissarsiat PBL (DK) § 53 A', 'dk': 'Kapitalafkast PBL (DK) § 53 A'}
-    text16 = {'gl': 'Aningaasat\n koruuninngorlugit', 'dk': 'Beløb i kroner'}
 
     text17A = {'gl': 'Immersugassap aqqa\n ', 'dk': 'Feltnavn\n '}
     text17B = {'gl': 'Naqeriigaq\n ', 'dk': 'Fortrykt\n '}
@@ -217,9 +214,6 @@ class TaxPDF(FPDF):
         self.multi_cell(h=self.contact_info_table_cell.get('h'), align='L', w=170,
                         txt=self.text2.get(language).format(self.tax_year), border=0)
 
-        self.set_font('arial', 'B', 9.0)
-        self.set_xy(10.0, 17.0)
-        self.cell(h=0, align='L', w=75.0, txt=self.text3[language], border=0)
         self.set_font('arial', '', 9.0)
         self.set_xy(10.0, 20.0)
         self.cell(h=0, align='L', w=75.0,
@@ -289,8 +283,7 @@ class TaxPDF(FPDF):
 
         self.set_font('arial', '', 8.5)
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text11[language].
-                        format(self.tax_return_date_limit), border=0)
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text11[language], border=0)
         self.yposition = self.get_y()
         self.yposition += 5
 
@@ -300,20 +293,15 @@ class TaxPDF(FPDF):
         self.yposition += 5
 
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13[language].
-                        format(self.tax_return_date_limit), border=0)
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13[language], border=0)
         self.yposition = self.get_y()
 
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13A[language].
-                        format(self.request_pay, self.pay_date),
-                        border=0)
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13A[language], border=0)
         self.yposition = self.get_y()
 
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13B[language].
-                        format(self.request_pay, self.pay_date),
-                        border=0)
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13B[language], border=0)
         self.yposition = self.get_y()
 
         self.set_xy(self.left_margin, self.yposition)
@@ -324,9 +312,7 @@ class TaxPDF(FPDF):
         self.yposition += 5
 
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13D[language].
-                        format(self.request_pay, self.pay_date),
-                        border=0)
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13D[language], border=0)
         self.yposition = self.get_y()
         self.yposition += 5
 
@@ -453,7 +439,7 @@ class TaxPDF(FPDF):
     def write_tax_slip_to_disk(self, path):
         self.output(path, 'F')
 
-    def perform_complete_write_of_one_person_tax_year(self, destination_path, person_tax_year):
+    def perform_complete_write_of_one_person_tax_year(self, person_tax_year):
         """
         Calling this method appends reportcontent to the pdf-file in progress, and saves the result to person_tax_year
         :param destination_path:
@@ -480,7 +466,7 @@ class TaxPDF(FPDF):
             person_tax_year=person_tax_year
         )
 
-        policy_file_name = f'{destination_path}Y_{tax_year}_{person_number}.pdf'
+        policy_file_name = f'Y_{tax_year}_{person_number}.pdf'
 
         firstPolicy = False
 
@@ -520,7 +506,7 @@ class TaxPDF(FPDF):
 
 class TaxSlipHandling(FPDF):
 
-    def perform_complete_write_of_one_tax_year(self, destination_path, tax_year):
+    def perform_complete_write_of_one_tax_year(self, tax_year):
 
         list_of_person_tax_year = PersonTaxYear.objects.filter(
             tax_year__year=tax_year
@@ -528,5 +514,4 @@ class TaxSlipHandling(FPDF):
 
         for person_tax_year in list_of_person_tax_year:
             pdf_document = TaxPDF()
-            pdf_document.perform_complete_write_of_one_person_tax_year(destination_path=destination_path,
-                                                                       person_tax_year=person_tax_year)
+            pdf_document.perform_complete_write_of_one_person_tax_year(person_tax_year=person_tax_year)

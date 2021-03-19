@@ -1,6 +1,4 @@
-import os
 from builtins import len
-
 from django.test import TestCase
 from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear, TaxSlipGenerated
 from kas.reportgeneration.kas_report import TaxSlipHandling
@@ -54,7 +52,7 @@ class DeductionTest(TestCase):
         )
 
         PolicyTaxYear.objects.create(
-            policy_number='1234',
+            policy_number='policenummer',
             person_tax_year=person_tax_year_p1_2019,
             pension_company=pension_company2,
             prefilled_amount=100,
@@ -63,7 +61,7 @@ class DeductionTest(TestCase):
         )
 
         PolicyTaxYear.objects.create(
-            policy_number='1234',
+            policy_number='policenummer',
             person_tax_year=person_tax_year_p1_2020,
             pension_company=pension_company1,
             prefilled_amount=200,
@@ -72,7 +70,7 @@ class DeductionTest(TestCase):
         )
 
         PolicyTaxYear.objects.create(
-            policy_number='1235',
+            policy_number='policenummer',
             person_tax_year=person_tax_year_p1_2020,
             pension_company=pension_company2,
             prefilled_amount=300,
@@ -88,7 +86,7 @@ class DeductionTest(TestCase):
         )
 
         PolicyTaxYear.objects.create(
-            policy_number='1234',
+            policy_number='policenummer',
             person_tax_year=person_tax_year_p2_2020,
             pension_company=pension_company1,
             prefilled_amount=402,
@@ -187,7 +185,7 @@ class DeductionTest(TestCase):
         self.test_dir = tempfile.mkdtemp()+'/'
 
         pdf_documen = TaxSlipHandling()
-        pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2020)
+        pdf_documen.perform_complete_write_of_one_tax_year(tax_year=2020)
 
         list_of_tax_slips = TaxSlipGenerated.objects.all()
         self.assertEqual(3, len(list_of_tax_slips))
@@ -197,12 +195,12 @@ class DeductionTest(TestCase):
             filelist += tax_slip.file.name
             self.assertEqual('created', tax_slip.status)
 
-        self.assertEqual(True, 'Y_2020_1234567890.pdf' in filelist)
-        self.assertEqual(True, 'Y_2020_1234567890.pdf' in filelist)
-        self.assertEqual(True, 'Y_2020_1234567897.pdf' in filelist)
+        self.assertEqual(True, 'Y_2020_1234567890' in filelist)
+        self.assertEqual(True, 'Y_2020_1234567890' in filelist)
+        self.assertEqual(True, 'Y_2020_1234567897' in filelist)
 
         self.test_dir = tempfile.mkdtemp()+'/'
-        pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2019)
+        pdf_documen.perform_complete_write_of_one_tax_year(tax_year=2019)
         list_of_tax_slips = TaxSlipGenerated.objects.all()
         self.assertEqual(4, len(list_of_tax_slips))
 
@@ -211,5 +209,4 @@ class DeductionTest(TestCase):
             filelist += tax_slip.file.name
             self.assertEqual('created', tax_slip.status)
 
-        self.assertEqual(True, 'Y_2019_1234567890.pdf' in filelist)
-
+        self.assertEqual(True, 'Y_2019_1234567890' in filelist)
