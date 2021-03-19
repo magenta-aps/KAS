@@ -30,7 +30,8 @@ class TaxPDF(FPDF):
 
     document_header = {'gl': '', 'dk': ''}
 
-    text2 = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinerit nunani allaniittut ilaat pillugit nammineerluni nalunaarsuineq {}', 'dk': 'Selvangivelse af visse udenlandske pensionsordninger for {}'}
+    text2 = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinerit nunani allaniittut ilaat pillugit nammineerluni '
+                   'nalunaarsuineq {}', 'dk': 'Selvangivelse af visse udenlandske pensionsordninger for {}'}
     text3 = {'gl': '',
              'dk': ''}
     text4 = {'gl': 'Nassitsinissamut killissarititaq {}', 'dk': 'Indsendelsesfrist senest {}'}
@@ -41,25 +42,68 @@ class TaxPDF(FPDF):
              'dk': 'Kontakt: Skattestyrelsen,\nPostboks 1605, 3900 Nuuk. \nTlf. 346510, Email:tax@nanoq.gl'}
     text8 = {'gl': 'Nittartagaq iserfissaq', 'dk': 'Tast selv internet'}
     text8A = {'gl': 'Ullut akileraartussaaffiit', 'dk': 'Antal skattepligtsdage'}
-    text10 = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinerit nunani allaniittut ilaat pillugit nammineerluni nalunaarsuineq.',
+    text10 = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinerit nunani allaniittut ilaat pillugit nammineerluni '
+                    'nalunaarsuineq.',
               'dk': 'Selvangivelse af visse udenlandske pensionsordninger.'}
-    text11 = {'gl': "Danskit soraarnerussutisiaqarnissamut sillimmasiisarfiini aamma soraarnerussutisiaqarnissamut aningaasaateqarfiini inuunermut sillimmasiissutivit soraarnerussutisiaqarnissamullu aaqqissuussavit ukiumi pineqartumi iluanaarutaat, kiisalu soraarnerussutisiaqarnissamut aaqqissuussinernut nunani allaniittunut illit nammineq akiliutitit. ",
-              'dk': "I denne selvangivelse skal du oplyse årets afkast fra dine livsforsikringer og pensionsordninger i danske pensionsforsikringsselskaber og pensionskasser, samt dine egne indbetalinger til udenlandske pensionsordninger nammineerluni nalunaarsuiffimmi uani nalunaarsussavatit nammineerluni nalunaarsuiffimmi uani nalunaarsussavatit. "}
-    text12 = {'gl': "Soraarnerussutisiaqarnissamut aaqqissuussinermut Kalaallit Nunaata avataaniittumut nammineerlutit akiliisimaguit akilersimasatit, soraarnerussutisiaqarnissamut aaqqissuussinernut nunani allaniittunut nammineerluni akiliutaasimasut nalunaarneqarfissaannut nammineerlutit nalunaarsussavatit. Paasissutissat taakku soraarnerussutisiaqarnissamut aaqqissuussinermut peqataasussaatitaaneq pillugu ukiumoortumik naatsorsuummi atorneqartussaapput.",
-              'dk': "Indbetaler du selv til en pensionsordning uden for Grønland, skal du selvangive dine indbetalinger i feltet om egen indbetalinger til pensionsordninger i andre lande. Oplysningerne skal bruges til årsopgørelsen vedrørende obligatorisk pension."}
-    text13 = {'gl': "Taakku saniatigut nalunaarutissaraatit danskit soraarnerussutisiaqarnissamut sillimmasiisarfiini aamma soraarnerussutisiaqarnissamut aningaasaateqarfiini inuunermut sillimmasiissutivit soraarnerussutisiaqarnissamullu aaqqissuussavit ukiumi pineqartumi iluanaarutaat. Nalunaarutiginnittuussaanermi pineqanngillat soraarnerussutisiaqarnissamut aaqqissuussinerit inuunermullu sillimmasiissutit, danskit soraarnerussutisiaqarnissamut aaqqissuussinernit iluanaarutinik akileraarusiisarnermik inatsisaanni (PAL-lovimi) pineqartut. Illit soraarnerussutisiaqarnissamut aaqqissuussinerit inuunermulluunniit sillimmasiissutit danskit soraarnerussutisiaqarnissamut aaqqissuussinernit iluanaarutinik akileraarusiisarnermik inatsisaanni pineqartunut ilaanersoq nalornissutigigukku illit soraarnerussutisiaqarnissamut aningaasaateqarfigisat inuunermulluunniit sillimasiisarfigisat saaffigisinnaavat.",
-              'dk': "Derudover skal du oplyse årets afkast fra dine livsforsikringer og pensionsordninger i danske pensionsforsikringsselskaber og pensionskasser. Oplysningspligten gælder ikke pensionsordninger og livsforsikringer, som omfattes af den danske pensionsafkastbeskatningslov (PAL-loven). Hvis du er i tvivl om din pensionsordning eller livsforsikring er omfattet af den danske pensionsafkastbeskatningslov kan du kontakte din pensionskasse eller dit livsforsikringsselskab."}
+    text11 = {'gl': "Danskit soraarnerussutisiaqarnissamut sillimmasiisarfiini aamma soraarnerussutisiaqarnissamut "
+                    "aningaasaateqarfiini inuunermut sillimmasiissutivit soraarnerussutisiaqarnissamullu "
+                    "aaqqissuussavit ukiumi pineqartumi iluanaarutaat, kiisalu soraarnerussutisiaqarnissamut "
+                    "aaqqissuussinernut nunani allaniittunut illit nammineq akiliutitit "
+                    "nammineerluni nalunaarsuiffimmi uani nalunaarsussavatit. ",
+              'dk': "I denne selvangivelse skal du oplyse årets afkast fra dine livsforsikringer og pensionsordninger "
+                    "i danske pensionsforsikringsselskaber og pensionskasser, samt dine egne indbetalinger til "
+                    "udenlandske pensionsordninger."}
+    text12 = {'gl': "Soraarnerussutisiaqarnissamut aaqqissuussinermut Kalaallit Nunaata avataaniittumut "
+                    "nammineerlutit akiliisimaguit akilersimasatit, soraarnerussutisiaqarnissamut aaqqissuussinernut "
+                    "nunani allaniittunut nammineerluni akiliutaasimasut nalunaarneqarfissaannut nammineerlutit "
+                    "nalunaarsussavatit. Paasissutissat taakku soraarnerussutisiaqarnissamut aaqqissuussinermut "
+                    "peqataasussaatitaaneq pillugu ukiumoortumik naatsorsuummi atorneqartussaapput.",
+              'dk': "Indbetaler du selv til en pensionsordning uden for Grønland, skal du selvangive dine "
+                    "indbetalinger i feltet om egen indbetalinger til pensionsordninger i andre lande. Oplysningerne "
+                    "skal bruges til årsopgørelsen vedrørende obligatorisk pension."}
+    text13 = {'gl': "Taakku saniatigut nalunaarutissaraatit danskit soraarnerussutisiaqarnissamut "
+                    "sillimmasiisarfiini aamma soraarnerussutisiaqarnissamut aningaasaateqarfiini inuunermut "
+                    "sillimmasiissutivit soraarnerussutisiaqarnissamullu aaqqissuussavit ukiumi pineqartumi "
+                    "iluanaarutaat. Nalunaarutiginnittuussaanermi pineqanngillat soraarnerussutisiaqarnissamut "
+                    "aaqqissuussinerit inuunermullu sillimmasiissutit, danskit soraarnerussutisiaqarnissamut "
+                    "aaqqissuussinernit iluanaarutinik akileraarusiisarnermik inatsisaanni (PAL-lovimi) pineqartut. "
+                    "Illit soraarnerussutisiaqarnissamut aaqqissuussinerit inuunermulluunniit sillimmasiissutit "
+                    "danskit soraarnerussutisiaqarnissamut aaqqissuussinernit iluanaarutinik akileraarusiisarnermik "
+                    "inatsisaanni pineqartunut ilaanersoq nalornissutigigukku illit soraarnerussutisiaqarnissamut "
+                    "aningaasaateqarfigisat inuunermulluunniit sillimasiisarfigisat saaffigisinnaavat.",
+              'dk': "Derudover skal du oplyse årets afkast fra dine livsforsikringer og pensionsordninger i danske "
+                    "pensionsforsikringsselskaber og pensionskasser. Oplysningspligten gælder ikke pensionsordninger "
+                    "og livsforsikringer, som omfattes af den danske pensionsafkastbeskatningslov (PAL-loven). "
+                    "Hvis du er i tvivl om din pensionsordning eller livsforsikring er omfattet af den danske "
+                    "pensionsafkastbeskatningslov kan du kontakte din pensionskasse eller dit livsforsikringsselskab."}
     text13A = {'gl': "",
                'dk': ""}
-    text13B = {'gl': "Nammineerluni nalunaarsuiffimmi uani paasissutissanik naqeriikkanik allassimasoqarpat, paasissutissat eqqortuunersut illit misissugassaraat. ",
-               'dk': "Hvis der på denne selvangivelse er fortrykte oplysninger, skal du kontrollere om oplysningerne er rigtige. "}
-    text13C = {'gl': "Allanngortitassaappata ilassutissaqaruilluunniit nammineerluni nalunaarsuiffik immersussavat atsiorlugulu, kingusinnerpaamillu {} Akileraartarnermut Aqutsisoqarfimmut nassiullugu imaluunniit taakku www.sullissivik.gl-ikkut nalunaarutigalugit.",
-               'dk': "Har du ændringer eller tilføjelser, skal du udfylde og underskrive selvangivelsen og indsende den til Skattestyrelsen eller indberette dem via www.sullissivik.gl senest den {}."}
-    text13D = {'gl': "Paasissutissat naqeriikkat isumaqatigigukkit ilassutissaqanngikkuillu qanoq iliuuseqartariaqanngilatit.",
-               'dk': "Er du enig i de fortrykte oplysninger og har du ikke noget at tilføje, behøver du ikke at foretage dig yderligere."}
-    text13E = {'gl': "Akileraartarnermut Aqutsisoqarfiup soraarnerussutisiaqarnissamut aaqqissuussiviit ataasiakkaat, sullitamik pigisanit pissarsiat akileraarutaattut akiligassaannik unerartitsillutillu akiliussinissaat pillugu isumaqatigiissuteqarfigai. Akiliineq illit soraarnerussutisiaqarnissamut aaqqissuussivinnit isumagineqassappat tamanna ataani allassimassaaq. Taamaattoqartillugu pigisanit pissarsianit akileraarut illit nammineerlutit akilissanngilat. ",
-               'dk': "Skattestyrelsen har indgået aftale med enkelte pensionsselskaber om, at de indeholder og indbetaler kapitalafkastskatten på vegne af deres kunder. Sker betalingen via dit pensionsselskab, fremgår det nedenfor. I disse tilfælde skal du ikke indbetale kapitalafkastskatten selv."}
-    text14 = {'gl': "Inuunermut sillimmasiissutinit soraarnerussutisiaqarnissamullu aaqqissuussinernit iluanaarutit pillugit inaarummik naatsorsuut {}. Akileraartarnermut Aqutsisoqarfiup {}-mi augustip naalernerani nassiutissavaa.",
+    text13B = {'gl': "Nammineerluni nalunaarsuiffimmi uani paasissutissanik naqeriikkanik allassimasoqarpat, "
+                     "paasissutissat eqqortuunersut illit misissugassaraat. ",
+               'dk': "Hvis der på denne selvangivelse er fortrykte oplysninger, skal du kontrollere om oplysningerne "
+                     "er rigtige. "}
+    text13C = {'gl': "Allanngortitassaappata ilassutissaqaruilluunniit nammineerluni nalunaarsuiffik immersussavat "
+                     "atsiorlugulu, kingusinnerpaamillu {} Akileraartarnermut Aqutsisoqarfimmut nassiullugu "
+                     "imaluunniit taakku www.sullissivik.gl-ikkut nalunaarutigalugit.",
+               'dk': "Har du ændringer eller tilføjelser, skal du udfylde og underskrive selvangivelsen og indsende "
+                     "den til Skattestyrelsen eller indberette dem via www.sullissivik.gl senest den {}."}
+    text13D = {'gl': "Paasissutissat naqeriikkat isumaqatigigukkit ilassutissaqanngikkuillu qanoq "
+                     "iliuuseqartariaqanngilatit.",
+               'dk': "Er du enig i de fortrykte oplysninger og har du ikke noget at tilføje, behøver du ikke at "
+                     "foretage dig yderligere."}
+    text13E = {'gl': "Akileraartarnermut Aqutsisoqarfiup soraarnerussutisiaqarnissamut aaqqissuussiviit ataasiakkaat, "
+                     "sullitamik pigisanit pissarsiat akileraarutaattut akiligassaannik unerartitsillutillu "
+                     "akiliussinissaat pillugu isumaqatigiissuteqarfigai. Akiliineq illit "
+                     "soraarnerussutisiaqarnissamut aaqqissuussivinnit isumagineqassappat tamanna ataani "
+                     "allassimassaaq. Taamaattoqartillugu pigisanit pissarsianit akileraarut illit nammineerlutit "
+                     "akilissanngilat. ",
+               'dk': "Skattestyrelsen har indgået aftale med enkelte pensionsselskaber om, at de indeholder og "
+                     "indbetaler kapitalafkastskatten på vegne af deres kunder. Sker betalingen via dit "
+                     "pensionsselskab, fremgår det nedenfor. I disse tilfælde skal du ikke indbetale "
+                     "kapitalafkastskatten selv."}
+    text14 = {'gl': "Inuunermut sillimmasiissutinit soraarnerussutisiaqarnissamullu aaqqissuussinernit iluanaarutit "
+                    "pillugit inaarummik naatsorsuut {} Akileraartarnermut Aqutsisoqarfiup {}-mi augustip "
+                    "naalernerani nassiutissavaa.",
               'dk': "Du vil modtage slutopgørelse {} fra Skattestyrelsen ultimo august {}. "}
     text15 = {'gl': 'Pigisanit pissarsiat PBL (DK) § 53 A', 'dk': 'Kapitalafkast PBL (DK) § 53 A'}
     text16 = {'gl': 'Aningaasat\n koruuninngorlugit', 'dk': 'Beløb i kroner'}
@@ -76,14 +120,19 @@ class TaxPDF(FPDF):
                     'Inatsisartutlov om beskatning af visse kapitalafkast'}
     text26A = {'gl': '',
                'dk': ''}
-    text26B = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinernut nunani allaniittunut nammineerluni akiliutit. Nuna soraarnerussutisiaqarnissamut aaqqissuussinerup pilersinneqarfia, kiisalu aningaasat akiliutigineqartut amerlassusiat nalunakkit',
+    text26B = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinernut nunani allaniittunut nammineerluni akiliutit. '
+                     'Nuna soraarnerussutisiaqarnissamut aaqqissuussinerup pilersinneqarfia, kiisalu aningaasat '
+                     'akiliutigineqartut amerlassusiat nalunaakkit',
                'dk': 'Egen indbetaling til pensionsordninger i andre lande. Angiv landet, som pensionsordningen er '
                      'hjemmehørende i, samt størrelsen på det indbetalte beløb'}
     text26C = {'gl': '',
                'dk': ''}
-    text26D = {'gl': '* Soraarnerussutisiaqarnissamut aaqqissuussinermut uunga tunngatillugu akileraarut soraarnerussutisiaqarnissamut aaqqissuussivimmit ingerlaannaartumik akilerneqassaaq',
+    text26D = {'gl': '* Soraarnerussutisiaqarnissamut aaqqissuussinermut uunga tunngatillugu akileraarut '
+                     'soraarnerussutisiaqarnissamut aaqqissuussivimmit ingerlaannaartumik akilerneqassaaq',
                'dk': '* Skatten for denne pensionsordning betales automatisk af pensionsselskabet'}
-    text26E = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinerit nunani allaniittut ilaat pillugit nammineerluni nalunaarsuinermut atatillugu paasissutissanik allanik nammineerluni nalunaagassaqarpa?',
+    text26E = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinerit nunani allaniittut ilaat pillugit '
+                     'nammineerluni nalunaarsuinermut atatillugu paasissutissanik allanik nammineerluni '
+                     'nalunaagassaqarpa?',
                'dk': 'Er der yderligere information, som skal selvangives i forbindelse med udfyldelsen af '
                      'Selvangivelsen for visse udenlandske pensionsordninger? '}
 
@@ -166,7 +215,7 @@ class TaxPDF(FPDF):
         self.set_font('arial', 'B', 12.0)
         self.set_xy(10.0, 8.0)
         self.multi_cell(h=self.contact_info_table_cell.get('h'), align='L', w=170,
-                  txt=self.text2.get(language).format(self.tax_year), border=0)
+                        txt=self.text2.get(language).format(self.tax_year), border=0)
 
         self.set_font('arial', 'B', 9.0)
         self.set_xy(10.0, 17.0)
@@ -240,7 +289,8 @@ class TaxPDF(FPDF):
 
         self.set_font('arial', '', 8.5)
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text11[language].format(self.tax_return_date_limit), border=0)
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text11[language].
+                        format(self.tax_return_date_limit), border=0)
         self.yposition = self.get_y()
         self.yposition += 5
 
@@ -250,38 +300,46 @@ class TaxPDF(FPDF):
         self.yposition += 5
 
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13[language].format(self.tax_return_date_limit), border=0)
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13[language].
+                        format(self.tax_return_date_limit), border=0)
         self.yposition = self.get_y()
 
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13A[language].format(self.request_pay, self.pay_date),
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13A[language].
+                        format(self.request_pay, self.pay_date),
                         border=0)
         self.yposition = self.get_y()
 
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13B[language].format(self.request_pay, self.pay_date),
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13B[language].
+                        format(self.request_pay, self.pay_date),
                         border=0)
         self.yposition = self.get_y()
 
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13C[language].format(self.tax_return_date_limit),
-                        border=0)
-        self.yposition = self.get_y()
-        self.yposition += 5
-
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13D[language].format(self.request_pay, self.pay_date),
-                        border=0)
-        self.yposition = self.get_y()
-
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13E[language].format(self.request_pay, self.pay_date),
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13C[language].
+                        format(self.tax_return_date_limit),
                         border=0)
         self.yposition = self.get_y()
         self.yposition += 5
 
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text14[language].format(self.tax_year, self.request_pay),
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13D[language].
+                        format(self.request_pay, self.pay_date),
+                        border=0)
+        self.yposition = self.get_y()
+        self.yposition += 5
+
+        self.set_xy(self.left_margin, self.yposition)
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text13E[language].
+                        format(self.request_pay, self.pay_date),
+                        border=0)
+        self.yposition = self.get_y()
+        self.yposition += 5
+
+        self.set_xy(self.left_margin, self.yposition)
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text14[language].
+                        format(self.tax_year, self.request_pay),
                         border=0)
         self.yposition = self.get_y()
 
@@ -353,14 +411,14 @@ class TaxPDF(FPDF):
         self.yposition = self.get_y()
 
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, txt=self.text26E[language], border=1)
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text26E[language], border=1)
         self.set_xy(self.left_margin, self.yposition)
         self.multi_cell(self.std_document_width, 60, txt='', border=1)
         self.yposition = self.get_y()
         self.yposition += 20
 
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, txt=self.text26B[language], border=1)
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text26B[language], border=1)
         self.set_xy(self.left_margin, self.yposition)
         self.multi_cell(self.std_document_width, 40, txt='', border=1)
         self.yposition = self.get_y()
@@ -391,7 +449,6 @@ class TaxPDF(FPDF):
         self.yposition += elementheight
 
         self.yposition += 10
-
 
     def write_tax_slip_to_disk(self, path):
         self.output(path, 'F')
@@ -449,7 +506,8 @@ class TaxPDF(FPDF):
         self.set_parameters(tax_year, tax_return_date_limit, request_pay, pay_date, person_number,
                             reciever_name, reciever_address_line_1, reciever_address_line_2,
                             reciever_address_line_3, reciever_address_line_4,
-                            reciever_address_line_5, fully_tax_liable, tax_days_adjust_factor, taxable_days_in_year, policies)
+                            reciever_address_line_5, fully_tax_liable, tax_days_adjust_factor,
+                            taxable_days_in_year, policies)
 
         self.print_tax_slip('gl')
         self.print_tax_slip('dk')
