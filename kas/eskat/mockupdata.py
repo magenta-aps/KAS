@@ -10,7 +10,6 @@ fictitious_cprs = [ # noqa
     '1502062774',
     '2509474829',
     '1105801064',
-    '2501950079',
     '3105841026',
     '0101570088',
     '2505811057',
@@ -29,13 +28,7 @@ fictitious_cprs = [ # noqa
     '0904410039',
     '0112947728',
     '1502122777',
-    '0707610042',
-    '0101570010',
-    '0708614866',
-    '1105015018',
-    '0103897769',
-    '0209025000',
-    '1105520049'
+    '0707610042'
 ]
 
 
@@ -165,7 +158,7 @@ def import_default_mockup_data():
 
     create_person(
         "Borger med 0 afkast",
-        cpr='0601980029',
+        cpr='0101570010',
         policies=[
             {"res": 6471, "years": {
                 2018: 0,
@@ -189,7 +182,7 @@ def import_default_mockup_data():
 
     create_person(
         "Borger med dækkende negativt afkast",
-        cpr='2510202794',
+        cpr='0103897769',
         policies=[
             {"res": 6471, "years": {
                 2018: -5000,
@@ -248,7 +241,7 @@ def import_default_mockup_data():
 
     create_person(
         "Borger med kun negativt afkast i 2020",
-        cpr='3101827746',
+        cpr='1105015018',
         policies=[
             {"res": 6471, "years": {
                 2020: -3000,
@@ -259,7 +252,7 @@ def import_default_mockup_data():
     create_person(
         "Borger der ikke er fuldt skattepligtig",
         person_extra={"skatteomfang": "ikke fuld skattepligtig"},
-        cpr='3101827746',
+        cpr='0708614866',
         policies=[
             {"res": 6471, "years": {
                 2018: 1000,
@@ -319,7 +312,7 @@ def import_default_mockup_data():
 
     create_person(
         "Borger med negativt afkast for mere end 10 år siden",
-        cpr='2512052730',
+        cpr='0209025000',
         person_years={2018: {"skattedage": 73}, 2019: {"skattedage": 146}},
         policies=[
             {"res": 6471, "years": {
@@ -354,7 +347,7 @@ def import_default_mockup_data():
 
     create_person(
         "Borger med negativt afkast fordelt over flere år",
-        cpr='1502062774',
+        cpr='1105520049',
         policies=[
             {"res": 6471, "years": {
                 2018: -600,
