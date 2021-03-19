@@ -185,10 +185,10 @@ def import_r75(job):
 
 @job_decorator
 def generate_reports_for_year(job):
-    pdf_generator = TaxPDF()
     qs = PersonTaxYear.get_pdf_recipients_for_year_qs(job.arguments['year_pk'])
     total_count = qs.count()
     for i, person_tax_year in enumerate(qs.iterator(), 1):
+        pdf_generator = TaxPDF()  # construct a new pdf generator everytime to start a new pdf file
         pdf_generator.perform_complete_write_of_one_person_tax_year('', person_tax_year)
         job.set_progress(i, total_count)
 
@@ -259,72 +259,70 @@ def dispatch_eboks_tax_slips(job):
     i = 1
     has_more = False
     slips = TaxSlipGenerated.objects.filter(status='created').filter(
-        persontaxyear__tax_year__pk=job.parent.arguments['year_pk']).select_for_update(skip_locked=True)[:dispatch_page_size+1]
-    with transaction.atomic():
-        try:
-            for slip in slips:
-                if i == dispatch_page_size+1:
-                    has_more = True
-                    # we have more so we need to spawn a new job
-                    break
+        persontaxyear__tax_year__pk=job.parent.arguments['year_pk'])[:dispatch_page_size+1]
+    try:
+        for slip in slips:
+            if i == dispatch_page_size+1:
+                has_more = True
+                # we have more so we need to spawn a new job
+                break
 
-                message_id = client.get_message_id()
-                slip.file.open(mode='rb')
-                try:
-                    resp = client.send_message(message=generator.generate_dispatch(slip.persontaxyear.person.cpr,
-                                                                                   pdf_data=base64.b64encode(slip.file.read())),
-                                               message_id=message_id)
-                except ConnectionError:
-                    job.result = {'error': 'ConnectionError'}
-                    job.save(update_fields=['status', 'result'])
-                    mark_parent_job_as_failed(job)
-                except HTTPError as e:
-                    error = {'error': 'HTTPError'}
-                    # get json response or fallback to text response
-                    if e.response is not None:
-                        status_code = e.response.status_code
-                        try:
-                            error = {'status_code': status_code, 'error': e.response.json()}
-                        except ValueError:
-                            error = {'status_code': status_code, 'error': e.response.text}
-                    job.status = 'failed'
-                    job.result = error
-                    slip.message_id = message_id
-                    slip.save(update_fields=['message_id'])
-                    job.save(update_fields=['status', 'result'])
-                    mark_parent_job_as_failed(job)
+            message_id = client.get_message_id()
+            slip.file.open(mode='rb')
+            try:
+                resp = client.send_message(message=generator.generate_dispatch(slip.persontaxyear.person.cpr,
+                                                                               pdf_data=base64.b64encode(slip.file.read())),
+                                           message_id=message_id)
+            except ConnectionError:
+                job.result = {'error': 'ConnectionError'}
+                job.save(update_fields=['status', 'result'])
+                mark_parent_job_as_failed(job)
+                break
+            except HTTPError as e:
+                error = {'error': 'HTTPError'}
+                # get json response or fallback to text response
+                if e.response is not None:
+                    status_code = e.response.status_code
+                    try:
+                        error = {'status_code': status_code, 'error': e.response.json()}
+                    except ValueError:
+                        error = {'status_code': status_code, 'error': e.response.text}
+                job.status = 'failed'
+                job.result = error
+                job.save(update_fields=['status', 'result'])
+                mark_parent_job_as_failed(job)
+                break
+            else:
+                recipient = resp.json()['recipients'][0]
+                # we only use 1 recipient
+                slip.message_id = message_id
+                slip.recipient_status = recipient['status']
+                if slip.recipient_status == 'dead':
+                    # mark the message as failed
+                    slip.status = 'failed'
+                    slip.save(update_fields=['status', 'message_id'])
+                elif recipient['post_processing_status'] == '':
+                    slip.status = 'sent'
+                    slip.save(update_fields=['status', 'message_id'])
                 else:
-                    recipient = resp.json()['recipients'][0]
-                    # we only use 1 recipient
-                    slip.message_id = message_id
-                    slip.recipient_status = recipient['status']
-                    if slip.recipient_status == 'dead':
-                        # mark the message as failed
-                        slip.status = 'failed'
-                        slip.save(update_fields=['status', 'message_id'])
-                    elif recipient['post_processing_status'] == '':
-                        slip.status = 'sent'
-                        slip.save(update_fields=['status', 'message_id'])
-                    else:
-                        slip.status = 'post_processing'
-                        slip.save(update_fields=['status', 'message_id'])
-                finally:
-                    slip.file.close()
-                i += 1
+                    slip.status = 'post_processing'
+                    slip.save(update_fields=['status', 'message_id'])
+            finally:
+                slip.file.close()
+            i += 1
 
-            with transaction.atomic():
-                pending_slips = {slip.message_id: slip for slip in TaxSlipGenerated.objects.filter(
-                    status='post_processing').filter(
-                    persontaxyear__tax_year__pk=job.parent.arguments['year_pk']).select_for_update(skip_locked=True)[:50]}
-                while pending_slips:
-                    update_status_for_pending_dispatches(client, pending_slips)
-                    pending_slips = {slip.message_id: slip for slip in TaxSlipGenerated.objects.filter(
-                        status='post_processing').filter(
-                        persontaxyear__tax_year__pk=job.parent.arguments['year_pk']).select_for_update(skip_locked=True)[:50]}
-                    if pending_slips:
-                        sleep(10)
-        finally:
-            client.close()
+        pending_slips = {slip.message_id: slip for slip in TaxSlipGenerated.objects.filter(
+            status='post_processing').filter(
+            persontaxyear__tax_year__pk=job.parent.arguments['year_pk'])[:50]}
+        while pending_slips:
+            update_status_for_pending_dispatches(client, pending_slips)
+            pending_slips = {slip.message_id: slip for slip in TaxSlipGenerated.objects.filter(
+                status='post_processing').filter(
+                persontaxyear__tax_year__pk=job.parent.arguments['year_pk'])[:50]}
+            if pending_slips:
+                sleep(10)
+    finally:
+        client.close()
 
     with transaction.atomic():
         parent = Job.objects.filter(pk=job.parent.pk).select_for_update()[0]
