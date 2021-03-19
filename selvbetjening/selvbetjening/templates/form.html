@@ -6,16 +6,7 @@
 
 <div class="container">
 
-    {% if person_tax_year.days_in_year_factor < 1 %}
-        <p>
-        {% blocktrans %}
-            De har ikke haft bopæl i Grønland i hele året og derfor skal de ikke betale skat for hele året.
-            Skatten beregnes forholdsmæssigt efter antallet af dage med bopæl i landet ud af det aktuelle antal dage i året.
-            I nedenstående indberetninger angives det beregningsgrundlag, der benyttes som basis for fastsættelse af skatten.
-            De er fastsat til at være skattepligtig i 50% af året.
-        {% endblocktrans %}
-        </p>
-    {% endif %}
+    <p>{% blocktrans with number_of_days=person_tax_year.number_of_days %}Antal skattepligtige dage i skatteår: {{number_of_days}}{% endblocktrans %}</p>
 
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}

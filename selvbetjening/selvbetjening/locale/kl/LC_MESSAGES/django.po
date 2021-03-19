@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-16 15:52+0000\n"
+"POT-Creation-Date: 2021-03-19 08:23+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -13,9 +13,17 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: forms.py:75 templates/calculation.html:8 templates/form.html:51
+msgid "Beskrivelse"
+msgstr "Nassuiaat"
+
+#: forms.py:95
+msgid "Behold fil"
+msgstr "Fil atortiinnaruk"
+
 #: strings.py:6
 msgid "This field is required."
-msgstr ""
+msgstr "Immersugassaq una allaffigineqassaaq."
 
 #: strings.py:7
 msgid "Enter a whole number."
@@ -23,15 +31,15 @@ msgstr ""
 
 #: strings.py:8
 msgid "No file was submitted. Check the encoding type on the form."
-msgstr ""
+msgstr "Fil nassiunneqanngilaq."
 
 #: strings.py:9
 msgid "No file was submitted."
-msgstr ""
+msgstr "Fil nassiunneqanngilaq."
 
 #: strings.py:10
 msgid "The submitted file is empty."
-msgstr ""
+msgstr "Fil nassiunneqartoq imaqanngilaq."
 
 #: strings.py:12
 #, python-format
@@ -39,46 +47,50 @@ msgid "Ensure this filename has at most %(max)d character (it has %(length)d)."
 msgid_plural ""
 "Ensure this filename has at most %(max)d characters (it has %(length)d)."
 msgstr[0] ""
+"Filip uuma aqqa naqinnernik amerlanerpaamik %(max)d-nik "
+"takissuseqarsinnaavoq."
 msgstr[1] ""
+"Filip uuma aqqa naqinnernik amerlanerpaamik %(max)d-nik "
+"takissuseqarsinnaavoq."
 
 #: strings.py:16
-msgid "Please either submit a file or check the clear checkbox, not both."
-msgstr ""
-
-#: strings.py:17
 #, python-format
 msgid "Select a valid choice. %(value)s is not one of the available choices."
 msgstr ""
+"Toqqagassaq atorsinnaasoq nalunaaruk. %(value)s toqqarneqarsinnaasut "
+"ilaginngilaat."
 
 #: templates/base.html:65
 #, python-format
 msgid "Logget ind som %(name)s"
-msgstr ""
+msgstr "%(name)s-itut iserpoq"
+
+#: templates/base.html:68
+msgid "Log ud"
+msgstr "Aniffissaq"
 
 #: templates/calculation.html:3
 msgid "Beregning"
-msgstr ""
+msgstr "Naatsorsuineq"
 
-#: templates/calculation.html:7 templates/form.html:52 templates/view.html:47
+#: templates/calculation.html:7 templates/form.html:50 templates/view.html:47
 #: templates/view.html:114
 msgid "Feltnavn"
-msgstr "Feltnavn [kl]"
-
-#: templates/calculation.html:8 templates/form.html:53
-msgid "Beskrivelse"
-msgstr ""
+msgstr "Immersugassaq aqqa"
 
 #: templates/calculation.html:9 templates/view.html:48 templates/view.html:115
 msgid "Værdi"
-msgstr "VÆRDI"
+msgstr ""
 
 #: templates/calculation.html:14
-msgid "Antal skattepligtige dage i skatteår"
-msgstr ""
+msgid "Antal skattepligtige dage i skatteår: %(number_of_days)s"
+msgstr "Ukiumi akileraarfiusumi ullut akileraartussaaffiit: %(number_of_days)s"
 
 #: templates/calculation.html:19
+#, fuzzy
+#| msgid "Antal skattepligtige dage i skatteår"
 msgid "Justeringsfaktor dage i skatteår"
-msgstr ""
+msgstr "Ukiumi akileraarfiusumi ullut akileraartussaaffiit"
 
 #: templates/calculation.html:24
 msgid "Beløb justeret for skatteår"
@@ -97,104 +109,126 @@ msgid "Anvendt negativt afkast"
 msgstr ""
 
 #: templates/calculation.html:44
+#, fuzzy
+#| msgid "Antal skattepligtige dage i skatteår"
 msgid "Skattepligtigt beløb / skattegrundlag"
+msgstr "Ukiumi akileraarfiusumi ullut akileraartussaaffiit"
+
+#: templates/form.html:11
+#, python-format
+msgid ""
+"\n"
+"            De har ikke haft bopæl i Grønland i hele året og derfor skal de "
+"ikke betale skat for hele året.\n"
+"            Skatten beregnes forholdsmæssigt efter antallet af dage med "
+"bopæl i landet ud af det aktuelle antal dage i året.\n"
+"            I nedenstående indberetninger angives det beregningsgrundlag, "
+"der benyttes som basis for fastsættelse af skatten.\n"
+"            De er fastsat til at være skattepligtig i 50%% af året.\n"
+"        "
 msgstr ""
 
-#: templates/form.html:13
-msgid "Vejledning"
-msgstr ""
+#: templates/form.html:39
+msgid "Angiv ny police"
+msgstr "Police nutaaq nalunaarut"
 
 #: templates/form.html:41
-msgid "Angiv ny police"
-msgstr ""
-
-#: templates/form.html:43
 #, python-format
 msgid "%(company)s, Police nr %(policy)s"
-msgstr ""
+msgstr "%(company)s-iit, %(policy)s-t"
 
-#: templates/form.html:54
+#: templates/form.html:52
 msgid "Felt"
-msgstr ""
+msgstr "Immersugassaq"
 
-#: templates/form.html:55 templates/view.html:49 templates/view.html:116
+#: templates/form.html:53 templates/view.html:49 templates/view.html:116
 msgid "Felt nr."
-msgstr ""
+msgstr "Immersugassap normua"
 
-#: templates/form.html:61
+#: templates/form.html:59
 msgid "Pensionsselskab"
-msgstr ""
+msgstr "Soraarnerussutisiaqarnissamut aaqqissuussivik"
 
-#: templates/form.html:70
+#: templates/form.html:68
 msgid "Policenummer"
-msgstr ""
+msgstr "Policenormu"
 
-#: templates/form.html:80 templates/view.html:54 templates/view.html:121
+#: templates/form.html:78 templates/view.html:54 templates/view.html:121
 msgid "Kapitalafkast PBL (DK) § 53 A"
-msgstr ""
+msgstr "Pigisanit pissarsiat PBL (DK) § 53 A"
 
-#: templates/form.html:83
+#: templates/form.html:81 templates/form.html:96
 #, python-format
 msgid "Vores beregning: %(value)s"
-msgstr "Vores beregning: %(value)s [kl]"
+msgstr "Naatsorsugarput %(value)s"
 
-#: templates/form.html:87
+#: templates/form.html:85 templates/form.html:100
 msgid "Beløb:"
-msgstr ""
+msgstr "Aningaasat:"
 
-#: templates/form.html:87
+#: templates/form.html:85 templates/form.html:100
 msgid "Deres rettelse:"
-msgstr ""
+msgstr "Illit aaqqiissutit:"
 
-#: templates/form.html:95
-msgid "Forudbetalt kapitalafkast"
+#: templates/form.html:93
+msgid "Fremført negativt afkast fra tidligere år"
 msgstr ""
+"Pigisanit pissarsiassaagaluit iluanaarutaanatik annaasat ukiuni "
+"siusinnerusuneersut ilanngaatigineqartut"
 
-#: templates/form.html:96
+#: templates/form.html:109
 msgid ""
-"Har De allerede betalt foreløbig kapitalafkastskat angives beløbet her. Husk "
-"at vedlægge dokumentation."
+"Skatten for denne pensionsordning betales automatisk af pensionsselskabet"
 msgstr ""
-
-#: templates/form.html:103 templates/view.html:64
-msgid "Hævet på pensionsordning"
-msgstr ""
-
-#: templates/form.html:104
-msgid "Er kapitalafkastskatten hævet fra pensionsordning?"
-msgstr ""
-
-#: templates/form.html:113 templates/view.html:71 templates/view.html:131
-msgid "Betalt kapitalafkastskat i udlandet"
-msgstr ""
+"Soraarnerussutisiaqarnissamut aaqqissuussinermut uunga tunngatillugu "
+"akileraarut soraarnerussutisiaqarnissamut aaqqissuussivimmit "
+"ingerlaannaartumik akilerneqassaaq"
 
 #: templates/form.html:114
-msgid ""
-"Anmoder De om nedslag for betalt kapitalafkastskat i udlandet angives den "
-"betalte skat og dokumentation vedlægges selvangivelsen"
-msgstr ""
-
-#: templates/form.html:121
 msgid "Dokumentation for betalt kapitalafkastskat"
-msgstr ""
+msgstr "Pigisanit pissarsianit akileraarutip akilersimasap uppernarsaataa"
 
-#: templates/form.html:124
+#: templates/form.html:117
 msgid "Vedhæft dokumentation for allerede betalt kapitalafkastskat i udlandet."
 msgstr ""
+"Pigisanit pissarsianit akileraarutip nunami allami akilersimasap "
+"uppernarsaataa ilanngunneqassaaq."
 
-#: templates/form.html:126
+#: templates/form.html:119
 msgid ""
 "Vedhæft dokumentation for allerede betalt kapitalafkastskat. Dokumentation "
 "for betaling både i Grønland og i udlandet kan vedhæftes her."
 msgstr ""
+"Pigisanit pissarsianit akileraarutip akilersimasap uppernarsaataa "
+"ilanngunneqassaaq. Kalaallit Nunaanni aamma nunami allami akilersimasat "
+"uppernarsaataat uani tamaasa ilanngunneqarsinnaapput."
 
-#: templates/form.html:148
+#: templates/form.html:141
 msgid "Fjern"
-msgstr ""
+msgstr "Peeruk"
 
-#: templates/form.html:174
-msgid "Indsend"
+#: templates/form.html:170
+msgid ""
+"Er der yderligere information, som skal selvangives i forbindelse med "
+"udfyldelsen af KAS-selvangivelse?"
 msgstr ""
+"Soraarnerussutisiaqarnissamut aaqqissuussinerit nunani allaniittut ilaat "
+"pillugit nammineerluni nalunaarsuinermut atatillugu paasissutissanik "
+"allanik nammineerluni nalunaagassaqarpa?"
+
+#: templates/form.html:178
+msgid ""
+"Egen indbetaling til pensionsordninger i andre lande, angiv landet, som "
+"pensionsordningen er hjemmehørende i, samt størrelsen på det indskudte beløb"
+msgstr ""
+"Soraarnerussutisiaqarnissamut aaqqissuussinernut nunani allaniittunut "
+"nammineerluni akiliutit, nuna soraarnerussutisiaqarnissamut "
+"aaqqissuussinerup pilersinneqarfia nalunaaruk, kiisalu aningaasat "
+"akiliutigineqartut amerlassusiat"
+
+#: templates/form.html:185
+msgid "Indsend"
+msgstr "Nassiuguk"
 
 #: templates/nav-tabs.html:7
 msgid "KAS-opgørelser fra tidligere år"
@@ -210,50 +244,51 @@ msgstr ""
 msgid "Ret KAS-opgørelse fra %(year)s"
 msgstr ""
 
+#: templates/not_found.html:9
+msgid "Der mangler data for denne person"
+msgstr "Inuk taanna pillugu paasissutissat amigaataapput"
+
 #: templates/submitted.html:9
 msgid "Selvangivelse opdateret. Tryk på knappen for at åbne formularen igen"
 msgstr ""
+"Nammineerluni nalunaarsuiffik maanna nutarterneqarpoq. Immersugaq "
+"ammaqqikkumagukku attataasaq"
 
 #: templates/submitted.html:12
 msgid "Åbn selvangivelse"
-msgstr ""
+msgstr "Nammineerluni nalunaarsuiffik ammaruk"
 
 #: templates/view.html:13
 #, python-format
 msgid "Udtræk for %(year)s"
-msgstr "UDTRÆK FOR %(year)s"
+msgstr ""
 
 #: templates/view.html:59 templates/view.html:126
 msgid "Forudbetalt kapitalafkastskat"
-msgstr ""
+msgstr "Pigisanit pissarsianit akileraarut akilerallagaq"
+
+#: templates/view.html:64
+msgid "Hævet på pensionsordning"
+msgstr "Soraarnerussutisiaqarnissamut aaqqissuussamit akilerneqartoq"
+
+#: templates/view.html:71 templates/view.html:131
+msgid "Betalt kapitalafkastskat i udlandet"
+msgstr "Pigisanit pissarsianit akileraarut nunami allami akilerneqartoq"
 
 #: templates/view.html:76
 msgid "Negativt kapitalafkast fra tidligere år"
 msgstr ""
+"Pigisanit pissarsiassaagaluit iluanaarutaanatik annaasat ukiuni "
+"siusinnerusuneersut"
 
 #: templates/view.html:83 templates/view.html:89
 msgid "Dokumentation"
-msgstr ""
+msgstr "Uppernarsaat"
 
 #: templates/view.html:106
 msgid "Opsummering"
 msgstr ""
 
-#: views.py:110
+#: views.py:126
 msgid "--- angiv navn ---"
-msgstr ""
-
-#~ msgid "common.logout"
-#~ msgstr "Aniffissaq"
-
-#~ msgid "DK"
-#~ msgstr "Danmark"
-
-#~ msgid "GL"
-#~ msgstr "Grønland"
-
-#~ msgid "test-text"
-#~ msgstr "Her er en tekst på grønlandsk"
-
-#~ msgid "common.logged_in_as"
-#~ msgstr "{navn} isersimavoq"
+msgstr "--- aqqa nalunaaruk ---"
