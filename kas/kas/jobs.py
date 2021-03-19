@@ -275,6 +275,7 @@ def dispatch_eboks_tax_slips(job):
                                            message_id=message_id)
             except ConnectionError:
                 job.result = {'error': 'ConnectionError'}
+                job.status = 'failed'
                 job.save(update_fields=['status', 'result'])
                 mark_parent_job_as_failed(job)
                 break
