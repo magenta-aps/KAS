@@ -2,6 +2,7 @@ import re
 
 from django.core.exceptions import ValidationError
 from django.forms import forms, fields, widgets, Field
+from django.utils.translation import gettext as _
 
 
 class PolicyForm(forms.Form):
@@ -19,7 +20,7 @@ class PolicyForm(forms.Form):
 
     pension_company_id = fields.IntegerField(
         widget=widgets.Select(
-            choices=[(None, "--- angiv navn ---"), (1, "Selskab 1"), (2, "Selskab 2")],
+            choices=[],
             attrs={'class': 'company_select form-control', 'autocomplete': 'off'}
         ),
         required=False,
@@ -71,7 +72,7 @@ class PolicyForm(forms.Form):
             self.fields[f"file_description_{i}"] = fields.CharField(
                 max_length=255,
                 widget=widgets.TextInput(
-                    attrs={'placeholder': 'Beskrivelse'}
+                    attrs={'placeholder': _('Beskrivelse')}
                 ),
                 required=False
             )
@@ -91,7 +92,7 @@ class PolicyForm(forms.Form):
                 key = f"file_existing_delete_{i}"
                 self.fields[key] = fields.BooleanField(
                     widget=widgets.CheckboxInput(
-                        attrs={'title': 'Behold'}
+                        attrs={'title': _('Behold fil')}
                     ),
                     label=policy_document['name'],
                     required=False
@@ -103,7 +104,7 @@ class PolicyForm(forms.Form):
                 self.fields[key] = fields.CharField(
                     max_length=255,
                     widget=widgets.TextInput(
-                        attrs={'placeholder': 'Beskrivelse'}
+                        attrs={'placeholder': _('Beskrivelse')}
                     ),
                     required=False
                 )
