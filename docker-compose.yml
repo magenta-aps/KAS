@@ -18,8 +18,8 @@ services:
     environment:
       - MAKE_MIGRATIONS=true
       - MIGRATE=true
-      # Set this to DUMMYDATA=true if you want the old dummy data
-      - DUMMYDATA=
+      # Set this to "DUMMYDATA=" in override file if you do not want dummy data
+      - DUMMYDATA=true
       - CREATE_USERS=true
       - TEST=true
     command: gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output # reload on code changes

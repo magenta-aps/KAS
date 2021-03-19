@@ -398,12 +398,18 @@ def dispatch_chained_jobs(list_of_jobs, parent_job):
 
 @job_decorator
 def reset_to_mockup_data(job):
-    dispatch_chained_jobs([
-        ('ClearTestData', {}),
-        ('ImportEskatMockup', {}),
-        ('ImportAllMockupMandtal', {}),
-        ('ImportAllMockupR75', {}),
-    ], job)
+
+    subjobs = [
+        ('ImportEskatMockup', job.arguments),
+        ('ImportAllMockupMandtal', job.arguments),
+        ('ImportAllMockupR75', job.arguments),
+    ]
+
+    # Unless explicitly told to not delete stuff add job at start that deletes everything
+    if not job.arguments.get('skip_deletions'):
+        subjobs = [('ClearTestData', job.arguments)] + subjobs
+
+    dispatch_chained_jobs(subjobs, job)
 
 
 @job_decorator
