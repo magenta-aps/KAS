@@ -83,8 +83,8 @@ msgid "Værdi"
 msgstr ""
 
 #: templates/calculation.html:14
-msgid "Antal skattepligtige dage i skatteår"
-msgstr "Ukiumi akileraarfiusumi ullut akileraartussaaffiit"
+msgid "Antal skattepligtige dage i skatteår: %(number_of_days)s"
+msgstr "Ukiumi akileraarfiusumi ullut akileraartussaaffiit: %(number_of_days)s"
 
 #: templates/calculation.html:19
 #, fuzzy
