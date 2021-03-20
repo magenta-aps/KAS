@@ -165,8 +165,6 @@ class TaxPDF(FPDF):
         self.person_number = person_number
         self.reciever_name = reciever_name
 
-        print(reciever_address_l2)
-
         if reciever_address_l1 is not None:
             self.full_reciever_address += reciever_address_l1 + '\n'
         if reciever_address_l2 is not None:
