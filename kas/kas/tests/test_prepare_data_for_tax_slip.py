@@ -1,8 +1,6 @@
-import os
 from builtins import len
-
 from django.test import TestCase
-from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear
+from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear, TaxSlipGenerated
 from kas.reportgeneration.kas_report import TaxSlipHandling
 import tempfile
 
@@ -12,7 +10,13 @@ class DeductionTest(TestCase):
     # Validate that losses can be used as deductions in future years, until all is used.
     # Validate than when all losses us used, other years can be used as basis for the deduction
     def test_Using_up_loss_from_2019(self):
-        self.skipTest(reason='invalid test')
+
+        """
+        The reason for generating the large amount of data for this test, is to make sure we can show customers
+        examples of remoprts with large amounts of data i reports
+        :return:
+        """
+
         person1 = Person.objects.create(cpr='1234567890', municipality_code=956, municipality_name='Sermersooq',
                                         address_line_2='Mut aqqut 13', address_line_4='3900 Nuuk', name='Andersine And')
         person2 = Person.objects.create(cpr='1234567891', municipality_code=956, municipality_name='Sermersooq',
@@ -48,7 +52,7 @@ class DeductionTest(TestCase):
         )
 
         PolicyTaxYear.objects.create(
-            policy_number='1234',
+            policy_number='policenummer',
             person_tax_year=person_tax_year_p1_2019,
             pension_company=pension_company2,
             prefilled_amount=100,
@@ -57,7 +61,7 @@ class DeductionTest(TestCase):
         )
 
         PolicyTaxYear.objects.create(
-            policy_number='1234',
+            policy_number='policenummer',
             person_tax_year=person_tax_year_p1_2020,
             pension_company=pension_company1,
             prefilled_amount=200,
@@ -66,7 +70,7 @@ class DeductionTest(TestCase):
         )
 
         PolicyTaxYear.objects.create(
-            policy_number='1235',
+            policy_number='policenummer',
             person_tax_year=person_tax_year_p1_2020,
             pension_company=pension_company2,
             prefilled_amount=300,
@@ -82,7 +86,7 @@ class DeductionTest(TestCase):
         )
 
         PolicyTaxYear.objects.create(
-            policy_number='1234',
+            policy_number='policenummer',
             person_tax_year=person_tax_year_p2_2020,
             pension_company=pension_company1,
             prefilled_amount=402,
@@ -181,22 +185,28 @@ class DeductionTest(TestCase):
         self.test_dir = tempfile.mkdtemp()+'/'
 
         pdf_documen = TaxSlipHandling()
-        pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2020)
+        pdf_documen.perform_complete_write_of_one_tax_year(tax_year=2020)
 
-        filelist1 = os.listdir(self.test_dir)
+        list_of_tax_slips = TaxSlipGenerated.objects.all()
+        self.assertEqual(3, len(list_of_tax_slips))
 
-        self.assertEqual(3, len(filelist1))
-        self.assertEqual(True, 'Y_2020_1234567890.pdf' in filelist1)
-        self.assertEqual(True, 'Y_2020_1234567891.pdf' in filelist1)
-        self.assertEqual(True, 'Y_2020_1234567897.pdf' in filelist1)
+        filelist = ''
+        for tax_slip in list_of_tax_slips:
+            filelist += tax_slip.file.name
+            self.assertEqual('created', tax_slip.status)
+
+        self.assertEqual(True, 'Y_2020_1234567890' in filelist)
+        self.assertEqual(True, 'Y_2020_1234567890' in filelist)
+        self.assertEqual(True, 'Y_2020_1234567897' in filelist)
 
         self.test_dir = tempfile.mkdtemp()+'/'
-        pdf_documen.perform_complete_write_of_one_tax_year(destination_path=self.test_dir, tax_year=2019)
-        filelist2 = os.listdir(self.test_dir)
-        self.assertEqual(1, len(filelist2))
-        self.assertEqual(True, 'Y_2019_1234567890.pdf' in filelist2)
+        pdf_documen.perform_complete_write_of_one_tax_year(tax_year=2019)
+        list_of_tax_slips = TaxSlipGenerated.objects.all()
+        self.assertEqual(4, len(list_of_tax_slips))
 
-        person_tax_year_list = PersonTaxYear.objects.all()
+        filelist = ''
+        for tax_slip in list_of_tax_slips:
+            filelist += tax_slip.file.name
+            self.assertEqual('created', tax_slip.status)
 
-        for person_tax_year in person_tax_year_list:
-            self.assertEqual('created', person_tax_year.tax_slip.status)
+        self.assertEqual(True, 'Y_2019_1234567890' in filelist)
