@@ -12,7 +12,7 @@ class DeductionTest(TestCase):
     def test_Using_up_loss_from_2019(self):
 
         """
-        The reason for generating the large amount of data for this test, is to make sure we can show costumers
+        The reason for generating the large amount of data for this test, is to make sure we can show customers
         examples of remoprts with large amounts of data i reports
         :return:
         """
