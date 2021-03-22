@@ -200,7 +200,7 @@ def chunks(lst, size):
 
 
 def update_status_for_pending_dispatches(eboks_client, pending_messages):
-    for message_id_chunk in chunks(list(pending_messages.keys()), size=50):
+    for message_id_chunk in chunks(list(pending_messages.keys()), size=10):
         # Send up to 50 message_ids to get status information for
         r = eboks_client.get_recipient_status(message_id_chunk)
         for message in r.json():
