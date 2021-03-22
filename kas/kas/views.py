@@ -5,6 +5,7 @@ from django.http import Http404, HttpResponse
 from django.views.generic import TemplateView, DetailView, ListView, View
 from django.views.generic.detail import SingleObjectMixin
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
+from kas.forms import PersonListFilterForm
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated
 
 import os
@@ -72,7 +73,18 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
         if not self.year:
             raise Http404("No year specified")
 
-        qs = qs.filter(tax_year__year=self.year)
+        filters = {'tax_year__year': self.year}
+
+        form = PersonListFilterForm(self.request.GET)
+
+        if form.is_valid():
+            if form.cleaned_data['cpr']:
+                filters['person__cpr__contains'] = form.cleaned_data['cpr']
+            if form.cleaned_data['name']:
+                filters['person__name__contains'] = form.cleaned_data['name']
+
+        self.form = form
+        qs = qs.filter(**filters)
 
         return qs
 

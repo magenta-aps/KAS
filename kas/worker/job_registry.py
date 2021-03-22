@@ -30,7 +30,7 @@ def get_job_types():
             'function': 'kas.jobs.generate_reports_for_year'
         },
         'DispatchTaxYear': {
-            'label': ('Afsendelse af Kas opgørelse for et given år'),
+            'label': ('Afsendelse af KAS selvangivelser for et givent år'),
             'form_class': DispatchTaxYearForm,
             'function': 'kas.jobs.dispatch_tax_year',
         },

@@ -3,6 +3,18 @@
 
 {% block content %}
   <h1>List over personer i år {{view.year}}</h1>
+
+  <hr>
+
+  <div>
+    <form action="" method="GET" class="form-inline">
+      {{ view.form }}
+      <input type="submit" value="{% trans 'Søg' %}" />
+    </form>
+  </div>
+
+  <hr>
+
   {% if personstaxyears %}
   <ul>
     {% for personstaxyear in personstaxyears %}
@@ -15,6 +27,9 @@
     <p>Ingen personer fundet for år {{view.year}}</p>
   {% endif %}
 
-{% include 'includes/pager.html' %}
+  <hr>
 
+  {% include 'includes/pager.html' %}
+
+  <hr>
 {% endblock %}
