@@ -157,13 +157,15 @@ class TaxPDF(FPDF):
     def set_parameters(self, tax_year='-', tax_return_date_limit='', request_pay='', pay_date='', person_number='-',
                        reciever_name='', reciever_address_l1='', reciever_address_l2='', reciever_address_l3='',
                        reciever_address_l4='', reciever_address_l5='', fully_tax_liable=True,
-                       tax_days_adjust_factor=1.0, taxable_days_in_year=365, policies=['']):
+                       tax_days_adjust_factor=1.0, taxable_days_in_year=365, policies=None):
         self.tax_year = tax_year
         self.tax_return_date_limit = tax_return_date_limit
         self.request_pay = request_pay
         self.pay_date = pay_date
         self.person_number = person_number
         self.reciever_name = reciever_name
+        if policies is None:
+            policies = []
 
         if reciever_address_l1 is not None:
             self.full_reciever_address += reciever_address_l1 + '\n'
@@ -456,7 +458,8 @@ class TaxPDF(FPDF):
         reciever_address_line_4 = person_tax_year.person.address_line_4
         reciever_address_line_5 = person_tax_year.person.address_line_5
         fully_tax_liable = person_tax_year.fully_tax_liable
-        tax_days_adjust_factor = person_tax_year.fully_tax_liable
+        tax_days_adjust_factor = 1 if person_tax_year.fully_tax_liable else 0
+        taxable_days_in_year = person_tax_year.number_of_days
 
         policies = []
 
@@ -473,7 +476,6 @@ class TaxPDF(FPDF):
             if not firstPolicy:
                 calculation_result = policy.perform_calculation(initial_amount=policy.prefilled_amount)
                 tax_days_adjust_factor = calculation_result.get('tax_days_adjust_factor')
-                taxable_days_in_year = calculation_result.get('taxable_days_in_year')
                 firstPolicy = True
 
             single_policy = {
