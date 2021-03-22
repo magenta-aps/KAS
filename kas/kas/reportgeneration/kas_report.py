@@ -46,10 +46,10 @@ class TaxPDF(FPDF):
     text11 = {'gl': "Danskit soraarnerussutisiaqarnissamut sillimmasiisarfiini aamma soraarnerussutisiaqarnissamut "
                     "aningaasaateqarfiini inuunermut sillimmasiissutivit soraarnerussutisiaqarnissamullu "
                     "aaqqissuussavit ukiumi pineqartumi iluanaarutaat, kiisalu soraarnerussutisiaqarnissamut "
-                    "aaqqissuussinernut nunani allaniittunut illit nammineq akiliutitit "
+                    "aaqqissuussinernut nunani allaniittunut illit namminerisamik akiliutitit "
                     "nammineerluni nalunaarsuiffimmi uani nalunaarsussavatit. ",
               'dk': "I denne selvangivelse skal du oplyse årets afkast fra dine livsforsikringer og pensionsordninger "
-                    "i danske pensionsforsikringsselskaber og pensionskasser, samt dine egne indbetalinger til "
+                    "i danske pensionsforsikringsselskaber og pensionskasser, samt dine private indbetalinger til "
                     "udenlandske pensionsordninger."}
     text12 = {'gl': "Soraarnerussutisiaqarnissamut aaqqissuussinermut Kalaallit Nunaata avataaniittumut "
                     "nammineerlutit akiliisimaguit akilersimasatit, soraarnerussutisiaqarnissamut aaqqissuussinernut "
@@ -131,7 +131,7 @@ class TaxPDF(FPDF):
                      'nammineerluni nalunaarsuinermut atatillugu paasissutissanik allanik nammineerluni '
                      'nalunaagassaqarpa?',
                'dk': 'Er der yderligere information, som skal selvangives i forbindelse med udfyldelsen af '
-                     'Selvangivelsen for visse udenlandske pensionsordninger? '}
+                     'Selvangivelse for visse udenlandske pensionsordninger? '}
 
     text27 = {'gl': 'Sumiiffik / Oqarasuaat', 'dk': 'Sted/tlf'}
     text28 = {'gl': 'Ulloq', 'dk': 'Dato'}
@@ -341,10 +341,9 @@ class TaxPDF(FPDF):
 
         self.add_page()
 
-        c1w = 50
-        c2w = 40
-        c3w = 40
-        c4w = 35
+        c1w = 65
+        c2w = 50
+        c3w = 50
         policys_per_page = 4
         policy_index = 0
 
@@ -358,7 +357,7 @@ class TaxPDF(FPDF):
             columnheaderheight = 5
             self.set_font('arial', 'B', 12)
             self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(h=headerheight, align='C', w=c1w+c2w+c3w+c4w, txt=policy.get('policy'), border=1)
+            self.multi_cell(h=headerheight, align='C', w=c1w+c2w+c3w, txt=policy.get('policy'), border=1)
             self.yposition += headerheight
 
             self.set_font('arial', 'B', 10)
@@ -368,8 +367,6 @@ class TaxPDF(FPDF):
             self.multi_cell(h=columnheaderheight, align='C', w=c2w, txt=self.text17B[language], border=1)
             self.set_xy(self.left_margin+c1w+c2w, self.yposition)
             self.multi_cell(h=columnheaderheight, align='C', w=c3w, txt=self.text17C[language], border=1)
-            self.set_xy(self.left_margin+c1w+c2w+c3w, self.yposition)
-            self.multi_cell(h=columnheaderheight, align='C', w=c4w, txt=self.text18[language], border=1)
             self.yposition += 10
 
             self.set_font('arial', '', 8.5)
@@ -384,8 +381,6 @@ class TaxPDF(FPDF):
             self.multi_cell(h=rowheight, align='C', w=c2w, txt=str(actual_amount), border=1)
             self.set_xy(self.left_margin+c1w+c2w, self.yposition)
             self.multi_cell(h=rowheight, align='L', w=c3w, txt='', border=1)
-            self.set_xy(self.left_margin+c1w+c2w+c3w, self.yposition)
-            self.multi_cell(h=rowheight, align='C', w=c4w, txt='', border=1)
             self.yposition += rowheight
             self.set_xy(self.left_margin, self.yposition)
             if policy.get('agreement_present'):
@@ -479,7 +474,7 @@ class TaxPDF(FPDF):
                 firstPolicy = True
 
             single_policy = {
-                'policy': (policy.pension_company.name+' - '+policy.policy_number),
+                'policy': ((policy.pension_company.name or ' - ')+' - '+policy.policy_number),
                 'preliminary_paid_amount': policy.preliminary_paid_amount,
                 'prefilled_amount': policy.prefilled_amount,
                 'agreement_present': policy.pension_company.agreement_present,
