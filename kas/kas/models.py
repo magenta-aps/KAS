@@ -52,6 +52,11 @@ class HistoryMixin(object):
 
 class PensionCompany(models.Model):
 
+    class Meta:
+        ordering = ['name']
+        verbose_name = _('pensionsselskab')
+        verbose_name_plural = _('pensionsselskaber')
+
     name = models.TextField(
         db_index=True,
         verbose_name=_('Navn'),
