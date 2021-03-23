@@ -302,8 +302,42 @@ class PersonTaxYear(HistoryMixin, models.Model):
             return 1
         return self.number_of_days / self.tax_year.days_in_year
 
+    def recalculate_mandtal(self):
+        number_of_days = 0
+        fully_tax_liable = False
+        qs = self.persontaxyearcensus_set.filter(fully_tax_liable=True)
+        for person_tax_year_census in qs:
+            number_of_days += person_tax_year_census.number_of_days
+            fully_tax_liable = True
+        self.number_of_days = max(number_of_days, self.tax_year.days_in_year)
+        self.fully_tax_liable = fully_tax_liable
+        self.save()
+
     def __str__(self):
         return f"{self.__class__.__name__}(cpr={self.person.cpr}, year={self.tax_year.year})"
+
+
+class PersonTaxYearCensus(HistoryMixin, models.Model):
+
+    person_tax_year = models.ForeignKey(
+        PersonTaxYear,
+        null=False,
+        on_delete=models.CASCADE
+    )
+
+    imported_kas_mandtal = models.UUIDField(
+        null=False
+    )
+
+    number_of_days = models.IntegerField(
+        verbose_name='Antal dage',
+        null=True
+    )
+
+    fully_tax_liable = models.BooleanField(
+        verbose_name='Fuldt skattepligtig',
+        default=True
+    )
 
 
 class PolicyTaxYear(HistoryMixin, models.Model):
