@@ -294,7 +294,7 @@ class PersonTaxYear(HistoryMixin, models.Model):
         for person_tax_year_census in qs:
             number_of_days += person_tax_year_census.number_of_days
             fully_tax_liable = True
-        self.number_of_days = max(number_of_days, self.tax_year.days_in_year)
+        self.number_of_days = min(number_of_days, self.tax_year.days_in_year)
         self.fully_tax_liable = fully_tax_liable
         self.save()
 
