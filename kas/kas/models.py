@@ -428,13 +428,6 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         editable=False,
     )
 
-    self_reported_used_deduction = models.BigIntegerField(
-        verbose_name=_('Borgerønsket fradrag fra andre år'),
-        blank=True,
-        null=True,
-        default=None,
-    )
-
     modified_by = models.CharField(
         max_length=255,
         verbose_name=_('Modificeret af'),
