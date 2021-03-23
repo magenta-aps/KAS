@@ -100,7 +100,7 @@ def create_person(
 
     for policy in policies:
         if "res" not in policy:
-            policy["res"] = "6471"
+            policy["res"] = "19676889"
 
         if "pkt" not in policy:
             policy["pkt"] = next_unique_res()
@@ -160,7 +160,7 @@ def import_default_mockup_data():
         "Borger med 0 afkast",
         cpr='0101570010',
         policies=[
-            {"res": 6471, "years": {
+            {"res": 19676889, "years": {
                 2018: 0,
                 2019: 0,
                 2020: 0
@@ -172,7 +172,7 @@ def import_default_mockup_data():
         "Borger med ikke dækkende negativt afkast",
         cpr='0101005089',
         policies=[
-            {"res": 6471, "years": {
+            {"res": 19676889, "years": {
                 2018: -2000,
                 2019: 1000,
                 2020: 2500,
@@ -184,7 +184,7 @@ def import_default_mockup_data():
         "Borger med dækkende negativt afkast",
         cpr='0103897769',
         policies=[
-            {"res": 6471, "years": {
+            {"res": 19676889, "years": {
                 2018: -5000,
                 2019: 1000,
                 2020: 2500,
@@ -196,7 +196,7 @@ def import_default_mockup_data():
         "Borger uden negativt afkast",
         cpr='1509814844',
         policies=[
-            {"res": 6471, "years": {
+            {"res": 19676889, "years": {
                 2018: 1000,
                 2019: 2000,
                 2020: 3000,
@@ -208,7 +208,7 @@ def import_default_mockup_data():
         "Borger med police hos PFA + andre",
         cpr='2512474856',
         policies=[
-            {"res": 6471, "years": {
+            {"res": 19676889, "years": {
                 2018: 1000,
                 2019: 2000,
                 2020: 3000,
@@ -233,7 +233,7 @@ def import_default_mockup_data():
         "Borger med kun positivt afkast i 2020",
         cpr='3105781007',
         policies=[
-            {"res": 6471, "years": {
+            {"res": 19676889, "years": {
                 2020: 3000,
             }},
         ]
@@ -243,7 +243,7 @@ def import_default_mockup_data():
         "Borger med kun negativt afkast i 2020",
         cpr='1105015018',
         policies=[
-            {"res": 6471, "years": {
+            {"res": 19676889, "years": {
                 2020: -3000,
             }},
         ]
@@ -254,7 +254,7 @@ def import_default_mockup_data():
         person_extra={"skatteomfang": "ikke fuld skattepligtig"},
         cpr='0708614866',
         policies=[
-            {"res": 6471, "years": {
+            {"res": 19676889, "years": {
                 2018: 1000,
                 2019: 2000,
                 2020: 3000,
@@ -267,7 +267,7 @@ def import_default_mockup_data():
         cpr='0206025050',
         person_years={2020: {"skattedage": 0}},
         policies=[
-            {"res": 6471, "years": {
+            {"res": 19676889, "years": {
                 2020: 3000,
             }},
         ]
@@ -278,7 +278,7 @@ def import_default_mockup_data():
         cpr='0101055035',
         person_years={2020: {"skattedage": 150}},
         policies=[
-            {"res": 6471, "years": {
+            {"res": 19676889, "years": {
                 2018: 1000,
                 2019: 2000,
                 2020: 3000,
@@ -291,7 +291,7 @@ def import_default_mockup_data():
         cpr='0401570020',
         person_years={2019: {"skattedage": 73}},
         policies=[
-            {"res": 6471, "years": {
+            {"res": 19676889, "years": {
                 2019: -5000,
                 2020: 3000,
             }},
@@ -303,7 +303,7 @@ def import_default_mockup_data():
         cpr='1105550193',
         person_years={2019: {"skattedage": 73}, 2020: {"skattedage": 146}},
         policies=[
-            {"res": 6471, "years": {
+            {"res": 19676889, "years": {
                 2019: -5000,
                 2020: 3000,
             }},
@@ -315,7 +315,7 @@ def import_default_mockup_data():
         cpr='0209025000',
         person_years={2018: {"skattedage": 73}, 2019: {"skattedage": 146}},
         policies=[
-            {"res": 6471, "years": {
+            {"res": 19676889, "years": {
                 2009: -100000,
                 2018: 1000,
                 2019: 1000,
@@ -332,7 +332,7 @@ def import_default_mockup_data():
         "Person som kan logges ind på test",
         cpr='1802602810',
         policies=[
-            {"pkt": 6471, "years": {
+            {"pkt": 19676889, "years": {
                 2018: 1000,
                 2019: 2000,
                 2020: 3000,
@@ -349,7 +349,7 @@ def import_default_mockup_data():
         "Borger med negativt afkast fordelt over flere år",
         cpr='1105520049',
         policies=[
-            {"res": 6471, "years": {
+            {"res": 19676889, "years": {
                 2018: -600,
                 2019: -1000,
                 2020: 3000,

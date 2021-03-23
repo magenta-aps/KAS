@@ -27,6 +27,9 @@ class Command(BaseCommand):
             next(csvreader)
 
             for row in csvreader:
+                res = row[0]
+                if len(res) <= 4:
+                    continue
                 dof = PensionCompany.DOF_UNKNOWN
 
                 if row[3].lower() == "domestic":
@@ -36,12 +39,12 @@ class Command(BaseCommand):
 
                 PensionCompany.objects.update_or_create(
                     defaults={
-                        'res': row[0],
+                        'res': res,
                         'name': row[1],
                         'address': row[2],
                         'domestic_or_foreign': dof,
                         'accepts_payments': True if row[4].lower() == "y" else False,
                         'agreement_present': (row[1] in self.companies_with_deals)
                     },
-                    res=row[0],
+                    res=res,
                 )
