@@ -18,13 +18,13 @@ class PolicyForm(forms.Form):
         required=False,
     )
 
-    # pension_company_id = fields.IntegerField(
-    #     widget=widgets.Select(
-    #         choices=[],
-    #         attrs={'class': 'company_select form-control', 'autocomplete': 'off'}
-    #     ),
-    #     required=False,
-    # )
+    pension_company_id = fields.IntegerField(
+        widget=widgets.Select(
+            choices=[],
+            attrs={'class': 'company_select form-control', 'autocomplete': 'off'}
+        ),
+        required=False,
+    )
     pension_company_name = fields.CharField(
         widget=widgets.TextInput(
             attrs={'class': 'company_explicit form-control', 'autocomplete': 'off'}
@@ -143,8 +143,7 @@ class PolicyForm(forms.Form):
         if extra_form_has_data:
             errors = {}
 
-            # for fieldnames in [['policy_number_new'], ['self_reported_amount'], ['pension_company_id', 'pension_company_name']]:
-            for fieldnames in [['policy_number_new'], ['self_reported_amount'], ['pension_company_name']]:
+            for fieldnames in [['policy_number_new'], ['self_reported_amount'], ['pension_company_id', 'pension_company_name']]:
                 if len([True for x in fieldnames if cleaned_data[x] in ('', None)]) == len(fieldnames):
                     for value in cleaned_data.values():
                         if value not in ('', None):

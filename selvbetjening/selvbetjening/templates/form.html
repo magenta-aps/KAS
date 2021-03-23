@@ -47,15 +47,15 @@
                                 {% if policyform.id.value is None %}
                                 <tr>
                                     <td class="col-2-sm">{% trans 'Pensionsselskab' %}</td>
-                                    <td class="col-6-sm">Indsæt beskrivende tekst her</td>
+                                    <td class="col-6-sm"></td>
                                     <td class="col-4-sm">
-                                        {# {% include 'include/field.html' with field=policyform.pension_company_id %} #}
+                                        {% include 'include/field.html' with field=policyform.pension_company_id %}
                                         {% include 'include/field.html' with field=policyform.pension_company_name %}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="col-2-sm">{% trans 'Policenummer' %}</td>
-                                    <td class="col-6-sm">Indsæt beskrivende tekst her</td>
+                                    <td class="col-6-sm"></td>
                                     <td class="col-4-sm">
                                         {% include 'include/field.html' with field=policyform.policy_number_new %}
                                     </td>
@@ -68,7 +68,6 @@
                                         {% if policyform.prefilled_amount.value is not None %}
                                         {% blocktrans with value=policyform.prefilled_amount.value %}Vores beregning: {{value}}{% endblocktrans %}
                                         {% else %}
-                                        Indsæt beskrivende tekst her
                                         {% endif %}
                                     </td>
                                     <td class="col-4-sm">
@@ -88,9 +87,9 @@
                                     <td class="col-2-sm">{% trans 'Dokumentation for betalt kapitalafkastskat' %}</td>
                                     <td class="col-6-sm">
                                         {% if policydata.pension_company.agreement %}
-                                        {% trans 'Vedhæft dokumentation for allerede betalt kapitalafkastskat i udlandet.' %}
+                                        {% trans 'Vedhæft dokumentation for betalt kapitalafkastskat i udlandet.' %}
                                         {% else %}
-                                        {% trans 'Vedhæft dokumentation for allerede betalt kapitalafkastskat. Dokumentation for betaling både i Grønland og i udlandet kan vedhæftes her.' %}
+                                        {% trans 'Vedhæft dokumentation for betalt kapitalafkastskat. Dokumentation for betaling både i Grønland og i udlandet kan vedhæftes her.' %}
                                         {% endif %}
                                     </td>
                                     <td class="col-4-sm file_container">
@@ -99,13 +98,10 @@
                                         {% if field.name|startswith:'file_existing_id' %}
                                         <div class="doc_file_existing">
                                             {{ field }}
-
                                             {% with field.keep_field as keep_field %}
                                             <label for="{{ keep_field.id_for_label }}">{{ keep_field }}{{ keep_field.label }}</label>
                                             {% endwith %}
-
                                             {{ field.description_field }}
-
                                         </div>
                                         {% endif %}
                                         {% endfor %}
@@ -149,7 +145,7 @@
         <div class="row">
 
             <label>
-                {% blocktrans %}Egen indbetaling til pensionsordninger i andre lande, angiv landet, som pensionsordningen er hjemmehørende i, samt størrelsen på det indskudte beløb{% endblocktrans %}
+                {% blocktrans %}Privat indbetaling til pensionsordninger i andre lande. Angiv landet, som pensionsordningen er hjemmehørende i, samt størrelsen på det indskudte beløb{% endblocktrans %}
             </label>
             {{ extra_form.general_notes }}
         </div>

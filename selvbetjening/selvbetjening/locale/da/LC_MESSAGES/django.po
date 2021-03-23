@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-19 08:23+0000\n"
+"POT-Creation-Date: 2021-03-23 15:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -13,11 +13,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: forms.py:75 templates/calculation.html:8 templates/form.html:51
+#: forms.py:67 forms.py:99 templates/calculation.html:8 templates/form.html:42
 msgid "Beskrivelse"
 msgstr ""
 
-#: forms.py:95
+#: forms.py:87
 msgid "Behold fil"
 msgstr ""
 
@@ -54,12 +54,12 @@ msgstr[1] ""
 msgid "Select a valid choice. %(value)s is not one of the available choices."
 msgstr ""
 
-#: templates/base.html:65
+#: templates/base.html:61
 #, python-format
 msgid "Logget ind som %(name)s"
 msgstr ""
 
-#: templates/base.html:68
+#: templates/base.html:64
 msgid "Log ud"
 msgstr ""
 
@@ -67,7 +67,7 @@ msgstr ""
 msgid "Beregning"
 msgstr ""
 
-#: templates/calculation.html:7 templates/form.html:50 templates/view.html:47
+#: templates/calculation.html:7 templates/form.html:41 templates/view.html:47
 #: templates/view.html:114
 msgid "Feltnavn"
 msgstr ""
@@ -77,7 +77,7 @@ msgid "Værdi"
 msgstr ""
 
 #: templates/calculation.html:14
-msgid "Antal skattepligtige dage i skatteår: %(number_of_days)s"
+msgid "Antal skattepligtige dage i skatteår"
 msgstr ""
 
 #: templates/calculation.html:19
@@ -104,102 +104,85 @@ msgstr ""
 msgid "Skattepligtigt beløb / skattegrundlag"
 msgstr ""
 
-#: templates/form.html:11
+#: templates/form.html:9
 #, python-format
-msgid ""
-"\n"
-"            De har ikke haft bopæl i Grønland i hele året og derfor skal de "
-"ikke betale skat for hele året.\n"
-"            Skatten beregnes forholdsmæssigt efter antallet af dage med "
-"bopæl i landet ud af det aktuelle antal dage i året.\n"
-"            I nedenstående indberetninger angives det beregningsgrundlag, "
-"der benyttes som basis for fastsættelse af skatten.\n"
-"            De er fastsat til at være skattepligtig i 50%% af året.\n"
-"        "
+msgid "Antal skattepligtige dage i skatteår: %(number_of_days)s"
 msgstr ""
 
-#: templates/form.html:39
+#: templates/form.html:30
 msgid "Angiv ny police"
 msgstr ""
 
-#: templates/form.html:41
+#: templates/form.html:32
 #, python-format
 msgid "%(company)s, Police nr %(policy)s"
 msgstr ""
 
-#: templates/form.html:52
+#: templates/form.html:43
 msgid "Felt"
 msgstr ""
 
-#: templates/form.html:53 templates/view.html:49 templates/view.html:116
-msgid "Felt nr."
-msgstr ""
-
-#: templates/form.html:59
+#: templates/form.html:49
 msgid "Pensionsselskab"
 msgstr ""
 
-#: templates/form.html:68
+#: templates/form.html:57
 msgid "Policenummer"
 msgstr ""
 
-#: templates/form.html:78 templates/view.html:54 templates/view.html:121
+#: templates/form.html:66 templates/view.html:54 templates/view.html:121
 msgid "Kapitalafkast PBL (DK) § 53 A"
 msgstr ""
 
-#: templates/form.html:81 templates/form.html:96
+#: templates/form.html:69
 #, python-format
 msgid "Vores beregning: %(value)s"
 msgstr ""
 
-#: templates/form.html:85 templates/form.html:100
+#: templates/form.html:74
 msgid "Beløb:"
 msgstr ""
 
-#: templates/form.html:85 templates/form.html:100
+#: templates/form.html:74
 msgid "Deres rettelse:"
 msgstr ""
 
-#: templates/form.html:93
-msgid "Fremført negativt afkast fra tidligere år"
-msgstr ""
-
-#: templates/form.html:109
+#: templates/form.html:82
 msgid ""
 "Skatten for denne pensionsordning betales automatisk af pensionsselskabet"
 msgstr ""
 
-#: templates/form.html:114
+#: templates/form.html:87
 msgid "Dokumentation for betalt kapitalafkastskat"
 msgstr ""
 
-#: templates/form.html:117
-msgid "Vedhæft dokumentation for allerede betalt kapitalafkastskat i udlandet."
+#: templates/form.html:90
+msgid "Vedhæft dokumentation for betalt kapitalafkastskat i udlandet."
 msgstr ""
 
-#: templates/form.html:119
+#: templates/form.html:92
 msgid ""
-"Vedhæft dokumentation for allerede betalt kapitalafkastskat. Dokumentation "
-"for betaling både i Grønland og i udlandet kan vedhæftes her."
+"Vedhæft dokumentation for betalt kapitalafkastskat. Dokumentation for "
+"betaling både i Grønland og i udlandet kan vedhæftes her."
 msgstr ""
 
-#: templates/form.html:141
+#: templates/form.html:111
 msgid "Fjern"
 msgstr ""
 
-#: templates/form.html:170
+#: templates/form.html:140
 msgid ""
 "Er der yderligere information, som skal selvangives i forbindelse med "
 "udfyldelsen af KAS-selvangivelse?"
 msgstr ""
 
-#: templates/form.html:178
+#: templates/form.html:148
 msgid ""
-"Egen indbetaling til pensionsordninger i andre lande, angiv landet, som "
+"Privat indbetaling til pensionsordninger i andre lande. Angiv landet, som "
 "pensionsordningen er hjemmehørende i, samt størrelsen på det indskudte beløb"
 msgstr ""
 
-#: templates/form.html:185
+#: templates/form.html:155
 msgid "Indsend"
 msgstr ""
 
@@ -234,6 +217,10 @@ msgstr ""
 msgid "Udtræk for %(year)s"
 msgstr ""
 
+#: templates/view.html:49 templates/view.html:116
+msgid "Felt nr."
+msgstr ""
+
 #: templates/view.html:59 templates/view.html:126
 msgid "Forudbetalt kapitalafkastskat"
 msgstr ""
@@ -258,7 +245,7 @@ msgstr ""
 msgid "Opsummering"
 msgstr ""
 
-#: views.py:126
+#: views.py:121
 msgid "--- angiv navn ---"
 msgstr ""
 
