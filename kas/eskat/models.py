@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.db import models, transaction
 from django.conf import settings
+from django.db.models.functions import Length
 from django.forms.models import model_to_dict
 from simple_history.models import HistoricalRecords
 
@@ -283,6 +284,7 @@ class ImportedR75PrivatePension(AbstractModels.R75PrivatePension):
             qs = source_model.objects.filter(
                 tax_year=year
             )
+            qs = qs.annotate(res_length=Length('res')).filter(res_length__gt=4)
             count = qs.count()
             created, updated = (0, 0)
 
