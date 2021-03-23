@@ -94,26 +94,6 @@ class PensionCompany(models.Model):
         verbose_name=_("Foreligger der en aftale med skattestyrelsen")
     )
 
-    DOF_UNKNOWN = 0
-    DOF_DOMESTIC = 1
-    DOF_FOREIGN = 2
-
-    dof_options = (
-        (DOF_UNKNOWN, _('Uvist')),
-        (DOF_DOMESTIC, _('Indenlandsk')),
-        (DOF_FOREIGN, _('Udenlandsk')),
-    )
-
-    domestic_or_foreign = models.IntegerField(
-        choices=dof_options,
-        default=DOF_UNKNOWN,
-    )
-
-    accepts_payments = models.BooleanField(
-        verbose_name=_('Modtager indbetalinger'),
-        default=False,
-    )
-
     agreement_present = models.BooleanField(
         default=False,
         verbose_name=_("Foreligger der en aftale med skattestyrelsen")

@@ -31,20 +31,12 @@ class Command(BaseCommand):
                 res = row[0]
                 if len(res) <= 4:
                     continue
-                dof = PensionCompany.DOF_UNKNOWN
-
-                if row[3].lower() == "domestic":
-                    dof = PensionCompany.DOF_DOMESTIC
-                elif row[3].lower() == "foreign":
-                    dof = PensionCompany.DOF_FOREIGN
 
                 PensionCompany.objects.update_or_create(
                     defaults={
                         'res': res,
                         'name': row[1],
                         'address': row[2],
-                        'domestic_or_foreign': dof,
-                        'accepts_payments': True if row[4].lower() == "y" else False,
                         'agreement_present': (row[1] in self.companies_with_deals)
                     },
                     res=res,

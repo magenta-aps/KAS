@@ -6,7 +6,7 @@ class PensionCompanySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PensionCompany
-        fields = ['id', 'name', 'address', 'email', 'phone', 'res', 'agreement_present', 'domestic_or_foreign', 'accepts_payments']
+        fields = ['id', 'name', 'address', 'email', 'phone', 'res', 'agreement_present']
         read_only_fields = ['id']
 
 
