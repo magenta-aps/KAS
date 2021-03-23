@@ -53,8 +53,8 @@ class EskatModelsTestCase(TransactionTestCase):
 
     def test_mockup_data_present(self):
 
-        self.assertGreater(MockModels.MockKasMandtal.objects.count(), 0)
-        self.assertGreater(MockModels.MockR75PrivatePension.objects.count(), 0)
+        self.assertTrue(MockModels.MockKasMandtal.objects.exists())
+        self.assertTrue(MockModels.MockR75Idx4500230.objects.exists())
 
     def test_imported_data_present(self):
         for x in self.imported_tables:

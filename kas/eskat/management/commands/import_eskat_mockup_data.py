@@ -87,30 +87,6 @@ class Command(BaseCommand):
 
     # Legacy method for importing from json files
     def import_mock_r75(self):
-
-        model = MockModels.MockR75PrivatePension
-
-        with open(R75_FILE) as io:
-            json_data = json.load(io)
-
-            for elem in json_data['data']:
-
-                create_args = {k.lower(): v for k, v in elem.items()}
-
-                # Populate each entry with data from mandtal
-                mandtal = MockModels.MockKasMandtal.objects.get(
-                    cpr=create_args['cpr'],
-                    skatteaar=create_args['tax_year'],
-                )
-                create_args['pt_census_guid'] = mandtal.pt_census_guid
-
-                try:
-                    existing = model.objects.get(
-                        r75_ctl_sekvens_guid=create_args["r75_ctl_sekvens_guid"]
-                    )
-                    for k, v in create_args.items():
-                        setattr(existing, k, v)
-                    existing.save()
-                except model.DoesNotExist:
-                    new_obj = model(**create_args)
-                    new_obj.save()
+        # Method is not longer relevant and is not reimplemented for the
+        # new R75 view.
+        pass

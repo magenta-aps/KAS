@@ -117,7 +117,8 @@ class AbstractModels:
         def __str__(self):
             return '%s - %s' % (self.navn, self.skatteaar)
 
-    class R75PrivatePension(models.Model):
+    # R75Idx4500230: Data from index 4500230 in R75. Contains policies and their return as reported by pension companies.
+    class R75Idx4500230(models.Model):
         pt_census_guid = models.UUIDField()
         tax_year = models.IntegerField()
         cpr = models.TextField()
@@ -125,16 +126,22 @@ class AbstractModels:
         r75_ctl_indeks_guid = models.UUIDField()
         idx_nr = models.IntegerField()
         res = models.TextField(blank=True, null=True)
-        pkt = models.TextField(blank=True, null=True)
-        beloeb = models.TextField(blank=True, null=True)
-        dato = models.TextField(blank=True, null=True)
+        ktd = models.TextField(blank=True, null=True)
+        ktt = models.TextField(blank=True, null=True)
+        kontotype = models.TextField(blank=True, null=True)
+        ibn = models.TextField(blank=True, null=True)
+        esk = models.TextField(blank=True, null=True)
+        ejerstatuskode = models.TextField(blank=True, null=True)
+        indestaaende = models.TextField(blank=True, null=True, db_column='indestående')
+        renteindtaegt = models.TextField(blank=True, null=True, db_column='renteindtægt')
+        r75_dato = models.TextField(blank=True, null=True)
 
         class Meta:
             abstract = True
 
         def __str__(self):
             return '%s - %s/%s/%s - %s kr' % (
-                self.cpr, self.tax_year, self.pkt, self.res, self.beloeb
+                self.cpr, self.tax_year, self.ktd, self.res, self.renteindtaegt
             )
 
 
@@ -158,11 +165,12 @@ class EskatModels:
             managed = False  # Created from a view. Don't remove.
             db_table = 'kas_mandtal'
 
-    class R75PrivatePension(AbstractModels.R75PrivatePension):
+    # R75Idx4500230: Data from index 4500230 in R75. Contains policies and their return as reported by pension companies.
+    class R75Idx4500230(AbstractModels.R75Idx4500230):
 
         class Meta:
             managed = False  # Created from a view. Don't remove.
-            db_table = 'r75_private_pension'
+            db_table = 'r75_idx_4500230'
 
 
 class MockModels:
@@ -173,7 +181,8 @@ class MockModels:
     class MockKasMandtal(AbstractModels.KasMandtal):
         pass
 
-    class MockR75PrivatePension(AbstractModels.R75PrivatePension):
+    # R75Idx4500230: Data from index 4500230 in R75. Contains policies and their return as reported by pension companies.
+    class MockR75Idx4500230(AbstractModels.R75Idx4500230):
         pass
 
 
@@ -195,9 +204,9 @@ def get_kas_mandtal_model():
 
 def get_r75_private_pension_model():
     if settings.ENVIRONMENT != "production":
-        return MockModels.MockR75PrivatePension
+        return MockModels.MockR75Idx4500230
     else:
-        return EskatModels.R75PrivatePension
+        return EskatModels.R75Idx4500230
 
 
 class ImportedKasBeregningerX(AbstractModels.KasBeregningerX):
@@ -271,7 +280,7 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
         return created, updated
 
 
-class ImportedR75PrivatePension(AbstractModels.R75PrivatePension):
+class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
 
     history = HistoricalRecords()
 
@@ -291,7 +300,7 @@ class ImportedR75PrivatePension(AbstractModels.R75PrivatePension):
             for i, x in enumerate(qs.iterator()):
                 try:
                     existing = cls.objects.get(pk=x.pk)
-                    if existing.dato != x.dato:
+                    if existing.r75_dato != x.r75_dato:
                         for k, v in model_to_dict(x).items():
                             setattr(existing, k, v)
                         existing._change_reason = "Updated by import"

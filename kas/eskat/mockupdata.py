@@ -45,17 +45,17 @@ def person_uuid(cpr, year):
     ))
 
 
-def r75_sekvens_uuid(cpr, year, pkt, res):
+def r75_sekvens_uuid(cpr, year, ktd, res):
     return str(uuid.uuid5(
         uuid.NAMESPACE_URL,
-        'https://test.aka.nanoq.gl/mockupdata/r75/sekvens/%s/%s/%s/%s' % (cpr, year, res, pkt)
+        'https://test.aka.nanoq.gl/mockupdata/r75/sekvens/%s/%s/%s/%s' % (cpr, year, res, ktd)
     ))
 
 
-def r75_indeks_uuid(cpr, year, pkt, res):
+def r75_indeks_uuid(cpr, year, ktd, res):
     return str(uuid.uuid5(
         uuid.NAMESPACE_URL,
-        'https://test.aka.nanoq.gl/mockupdata/r75/indekx/%s/%s/%s/%s' % (cpr, year, res, pkt)
+        'https://test.aka.nanoq.gl/mockupdata/r75/index/%s/%s/%s/%s' % (cpr, year, res, ktd)
     ))
 
 
@@ -102,8 +102,8 @@ def create_person(
         if "res" not in policy:
             policy["res"] = "19676889"
 
-        if "pkt" not in policy:
-            policy["pkt"] = next_unique_res()
+        if "ktd" not in policy:
+            policy["ktd"] = next_unique_res()
 
         for year, beloeb in policy["years"].items():
             # Make sure we create a mandtal entry for the person for this year
@@ -112,20 +112,28 @@ def create_person(
 
             policy_data = {
                 "pt_census_guid": person_uuid(cpr, year),
-                "r75_ctl_sekvens_guid": r75_sekvens_uuid(cpr, year, policy["res"], policy["pkt"]),
-                "r75_ctl_indeks_guid": r75_indeks_uuid(cpr, year, policy["res"], policy["pkt"]),
-                "idx_nr": 5500121,
-                "dato": "%04d0116" % (year),
-                "pkt": policy["pkt"],
+                # tax_year added below
+                # cpr added below
+                "r75_ctl_sekvens_guid": r75_sekvens_uuid(cpr, year, policy["res"], policy["ktd"]),
+                "r75_ctl_indeks_guid": r75_indeks_uuid(cpr, year, policy["res"], policy["ktd"]),
+                "idx_nr": 4500230,
                 "res": policy["res"],
-                "beloeb": beloeb,
+                "ktd": policy["ktd"],
+                "ktt": "KTT",
+                "kontotype": 22,
+                "ibn": None,
+                "esk": "ESK",
+                "ejerstatuskode": 1,
+                "indestaaende": 0,
+                "renteindtaegt": beloeb,
+                "r75_dato": "%04d0116" % (year),
             }
 
-            MockModels.MockR75PrivatePension.objects.update_or_create(
+            MockModels.MockR75Idx4500230.objects.update_or_create(
                 defaults=policy_data,
                 tax_year=year,
                 cpr=cpr,
-                pkt=policy["pkt"],
+                ktd=policy["ktd"],
                 res=policy["res"],
             )
 
@@ -153,7 +161,7 @@ def import_default_mockup_data():
     PensionCompanyImport().handle()
 
     # Clean out existing mockup data
-    MockModels.MockR75PrivatePension.objects.all().delete()
+    MockModels.MockR75Idx4500230.objects.all().delete()
     MockModels.MockKasMandtal.objects.all().delete()
 
     create_person(
@@ -332,12 +340,12 @@ def import_default_mockup_data():
         "Person som kan logges ind på test",
         cpr='1802602810',
         policies=[
-            {"pkt": 19676889, "years": {
+            {"ktd": 19676889, "years": {
                 2018: 1000,
                 2019: 2000,
                 2020: 3000,
             }},
-            {"pkt": 55143315, "years": {
+            {"ktd": 55143315, "years": {
                 2018: -1000,
                 2019: -2500,
                 2020: 3000,
