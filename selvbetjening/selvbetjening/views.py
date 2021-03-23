@@ -8,7 +8,6 @@ from django.template import Engine, Context
 from django.urls import reverse
 from django.utils import translation
 from django.utils.datetime_safe import date
-from django.utils.translation import gettext as _
 from django.utils.translation.trans_real import DjangoTranslation
 from django.views import View
 from django.views.decorators.cache import cache_control
@@ -111,22 +110,17 @@ class PolicyFormView(HasUserMixin, FormView):
     def post(self, request, *args, **kwargs):
         form = self.get_form()
         extra_form = self.get_extra_form()
-        print(extra_form.is_bound)
         if form.is_valid() and extra_form.is_valid():
-            print("valid")
             return self.form_valid(form, extra_form)
         else:
-            print("not valid")
-            print(form.errors)
-            print(extra_form.errors)
             return self.form_invalid(form)
 
-    def get_form(self, form_class=None):
-        formset = super(PolicyFormView, self).get_form(form_class=form_class)
-        choices = [(None, _("--- angiv navn ---"))] + [(company['id'], company['name']) for company in self.request.session['pension_companies']]
-        for form in formset.extra_forms:
-            form.fields['pension_company_id'].widget.choices = choices
-        return formset
+    # def get_form(self, form_class=None):
+    #     formset = super(PolicyFormView, self).get_form(form_class=form_class)
+    #     choices = [(None, _("--- angiv navn ---"))] + [(company['id'], company['name']) for company in self.request.session['pension_companies']]
+    #     for form in formset.extra_forms:
+    #         form.fields['pension_company_id'].widget.choices = choices
+    #     return formset
 
     def get_extra_form(self):
         kwargs = {
@@ -166,12 +160,10 @@ class PolicyFormView(HasUserMixin, FormView):
             policy_tax_years = client.get_policies(
                 person_tax_year=person_tax_year['id']
             )
-            policy_tax_years.sort(key=lambda k: str(k['pension_company']['res']))
+            policy_tax_years.sort(key=lambda k: str(k['pension_company']['name']))
         else:
             raise PersonNotFoundException()
         self.request.session['policy_tax_years'] = policy_tax_years
-        pension_companies = client.get_pension_companies()
-        self.request.session['pension_companies'] = pension_companies
 
     def get_initial(self):
         return self.request.session['policy_tax_years']
@@ -184,11 +176,14 @@ class PolicyFormView(HasUserMixin, FormView):
                 id = policyform_data['id']
                 if id is None:
                     # Creating new
-                    if policyform_data['pension_company_name'] and not policyform_data['pension_company_id']:
-                        pension_company = client.create_pension_company(policyform_data.pop('pension_company_name'))
-                        policyform_data['pension_company'] = pension_company['id']
-                    else:
-                        policyform_data['pension_company'] = policyform_data['pension_company_id']
+                    # if policyform_data['pension_company_name'] and not policyform_data['pension_company_id']:
+                    #     pension_company = client.create_pension_company(policyform_data.pop('pension_company_name'))
+                    #     policyform_data['pension_company'] = pension_company['id']
+                    # else:
+                    #     policyform_data['pension_company'] = policyform_data['pension_company_id']
+                    pension_company = client.create_pension_company(policyform_data.pop('pension_company_name'))
+                    policyform_data['pension_company'] = pension_company['id']
+
                     policyform_data['policy_number'] = policyform_data['policy_number_new']
                     person_tax_year = self.request.session.get('person_tax_year')
                     if person_tax_year is None:

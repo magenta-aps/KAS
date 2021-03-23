@@ -123,7 +123,7 @@ class RestClient(object):
             **{
                 k: v for k, v in policy.items()
                 if k in [
-                    'self_reported_amount', 'self_reported_used_deduction'
+                    'self_reported_amount',
                 ]
             }
         )

@@ -533,7 +533,6 @@ class PolicyTaxYearTest(RestTest):
                     'calculated_result': policy_tax_year.calculated_result,
                     'estimated_amount': policy_tax_year.estimated_amount,
                     'foreign_paid_amount_actual': policy_tax_year.foreign_paid_amount_actual,
-                    'self_reported_used_deduction': policy_tax_year.self_reported_used_deduction,
                     **extra
                 }
                 for policy_tax_year in PolicyTaxYear.objects.all()
@@ -593,7 +592,6 @@ class PolicyTaxYearTest(RestTest):
             'calculated_result': policy_tax_year1.calculated_result,
             'estimated_amount': policy_tax_year1.estimated_amount,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
-            'self_reported_used_deduction': policy_tax_year1.self_reported_used_deduction,
         }, response.json())
 
         response = self.client.get(f"{self.url}{policy_tax_year2.id}/")
@@ -615,7 +613,6 @@ class PolicyTaxYearTest(RestTest):
             'calculated_result': policy_tax_year1.calculated_result,
             'estimated_amount': policy_tax_year1.estimated_amount,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
-            'self_reported_used_deduction': policy_tax_year1.self_reported_used_deduction,
         }, response.json())
 
     def test_get_filter(self):
@@ -675,7 +672,6 @@ class PolicyTaxYearTest(RestTest):
             'calculated_result': policy_tax_year1.calculated_result,
             'estimated_amount': policy_tax_year1.estimated_amount,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
-            'self_reported_used_deduction': policy_tax_year1.self_reported_used_deduction,
         }], response.json())
 
         response = self.client.get(f"{self.url}?year=2020")
@@ -697,7 +693,6 @@ class PolicyTaxYearTest(RestTest):
             'calculated_result': policy_tax_year1.calculated_result,
             'estimated_amount': policy_tax_year1.estimated_amount,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
-            'self_reported_used_deduction': policy_tax_year1.self_reported_used_deduction,
         }], response.json())
 
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2021")
@@ -719,7 +714,6 @@ class PolicyTaxYearTest(RestTest):
             'calculated_result': policy_tax_year2.calculated_result,
             'estimated_amount': policy_tax_year2.estimated_amount,
             'foreign_paid_amount_actual': policy_tax_year2.foreign_paid_amount_actual,
-            'self_reported_used_deduction': policy_tax_year2.self_reported_used_deduction,
         }], response.json())
 
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2020")
@@ -768,7 +762,6 @@ class PolicyTaxYearTest(RestTest):
                 'calculated_result': policy_tax_year.calculated_result,
                 'estimated_amount': policy_tax_year.estimated_amount,
                 'foreign_paid_amount_actual': policy_tax_year.foreign_paid_amount_actual,
-                'self_reported_used_deduction': None,
             },
             self.strip_id(response.json())
         )

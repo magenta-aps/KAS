@@ -40,28 +40,25 @@
                                 <tr>
                                     <th class="col-2-sm">{% trans 'Feltnavn' %}</th>
                                     <th class="col-6-sm">{% trans 'Beskrivelse' %}</th>
-                                    <th class="col-3-sm">{% trans 'Felt' %}</th>
-                                    <th class="col-1-sm">{% trans 'Felt nr.' %}</th>
+                                    <th class="col-4-sm">{% trans 'Felt' %}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% if policyform.id.value is None %}
                                 <tr>
                                     <td class="col-2-sm">{% trans 'Pensionsselskab' %}</td>
-                                    <td class="col-6-sm"></td>
-                                    <td class="col-3-sm">
-                                        {% include 'include/field.html' with field=policyform.pension_company_id %}
+                                    <td class="col-6-sm">Indsæt beskrivende tekst her</td>
+                                    <td class="col-4-sm">
+                                        {# {% include 'include/field.html' with field=policyform.pension_company_id %} #}
                                         {% include 'include/field.html' with field=policyform.pension_company_name %}
                                     </td>
-                                    <td class="col-1-sm"></td>
                                 </tr>
                                 <tr>
                                     <td class="col-2-sm">{% trans 'Policenummer' %}</td>
-                                    <td class="col-6-sm"></td>
-                                    <td class="col-3-sm">
+                                    <td class="col-6-sm">Indsæt beskrivende tekst her</td>
+                                    <td class="col-4-sm">
                                         {% include 'include/field.html' with field=policyform.policy_number_new %}
                                     </td>
-                                    <td class="col-1-sm"></td>
                                 </tr>
                                 {% endif %}
 
@@ -70,28 +67,14 @@
                                     <td class="col-6-sm">
                                         {% if policyform.prefilled_amount.value is not None %}
                                         {% blocktrans with value=policyform.prefilled_amount.value %}Vores beregning: {{value}}{% endblocktrans %}
+                                        {% else %}
+                                        Indsæt beskrivende tekst her
                                         {% endif %}
                                     </td>
-                                    <td class="col-3-sm">
+                                    <td class="col-4-sm">
                                         <label for="{{policyform.self_reported_amount.id_for_label}}">{% if policyform.prefilled_amount.value is None %}{% trans 'Beløb:' %}{% else %}{% trans 'Deres rettelse:' %}{% endif %}</label>
                                         {% include 'include/field.html' with field=policyform.self_reported_amount %}
                                     </td>
-                                    <td class="col-1-sm">KAS-201</td>
-                                </tr>
-
-
-                                <tr>
-                                    <td class="col-2-sm">{% trans 'Fremført negativt afkast fra tidligere år' %}</td>
-                                    <td class="col-6-sm">
-                                        {% if policydata.applied_deduction_from_previous_years is not None %}
-                                            {% blocktrans with value=policydata.applied_deduction_from_previous_years %}Vores beregning: {{value}}{% endblocktrans %}
-                                        {% endif %}
-                                    </td>
-                                    <td class="col-3-sm">
-                                        <label for="{{policyform.self_reported_used_deduction.id_for_label}}">{% if policydata.applied_deduction_from_previous_years is None %}{% trans 'Beløb:' %}{% else %}{% trans 'Deres rettelse:' %}{% endif %}</label>
-                                        {% include 'include/field.html' with field=policyform.self_reported_used_deduction %}
-                                    </td>
-                                    <td class="col-1-sm"></td>
                                 </tr>
 
 
@@ -110,7 +93,7 @@
                                         {% trans 'Vedhæft dokumentation for allerede betalt kapitalafkastskat. Dokumentation for betaling både i Grønland og i udlandet kan vedhæftes her.' %}
                                         {% endif %}
                                     </td>
-                                    <td class="col-4-sm file_container" colspan="2">
+                                    <td class="col-4-sm file_container">
 
                                         {% for field in policyform %}
                                         {% if field.name|startswith:'file_existing_id' %}
