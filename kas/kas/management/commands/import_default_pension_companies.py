@@ -16,8 +16,8 @@ class Command(BaseCommand):
     help = 'Imports mockup data into the mockup tables for eSkat'
 
     companies_with_deals = (
-        'PFA Pension',
-        'PensionDanmark Pensionsaktieselskab',
+        '55143315',  # PFA
+        '34177104',  # PensionDanmark
     )
 
     def handle(self, *args, **kwargs):
@@ -37,7 +37,7 @@ class Command(BaseCommand):
                         'res': res,
                         'name': row[1],
                         'address': row[2],
-                        'agreement_present': (row[1] in self.companies_with_deals)
+                        'agreement_present': (row[0] in self.companies_with_deals)
                     },
                     res=res,
                 )
