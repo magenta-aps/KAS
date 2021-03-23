@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
@@ -135,9 +136,9 @@ def import_r75(job):
     progress_factor = 1 / number_of_progress_segments
 
     if job.arguments['source_model'] == "mockup":
-        source_model = MockModels.MockR75PrivatePension
+        source_model = MockModels.MockR75Idx4500230
     elif job.arguments['source_model'] == "eskat":
-        source_model = EskatModels.R75PrivatePension
+        source_model = EskatModels.R75Idx4500230
     else:
         source_model = None
 
@@ -177,8 +178,8 @@ def import_r75(job):
             policy_data = {
                 'person_tax_year': person_tax_year,
                 'pension_company': pension_company,
-                'policy_number': item.pkt,
-                'prefilled_amount': item.beloeb,
+                'policy_number': item.ktd,
+                'prefilled_amount': item.renteindtaegt,
             }
             (policy_tax_year, status) = PolicyTaxYear.update_or_create(policy_data, 'person_tax_year', 'pension_company', 'policy_number')
 
@@ -373,7 +374,7 @@ def clear_test_data(job):
         ImportedKasMandtal,
         ImportedR75PrivatePension,
         MockModels.MockKasMandtal,
-        MockModels.MockR75PrivatePension,
+        MockModels.MockR75Idx4500230,
         PreviousYearNegativePayout,
         PolicyTaxYear,
         PersonTaxYear,

@@ -26,19 +26,19 @@ class FrontpageView(LoginRequiredMixin, TemplateView):
             'policies': {},
         }
 
-        for x in ImportedKasMandtal.objects.values("skatteaar").annotate(count=Count('skatteaar')):
-            by_year_data['imported_mandtal'][x['skatteaar']] = x['count']
+        for x in ImportedKasMandtal.objects.values("skatteaar").annotate(number_per_year=Count('skatteaar')):
+            by_year_data['imported_mandtal'][x['skatteaar']] = x['number_per_year']
 
-        for x in ImportedR75PrivatePension.objects.values("tax_year").annotate(count=Count('tax_year')):
-            by_year_data['imported_r75'][x['tax_year']] = x['count']
+        for x in ImportedR75PrivatePension.objects.values("tax_year").annotate(number_per_year=Count('tax_year')):
+            by_year_data['imported_r75'][x['tax_year']] = x['number_per_year']
 
-        for x in PersonTaxYear.objects.values("tax_year__year").annotate(count=Count('tax_year__year')):
-            by_year_data['persons'][x['tax_year__year']] = x['count']
+        for x in PersonTaxYear.objects.values("tax_year__year").annotate(number_per_year=Count('tax_year__year')):
+            by_year_data['persons'][x['tax_year__year']] = x['number_per_year']
 
         for x in PolicyTaxYear.objects.values(
             "person_tax_year__tax_year__year"
-        ).annotate(count=Count('person_tax_year__tax_year__year')):
-            by_year_data['policies'][x['person_tax_year__tax_year__year']] = x['count']
+        ).annotate(number_per_year=Count('person_tax_year__tax_year__year')):
+            by_year_data['policies'][x['person_tax_year__tax_year__year']] = x['number_per_year']
 
         if settings.ENVIRONMENT != "production":
             result["show_mockup"] = True
@@ -46,11 +46,11 @@ class FrontpageView(LoginRequiredMixin, TemplateView):
             by_year_data['mockup_mandtal'] = {}
             by_year_data['mockup_r75'] = {}
 
-            for x in MockModels.MockKasMandtal.objects.values("skatteaar").annotate(count=Count('skatteaar')):
-                by_year_data['mockup_mandtal'][x['skatteaar']] = x['count']
+            for x in MockModels.MockKasMandtal.objects.values("skatteaar").annotate(number_per_year=Count('skatteaar')):
+                by_year_data['mockup_mandtal'][x['skatteaar']] = x['number_per_year']
 
-            for x in MockModels.MockR75PrivatePension.objects.values("tax_year").annotate(count=Count('tax_year')):
-                by_year_data['mockup_r75'][x['tax_year']] = x['count']
+            for x in MockModels.MockR75Idx4500230.objects.values("tax_year").annotate(number_per_year=Count('tax_year')):
+                by_year_data['mockup_r75'][x['tax_year']] = x['number_per_year']
 
         for k, v in by_year_data.items():
             result[k] = [v.get(year, 0) for year in result['years']]
