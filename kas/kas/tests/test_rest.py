@@ -210,8 +210,6 @@ class PensionCompanyTest(RestTest):
         'agreement_present': False,
         'phone': None,
         'email': None,
-        'domestic_or_foreign': PensionCompany.DOF_UNKNOWN,
-        'accepts_payments': False,
     }
 
     def test_get_all(self):
@@ -224,7 +222,7 @@ class PensionCompanyTest(RestTest):
         self.assertEquals(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
-                {**{key: getattr(person, key) for key in ['res', 'name', 'address', 'phone', 'email', 'agreement_present', 'domestic_or_foreign', 'accepts_payments']}, 'id': person.id, **self.extra_fields}
+                {**{key: getattr(person, key) for key in ['res', 'name', 'address', 'phone', 'email', 'agreement_present']}, 'id': person.id, **self.extra_fields}
                 for person in PensionCompany.objects.all()
             ],
             response.json()

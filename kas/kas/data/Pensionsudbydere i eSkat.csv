@@ -1,32 +1,27 @@
-"RES","NAME","ADDRESS","DOMESTIC_OR_FOREIGN","ACCEPT_PAYMENT_YN"
-12173210,"PENSIONSKASSEN FOR TEKNIKUM- OG DIPLOMINGENIØRER ","c/o Sampension, Tuborg Havnevej 14, 2900 Hellerup","foreign","Y"
-16376191,"PKA+PENSION FORSIKRINGSSELSKAB A/S","Tuborg Boulevard 3, 2900 Hellerup","foreign",
-16420018,"Danica Pensionsforsikring A/S","Holmens Kanal 2, 1060 København K","foreign",
-17106589,"LÆRERNES PENSION, FORSIKRINGSAKTIESELSKAB","Tuborg Boulevard 3, 2900 Hellerup","foreign",
-17340484,"Pædagogernes Pension - pensionskassen for pædagoger","Sundkrogsgade 13, 2100 København Ø","foreign",
-18530899,"AP PENSION LIVSFORSIKRINGSAKTIESELSKAB","Østbanegade 135, 2100 København Ø","foreign",
-19625087,"TOPDANMARK LIVSFORSIKRING A/S","Borupvang 4, 2750 Ballerup","foreign","Y"
-19676889,"P+, Pensionskassen for Akademikere","Dirch Passers Allé 76, 2000 Frederiksberg","foreign",
-20766816,"AkademikerPension - Akademikernes Pensionskasse","Smakkedalen 8, 2820 Gentofte","foreign",
-20952237,"SKANDIA LINK LIVSFORSIKRING A/S","c/o AP Pension, Østbanegade 135, 2100 København Ø","foreign",
-22078615,"ARKITEKTERNES PENSIONSKASSE","c/o Sampension, Tuborg Havnevej 14, 2900 Hellerup","foreign",
-24260402,"LÆGERNES PENSION - pensionskassen for læger","Dirch Passers Allé 76, 2000 Frederiksberg","foreign",
-25707184,"NYKREDIT LIVSFORSIKRING A/S","Østbanegade 135, 2100 København Ø","foreign",
-28100957,"FINANCIAL ASSURANCE COMPANY LIMITED DENMARK, FILIAL AF FINANCIAL ASSURANCE COMPANY LIMITED ENGELSK LIVSFORSIKRINGSSELSKAB","Dalbergstrøget 9, 2630 Tåstrup","foreign",
-30186028,"PENSIONSKASSEN FOR JORDBRUGSAKADEMIKERE OG DYRLÆGER","c/o Sampension, Tuborg Havnevej 14, 2900 Hellerup","foreign",
-32301908,"NORDNET BANK, FILIAL AF NORDNET BANK AB, SVERIGE","Havneholmen 25, 7., 1561 København V","foreign",
-35461639,"Pension Kalaallit Nunaat - SISA",,"domestic","Y"
-55143315,"PFA Pension","Sundkrogsgade 4, 2100 København Ø","foreign",
-55834911,"SAMPENSION LIVSFORSIKRING A/S","Tuborg Havnevej 14, 2900 Hellerup","foreign","Y"
-58267228,"DANSKE CIVIL- OG AKADEMIINGENIØRERS PENSIONSKASSE","Dirch Passers Allé 76, 2000 Frederiksberg","foreign",
-64145711,"FORSIKRINGSSELSKABET ALM. BRAND LIV OG PENSION A/S","Midtermolen 7, 2100 København Ø","foreign",
-71971511,"PENSIONSKASSEN FOR SYGEPLEJERSKER OG LÆGESEKRETÆRER","Tuborg Boulevard 3, 2900 Hellerup","foreign",
-71973514,"PENSIONSKASSEN FOR SUNDHEDSFAGLIGE","Tuborg Boulevard 3, 2900 Hellerup","foreign",
-71974316,"PENSIONSKASSEN FOR SOCIALRÅDGIVERE , SOCIALPÆDAGOGER OG KONTORPERSONALE","Tuborg Boulevard 3, 2900 Hellerup","foreign",
-24256146,"Danica Pension", "Hollandsvej 12, 2800 Kongens Lyngby", "foreign",
-31023637,"Velliv, Pension & Livsforsikring A/S","Lautrupvang 10, 2750 Ballerup","foreign",
-29381836,"Velliv, Pension & Livsforsikring A/S","Lautrupvang 10, 2750 Ballerup","foreign",
-30113292,"Industriens Pensionsforsikring A/S","Nørre Farimagsgade 3, 1364 København K","foreign",
-34177104,"PensionDanmark Pensionsaktieselskab","Langelinie Allé 43, 2100 København Ø","foreign",
-22329715,"ATP, Arbejdsmarkedets Tillægspension","Kongens Vænge 8, 3400 Hillerød","foreign",
-34194564,"Velliv, Pension & Livsforsikring A/S","Lautrupvang 10, 2750 Ballerup","foreign",
+"RES","NAME","ADDRESS"
+10496837,"PENSIONSKASSEN FOR FARMAKONOMER","Tuborg Boulevard 3, 2900 Hellerup"
+12173210,"PENSIONSKASSEN FOR TEKNIKUM- OG DIPLOMINGENIØRER","c/o Sampension Administrationsselskab A/S, Tuborg Havnevej 14, 2900 Hellerup"
+16420018,"Danica Pensionsforsikring A/S","Holmens Kanal 2, 1060 København K",
+17106589,"LÆRERNES PENSION, FORSIKRINGSAKTIESELSKAB","Tuborg Boulevard 3, 2900 Hellerup",
+18530899,"AP PENSION LIVSFORSIKRINGSAKTIESELSKAB","Østbanegade 135, 2100 København Ø",
+19625087,"TOPDANMARK LIVSFORSIKRING A/S","Borupvang 4, 2750 Ballerup"
+19676889,"P+, Pensionskassen for Akademikere","Dirch Passers Allé 76, 2000 Frederiksberg",
+20766816,"AkademikerPension - Akademikernes Pensionskasse","Smakkedalen 8, 2820 Gentofte",
+20952237,"SKANDIA LINK LIVSFORSIKRING A/S","c/o AP Pension, Østbanegade 135, st., 2100 København Ø",
+22078615,"ARKITEKTERNES PENSIONSKASSE","c/o Sampension Administrationsselskab A/S, Tuborg Havnevej 14, 2900 Hellerup",
+24256146,"DANICA PENSION, LIVSFORSIKRINGSAKTIESELSKAB","Holmens Kanal 2 - 12, 1060 København K",
+24260402,"LÆGERNES PENSION - pensionskassen for læger","Dirch Passers Allé 76, 2000 Frederiksberg",
+29637873,"Norli Pension Livsforsikring A/S","Tuborg Boulevard 3, 2900 Hellerup"
+30113292,"Industriens Pensionsforsikring A/S","Nørre Farimagsgade 3, 1364 København K",
+30186028,"PENSIONSKASSEN FOR JORDBRUGSAKADEMIKERE OG DYRLÆGER","c/o Sampension Administrationsselskab A/S, Tuborg Havnevej 14, 2900 Hellerup",
+31023637,"Velliv, Pension & Livsforsikring A/S","Lautrupvang 10, 2750 Ballerup",
+34177104,"PensionDanmark Pensionsaktieselskab","Langelinie Allé 43, 2100 København Ø",
+34194564,"Velliv, Pension & Livsforsikring A/S","Lautrupvang 10, 2750 Ballerup",
+34718954,"Ergo Lebensversicherung Aktiengese","c/o Europæiske ERV, Frederiksberg Allé 3, 1621 København V"
+55143315,"PFA","Sundkrogsgade 4, 2100 København Ø",
+55834911,"SAMPENSION LIVSFORSIKRING A/S","Tuborg Havnevej 14, 2900 Hellerup"
+58267228,"DANSKE CIVIL- OG AKADEMIINGENIØRERS PENSIONSKASSE","Dirch Passers Allé 76, 2000 Frederiksberg",
+64145711,"FORSIKRINGSSELSKABET ALM. BRAND LIV OG PENSION A/S","c/o Alm. Brand, Midtermolen 7, 2100 København Ø",
+71971511,"PENSIONSKASSEN FOR SYGEPLEJERSKER OG LÆGESEKRETÆRER","Tuborg Boulevard 3, 2900 Hellerup",
+71973514,"PENSIONSKASSEN FOR SUNDHEDSFAGLIGE","Tuborg Boulevard 3, 2900 Hellerup",
+71974316,"PENSIONSKASSEN FOR SOCIALRÅDGIVERE , SOCIALPÆDAGOGER OG KONTORPERSONALE","Tuborg Boulevard 3, 2900 Hellerup",
