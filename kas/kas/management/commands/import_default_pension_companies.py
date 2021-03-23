@@ -17,6 +17,7 @@ class Command(BaseCommand):
 
     companies_with_deals = (
         'PFA Pension',
+        'PensionDanmark Pensionsaktieselskab',
     )
 
     def handle(self, *args, **kwargs):
