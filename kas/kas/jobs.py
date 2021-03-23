@@ -150,6 +150,9 @@ def import_r75(job):
 
             res = int(item.res)
             pension_company, c = PensionCompany.objects.get_or_create(**{'res': res})
+            if c or pension_company.name in ('', None):
+                pension_company.name = f"Pensionsselskab med identifikationsnummer {res}"
+                pension_company.save()
 
             policy_data = {
                 'person_tax_year': person_tax_year,
