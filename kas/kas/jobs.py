@@ -17,6 +17,8 @@ from worker.job_registry import get_job_types, resolve_job_function
 
 import base64
 
+from kas.models import PersonTaxYearCensus
+
 
 @job_decorator
 def import_mandtal(job):
@@ -46,6 +48,7 @@ def import_mandtal(job):
     progress_start = 50
     (persons_created, persons_updated) = (0, 0)
     (persontaxyears_created, persontaxyears_updated) = (0, 0)
+    (persontaxyearcensus_created, persontaxyearcensus_updated) = (0, 0)
 
     with transaction.atomic():
         for i, item in enumerate(qs.iterator()):
@@ -72,15 +75,28 @@ def import_mandtal(job):
             person_tax_year_data = {
                 'person': person,
                 'tax_year': tax_year,
-                'number_of_days': item.skattedage,
-                'fully_tax_liable': item.skatteomfang is not None and item.skatteomfang.lower() == 'fuld skattepligtig',
+                'number_of_days': 0,
+                'fully_tax_liable': False,
             }
 
-            (person_tax_year, status) = PersonTaxYear.update_or_create(person_tax_year_data, 'tax_year', 'person')
+            person_tax_year, status = PersonTaxYear.update_or_create(person_tax_year_data, 'tax_year', 'person')
             if status == PersonTaxYear.CREATED:
                 persontaxyears_created += 1
             elif status == PersonTaxYear.UPDATED:
                 persontaxyears_updated += 1
+
+            person_tax_year_census_data = {
+                'person_tax_year': person_tax_year,
+                'imported_kas_mandtal': item.pt_census_guid,
+                'number_of_days': item.skattedage,
+                'fully_tax_liable': item.skatteomfang is not None and item.skatteomfang.lower() == 'fuld skattepligtig',
+            }
+            person_tax_year_census, status = PersonTaxYearCensus.update_or_create(person_tax_year_census_data, 'person_tax_year', 'imported_kas_mandtal')
+            if status == PersonTaxYear.CREATED:
+                persontaxyearcensus_created += 1
+            elif status == PersonTaxYear.UPDATED:
+                persontaxyearcensus_updated += 1
+            person_tax_year.recalculate_mandtal()
 
             if i % 1000 == 0:
                 progress = progress_start + (i / count) * (100 * progress_factor)
@@ -99,6 +115,10 @@ def import_mandtal(job):
         {'label': 'Personskatteår-objekter', 'value': [
             {'label': 'Tilføjet', 'value': persontaxyears_created},
             {'label': 'Opdateret', 'value': persontaxyears_updated}
+        ]},
+        {'label': 'Personskatteår-mandtal-objekter', 'value': [
+            {'label': 'Tilføjet', 'value': persontaxyearcensus_created},
+            {'label': 'Opdateret', 'value': persontaxyearcensus_updated}
         ]}
     ]}
 
