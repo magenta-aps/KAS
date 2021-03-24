@@ -731,10 +731,10 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         r75qs = ImportedR75PrivatePension.objects.filter(
             cpr=self.cpr,
             tax_year=self.year,
-            pension_company=self.pension_company,
+            res=self.pension_company.res,
             ktd=self.policy_number
         )
-        self.prefilled_amount = sum([r['renteindtaegt'] for r in r75qs.values('renteindtaegt')])
+        self.prefilled_amount = sum([int(r['renteindtaegt']) for r in r75qs.values('renteindtaegt')])
         self.save()
 
     def __str__(self):
