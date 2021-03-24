@@ -108,6 +108,8 @@ class TaxPDF(FPDF):
     text17A = {'gl': 'Immersugassap aqqa\n ', 'dk': 'Feltnavn\n '}
     text17B = {'gl': 'Naqeriigaq\n ', 'dk': 'Fortrykt\n '}
     text17C = {'gl': 'Nammineerluni nalunaarutigineqartoq', 'dk': 'Selvangivet\n '}
+    text17D = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussivik', 'dk': 'Pensionsselskab\n '}
+    text17E = {'gl': 'Policenormu\n ', 'dk': 'Policenummer\n '}
 
     text18 = {'gl': 'Immersugassap normua', 'dk': 'Felt nr.\n '}
     text25 = {'gl': 'Aningaasat koruuninngorlugit', 'dk': 'Beløb i kroner'}
@@ -127,6 +129,10 @@ class TaxPDF(FPDF):
     text26D = {'gl': '* Soraarnerussutisiaqarnissamut aaqqissuussinermut uunga tunngatillugu akileraarut '
                      'soraarnerussutisiaqarnissamut aaqqissuussivimmit ingerlaannaartumik akilerneqassaaq',
                'dk': '* Skatten for denne pensionsordning betales automatisk af pensionsselskabet'}
+    text26DA = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinerit nunani allaniittut ilaannit iluanaarutit '
+                      'pillugit paasissutissat naqeriigaanngitsut uani nammineerlutit nalunaarutigisinnaavatit.',
+                'dk': 'Her kan du selvangive oplysninger om afkast af visse udenlandske pensionsordninger, '
+                      'som ikke er fortrykte.'}
     text26E = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinerit nunani allaniittut ilaat pillugit '
                      'nammineerluni nalunaarsuinermut atatillugu paasissutissanik allanik nammineerluni '
                      'nalunaagassaqarpa?',
@@ -152,6 +158,7 @@ class TaxPDF(FPDF):
     fully_tax_liable = True
     tax_days_adjust_factor = 1.0
     taxable_days_in_year = 365
+    page_counter = 1
     policies = ['']
 
     def set_parameters(self, tax_year='-', tax_return_date_limit='', request_pay='', pay_date='', person_number='-',
@@ -167,16 +174,13 @@ class TaxPDF(FPDF):
         if policies is None:
             policies = []
 
-        if reciever_address_l1 is not None:
-            self.full_reciever_address += reciever_address_l1 + '\n'
-        if reciever_address_l2 is not None:
-            self.full_reciever_address += reciever_address_l2 + '\n'
-        if reciever_address_l3 is not None:
-            self.full_reciever_address += reciever_address_l3 + '\n'
-        if reciever_address_l4 is not None:
-            self.full_reciever_address += reciever_address_l4 + '\n'
-        if reciever_address_l5 is not None:
-            self.full_reciever_address += reciever_address_l5
+        self.full_reciever_address = "\n".join([x for x in (
+            reciever_address_l1,
+            reciever_address_l2,
+            reciever_address_l3,
+            reciever_address_l4,
+            reciever_address_l5,
+        ) if x])
 
         self.fully_tax_liable = fully_tax_liable
         self.tax_days_adjust_factor = tax_days_adjust_factor
@@ -192,6 +196,9 @@ class TaxPDF(FPDF):
         self.set_font('arial', '', 11)
         self.set_xy(self.left_margin, self.h - 17)
         self.cell(h=5.0, align='C', w=30.0, txt=self.person_number, border=0)
+        self.set_xy(self.std_document_width-5, self.h - 17)
+        self.cell(h=5.0, align='R', w=10, txt=str(self.page_counter), border=0)
+        self.page_counter += 1
         self.set_xy(self.left_margin, self.yposition)
 
     def print_tax_slip(self, language):
@@ -201,7 +208,7 @@ class TaxPDF(FPDF):
         :return:
         """
         self.add_page()
-
+        self.page_counter = 1
         self.set_fill_color(180, 180, 180)
 
         self.set_font('arial', 'B', 15.0)
@@ -346,6 +353,9 @@ class TaxPDF(FPDF):
         c3w = 50
         policys_per_page = 4
         policy_index = 0
+        any_policys_added = False
+        rowheight = 10
+        columnheaderheight = 5
 
         for policy in self.policies:
 
@@ -354,7 +364,6 @@ class TaxPDF(FPDF):
                 policy_index = 0
             policy_index += 1
             headerheight = 10
-            columnheaderheight = 5
             self.set_font('arial', 'B', 12)
             self.set_xy(self.left_margin, self.yposition)
             self.multi_cell(h=headerheight, align='C', w=c1w+c2w+c3w, txt=policy.get('policy'), border=1)
@@ -370,7 +379,7 @@ class TaxPDF(FPDF):
             self.yposition += 10
 
             self.set_font('arial', '', 8.5)
-            rowheight = 10
+
             self.set_xy(self.left_margin, self.yposition)
             self.multi_cell(h=rowheight, align='L', w=c1w, txt=self.text15[language], border=1)
             self.set_xy(self.left_margin+c1w, self.yposition)
@@ -386,22 +395,51 @@ class TaxPDF(FPDF):
             if policy.get('agreement_present'):
                 self.multi_cell(self.std_document_width, 5, align='L', txt=self.text26D[language], border=0)
             self.yposition += 15
+            any_policys_added = True
 
-        self.add_page()
-        self.multi_cell(self.std_document_width, 5, '', border=0)
+        if any_policys_added:
+            self.add_page()
+
+        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text26DA[language], border=0)
         self.yposition = self.get_y()
+        self.yposition += 5
 
+        self.set_font('arial', 'B', 10)
+        self.set_xy(self.left_margin, self.yposition)
+        self.multi_cell(h=columnheaderheight, align='L', w=c1w, txt=self.text17C[language], border=1)
+        self.set_xy(self.left_margin+c1w, self.yposition)
+        self.multi_cell(h=columnheaderheight, align='C', w=c2w, txt=self.text17D[language], border=1)
+        self.set_xy(self.left_margin+c1w+c2w, self.yposition)
+        self.multi_cell(h=columnheaderheight, align='C', w=c3w, txt=self.text17E[language], border=1)
+        self.yposition += rowheight
+        self.set_xy(self.left_margin, self.yposition)
+        self.multi_cell(h=rowheight, align='L', w=c1w, txt='', border=1)
+        self.set_xy(self.left_margin+c1w, self.yposition)
+        self.multi_cell(h=rowheight, align='C', w=c2w, txt='', border=1)
+        self.set_xy(self.left_margin+c1w+c2w, self.yposition)
+        self.multi_cell(h=rowheight, align='C', w=c3w, txt='', border=1)
+        self.yposition += rowheight
+        self.set_xy(self.left_margin, self.yposition)
+        self.multi_cell(h=rowheight, align='L', w=c1w, txt='', border=1)
+        self.set_xy(self.left_margin+c1w, self.yposition)
+        self.multi_cell(h=rowheight, align='C', w=c2w, txt='', border=1)
+        self.set_xy(self.left_margin+c1w+c2w, self.yposition)
+        self.multi_cell(h=rowheight, align='C', w=c3w, txt='', border=1)
+        self.yposition = self.get_y()
+        self.yposition += 15
+
+        self.set_font('arial', '', 8.5)
         self.set_xy(self.left_margin, self.yposition)
         self.multi_cell(self.std_document_width, 5, align='L', txt=self.text26E[language], border=1)
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 60, txt='', border=1)
+        self.multi_cell(self.std_document_width, 50, txt='', border=1)
         self.yposition = self.get_y()
         self.yposition += 20
 
         self.set_xy(self.left_margin, self.yposition)
         self.multi_cell(self.std_document_width, 5, align='L', txt=self.text26B[language], border=1)
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 40, txt='', border=1)
+        self.multi_cell(self.std_document_width, 30, txt='', border=1)
         self.yposition = self.get_y()
         self.yposition += 20
 
