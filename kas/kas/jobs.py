@@ -148,8 +148,6 @@ def import_r75(job):
     )
 
     progress_start = 50
-    persons_created = 0
-    person_tax_years_created = 0
     (policies_created, policies_updated) = (0, 0)
 
     qs = ImportedR75PrivatePension.objects.filter(tax_year=year)
@@ -159,36 +157,35 @@ def import_r75(job):
         for i, item in enumerate(qs):
 
             person, c = Person.objects.get_or_create(cpr=item.cpr)
-            if c:
-                persons_created += 1
-            person_tax_year, c = PersonTaxYear.objects.get_or_create(
-                person=person, tax_year=tax_year,
-                # Default to any person created here having 0 taxable days
-                defaults={'number_of_days': 0}
-            )
-            if c:
-                person_tax_years_created += 1
 
-            res = int(item.res)
-            pension_company, c = PensionCompany.objects.get_or_create(**{'res': res})
-            if c or pension_company.name in ('', None):
-                pension_company.name = f"Pensionsselskab med identifikationsnummer {res}"
-                pension_company.save()
+            try:
+                person_tax_year = PersonTaxYear.objects.get(
+                    person=person, tax_year=tax_year,
+                )
 
-            policy_data = {
-                'person_tax_year': person_tax_year,
-                'pension_company': pension_company,
-                'policy_number': item.ktd,
-                'prefilled_amount': item.renteindtaegt,
-            }
-            (policy_tax_year, status) = PolicyTaxYear.update_or_create(policy_data, 'person_tax_year', 'pension_company', 'policy_number')
+                res = int(item.res)
+                pension_company, c = PensionCompany.objects.get_or_create(**{'res': res})
+                if c or pension_company.name in ('', None):
+                    pension_company.name = f"Pensionsselskab med identifikationsnummer {res}"
+                    pension_company.save()
 
-            if status in (PersonTaxYear.CREATED, PersonTaxYear.UPDATED):
-                policy_tax_year.recalculate()
-                if status == PersonTaxYear.CREATED:
-                    policies_created += 1
-                elif status == PersonTaxYear.UPDATED:
-                    policies_updated += 1
+                policy_data = {
+                    'person_tax_year': person_tax_year,
+                    'pension_company': pension_company,
+                    'policy_number': item.ktd,
+                    'prefilled_amount': item.renteindtaegt,
+                }
+                (policy_tax_year, status) = PolicyTaxYear.update_or_create(policy_data, 'person_tax_year', 'pension_company', 'policy_number')
+
+                if status in (PersonTaxYear.CREATED, PersonTaxYear.UPDATED):
+                    policy_tax_year.recalculate()
+                    if status == PersonTaxYear.CREATED:
+                        policies_created += 1
+                    elif status == PersonTaxYear.UPDATED:
+                        policies_updated += 1
+
+            except PersonTaxYear.DoesNotExist:
+                pass
 
             if i % 100 == 0:
                 progress = progress_start + (i / count) * (100 * progress_factor)
