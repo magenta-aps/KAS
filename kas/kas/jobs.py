@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.db import transaction
+from django.db.models import IntegerField, Sum
+from django.db.models.functions import Cast
 from django.utils import timezone
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension
 from eskat.models import MockModels, EskatModels
@@ -150,20 +152,29 @@ def import_r75(job):
     progress_start = 50
     (policies_created, policies_updated) = (0, 0)
 
-    qs = ImportedR75PrivatePension.objects.filter(tax_year=year)
+    # This queryset groups results by cpr, res, ktd and creates an sum
+    # of extra output field with the sum of the 'renteindtaegt' field.
+    # It must be constructed with the calss in this order to generate
+    # the correct SELECT .. GROUP BY .. query-
+    qs = ImportedR75PrivatePension.objects.values(
+        'cpr', 'res', 'ktd'
+    ).filter(
+        tax_year=year
+    ).annotate(
+        indtaegter_sum=Sum(Cast('renteindtaegt', output_field=IntegerField()))
+    )
     count = qs.count()
 
     with transaction.atomic():
         for i, item in enumerate(qs):
 
-            person, c = Person.objects.get_or_create(cpr=item.cpr)
-
+            person, c = Person.objects.get_or_create(cpr=item['cpr'])
             try:
                 person_tax_year = PersonTaxYear.objects.get(
                     person=person, tax_year=tax_year,
                 )
 
-                res = int(item.res)
+                res = int(item['res'])
                 pension_company, c = PensionCompany.objects.get_or_create(**{'res': res})
                 if c or pension_company.name in ('', None):
                     pension_company.name = f"Pensionsselskab med identifikationsnummer {res}"
@@ -172,8 +183,8 @@ def import_r75(job):
                 policy_data = {
                     'person_tax_year': person_tax_year,
                     'pension_company': pension_company,
-                    'policy_number': item.ktd,
-                    'prefilled_amount': item.renteindtaegt,
+                    'policy_number': item['ktd'],
+                    'prefilled_amount': item['indtaegter_sum'],
                 }
                 (policy_tax_year, status) = PolicyTaxYear.update_or_create(policy_data, 'person_tax_year', 'pension_company', 'policy_number')
 

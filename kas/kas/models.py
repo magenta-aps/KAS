@@ -12,6 +12,7 @@ from django.db.models.signals import post_save
 from django.forms import model_to_dict
 from django.utils.translation import gettext as _
 from simple_history.models import HistoricalRecords
+from eskat.models import ImportedR75PrivatePension
 
 
 class HistoryMixin(object):
@@ -725,6 +726,16 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     @property
     def remaining_negative_amount(self):
         return max(0, (-self.year_adjusted_amount) - self.sum_of_deducted_amount)
+
+    def recalculate_from_r75(self):
+        r75qs = ImportedR75PrivatePension.objects.filter(
+            cpr=self.cpr,
+            tax_year=self.year,
+            pension_company=self.pension_company,
+            ktd=self.policy_number
+        )
+        self.prefilled_amount = sum([r['renteindtaegt'] for r in r75qs.values('renteindtaegt')])
+        self.save()
 
     def __str__(self):
         return f"{self.__class__.__name__}(policy_number={self.policy_number}, cpr={self.person.cpr}, " \
