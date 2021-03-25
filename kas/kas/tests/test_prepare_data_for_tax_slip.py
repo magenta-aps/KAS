@@ -89,7 +89,7 @@ class DeductionTest(TestCase):
             policy_number='policenummer',
             person_tax_year=person_tax_year_p2_2020,
             pension_company=pension_company1,
-            prefilled_amount=402,
+            prefilled_amount=40200,
             self_reported_amount=142,
             preliminary_paid_amount=9,
         )
@@ -105,7 +105,7 @@ class DeductionTest(TestCase):
             policy_number='12341230',
             person_tax_year=person_tax_year_p3_2020,
             pension_company=pension_company1,
-            prefilled_amount=400,
+            prefilled_amount=40000,
             self_reported_amount=142,
             preliminary_paid_amount=9,
         )
@@ -113,7 +113,7 @@ class DeductionTest(TestCase):
             policy_number='12341231',
             person_tax_year=person_tax_year_p3_2020,
             pension_company=pension_company1,
-            prefilled_amount=400,
+            prefilled_amount=40500,
             self_reported_amount=142,
             preliminary_paid_amount=9,
         )
@@ -121,7 +121,7 @@ class DeductionTest(TestCase):
             policy_number='12341232',
             person_tax_year=person_tax_year_p3_2020,
             pension_company=pension_company1,
-            prefilled_amount=400,
+            prefilled_amount=40700,
             self_reported_amount=142,
             preliminary_paid_amount=9,
         )
@@ -137,7 +137,7 @@ class DeductionTest(TestCase):
             policy_number='12341234',
             person_tax_year=person_tax_year_p3_2020,
             pension_company=pension_company1,
-            prefilled_amount=400,
+            prefilled_amount=40880,
             self_reported_amount=142,
             preliminary_paid_amount=9,
         )
@@ -145,7 +145,7 @@ class DeductionTest(TestCase):
             policy_number='12341235',
             person_tax_year=person_tax_year_p3_2020,
             pension_company=pension_company1,
-            prefilled_amount=400,
+            prefilled_amount=40000,
             self_reported_amount=142,
             preliminary_paid_amount=9,
         )

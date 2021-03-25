@@ -107,9 +107,9 @@ class TaxPDF(FPDF):
 
     text17A = {'gl': 'Immersugassap aqqa\n ', 'dk': 'Feltnavn\n '}
     text17B = {'gl': 'Naqeriigaq\n ', 'dk': 'Fortrykt\n '}
-    text17C = {'gl': 'Nammineerluni nalunaarutigineqartoq', 'dk': 'Selvangivet\n '}
-    text17D = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussivik', 'dk': 'Pensionsselskab\n '}
-    text17E = {'gl': 'Policenormu\n ', 'dk': 'Policenummer\n '}
+    text17C = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussivik', 'dk': 'Pensionsselskab\n '}
+    text17D = {'gl': 'Policenormu\n ', 'dk': 'Policenummer\n '}
+    text17E = {'gl': 'Nammineerluni nalunaarutigineqartoq', 'dk': 'Selvangivet\n '}
 
     text18 = {'gl': 'Immersugassap normua', 'dk': 'Felt nr.\n '}
     text25 = {'gl': 'Aningaasat koruuninngorlugit', 'dk': 'Beløb i kroner'}
@@ -217,12 +217,12 @@ class TaxPDF(FPDF):
                   border=0)
 
         self.set_font('arial', 'B', 12.0)
-        self.set_xy(10.0, 8.0)
+        self.set_xy(self.left_margin, 8.0)
         self.multi_cell(h=self.contact_info_table_cell.get('h'), align='L', w=170,
                         txt=self.text2.get(language).format(self.tax_year), border=0)
 
         self.set_font('arial', '', 9.0)
-        self.set_xy(10.0, 20.0)
+        self.set_xy(self.left_margin, 20.0)
         self.cell(h=0, align='L', w=75.0,
                   txt=self.text4[language].format(self.tax_return_date_limit), border=0)
 
@@ -371,7 +371,7 @@ class TaxPDF(FPDF):
 
             self.set_font('arial', 'B', 10)
             self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(h=columnheaderheight, align='L', w=c1w, txt=self.text17A[language], border=1)
+            self.multi_cell(h=columnheaderheight, align='C', w=c1w, txt=self.text17A[language], border=1)
             self.set_xy(self.left_margin+c1w, self.yposition)
             self.multi_cell(h=columnheaderheight, align='C', w=c2w, txt=self.text17B[language], border=1)
             self.set_xy(self.left_margin+c1w+c2w, self.yposition)
@@ -387,7 +387,7 @@ class TaxPDF(FPDF):
             self.tax_days_adjust_factor = 0.8
             if not self.fully_tax_liable:
                 actual_amount = math.floor(float(actual_amount) * self.tax_days_adjust_factor)
-            self.multi_cell(h=rowheight, align='C', w=c2w, txt=str(actual_amount), border=1)
+            self.multi_cell(h=rowheight, align='C', w=c2w, txt="{:,}".format(actual_amount).replace(",", "."), border=1)
             self.set_xy(self.left_margin+c1w+c2w, self.yposition)
             self.multi_cell(h=rowheight, align='L', w=c3w, txt='', border=1)
             self.yposition += rowheight
@@ -406,7 +406,7 @@ class TaxPDF(FPDF):
 
         self.set_font('arial', 'B', 10)
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(h=columnheaderheight, align='L', w=c1w, txt=self.text17C[language], border=1)
+        self.multi_cell(h=columnheaderheight, align='C', w=c1w, txt=self.text17C[language], border=1)
         self.set_xy(self.left_margin+c1w, self.yposition)
         self.multi_cell(h=columnheaderheight, align='C', w=c2w, txt=self.text17D[language], border=1)
         self.set_xy(self.left_margin+c1w+c2w, self.yposition)
