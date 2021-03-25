@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load i18n %}
+{% load l10n %}
 
 {% block content %}
 
@@ -66,7 +67,7 @@
                                     <td class="col-2-sm">{% trans 'Kapitalafkast PBL (DK) § 53 A' %}</td>
                                     <td class="col-6-sm">
                                         {% if policyform.prefilled_amount.value is not None %}
-                                        {% blocktrans with value=policyform.prefilled_amount.value %}Vores beregning: {{value}}{% endblocktrans %}
+                                        {% blocktrans with value=policyform.prefilled_amount.value|localize %}Vores beregning: {{value}}{% endblocktrans %}
                                         {% else %}
                                         {% endif %}
                                     </td>
