@@ -375,7 +375,7 @@ class TaxPDF(FPDF):
             self.set_xy(self.left_margin+c1w, self.yposition)
             self.multi_cell(h=columnheaderheight, align='C', w=c2w, txt=self.text17B[language], border=1)
             self.set_xy(self.left_margin+c1w+c2w, self.yposition)
-            self.multi_cell(h=columnheaderheight, align='C', w=c3w, txt=self.text17C[language], border=1)
+            self.multi_cell(h=columnheaderheight, align='C', w=c3w, txt=self.text17E[language], border=1)
             self.yposition += 10
 
             self.set_font('arial', '', 8.5)
