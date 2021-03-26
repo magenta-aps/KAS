@@ -119,10 +119,10 @@ class TaxPDF(FPDF):
                     'Inatsisartutlov om beskatning af visse kapitalafkast'}
     text26A = {'gl': '',
                'dk': ''}
-    text26B = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinernut nunani allaniittunut nammineerluni akiliutit. '
+    text26B = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinernut nunani allaniittunut, Danmark ilanngullugu, nammineerluni akiliutit. '
                      'Nuna soraarnerussutisiaqarnissamut aaqqissuussinerup pilersinneqarfia, kiisalu aningaasat '
                      'akiliutigineqartut amerlassusiat nalunaakkit',
-               'dk': 'Egen indbetaling til pensionsordninger i andre lande. Angiv landet, som pensionsordningen er '
+               'dk': 'Privat indbetaling til pensionsordninger i andre lande, herunder Danmark. Angiv landet, som pensionsordningen er '
                      'hjemmehørende i, samt størrelsen på det indbetalte beløb'}
     text26C = {'gl': '',
                'dk': ''}
