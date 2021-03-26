@@ -47,7 +47,7 @@ admin.site.register(PolicyDocument, PolicyDocumentAdmin)
 
 class TaxSlipGeneratedAdmin(admin.ModelAdmin):
     list_display = ('persontaxyear', 'status', 'delivery_method')
-    list_filter = ('persontaxyear__tax_year', )
+    list_filter = ('persontaxyear__tax_year', 'status')
 
     def delivery_method(self, obj):
         return obj.delivery_method
