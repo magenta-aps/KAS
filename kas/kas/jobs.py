@@ -217,7 +217,10 @@ def import_r75(job):
 
 @job_decorator
 def generate_reports_for_year(job):
-    qs = PersonTaxYear.get_pdf_recipients_for_year_qs(job.arguments['year_pk'])
+    qs = PersonTaxYear.get_pdf_recipients_for_year_qs(
+        job.arguments['year_pk'],
+        exclude_already_generated=True
+    )
     total_count = qs.count()
     for i, person_tax_year in enumerate(qs.iterator(), 1):
         pdf_generator = TaxPDF()  # construct a new pdf generator everytime to start a new pdf file
