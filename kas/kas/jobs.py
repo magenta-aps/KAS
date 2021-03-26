@@ -333,13 +333,13 @@ def dispatch_eboks_tax_slips(job):
                 if slip.recipient_status == 'dead':
                     # mark the message as failed
                     slip.status = 'failed'
-                    slip.save(update_fields=['status', 'message_id'])
+                    slip.save(update_fields=['status', 'message_id', 'recipient_status'])
                 elif recipient['post_processing_status'] == '':
                     slip.status = 'sent'
-                    slip.save(update_fields=['status', 'message_id'])
+                    slip.save(update_fields=['status', 'message_id', 'recipient_status'])
                 else:
                     slip.status = 'post_processing'
-                    slip.save(update_fields=['status', 'message_id'])
+                    slip.save(update_fields=['status', 'message_id', 'recipient_status'])
             finally:
                 slip.file.close()
             i += 1

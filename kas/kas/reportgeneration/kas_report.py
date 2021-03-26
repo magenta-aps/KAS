@@ -119,10 +119,10 @@ class TaxPDF(FPDF):
                     'Inatsisartutlov om beskatning af visse kapitalafkast'}
     text26A = {'gl': '',
                'dk': ''}
-    text26B = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinernut nunani allaniittunut nammineerluni akiliutit. '
+    text26B = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinernut nunani allaniittunut, Danmark ilanngullugu, nammineerluni akiliutit. '
                      'Nuna soraarnerussutisiaqarnissamut aaqqissuussinerup pilersinneqarfia, kiisalu aningaasat '
                      'akiliutigineqartut amerlassusiat nalunaakkit',
-               'dk': 'Egen indbetaling til pensionsordninger i andre lande. Angiv landet, som pensionsordningen er '
+               'dk': 'Privat indbetaling til pensionsordninger i andre lande, herunder Danmark. Angiv landet, som pensionsordningen er '
                      'hjemmehørende i, samt størrelsen på det indbetalte beløb'}
     text26C = {'gl': '',
                'dk': ''}
@@ -375,7 +375,7 @@ class TaxPDF(FPDF):
             self.set_xy(self.left_margin+c1w, self.yposition)
             self.multi_cell(h=columnheaderheight, align='C', w=c2w, txt=self.text17B[language], border=1)
             self.set_xy(self.left_margin+c1w+c2w, self.yposition)
-            self.multi_cell(h=columnheaderheight, align='C', w=c3w, txt=self.text17C[language], border=1)
+            self.multi_cell(h=columnheaderheight, align='C', w=c3w, txt=self.text17E[language], border=1)
             self.yposition += 10
 
             self.set_font('arial', '', 8.5)
