@@ -168,9 +168,12 @@ class LogoutCallback(View):
     @xframe_options_exempt
     def get(self, request):
         their_sid = request.GET.get('sid')
-        our_sid = request.session['access_token_data']['id_token']['sid']
-        if their_sid != our_sid:
-            print("Logout SID mismatch (ours: %s, theirs: %s)" % (our_sid, their_sid))
+        try:
+            our_sid = request.session['access_token_data']['id_token']['sid']
+            if their_sid != our_sid:
+                print("Logout SID mismatch (ours: %s, theirs: %s)" % (our_sid, their_sid))
+        except KeyError:
+            pass
 
         # according to the specs this is rendered in a iframe when the user triggers a logout from OP`s side
         # do a total cleanup and delete everything related to openID

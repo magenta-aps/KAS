@@ -65,6 +65,9 @@ msgstr ""
 msgid "Logget ind som %(name)s"
 msgstr "%(name)s-itut iserpoq"
 
+msgid "Logget ind som %(cpr)s"
+msgstr "%(cpr)s-itut iserpoq"
+
 #: templates/base.html:64
 msgid "Log ud"
 msgstr "Aniffissaq"

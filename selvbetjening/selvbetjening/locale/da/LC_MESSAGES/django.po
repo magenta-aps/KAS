@@ -59,6 +59,9 @@ msgstr ""
 msgid "Logget ind som %(name)s"
 msgstr ""
 
+msgid "Logget ind som %(cpr)s"
+msgstr ""
+
 #: templates/base.html:64
 msgid "Log ud"
 msgstr ""

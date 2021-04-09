@@ -91,6 +91,7 @@ class HasUserMixin(object):
     def get_context_data(self, **kwargs):
         return super(HasUserMixin, self).get_context_data(**{
             'cpr': self.cpr,
+            'cpr_x': (self.cpr[0:6] + 'xxxx') if self.cpr else None,
             'name': self.name,
             **kwargs
         })
