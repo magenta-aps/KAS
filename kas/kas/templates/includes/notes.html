@@ -1,0 +1,37 @@
+{% load i18n %}
+<table class="table table-bordered table-sm">
+    <thead>
+    <tr>
+        <th>{% trans 'Bruger' %}</th>
+        <th>{% trans 'Tidspunkt' %}</th>
+        {% if policy_col %}
+        <th>{% trans 'Police' %}</th>
+        {% endif %}
+        <th class="w-75">{% trans 'Tekst' %}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for note in notes %}
+    <tr>
+        {% with author=note.author %}
+        <td>{{ author.get_full_name }} ({{ author.username }})</td>
+        {% endwith %}
+        <td>{{ note.date }}</td>
+        {% if policy_col %}
+        <td>
+            {% if note.policy_tax_year %}
+            {% with policy_tax_year=note.policy_tax_year %}
+            <a href="{% url 'kas:policy_detail' pk=policy_tax_year.id %}#notes">{{ policy_tax_year.policy_number }}</a>
+            {% endwith %}
+            {% endif %}
+        </td>
+        {% endif %}
+        <td><pre class="p-0 m-0">{{ note.content.strip }}</pre></td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="{% if policy_col %}4{% else %}3{% endif %}">{% trans 'Ingen notater fundet' %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>

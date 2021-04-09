@@ -2,10 +2,11 @@ from django.db.models import Count
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404, HttpResponse
-from django.views.generic import TemplateView, DetailView, ListView, View
+from django.urls import reverse
+from django.views.generic import TemplateView, ListView, View, UpdateView
 from django.views.generic.detail import SingleObjectMixin
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
-from kas.forms import PersonListFilterForm
+from kas.forms import PersonListFilterForm, PersonTaxYearForm, PolicyTaxYearForm
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated
 
 import os
@@ -89,10 +90,23 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
         return qs
 
 
-class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
+class PersonTaxYearDetailView(LoginRequiredMixin, UpdateView):
     template_name = 'kas/persontaxyear_detail.html'
     model = PersonTaxYear
     context_object_name = 'person_tax_year'
+    form_class = PersonTaxYearForm
+
+    @property
+    def url(self):
+        return reverse('kas:person_in_year', kwargs={'year': self.object.year, 'person_id': self.object.person.id})
+
+    def get_success_url(self):
+        return self.url
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def get_object(self, queryset=None):
         if queryset is None:
@@ -134,10 +148,23 @@ class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
         return result
 
 
-class PolicyTaxYearDetailView(LoginRequiredMixin, DetailView):
+class PolicyTaxYearDetailView(LoginRequiredMixin, UpdateView):
     template_name = 'kas/policytaxyear_detail.html'
     model = PolicyTaxYear
     context_object_name = 'policy'
+    form_class = PolicyTaxYearForm
+
+    @property
+    def url(self):
+        return reverse('kas:policy_detail', kwargs={'pk': self.object.pk})
+
+    def get_success_url(self):
+        return self.url
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def get_context_data(self, *args, **kwargs):
         result = super().get_context_data(*args, **kwargs)

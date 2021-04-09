@@ -2,6 +2,9 @@
 {% load i18n %}
 
 {% block content %}
+  <form method="post">
+    {% csrf_token %}
+
   <h1>Police {{ policy.policy_number }} ved {{ policy.pension_company.name }} for '{{ policy.person.name }}' år {{ policy.year}}</h1>
   {% if policy.pension_company.agreement_present %}
   <p class="bg-secondary p-2">Pensionsselskabet har aftale med Skattestyrelsn</p>
@@ -110,69 +113,82 @@
   </div>
   <p><strong>I alt til betaling: {{ calculation.tax_with_deductions }} kr</strong></p>
 
-<h2>Anvendt negativt afkast</h2>
+  <h2>Anvendt negativt afkast</h2>
 
-{% with marked_year=policy.year %}
-<div class="p-4">
-  <table class="table table-bordered table-hover table-sm" style="width: auto;">
-    <thead>
-      <tr class="table-info">
-        <th colspan="2"></th>
-        <th colspan="{{ used_negativ_table|length|add:-1 }}" class="text-center">Anvendt i år</th>
-        <th></th>
-      </tr>
-      <tr>
-        <th class="table-info">År</th>
-        <th class="table-info">Negativt afkast</th>
-        {% for year in used_negativ_table.keys %}
-        {% if not forloop.first %}
-        <th class="table-{% if marked_year == year %}primary{% else %}info{% endif %}">{{ year }}</th>
-        {% endif %}
-        {% endfor %}
-        <th class="table-info">Resterende</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for year, data in used_negativ_table.items %}
-      {% if not forloop.last %}
-      <tr>
-        <th>{{ year }}</th>
-        <td class="text-right">{{ data.available }}</td>
-        {% for year2, value in data.used_by_year.items %}
-        {% if not forloop.first %}
-        {% if value == "-" %}
-        <td class="table-secondary"></td>
-        {% else %}
-        <td class="text-right{% if marked_year == year2 %} table-success{% endif %}">{{ value }}</td>
-        {% endif %}
-        {% endif %}
-        {% endfor%}
-        <td class="text-right">{{ data.remaining }}</td>
-      </tr>
-      {% endif %}
-      {% endfor %}
-      <tr>
-        <th colspan="2">Totalt anvendt</th>
+  {% with marked_year=policy.year %}
+  <div class="p-4">
+    <table class="table table-bordered table-hover table-sm" style="width: auto;">
+      <thead>
+        <tr class="table-info">
+          <th colspan="2"></th>
+          <th colspan="{{ used_negativ_table|length|add:-1 }}" class="text-center">Anvendt i år</th>
+          <th></th>
+        </tr>
+        <tr>
+          <th class="table-info">År</th>
+          <th class="table-info">Negativt afkast</th>
+          {% for year in used_negativ_table.keys %}
+          {% if not forloop.first %}
+          <th class="table-{% if marked_year == year %}primary{% else %}info{% endif %}">{{ year }}</th>
+          {% endif %}
+          {% endfor %}
+          <th class="table-info">Resterende</th>
+        </tr>
+      </thead>
+      <tbody>
         {% for year, data in used_negativ_table.items %}
-        {% if not forloop.first %}
-        <td class="text-right{% if marked_year == year %} table-success{% endif %}">{{ data.used_total }}</td>
+        {% if not forloop.last %}
+        <tr>
+          <th>{{ year }}</th>
+          <td class="text-right">{{ data.available }}</td>
+          {% for year2, value in data.used_by_year.items %}
+          {% if not forloop.first %}
+          {% if value == "-" %}
+          <td class="table-secondary"></td>
+          {% else %}
+          <td class="text-right{% if marked_year == year2 %} table-success{% endif %}">{{ value }}</td>
+          {% endif %}
+          {% endif %}
+          {% endfor%}
+          <td class="text-right">{{ data.remaining }}</td>
+        </tr>
         {% endif %}
         {% endfor %}
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-{% endwith %}
+        <tr>
+          <th colspan="2">Totalt anvendt</th>
+          {% for year, data in used_negativ_table.items %}
+          {% if not forloop.first %}
+          <td class="text-right{% if marked_year == year %} table-success{% endif %}">{{ data.used_total }}</td>
+          {% endif %}
+          {% endfor %}
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  {% endwith %}
 
-<h2>Andre år</h2>
+  <h2>Andre år</h2>
 
-<p>Samme police i andre år:</p>
-<ul>
-{% for x in policy.same_policy_qs.all %}
-  <li><a href="{% url 'kas:policy_detail' x.pk %}">{{x.year}}</a></li>
-{% endfor %}
-</ul>
+  <p>Samme police i andre år:</p>
+  <ul>
+  {% for x in policy.same_policy_qs.all %}
+    <li><a href="{% url 'kas:policy_detail' x.pk %}">{{x.year}}</a></li>
+  {% endfor %}
+  </ul>
+
+  <a name="notes"><h2>{% trans 'Notater' %}</h2></a>
+
+
+  {% include 'includes/notes.html' with notes=policy.notes.all %}
+
+  <a href="{% url 'kas:person_in_year' policy.year policy.person.id %}#notes">{% trans 'Se alle notater på borgeren for dette år' %}</a>
+
+  {{ form.note }}
+
+  <hr/>
+  <button type="submit" class="btn btn-primary">{% trans 'Gem nyt notat' %}</button>
+  </form>
 
 {% endblock %}
 
