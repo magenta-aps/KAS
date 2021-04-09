@@ -2,6 +2,9 @@
 {% load i18n %}
 
 {% block content %}
+  <form method="post">
+    {% csrf_token %}
+
   <h1>{{ person_tax_year.person.name }} i år {{view.year}}</h1>
 
   {% if person_tax_year.tax_slip %}
@@ -65,4 +68,13 @@
   {% else %}
   <p>Ingen policer fundet</p>
   {% endif %}
+
+  <a name="notes"><h2>{% trans 'Notater' %}</h2></a>
+
+  {% include 'includes/notes.html' with notes=person_tax_year.notes.all policy_col=True %}
+
+  {{ form.note }}
+  <hr/>
+  <button type="submit" class="btn btn-primary">{% trans 'Gem' %}</button>
+  </form>
 {% endblock %}

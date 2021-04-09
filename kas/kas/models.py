@@ -3,7 +3,7 @@ import math
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
@@ -273,6 +273,10 @@ class PersonTaxYear(HistoryMixin, models.Model):
         null=True
     )
 
+    @property
+    def year(self):
+        return self.tax_year.year
+
     @classmethod
     def get_pdf_recipients_for_year_qs(cls, tax_year_obj_or_pk, exclude_already_generated=False):
         qs = cls.objects.filter(
@@ -463,11 +467,6 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         verbose_name=_('Låst'),
         help_text=_('Låst'),
         default=False
-    )
-
-    note = models.TextField(
-        verbose_name=_('Note'),
-        null=True
     )
 
     @classmethod
@@ -847,6 +846,40 @@ class Payment(models.Model):
         db_index=True,
         verbose_name=_('Antal dage'),
         help_text=_('Antal dage')
+    )
+
+
+class Note(models.Model):
+
+    class Meta:
+        ordering = ['date']
+
+    person_tax_year = models.ForeignKey(
+        PersonTaxYear,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name='notes',
+    )
+
+    policy_tax_year = models.ForeignKey(
+        PolicyTaxYear,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='notes',
+    )
+
+    date = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    author = models.ForeignKey(
+        User,
+        null=False,
+        on_delete=models.PROTECT,
+    )
+
+    content = models.TextField(
+        verbose_name=_('Tekst'),
     )
 
 
