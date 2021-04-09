@@ -59,6 +59,8 @@
                     <div class="userinfo">
                         {% if name %}
                             <span>{% blocktrans %}Logget ind som {{ name }}{% endblocktrans %}</span>
+                        {% elif cpr_x %}
+                            <span>{% blocktrans with cpr=cpr_x %}Logget ind som {{ cpr }}{% endblocktrans %}</span>
                         {% endif %}
                         {% if cpr %}
                             <a href="{% url 'sullissivik:openid:logout' %}">{% trans 'Log ud' %}</a>

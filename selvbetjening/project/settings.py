@@ -93,6 +93,7 @@ django.conf.locale.LANG_INFO['kl'] = {
 }
 
 SESSION_COOKIE_SAMESITE = 'lax'
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 STATIC_URL = '/static/'
 
