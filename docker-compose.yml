@@ -21,7 +21,6 @@ services:
       # Set this to "DUMMYDATA=" in override file if you do not want dummy data
       - DUMMYDATA=true
       - CREATE_USERS=true
-      - CREATE_DUMMY_USERS=true
       - TEST=true
     command: gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output # reload on code changes
 
