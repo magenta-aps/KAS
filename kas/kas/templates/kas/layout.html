@@ -23,6 +23,7 @@
         <a class="p-2 text-muted" href="{% url 'worker:job_list' %}">{% trans 'Jobadministration' %}</a>
         {% if user.is_authenticated %}
         <span class="p-2 ml-auto">{% blocktrans with username=user.username %}Du er logget ind som {{username}}{% endblocktrans %}</span>
+        <a class="btn btn-secondary" href="{% url 'logout' %}">{% trans 'Log ud' %}</a>
         {% endif %}
     </nav>
     <hr class="p-0 m-0">
