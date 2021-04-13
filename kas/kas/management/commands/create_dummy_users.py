@@ -8,7 +8,6 @@ class Command(BaseCommand):
     help = 'Creates dummy users'
 
     def handle(self, *args, **options):
-        # Sanity check: We do not want a weak password in production
         if settings.ENVIRONMENT == "production":
             raise Exception("Will not create dev users in production")
 
