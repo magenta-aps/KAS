@@ -16,17 +16,10 @@ class Migration(migrations.Migration):
 
         # Send signal that will trigger Permission object creation
         emit_post_migrate_signal(2, False, 'default')
-
-        kas_permissions = Permission.objects.filter(content_type__app_label='kas')
+        auth_permissions = Permission.objects.filter(content_type__app_label='auth')
         group.permissions.set([
-            kas_permissions.get(codename='add_pensioncompany'),
-            kas_permissions.get(codename='change_pensioncompany'),
-
-            kas_permissions.get(codename='add_persontaxyear'),
-            kas_permissions.get(codename='change_persontaxyear'),
-
-            kas_permissions.get(codename='add_policytaxyear'),
-            kas_permissions.get(codename='change_policytaxyear'),
+            auth_permissions.get(codename='add_user'),
+            auth_permissions.get(codename='change_user'),
         ])
 
     operations = [
