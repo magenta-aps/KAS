@@ -24,10 +24,10 @@ if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] || [ "$TEST" = true ] 
       echo 'Create admin user / setting admin password'
       python manage.py create_admin_user ${ADMIN_PASSWORD}
     fi
-    if [ "$CREATE_DUMMY_USERS" ]; then
-      echo 'Create dummy users'
-      python manage.py create_dummy_users
-    fi
+  fi
+  if [ "$CREATE_DUMMY_USERS" = true ]; then
+    echo 'Create dummy users'
+    python manage.py create_dummy_users
   fi
   if [ "$CREATE_DUMMY_USERS" = true ]; then
     echo 'Create dummy users'
