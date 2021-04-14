@@ -29,10 +29,6 @@ if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] || [ "$TEST" = true ] 
     echo 'Create dummy users'
     python manage.py create_dummy_users
   fi
-  if [ "$CREATE_DUMMY_USERS" = true ]; then
-    echo 'Create dummy users'
-    python manage.py create_dummy_users
-  fi
   if [ "$TEST" = true ]; then
     echo 'running tests!'
     python manage.py test
