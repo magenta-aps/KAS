@@ -13,11 +13,11 @@ class KasUserAdmin(UserAdmin):
         if not obj:
             return self.add_fieldsets
         if not request.user.is_superuser:
-            # Staff users (not superadmins) don't need to change users' groups, permissions, admin status etc.
+            # Staff users (not superadmins) don't need to change users' groups, permissions, superuser status etc.
             return (
                 (None, {'fields': ('username', 'password')}),
                 (_('Personal info'), {'fields': ('first_name', 'last_name', 'email')}),
-                (_('Permissions'), {'fields': ('is_active',)}),
+                (_('Permissions'), {'fields': ('is_active', 'is_staff')}),
             )
         return super().get_fieldsets(request, obj)
 
