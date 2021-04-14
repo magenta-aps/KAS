@@ -7,7 +7,7 @@ CREATE_USERS=${CREATE_USERS:=false}
 DUMMYDATA=${DUMMYDATA:=false}
 DJANGO_DEBUG=${DJANGO_DEBUG:=false}
 
-if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] || [ "$TEST" = true ] || [ "$CREATE_USERS" = true ] || [ "$DUMMYDATA" = true ]; then
+if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] || [ "$TEST" = true ] || [ "$CREATE_USERS" = true ] || [ "$CREATE_DUMMY_USERS" = true ] || [ "$DUMMYDATA" = true ]; then
   python manage.py wait_for_db
   if [ "$MAKE_MIGRATIONS" = true ]; then
     echo 'generating migrations'
@@ -24,6 +24,10 @@ if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] || [ "$TEST" = true ] 
       echo 'Create admin user / setting admin password'
       python manage.py create_admin_user ${ADMIN_PASSWORD}
     fi
+  fi
+  if [ "$CREATE_DUMMY_USERS" = true ]; then
+    echo 'Create dummy users'
+    python manage.py create_dummy_users
   fi
   if [ "$TEST" = true ]; then
     echo 'running tests!'

@@ -1,6 +1,20 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
 
 from kas.models import PensionCompany, TaxYear, Person, PersonTaxYear, PolicyTaxYear, PolicyDocument, TaxSlipGenerated
+
+
+class KasUserAdmin(UserAdmin):
+    # Specialized admin
+
+    # Cannot delete users
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+admin.site.unregister(User)
+admin.site.register(User, KasUserAdmin)
 
 
 class PensionCompanyAdmin(admin.ModelAdmin):

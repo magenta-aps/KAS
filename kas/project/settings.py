@@ -8,6 +8,7 @@ SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 DEBUG = bool(strtobool(os.environ.get('DJANGO_DEBUG', 'False')))
 ALLOWED_HOSTS = ['*']
 TIME_ZONE = os.environ['DJANGO_TIMEZONE']
+LOGIN_REDIRECT_URL = '/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Application definition
