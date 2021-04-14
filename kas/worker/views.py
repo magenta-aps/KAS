@@ -15,17 +15,17 @@ from worker.models import Job
 from worker.serializers import JobSerializer
 
 
-class JobListTemplateView(BootstrapTableMixin, TemplateView):
+class JobListTemplateView(LoginRequiredMixin, BootstrapTableMixin, TemplateView):
     template_name = 'worker/job_list.html'
 
 
-class JobDetailView(DetailView):
+class JobDetailView(LoginRequiredMixin, DetailView):
     slug_field = 'uuid'
     slug_url_kwarg = 'uuid'
     model = Job
 
 
-class JobListAPIView(ListAPIView):
+class JobListAPIView(LoginRequiredMixin, ListAPIView):
     authentication_classes = [SessionAuthentication]
     serializer_class = JobSerializer
     pagination_class = LimitOffsetPagination
