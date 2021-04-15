@@ -69,7 +69,14 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
 
     person_tax_year = serializers.PrimaryKeyRelatedField(queryset=PersonTaxYear.objects.all())
     pension_company = serializers.PrimaryKeyRelatedField(queryset=PensionCompany.objects.all())
-    policy_documents = PolicyDocumentSerializer(many=True, read_only=True)
+    policy_documents = serializers.SerializerMethodField('get_citizen_documents')
+
+    def get_citizen_documents(self, policy_tax_year):
+        return PolicyDocumentSerializer(
+            instance=policy_tax_year.policy_documents.filter(uploaded_by__isnull=True),
+            many=True,
+            context=self.context
+        ).data
 
     def create(self, validated_data):
         if validated_data.get('self_reported_amount') is not None:
