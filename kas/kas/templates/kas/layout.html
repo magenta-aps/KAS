@@ -20,7 +20,9 @@
 <body>
     <nav class="nav d-flex p-2">
         <a class="p-2 text-muted" href="{% url 'kas:frontpage' %}">{% trans 'Forside' %}</a>
+        {% if user.is_staff %}
         <a class="p-2 text-muted" href="{% url 'worker:job_list' %}">{% trans 'Jobadministration' %}</a>
+        {% endif %}
         <span class="ml-auto">
         {% if user.is_authenticated %}
             <span class="p-2">{% blocktrans with username=user.username %}Du er logget ind som {{username}}{% endblocktrans %}</span>

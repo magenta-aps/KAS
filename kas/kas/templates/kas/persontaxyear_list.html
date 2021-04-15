@@ -3,8 +3,17 @@
 
 {% block content %}
   <h1>List over personer i år {{view.year}}</h1>
+  <p>{% blocktrans %}I listen nedenfor kan fremsøges borgere som man ønsker at sagsbehandle for. Udfyld felterne over listen og klik på 'Søg'
+     for at filtrere listen og finde frem til specifikke borgere.{% endblocktrans %}</p>
 
-  <hr>
+  <p>{% blocktrans %}I feltet CPR kan angives et fuldt CPR-nummer eller en del af CPR-nummer.
+     Nummeret skal angives uden bindestreger eller mellemrum.{% endblocktrans %}</p>
+
+  <p>{% blocktrans %}I feltet Navn kan angives en del af navnet på en person eller det fulde navn på personen.
+     Der skelnes ikke mellem store og små bogstaver.{% endblocktrans %}</p>
+
+  <p>{% blocktrans %}Klik på en borger i listen for at få vist detaljer for borgeren og
+     for at få vist borgerens policer for det valgte år.{% endblocktrans %}</p>
 
   <div>
     <form action="" method="GET" class="form-inline">
