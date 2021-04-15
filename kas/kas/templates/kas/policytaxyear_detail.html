@@ -34,7 +34,7 @@
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
-  <h1>{% blocktrans with policy=policy %}Police {{ policy.policy_number }} ved {{ policy.pension_company.name }} for '{{ policy.person.name }}' år {{ policy.year}}{% endblocktrans %}</h1>
+  <h1>{% blocktrans with number=policy.polciy_number company=policy.pension_company.name name=policy.person.name year=policy.year %}Police {{ number }} ved {{ company }} for '{{ name }}' år {{ year}}{% endblocktrans %}</h1>
   <p>{% blocktrans %}På denne side kan ses detaljer for den valgte police for det givne år. Der vises beregningen der danner grundlag for skatten og
      en tabel der viser hvordan negativt afkast fra tidligere år eventuelt er blevet anvendt.{% endblocktrans %}</p>
   <p>{% blocktrans %}I bunden af siden er det muligt at tilføje notater og vedhæfte bilag på policen. OBS! Vedhæftede bilag på policer vil kunne
