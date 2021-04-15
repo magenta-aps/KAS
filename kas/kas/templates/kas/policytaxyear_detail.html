@@ -173,7 +173,9 @@
   <p>Samme police i andre år:</p>
   <ul>
   {% for x in policy.same_policy_qs.all %}
+    {% if x != policy %}
     <li><a href="{% url 'kas:policy_detail' x.pk %}">{{x.year}}</a></li>
+    {% endif %}
   {% endfor %}
   </ul>
 
