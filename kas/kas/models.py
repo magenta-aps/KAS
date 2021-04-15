@@ -111,6 +111,9 @@ class PensionCompany(models.Model):
 
 class TaxYear(models.Model):
 
+    class Meta:
+        ordering = ['-year']
+
     year = models.IntegerField(
         db_index=True,
         verbose_name=_('Skatteår'),
@@ -229,6 +232,7 @@ class TaxSlipGenerated(models.Model):
 class PersonTaxYear(HistoryMixin, models.Model):
 
     class Meta:
+        ordering = ['-tax_year__year', 'person__name']
         unique_together = ['tax_year', 'person']
 
     history = HistoricalRecords()

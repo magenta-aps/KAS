@@ -2,13 +2,49 @@
 {% load i18n %}
 
 {% block content %}
+
+<div class="float-right border p-2">
+  <h3>Navigation</h3>
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <a class="nav-link active" href="#Beregning">{% trans 'Beregning' %}</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#Negativt-afkast">{% trans 'Anvendt negativt afkast' %}</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#Andre-aar">{% trans 'Policen i andre år' %}</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#notes">{% trans 'Notater' %}</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#Bilag">{% trans 'Bilag' %}</a>
+    </li>
+  </ul>
+  <hr>
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <a class="nav-link active" href="{% url 'kas:person_in_year' policy.person_tax_year.tax_year.year policy.person_tax_year.person.pk %}">Vis personen for policen</a>
+    </li>
+  </ul>
+</div>
+
+
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
-  <h1>Police {{ policy.policy_number }} ved {{ policy.pension_company.name }} for '{{ policy.person.name }}' år {{ policy.year}}</h1>
+  <h1>{% blocktrans with policy=policy %}Police {{ policy.policy_number }} ved {{ policy.pension_company.name }} for '{{ policy.person.name }}' år {{ policy.year}}{% endblocktrans %}</h1>
+  <p>{% blocktrans %}På denne side kan ses detaljer for den valgte police for det givne år. Der vises beregningen der danner grundlag for skatten og
+     en tabel der viser hvordan negativt afkast fra tidligere år eventuelt er blevet anvendt.{% endblocktrans %}</p>
+  <p>{% blocktrans %}I bunden af siden er det muligt at tilføje notater og vedhæfte bilag på policen. OBS! Vedhæftede bilag på policer vil kunne
+     ses af borgeren i selvbetjeningsssystemet.{% endblocktrans %}</p>
+  <p>{% blocktrans %}Brug navigationsboksen til højre til at hoppe til en bestemt del af siden.{% endblocktrans %}</p>
+
   {% if policy.pension_company.agreement_present %}
-  <p class="bg-secondary p-2">Pensionsselskabet har aftale med Skattestyrelsn</p>
+  <p class="bg-secondary p-2">{% trans 'Pensionsselskabet har aftale med Skattestyrelsen om automatisk betaling' %}</p>
   {% endif %}
+  <h2 id="Beregning">{% trans 'Beregning' %}</h2>
   <div class="p-4">
     <table class="table table-bordered table-hover table-striped" style="width: auto;">
         <thead>
@@ -17,103 +53,104 @@
                 <th>{% trans 'Værdi / beløb' %}</th>
                 <th>{% trans 'Enhed' %}</th>
                 <th>{% trans 'Forklaring' %}</th>
-
             </tr>
         </thead>
         <tbody>
           <tr>
             <th>{{ pension_company_amount_label }}</th>
             <td class="text-right">{{ policy.prefilled_amount }}</td>
-            <td>kr</td>
-            <td>Udfyldes fra R75</td>
+            <td>{% trans 'kr' %}</td>
+            <td>{% trans 'Udfyldes fra R75' %}</td>
           </tr>
           <tr>
             <th>{{ estimated_amount_label }}</th>
             <td class="text-right">{% if policy.estimated_amount %}{{ policy.estimated_amount }}{% endif %}</td>
-            <td>kr</td>
-            <td>Udfyldes eventuelt under sagsbehandling</td>
+            <td>{% trans 'kr' %}</td>
+            <td>{% trans 'Udfyldes eventuelt under sagsbehandling' %}</td>
           </tr>
           <tr>
             <th>{{ self_reported_amount_label }}</th>
             <td class="text-right">{% if policy.self_reported_amount %}{{ policy.self_reported_amount }}{% endif %}</td>
-            <td>kr</td>
-            <td>Selvangivet beløb fra borgeren</td>
+            <td>{% trans 'kr' %}</td>
+            <td>{% trans 'Selvangivet beløb fra borgeren' %}</td>
           </tr>
           <tr class="table-info">
-            <td colspan="4" class="text-center">Beløb brugt til beregning: {{ policy.get_active_amount_display }}</td>
+            <td colspan="4" class="text-center">{% blocktrans with amount=policy.get_active_amount_display %}Beløb brugt til beregning: {{ amount }}{% endblocktrans %}</td>
           </tr>
           <tr>
-            <th>Startbeløb</th>
+            <th>{% trans 'Startbeløb' %}</th>
             <td class="text-right">{{ calculation.initial_amount }}</td>
-            <td>kr</td>
-            <td>Beløb for hele året ({{ policy.get_active_amount_display }})</td>
+            <td>{% trans 'kr' %}</td>
+            <td>{% blocktrans with amount=polciy.get_active_amount_display %}Beløb for hele året ({{ amount }}){% endblocktrans %}</td>
           </tr>
           <tr>
-            <th>Antal dage i {{ policy.year }}</th>
+            <th>{% blocktrans with year=policy.year %}Antal dage i {{ year }}{% endblocktrans %}</th>
             <td class="text-right">{{ calculation.days_in_year }}</td>
-            <td>dage</td>
+            <td>{% trans 'dage' %}</td>
             <td></td>
           </tr>
           <tr>
-            <th>Borgerens skattepligtige dage i {{ policy.year }}</th>
+            <th>{% blocktrans with year=policy.year %}Borgerens skattepligtige dage i {{ year }}{% endblocktrans %}</th>
             <td class="text-right">{{  calculation.taxable_days_in_year }}</td>
-            <td>dage</td>
+            <td>{% trans 'dage' %}</td>
             <td></td>
           </tr>
           <tr>
-            <th>Justeringsfaktor for antal skattepligtige dage</th>
+            <th>{% trans 'Justeringsfaktor for antal skattepligtige dage' %}</th>
             <td class="text-right">{{ calculation.tax_days_adjust_factor }}</td>
             <td></td>
-            <td>Skattepligtige dage ({{ calculation.taxable_days_in_year }}) / Dage i {{ policy.year }} ({{ calculation.days_in_year }})</td>
+            <td> {% blocktrans with year=policy.year taxable_days=calculation.taxable_days_in_year days=calculation.days_in_year %}Skattepligtige dage ({{ taxable_days }}) / Dage i {{ year }} ({{ days }}){% endblocktrans %}</td>
           </tr>
           <tr>
-            <th>Beløb justeret for år</th>
+            <th>{% trans 'Beløb justeret for år' %}</th>
             <td class="text-right">{{ calculation.year_adjusted_amount }}</td>
             <td>kr</td>
-            <td>Beløb for hele året ({{ calculation.initial_amount }}) &times; Justeringsfaktor for antal dage ({{ calculation.tax_days_adjust_factor }})</td>
+            <td>{% blocktrans with amount=calculation.initial_amount tax_days=calculation.tax_days_adjust_factor %}Beløb for hele året ({{ amount }}) &times; Justeringsfaktor for antal dage ({{ tax_days }}){% endblocktrans %}</td>
           </tr>
           <tr>
-            <th>Tilgængeligt negativt afkast</th>
+            <th>{% trans 'Tilgængeligt negativt afkast' %}</th>
             <td class="text-right">{{ calculation.available_negative_return }}</td>
-            <td>kr</td>
-            <td>Se tabel nedenfor</td>
+            <td>{% trans 'kr' %}</td>
+            <td>{% trans 'Se tabel nedenfor' %}</td>
           </tr>
           <tr>
-            <th>Anvendt negativt afkast</th>
+            <th>{% trans 'Anvendt negativt afkast' %}</th>
             <td class="text-right">{{ calculation.used_negative_return }}</td>
-            <td>kr</td>
-            <td>Maksimalt det fulde skattepligtige beløb</td>
+            <td>{% trans 'kr' %}</td>
+            <td>{% trans 'Maksimalt det fulde skattepligtige beløb' %}</td>
           </tr>
           <tr>
-            <th>Skattegrundlag efter justering for negativt afkast</th>
+            <th>{% trans 'Skattegrundlag efter justering for negativt afkast' %}</th>
             <td class="text-right">{{ calculation.taxable_amount }}</td>
-            <td>kr</td>
-            <td>Beløb justeret for dage ({{ calculation.year_adjusted_amount }}) - anvendt negativt afkast ({{ calculation.used_negative_return }})</td>
+            <td>{% trans 'kr' %}</td>
+            <td>{% blocktrans with amount=calculation.year_adjusted_amount return=calculation.used_negative_return %}Beløb justeret for dage ({{ amount }}) - anvendt negativt afkast ({{ return }}){% endblocktrans %}</td>
           </tr>
           <tr>
-            <th>Skat før fraregning af skat betalt i udlandet</th>
+            <th>{% trans 'Skat før fraregning af skat betalt i udlandet' %}</th>
             <td class="text-right">{{ calculation.full_tax }}</td>
-            <td>kr</td>
-            <td>15,3% af skattegrundlag efter justering for negativt afkast ({{ calculation.taxable_amount }})</td>
+            <td>{% trans 'kr' %}</td>
+            <td>{% blocktrans with amount=calculation.taxable_amount %}15,3% af skattegrundlag efter justering for negativt afkast ({{ amount }}){% endblocktrans %}</td>
           </tr>
           <tr>
-            <th>Skat betalt i udlandet</th>
+            <th>{% trans 'Skat betalt i udlandet' %}</th>
             <td class="text-right">{{ calculation.foreign_paid_amount }}</td>
-            <td>kr</td>
-            <td>Selvangivet beløb</td>
+            <td>{% trans 'kr' %}</td>
+            <td>{% trans 'Selvangivet beløb' %}</td>
           </tr>
           <tr>
-            <th>Skat fratrukket betaling i udland</th>
+            <th>{% trans 'Skat fratrukket betaling i udland' %}</th>
             <td class="text-right">{{ calculation.tax_with_deductions }}</td>
-            <td>kr</td>
-            <td>Skat før fraregning af skat betalt i udlandet ({{ calculation.full_tax }}) - Skat betalt i udlandet ({{ calculation.foreign_paid_amount }})</td>
+            <td>{% trans 'kr' %}kr</td>
+            <td>{% blocktrans with tax=calculation.full_tax paid=calculation.foreign_paid_amount %}Skat før fraregning af skat betalt i udlandet ({{ tax }}) - Skat betalt i udlandet ({{ paid }}){% endblocktrans %}</td>
           </tr>
         </tbody>
     </table>
   </div>
-  <p><strong>I alt til betaling: {{ calculation.tax_with_deductions }} kr</strong></p>
+  <p><strong>{% blocktrans with tax=calculation.tax_with_deductions %}I alt til betaling: {{ tax }} kr {% endblocktrans %}</strong></p>
 
-  <h2>Anvendt negativt afkast</h2>
+  <h2 id="Negativt-afkast">{% trans 'Anvendt negativt afkast' %}</h2>
+
+  <p>{% blocktrans %}Her vises hvordan negativt afkast fra tidligere år er blevet allokeret.{% endblocktrans %}</p>
 
   {% with marked_year=policy.year %}
   <div class="p-4">
@@ -121,18 +158,18 @@
       <thead>
         <tr class="table-info">
           <th colspan="2"></th>
-          <th colspan="{{ used_negativ_table|length|add:-1 }}" class="text-center">Anvendt i år</th>
+          <th colspan="{{ used_negativ_table|length|add:-1 }}" class="text-center">{% trans 'Anvendt i år' %}</th>
           <th></th>
         </tr>
         <tr>
-          <th class="table-info">År</th>
-          <th class="table-info">Negativt afkast</th>
+          <th class="table-info">{% trans 'År' %}</th>
+          <th class="table-info">{% trans 'Negativt afkast' %}</th>
           {% for year in used_negativ_table.keys %}
           {% if not forloop.first %}
           <th class="table-{% if marked_year == year %}primary{% else %}info{% endif %}">{{ year }}</th>
           {% endif %}
           {% endfor %}
-          <th class="table-info">Resterende</th>
+          <th class="table-info">{% trans 'Resterende' %}</th>
         </tr>
       </thead>
       <tbody>
@@ -155,7 +192,7 @@
         {% endif %}
         {% endfor %}
         <tr>
-          <th colspan="2">Totalt anvendt</th>
+          <th colspan="2">{% trans 'Totalt anvendt' %}</th>
           {% for year, data in used_negativ_table.items %}
           {% if not forloop.first %}
           <td class="text-right{% if marked_year == year %} table-success{% endif %}">{{ data.used_total }}</td>
@@ -168,9 +205,9 @@
   </div>
   {% endwith %}
 
-  <h2>Andre år</h2>
+  <h2 id="Andre-aar">{% trans 'Policen i andre år' %}</h2>
 
-  <p>Samme police i andre år:</p>
+  <p>{% blocktrans %}Klik på et af links'ene herunder for at få vist den samme police for andre år.{% endblocktrans %}</p>
   <ul>
   {% for x in policy.same_policy_qs.all %}
     {% if x != policy %}
@@ -179,15 +216,20 @@
   {% endfor %}
   </ul>
 
-  <a name="notes"><h2>{% trans 'Notater' %}</h2></a>
+  <h2 id="notes">{% trans 'Notater' %}</h2>
+  <p>{% blocktrans %}Her vises en liste af notater tilknyttet policen.{% endblocktrans %}</p>
+  <p>{% blocktrans %}For at tilføje et nyt notat udfyldes 'Nyt notat' feltet og der klikkes på 'Gem' knappen nederst på siden.{% endblocktrans %}</p>
+  <p>{% blocktrans %}Bilag kan tilknyttes sammen med notatet ved at udfylde bilag-felterne nedenfor.{% endblocktrans %}</p>
 
+  <p>{% blocktrans %}Brug følgende link til at se alle notater og bilag:{% endblocktrans %} <a href="{% url 'kas:person_in_year' policy.year policy.person.id %}#notes">{% trans 'Se alle notater og bilag på borgeren for dette år' %}</a></p>
 
   {% include 'includes/notes.html' with notes=policy.notes.all %}
 
-  <a href="{% url 'kas:person_in_year' policy.year policy.person.id %}#notes">{% trans 'Se alle notater og bilag på borgeren for dette år' %}</a>
 
   {{ form.note }}
-  <h2>{% trans 'Bilag' %}</h2>
+  <h2 id="Bilag">{% trans 'Bilag' %}</h2>
+  <p>{% blocktrans %}Her vises en liste af bilag tilknyttet policen.{% endblocktrans %}</p>
+  <p>{% blocktrans %}For at tilføje et nyt bilag udfyldes felterne for beskrivelse og valg af fil og der klikkes på 'Gem' knappen nederst på siden.{% endblocktrans %}</p>
   {% include 'includes/attachments.html' with attachments=policy.policy_documents.all %}
   <div class="form-row">
       <div class="col">
