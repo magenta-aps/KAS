@@ -1,15 +1,18 @@
-from django.db.models import Count
+import mimetypes
+import os
+
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Count
 from django.http import Http404, HttpResponse
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import TemplateView, ListView, View, UpdateView
 from django.views.generic.detail import SingleObjectMixin
+
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from kas.forms import PersonListFilterForm, PersonTaxYearForm, PolicyTaxYearForm
-from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated
-
-import os
+from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument
 
 
 class FrontpageView(LoginRequiredMixin, TemplateView):
@@ -182,6 +185,16 @@ class PolicyTaxYearDetailView(LoginRequiredMixin, UpdateView):
         result['used_negativ_table'] = policy.previous_year_deduction_table_data
 
         return result
+
+
+class PolicyDocumentDownloadView(LoginRequiredMixin, View):
+
+    def get(self, *args, **kwargs):
+        document = get_object_or_404(PolicyDocument, pk=kwargs['pk'])
+        mime_type, _ = mimetypes.guess_type(document.file.name)
+        response = HttpResponse(document.file.read(), content_type=mime_type)
+        response['Content-Disposition'] = "attachment; filename=%s" % document.name
+        return response
 
 
 class PdfDownloadView(LoginRequiredMixin, SingleObjectMixin, View):

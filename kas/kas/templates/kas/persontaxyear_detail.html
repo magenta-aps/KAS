@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-  <form method="post">
+  <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
   <h1>{{ person_tax_year.person.name }} i år {{view.year}}</h1>
@@ -74,6 +74,16 @@
   {% include 'includes/notes.html' with notes=person_tax_year.notes.all policy_col=True %}
 
   {{ form.note }}
+  <h2>{% trans 'Bilag' %}</h2>
+  {% include 'includes/attachments.html' with attachments=person_tax_year.policydocument_set.all policy_col=True %}
+  <div class="form-row">
+      <div class="col">
+          {{ form.attachment_description }}
+      </div>
+      <div class="col">
+          {{ form.attachment }}
+      </div>
+  </div>
   <hr/>
   <button type="submit" class="btn btn-primary">{% trans 'Gem' %}</button>
   </form>

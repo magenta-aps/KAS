@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-  <form method="post">
+  <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
   <h1>Police {{ policy.policy_number }} ved {{ policy.pension_company.name }} for '{{ policy.person.name }}' år {{ policy.year}}</h1>
@@ -182,13 +182,21 @@
 
   {% include 'includes/notes.html' with notes=policy.notes.all %}
 
-  <a href="{% url 'kas:person_in_year' policy.year policy.person.id %}#notes">{% trans 'Se alle notater på borgeren for dette år' %}</a>
+  <a href="{% url 'kas:person_in_year' policy.year policy.person.id %}#notes">{% trans 'Se alle notater og bilag på borgeren for dette år' %}</a>
 
   {{ form.note }}
-
+  <h2>{% trans 'Bilag' %}</h2>
+  {% include 'includes/attachments.html' with attachments=policy.policy_documents.all %}
+  <div class="form-row">
+      <div class="col">
+          {{ form.attachment_description }}
+      </div>
+      <div class="col">
+          {{ form.attachment }}
+      </div>
+  </div>
   <hr/>
-  <button type="submit" class="btn btn-primary">{% trans 'Gem nyt notat' %}</button>
+  <button type="submit" class="btn btn-primary">{% trans 'Gem' %}</button>
   </form>
 
 {% endblock %}
-

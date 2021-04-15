@@ -39,6 +39,10 @@ class PersonTaxYearSerializer(serializers.ModelSerializer):
 
 class PolicyDocumentSerializer(serializers.ModelSerializer):
 
+    def create(self, validated_data):
+        validated_data['person_tax_year_id'] = validated_data['policy_tax_year'].person_tax_year_id
+        return super(PolicyDocumentSerializer, self).create(validated_data)
+
     class Meta:
         model = PolicyDocument
         fields = ['id', 'policy_tax_year', 'name', 'description', 'file']

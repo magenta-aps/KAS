@@ -788,11 +788,13 @@ class PreviousYearNegativePayout(models.Model):
 
 
 class PolicyDocument(models.Model):
-
+    person_tax_year = models.ForeignKey(PersonTaxYear, null=False, db_index=True, on_delete=models.PROTECT)
+    uploaded_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.PROTECT)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
     policy_tax_year = models.ForeignKey(
         PolicyTaxYear,
         on_delete=models.PROTECT,
-        null=False,
+        null=True,
         related_name='policy_documents'
     )
 
