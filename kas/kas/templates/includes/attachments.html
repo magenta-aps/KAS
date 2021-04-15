@@ -1,0 +1,35 @@
+{% load i18n %}
+<table class="table table-bordered table-sm">
+    <thead>
+    <tr>
+        <th>{% trans 'Uploaded af' %}</th>
+        <th>{% trans 'Beskrivelse' %}</th>
+        {% if policy_col %}
+            <th>{% trans 'Police' %}</th>
+        {% endif %}
+        <th>{% trans 'Tidspunkt' %}</th>
+        <th>{% trans 'File' %}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for attachment in attachments %}
+        <tr>
+            <td>{{ attachment.uploaded_by|default_if_none:"Borger"  }}</td>
+            <td>{{ attachment.description }}</td>
+            {% if policy_col  %}
+                <td>
+                    {% if attachment.policy_tax_year %}
+                        <a href="{% url 'kas:policy_detail' attachment.policy_tax_year.pk %}">{{ attachment.policy_tax_year.policy_number }}</a>
+                    {% endif %}
+                </td>
+            {% endif %}
+            <td>{{ attachment.uploaded_at }}</td>
+            <td><a href="{% url 'kas:policy_document_download' attachment.id %}">{{ attachment.name }}</a></td>
+        </tr>
+     {% empty %}
+        <tr>
+            <td colspan="4">{% trans 'Ingen bilag fundet' %}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

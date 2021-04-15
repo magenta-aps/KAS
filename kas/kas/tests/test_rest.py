@@ -842,6 +842,7 @@ class PolicyDocumentTest(RestTest):
             policy_document = PolicyDocument.objects.first()
             upload_file.seek(0)
             self.assertEquals(upload_file.readlines(), policy_document.file.readlines())
+            self.assertEquals(policy_tax_year.person_tax_year, policy_document.person_tax_year)
 
     def test_invalid_input(self):
         # Create an item with invalid input and expect errors

@@ -1,5 +1,6 @@
 from django.urls import path
-from kas.views import FrontpageView, PersonTaxYearListView, PersonTaxYearDetailView, PolicyTaxYearDetailView, PdfDownloadView
+from kas.views import FrontpageView, PersonTaxYearListView, PersonTaxYearDetailView, \
+    PolicyTaxYearDetailView, PdfDownloadView, PolicyDocumentDownloadView
 
 
 app_name = 'kas'
@@ -10,4 +11,5 @@ urlpatterns = [
     path(r'tax_year/<int:year>/persons/<int:person_id>/', PersonTaxYearDetailView.as_view(), name='person_in_year'),
     path(r'tax_year/<int:year>/persons/<int:person_id>/pdf/', PdfDownloadView.as_view(), name='get_pdf'),
     path(r'policy/<int:pk>/', PolicyTaxYearDetailView.as_view(), name='policy_detail'),
+    path('policy_document/<int:pk>/', PolicyDocumentDownloadView.as_view(), name='policy_document_download')
 ]
