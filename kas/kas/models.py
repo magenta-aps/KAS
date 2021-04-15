@@ -678,7 +678,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         used_by_year = {}
         for_year_total = {}
 
-        for x in self.same_policy_qs.order_by('person_tax_year__tax_year__year'):
+        for x in self.same_policy_qs.filter(person_tax_year__tax_year__year__lte=self.year).order_by('person_tax_year__tax_year__year'):
             years.append(x.year)
             policy_pks.append(x.pk)
             available_by_year[x.year] = min(x.year_adjusted_amount, 0) * -1
@@ -687,7 +687,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
         used_matrix = {}
 
-        for x in PreviousYearNegativePayout.objects.filter(used_from__in=policy_pks):
+        for x in PreviousYearNegativePayout.objects.filter(used_from__in=policy_pks, used_for__person_tax_year__tax_year__year__lte=self.year):
             if x.from_year not in used_matrix:
                 used_matrix[x.from_year] = {}
 

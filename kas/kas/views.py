@@ -83,9 +83,9 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
 
         if form.is_valid():
             if form.cleaned_data['cpr']:
-                filters['person__cpr__contains'] = form.cleaned_data['cpr']
+                filters['person__cpr__icontains'] = form.cleaned_data['cpr']
             if form.cleaned_data['name']:
-                filters['person__name__contains'] = form.cleaned_data['name']
+                filters['person__name__icontains'] = form.cleaned_data['name']
 
         self.form = form
         qs = qs.filter(**filters)
