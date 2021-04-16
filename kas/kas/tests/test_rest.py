@@ -3,7 +3,6 @@ import os
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.db.models.fields.files import FieldFile
 from django.test import TestCase
 from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear, PolicyDocument
 from rest_framework import status
