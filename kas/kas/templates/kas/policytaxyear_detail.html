@@ -37,8 +37,7 @@
   <h1>{% blocktrans with number=policy.polciy_number company=policy.pension_company.name name=policy.person.name year=policy.year %}Police {{ number }} ved {{ company }} for '{{ name }}' år {{ year}}{% endblocktrans %}</h1>
   <p>{% blocktrans %}På denne side kan ses detaljer for den valgte police for det givne år. Der vises beregningen der danner grundlag for skatten og
      en tabel der viser hvordan negativt afkast fra tidligere år eventuelt er blevet anvendt.{% endblocktrans %}</p>
-  <p>{% blocktrans %}I bunden af siden er det muligt at tilføje notater og vedhæfte bilag på policen. OBS! Vedhæftede bilag på policer vil kunne
-     ses af borgeren i selvbetjeningsssystemet.{% endblocktrans %}</p>
+  <p>{% blocktrans %}I bunden af siden er det muligt at tilføje notater og vedhæfte bilag på policen.{% endblocktrans %}</p>
   <p>{% blocktrans %}Brug navigationsboksen til højre til at hoppe til en bestemt del af siden.{% endblocktrans %}</p>
 
   {% if policy.pension_company.agreement_present %}
@@ -217,7 +216,7 @@
   </ul>
 
   <h2 id="notes">{% trans 'Notater' %}</h2>
-  <p>{% blocktrans %}Her vises en liste af notater tilknyttet policen.{% endblocktrans %}</p>
+  <p>{% blocktrans %}Her vises en liste af notater tilknyttet policen. Notaterne findes kun i KAS systemet og kan ikke ses af borgeren.{% endblocktrans %}</p>
   <p>{% blocktrans %}For at tilføje et nyt notat udfyldes 'Nyt notat' feltet og der klikkes på 'Gem' knappen nederst på siden.{% endblocktrans %}</p>
   <p>{% blocktrans %}Bilag kan tilknyttes sammen med notatet ved at udfylde bilag-felterne nedenfor.{% endblocktrans %}</p>
 
@@ -230,6 +229,9 @@
   <h2 id="Bilag">{% trans 'Bilag' %}</h2>
   <p>{% blocktrans %}Her vises en liste af bilag tilknyttet policen.{% endblocktrans %}</p>
   <p>{% blocktrans %}For at tilføje et nyt bilag udfyldes felterne for beskrivelse og valg af fil og der klikkes på 'Gem' knappen nederst på siden.{% endblocktrans %}</p>
+  <p>{% blocktrans %}Borgeren vil kunne se beskrivelser og filnavne på bilag som borgeren
+     selv har uploadet ved selvangivelse via web. Borgeren kan ikke se bilag vedhæftet
+     under sagsbehandlingen via nedenstående formular.{% endblocktrans %}</p>
   {% include 'includes/attachments.html' with attachments=policy.policy_documents.all %}
   <div class="form-row">
       <div class="col">
