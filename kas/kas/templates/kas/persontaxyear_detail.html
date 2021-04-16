@@ -101,7 +101,7 @@
 
   <h2 id="notes">{% trans 'Notater' %}</h2>
 
-  <p>{% blocktrans %}Her listes notater der er oprettet på personen og dennes policer.{% endblocktrans %}</p>
+  <p>{% blocktrans %}Her listes notater der er oprettet på personen og dennes policer. Notaterne findes kun i KAS-systemet og kan ikke ses af borgeren.{% endblocktrans %}</p>
   <p>{% blocktrans %}For at tilføje et nyt notat udfyldes feltet 'Nyt notat' og der trykkes på 'Gem' i bunden af siden.{% endblocktrans %}</p>
   <p>{% blocktrans %}Ønsker man at tilføje et notat for en specifik police bør man bruge linket til policen ovenfor til at gå til policen og tilføje notatet der.{% endblocktrans %}</p>
   <p>{% blocktrans %}Hvis et notat er tilknyttet en bestemt police kan man klikke på linket i 'Police' kolonnen for at få vist policen.{% endblocktrans %}</p>
@@ -114,6 +114,7 @@
   <p>{% blocktrans %}Her listes bilag der er tilknyttet til personen og dennes policer.{% endblocktrans %}</p>
   <p>{% blocktrans %}For at tilføje et nyt notat udfyldes vælges der en fil via knappen under listen og
      der angives en beskrivelse af filen i feltet 'Fil-beskrivelse'. Efterfølgende klikkes på 'Gem' for at vedhæfte filen.{% endblocktrans %}</p>
+  <p>Bilag der vedhæftes via nedenstående formular kan ikke ses af borgeren.</p>
   <p>{% blocktrans %}Ønsker man at tilføje et bilag på en specifik police skal man bruge linket til policen ovenfor for at gå til policen og tilføje bilaget der.{% endblocktrans %}</p>
   <p>{% blocktrans %}Hvis et bilag er tilknyttet en bestemt police kan man klikke på linket i 'Police' kolonnen for at få vist policen.{% endblocktrans %}</p>
   {% include 'includes/attachments.html' with attachments=person_tax_year.policydocument_set.all policy_col=True %}
