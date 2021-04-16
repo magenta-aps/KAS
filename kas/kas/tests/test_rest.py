@@ -3,6 +3,7 @@ import os
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.models.fields.files import FieldFile
 from django.test import TestCase
 from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear, PolicyDocument
 from rest_framework import status
@@ -526,7 +527,7 @@ class PolicyTaxYearTest(RestTest):
                     'available_deduction_from_previous_years': policy_tax_year.available_deduction_from_previous_years,
                     'applied_deduction_from_previous_years': policy_tax_year.applied_deduction_from_previous_years,
                     'from_pension': policy_tax_year.from_pension,
-                    'policy_documents': [],
+                    'documents': [],
                     'year_adjusted_amount': policy_tax_year.year_adjusted_amount,
                     'calculated_result': policy_tax_year.calculated_result,
                     'estimated_amount': policy_tax_year.estimated_amount,
@@ -585,7 +586,7 @@ class PolicyTaxYearTest(RestTest):
             'available_deduction_from_previous_years': policy_tax_year1.available_deduction_from_previous_years,
             'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year1.from_pension,
-            'policy_documents': [],
+            'documents': [],
             'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
             'calculated_result': policy_tax_year1.calculated_result,
             'estimated_amount': policy_tax_year1.estimated_amount,
@@ -606,7 +607,7 @@ class PolicyTaxYearTest(RestTest):
             'available_deduction_from_previous_years': policy_tax_year2.available_deduction_from_previous_years,
             'applied_deduction_from_previous_years': policy_tax_year2.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year2.from_pension,
-            'policy_documents': [],
+            'documents': [],
             'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
             'calculated_result': policy_tax_year1.calculated_result,
             'estimated_amount': policy_tax_year1.estimated_amount,
@@ -665,7 +666,7 @@ class PolicyTaxYearTest(RestTest):
             'available_deduction_from_previous_years': policy_tax_year1.available_deduction_from_previous_years,
             'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year1.from_pension,
-            'policy_documents': [],
+            'documents': [],
             'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
             'calculated_result': policy_tax_year1.calculated_result,
             'estimated_amount': policy_tax_year1.estimated_amount,
@@ -686,7 +687,7 @@ class PolicyTaxYearTest(RestTest):
             'available_deduction_from_previous_years': policy_tax_year1.available_deduction_from_previous_years,
             'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year1.from_pension,
-            'policy_documents': [],
+            'documents': [],
             'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
             'calculated_result': policy_tax_year1.calculated_result,
             'estimated_amount': policy_tax_year1.estimated_amount,
@@ -707,7 +708,7 @@ class PolicyTaxYearTest(RestTest):
             'available_deduction_from_previous_years': policy_tax_year1.available_deduction_from_previous_years,
             'applied_deduction_from_previous_years': policy_tax_year1.applied_deduction_from_previous_years,
             'from_pension': policy_tax_year2.from_pension,
-            'policy_documents': [],
+            'documents': [],
             'year_adjusted_amount': policy_tax_year2.year_adjusted_amount,
             'calculated_result': policy_tax_year2.calculated_result,
             'estimated_amount': policy_tax_year2.estimated_amount,
@@ -755,7 +756,7 @@ class PolicyTaxYearTest(RestTest):
                 'prefilled_amount': policy_tax_year.prefilled_amount,
                 'available_deduction_from_previous_years': policy_tax_year.available_deduction_from_previous_years,
                 'applied_deduction_from_previous_years': policy_tax_year.applied_deduction_from_previous_years,
-                'policy_documents': [],
+                'documents': [],
                 'year_adjusted_amount': policy_tax_year.year_adjusted_amount,
                 'calculated_result': policy_tax_year.calculated_result,
                 'estimated_amount': policy_tax_year.estimated_amount,
@@ -801,6 +802,51 @@ class PolicyTaxYearTest(RestTest):
         for input in inputs:
             response = self.client.post(self.url, json.dumps(input), content_type='application/json; charset=utf-8')
             self.assertEquals(400, response.status_code, input)
+
+    def test_document_filtering(self):
+        policy_tax_year = PolicyTaxYear.objects.create(
+            policy_number='1234',
+            prefilled_amount=200,
+            self_reported_amount=250,
+            person_tax_year=PersonTaxYear.objects.create(
+                person=Person.objects.create(cpr='1234567890'),
+                tax_year=TaxYear.objects.create(year=2021),
+                number_of_days=365,
+            ),
+            pension_company=PensionCompany.objects.create(
+                res=12345678,
+                name='Foobar A/S',
+                address='Foobarvej 42'
+            )
+        )
+
+        public_document = PolicyDocument.objects.create(
+            person_tax_year=policy_tax_year.person_tax_year,
+            uploaded_by=None,
+            policy_tax_year=policy_tax_year,
+            name='public',
+            description='Document that should be seen by both staff and citizen',
+        )
+        secret_document = PolicyDocument.objects.create(
+            person_tax_year=policy_tax_year.person_tax_year,
+            uploaded_by=self.user,
+            policy_tax_year=policy_tax_year,
+            name='secret',
+            description='Document that should only be seen by staff',
+        )
+        self.authenticate()
+        response = self.client.get(f"{self.url}{policy_tax_year.id}/")
+        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        response_json = response.json()
+        self.assertEquals(1, len(response_json['documents']))
+        first_doc = response_json['documents'][0]
+        self.assertEquals(public_document.id, first_doc['id'])
+        self.assertNotEqual(secret_document.id, first_doc['id'])
+        self.assertEquals(public_document.policy_tax_year.id, first_doc['policy_tax_year'])
+        self.assertEquals(public_document.name, first_doc['name'])
+        self.assertNotEqual(secret_document.name, first_doc['name'])
+        self.assertEquals(public_document.description, first_doc['description'])
+        self.assertNotEqual(secret_document.description, first_doc['description'])
 
 
 class PolicyDocumentTest(RestTest):

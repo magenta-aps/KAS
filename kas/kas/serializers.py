@@ -58,8 +58,8 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'policy_number', 'prefilled_amount', 'self_reported_amount', 'estimated_amount', 'pension_company',
             'person_tax_year', 'preliminary_paid_amount', 'from_pension', 'calculated_result',
-            'foreign_paid_amount_self_reported', 'foreign_paid_amount_actual', 'applied_deduction_from_previous_years', 'policy_documents',
-            'available_deduction_from_previous_years', 'year_adjusted_amount',
+            'foreign_paid_amount_self_reported', 'foreign_paid_amount_actual', 'applied_deduction_from_previous_years',
+            'available_deduction_from_previous_years', 'year_adjusted_amount', 'documents'
         ]
         read_only_fields = [
             'id', 'pension_company', 'person_tax_year', 'policy_documents',
@@ -69,7 +69,8 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
 
     person_tax_year = serializers.PrimaryKeyRelatedField(queryset=PersonTaxYear.objects.all())
     pension_company = serializers.PrimaryKeyRelatedField(queryset=PensionCompany.objects.all())
-    policy_documents = serializers.SerializerMethodField('get_citizen_documents')
+    # Serializer based on the prefetch defined in the viewset. "documents" must match the prefetch to_attr
+    documents = PolicyDocumentSerializer(many=True)
 
     def get_citizen_documents(self, policy_tax_year):
         return PolicyDocumentSerializer(
