@@ -62,7 +62,7 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
             'available_deduction_from_previous_years', 'year_adjusted_amount', 'documents'
         ]
         read_only_fields = [
-            'id', 'pension_company', 'person_tax_year', 'policy_documents',
+            'id', 'pension_company', 'person_tax_year', 'documents',
             'applied_deduction_from_previous_years', 'available_deduction_from_previous_years'
         ]
         depth = 2
