@@ -1,6 +1,0 @@
-{% load i18n %}
-{% for key, error in errors.items %}
-  {{key}} {{error}}
-{% endfor %}
-
-<a href="{% url 'sullissivik:openid:login' %}"><button>{% trans 'Try again' %}</button></a>
