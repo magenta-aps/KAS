@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load l10n %}
+
+{% block content %}
+
+<p>{% blocktrans %}Fejl under login{% endblocktrans %}</p>
+
+{% for key, error in errors.items %}
+  {{key}} {{error}}
+{% endfor %}
+
+<a href="{% url 'sullissivik:openid:login' %}"><button>{% trans 'Prøv igen' %}</button></a>
+
+{% endblock %}
