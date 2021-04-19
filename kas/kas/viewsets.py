@@ -3,6 +3,7 @@ from kas.models import PensionCompany, Person, PersonTaxYear, PolicyDocument, Po
 from kas.serializers import PensionCompanySerializer, PersonSerializer, PersonTaxYearSerializer, PolicyDocumentSerializer, PolicyTaxYearSerializer, TaxYearSerializer
 from rest_framework import routers, viewsets
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.db.models import Prefetch
 
 
 class TaxYearFilter(filters.FilterSet):
@@ -50,7 +51,13 @@ class PolicyTaxYearFilter(filters.FilterSet):
 
 
 class PolicyTaxYearViewSet(viewsets.ModelViewSet):
-    queryset = PolicyTaxYear.objects.all()
+    queryset = PolicyTaxYear.objects.all().prefetch_related(
+        Prefetch(
+            lookup='policy_documents',
+            to_attr='documents',
+            queryset=PolicyDocument.objects.filter(uploaded_by__isnull=True)
+        )
+    )
     serializer_class = PolicyTaxYearSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = PolicyTaxYearFilter

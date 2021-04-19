@@ -69,9 +69,9 @@ class PolicyForm(forms.Form):
                 required=False
             )
 
-        if 'initial' in kwargs and 'policy_documents' in kwargs['initial']:
+        if 'initial' in kwargs and 'documents' in kwargs['initial']:
             self.existing_files = []
-            for i, policy_document in enumerate(kwargs['initial']['policy_documents']):
+            for i, policy_document in enumerate(kwargs['initial']['documents']):
 
                 id_key = key = f"file_existing_id_{i}"
                 self.fields[key] = fields.IntegerField(
