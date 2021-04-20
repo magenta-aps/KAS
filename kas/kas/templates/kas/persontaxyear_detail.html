@@ -20,6 +20,9 @@
       <li class="nav-item">
         <a class="nav-link" href="#Bilag">{% trans 'Bilag' %}</a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#Transaktioner">{% trans 'Transaktioner' %}</a>
+      </li>
     </ul>
   </div>
 
@@ -126,7 +129,10 @@
           {{ form.attachment }}
       </div>
   </div>
+  <button type="submit" class="btn btn-primary mt-5">{% trans 'Gem' %}</button>
   <hr/>
-  <button type="submit" class="btn btn-primary">{% trans 'Gem' %}</button>
   </form>
+  <h2 id="Transaktioner">{% trans 'Transaktioner' %}</h2>
+  {% include 'includes/transactions.html' with transactions=transactions %}
+  <a href="{% url 'prisme:create-transaction' person_tax_year_id=person_tax_year.id %}" class="btn btn-success">{% trans 'Opret transaktion' %}</a>
 {% endblock %}

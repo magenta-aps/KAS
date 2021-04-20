@@ -13,6 +13,7 @@ from django.views.generic.detail import SingleObjectMixin
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from kas.forms import PersonListFilterForm, PersonTaxYearForm, PolicyTaxYearForm
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument
+from prisme.models import Transaction
 
 
 class FrontpageView(LoginRequiredMixin, TemplateView):
@@ -136,19 +137,20 @@ class PersonTaxYearDetailView(LoginRequiredMixin, UpdateView):
         return obj
 
     def get_context_data(self, *args, **kwargs):
-        result = super().get_context_data(*args, **kwargs)
+        context = super().get_context_data(*args, **kwargs)
 
         obj = self.get_object()
 
-        result['joined_address'] = "\n".join([x or "" for x in (
+        context['joined_address'] = "\n".join([x or "" for x in (
             obj.person.address_line_1,
             obj.person.address_line_2,
             obj.person.address_line_3,
             obj.person.address_line_4,
             obj.person.address_line_5,
         )])
-
-        return result
+        context['transactions'] = Transaction.objects.filter(
+            person_tax_year=obj).select_related('created_by', 'transferred_by')
+        return context
 
 
 class PolicyTaxYearDetailView(LoginRequiredMixin, UpdateView):
