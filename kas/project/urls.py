@@ -14,6 +14,7 @@ urlpatterns = [
     path('worker/', include('worker.urls', namespace='worker')),
     path('rest/', include(router.urls)),
     path('', include('kas.urls', namespace='kas')),
+    path('prisme/', include('prisme.urls', namespace='prisme'))
 ]
 
 
