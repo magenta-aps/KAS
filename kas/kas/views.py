@@ -16,7 +16,8 @@ from ipware import get_client_ip
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from kas.forms import PersonListFilterForm, PersonTaxYearForm, PolicyTaxYearForm, SelfReportedAmountForm, \
-    EditAmountsUpdateFrom, PensionCompanySummaryFileForm, CreatePolicyTaxYearForm
+    EditAmountsUpdateFrom, PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, \
+    PolicyTaxYearActivationForm
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument
 from prisme.models import Transaction
@@ -385,3 +386,12 @@ class PensionCompanySummaryFileDownloadView(LoginRequiredMixin, BaseDetailView):
         response['Content-Length'] = self.object.file.size
         response['Content-Disposition'] = f"attachment; filename={os.path.basename(self.object.file.name)}"
         return response
+
+
+class ActivatePolicyTaxYearView(LoginRequiredMixin, UpdateView):
+
+    form_class = PolicyTaxYearActivationForm
+    model = PolicyTaxYear
+
+    def get_success_url(self):
+        return reverse('kas:policy_detail', kwargs=self.kwargs)

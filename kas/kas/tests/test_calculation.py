@@ -303,3 +303,18 @@ class TestCalculationMath(TestCase):
         self.assertEquals(new_policy.calculated_full_tax, 2295)
         self.assertEquals(new_policy.year_adjusted_amount, 15000)
         self.assertEquals(new_policy.calculated_result, 2295)
+
+        # Deactivate one older policy; it should be excluded from calculation
+        older_policy_2.active = False
+        older_policy_2.save()
+        calculation_results = policy.get_calculation()
+        self.assertEquals(calculation_results['available_negative_return'], 2000)
+        self.assertEquals(calculation_results['used_negative_return'], 2000)
+        self.assertEquals(calculation_results['taxable_amount'], 8000)
+        self.assertEquals(calculation_results['tax_with_deductions'], 1024)
+        self.assertDictEqual(calculation_results['desired_deduction_data'], {2018: 2000})
+
+        policy.recalculate()
+        self.assertEquals(policy.calculated_full_tax, 1224)
+        self.assertEquals(policy.year_adjusted_amount, 10000)
+        self.assertEquals(policy.calculated_result, 1024)
