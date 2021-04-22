@@ -76,3 +76,25 @@ class PolicyTaxYearForm(forms.ModelForm, BootstrapForm):
                                           uploaded_by=self.user,
                                           file=self.cleaned_data['attachment'])
         return instance
+
+
+class NoteForm(forms.ModelForm, BootstrapForm):
+    content = forms.CharField(required=False,
+                              label=_('Notat'),
+                              widget=forms.Textarea(attrs={'placeholder': _('Nyt notat'),
+                                                           'autocomplete': 'off'}))
+
+    class Meta:
+        model = Note
+        fields = ('content', )
+
+
+class PolicyDocumentForm(forms.ModelForm, BootstrapForm):
+    file = forms.FileField(required=True)
+    description = forms.CharField(required=False,
+                                  widget=forms.TextInput(attrs={'placeholder': _('Fil-beskrivelse'),
+                                                                'autocomplete': 'off'}))
+
+    class Meta:
+        model = PolicyDocument
+        fields = ('file', 'description')

@@ -5,7 +5,7 @@ from prisme.models import Transaction
 from prisme.models import transaction_types
 
 
-class CreateTransActionForm(BootstrapForm, ModelForm):
+class TransActionForm(BootstrapForm, ModelForm):
     type = ChoiceField(choices=transaction_types)
 
     class Meta:
