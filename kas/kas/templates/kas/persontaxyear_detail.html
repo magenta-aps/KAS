@@ -134,5 +134,5 @@
   </form>
   <h2 id="Transaktioner">{% trans 'Transaktioner' %}</h2>
   {% include 'includes/transactions.html' with transactions=transactions %}
-  <a href="{% url 'prisme:create-transaction' person_tax_year_id=person_tax_year.id %}" class="btn btn-success">{% trans 'Opret transaktion' %}</a>
+  <a href="{% url 'prisme:create-transaction' person_tax_year.pk %}" class="btn btn-success">{% trans 'Opret transaktion' %}</a>
 {% endblock %}
