@@ -5,7 +5,7 @@ from django.utils import formats
 from django.utils.translation import to_locale, get_language
 
 from kas.forms import NoteForm, PolicyDocumentForm
-from kas.models import PersonTaxYear
+from kas.models import PersonTaxYear, PolicyTaxYear
 
 
 class BootstrapTableMixin:
@@ -58,7 +58,9 @@ class CreateOrUpdateViewWithNotesAndDocuments:
                 note = note_form.save(commit=False)
                 note.person_tax_year = self.get_person_tax_year()
                 note.author = self.request.user
+                note.policy_tax_year = getattr(self, 'policy_tax_year', None)
                 note.save()
+
         upload_form_set = self.UploadFormSet(self.request.POST, self.request.FILES, prefix='uploads')
         for upload_form in upload_form_set:
             if upload_form.has_changed():  # no file no upload
@@ -66,9 +68,45 @@ class CreateOrUpdateViewWithNotesAndDocuments:
                 document.person_tax_year = self.get_person_tax_year()
                 document.created_by = self.request.user
                 document.name = document.file.name
+                document.policy_tax_year = getattr(self, 'policy_tax_year', None)
                 document.save()
         return super(CreateOrUpdateViewWithNotesAndDocuments, self).form_valid(form)
 
     def get_success_url(self):
+        """
+        return to the person detail page.
+        """
         return reverse('kas:person_in_year', kwargs={'year': self.get_person_tax_year().year,
                                                      'person_id': self.get_person_tax_year().person_id})
+
+
+class CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear(CreateOrUpdateViewWithNotesAndDocuments):
+
+    def get_policy_tax_year(self):
+        """
+        Should always return a PolicyTaxYear.
+        By default we look for the url param pk.
+        Could be used to lookup related instances if the PK passed in related to another model.
+        Override as needed.
+        """
+        if not hasattr(self, 'policy_tax_year'):
+            self.policy_tax_year = get_object_or_404(PolicyTaxYear, id=self.kwargs['pk'])
+        return self.policy_tax_year
+
+    def get_person_tax_year(self):
+        """
+        Should not be overriden.
+        Handles setting the persontaxyear "automatically". based on policytaxyear.
+        """
+        return self.get_policy_tax_year().person_tax_year
+
+    def get_context_data(self, **kwargs):
+        context = {'policy_tax_year': self.get_policy_tax_year()}
+        context.update(super(CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, self).get_context_data(**kwargs))
+        return context
+
+    def get_success_url(self):
+        """
+        By default return to the policy-detail page
+        """
+        return reverse('kas:policy_detail', args=[self.get_policy_tax_year().pk])

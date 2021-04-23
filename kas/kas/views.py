@@ -11,9 +11,11 @@ from django.views.generic import TemplateView, ListView, View, UpdateView
 from django.views.generic.detail import SingleObjectMixin
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
-from kas.forms import PersonListFilterForm, PersonTaxYearForm, PolicyTaxYearForm
+from kas.forms import PersonListFilterForm, PersonTaxYearForm, PolicyTaxYearForm, SelfReportedAmountForm
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument
 from prisme.models import Transaction
+from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocuments, \
+    CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
 
 
 class FrontpageView(LoginRequiredMixin, TemplateView):
@@ -239,3 +241,9 @@ class PdfDownloadView(LoginRequiredMixin, SingleObjectMixin, View):
         response['Content-Disposition'] = 'inline; filename=' + os.path.basename(obj.file.file.name)
 
         return response
+
+
+class SelfReportedAmountUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
+    model = PolicyTaxYear
+    form_class = SelfReportedAmountForm
+    template_name = 'kas/selfreportedamount_form.html'
