@@ -15,7 +15,7 @@ from kas.forms import PersonListFilterForm, PersonTaxYearForm, PolicyTaxYearForm
     EditAmountsUpdateFrom
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument
 from prisme.models import Transaction
-from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
+from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, BackMixin
 
 
 class FrontpageView(LoginRequiredMixin, TemplateView):
@@ -96,7 +96,7 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
         return qs
 
 
-class PersonTaxYearDetailView(LoginRequiredMixin, UpdateView):
+class PersonTaxYearDetailView(LoginRequiredMixin, BackMixin, UpdateView):
     template_name = 'kas/persontaxyear_detail.html'
     model = PersonTaxYear
     context_object_name = 'person_tax_year'
@@ -108,6 +108,10 @@ class PersonTaxYearDetailView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return self.url
+
+    @property
+    def back_url(self):
+        return reverse('kas:persons_in_year', kwargs={'year': self.year})
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -155,7 +159,7 @@ class PersonTaxYearDetailView(LoginRequiredMixin, UpdateView):
         return context
 
 
-class PolicyTaxYearDetailView(LoginRequiredMixin, UpdateView):
+class PolicyTaxYearDetailView(LoginRequiredMixin, BackMixin, UpdateView):
     template_name = 'kas/policytaxyear_detail.html'
     model = PolicyTaxYear
     context_object_name = 'policy'
@@ -167,6 +171,10 @@ class PolicyTaxYearDetailView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return self.url
+
+    @property
+    def back_url(self):
+        return reverse('kas:person_in_year', kwargs={'year': self.object.year, 'person_id': self.object.person.id})
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()

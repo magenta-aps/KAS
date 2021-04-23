@@ -113,3 +113,28 @@ class CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear(CreateOrUpdateView
         By default return to the policy-detail page
         """
         return reverse('kas:policy_detail', args=[self.get_policy_tax_year().pk])
+
+
+class BackMixin:
+    """
+    In conjunction with layout.html, provide a general way of sepcifying a 'back' button
+    that navigates to a parent page. Implementing views should override `back_url`
+    to return the url to be navigated to
+    """
+
+    # Override in subclasses
+    @property
+    def back_url(self):
+        return None
+
+    # Override in subclasses
+    @property
+    def back_text(self):
+        return None
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**{
+            'back_url': self.back_url,
+            'back_text': self.back_text,
+            **kwargs,
+        })
