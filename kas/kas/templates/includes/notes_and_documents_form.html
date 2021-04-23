@@ -3,13 +3,18 @@
         {% csrf_token %}
         <div class="form-row">
             {% for field in form %}
-            <div class="col">
-                {{ field }}
+            <div class="col col-1">
+                <a class="btn btn-secondary"
+                   href="{% if policy_tax_year %}
+                            {% url 'kas:policy_detail' policy_tax_year.pk %}
+                          {% else %}
+                            {% url 'kas:person_in_year' person_tax_year.year person_tax_year.person_id %}
+                         {% endif %}">{% trans 'Tilbage' %}</a>
+            </div>
+            <div class="col-2 form-group">
+                <label class="col-form-label">{{ field.label }}:</label>{{ field }}
             </div>
             {% endfor %}
-            <div class="col">
-                <input class="btn btn-success" type="submit" value="{% trans 'Opret' %}"/>
-            </div>
         </div>
         <div class="form-row mt-2 mb-2">
             <div class="col">
@@ -31,6 +36,11 @@
 <div class="form-row mt-5">
     <div class="col">
         <input id="add-attachments" class="btn btn-primary" type="button" value="{% trans 'Tilføj flere billag' %}"/>
+    </div>
+</div>
+<div class="form-row mt-5">
+    <div class="col">
+        <input class="btn btn-success float-right" type="submit" value="{% if create %}{% trans 'Opret' %}{% else %}{% trans 'Opdater' %}{% endif %}"/>
     </div>
 </div>
     <script>

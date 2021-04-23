@@ -98,3 +98,13 @@ class PolicyDocumentForm(forms.ModelForm, BootstrapForm):
     class Meta:
         model = PolicyDocument
         fields = ('file', 'description')
+
+
+class SelfReportedAmountForm(forms.ModelForm, BootstrapForm):
+    self_reported_amount = forms.IntegerField(required=True,
+                                              label=_('Selvangivet beløb'),
+                                              widget=forms.NumberInput(attrs={'placeholder': _('Selvangivet beløb')}))
+
+    class Meta:
+        model = PolicyTaxYear
+        fields = ('self_reported_amount', )

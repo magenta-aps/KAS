@@ -244,5 +244,6 @@
   <hr/>
   <button type="submit" class="btn btn-primary">{% trans 'Gem' %}</button>
   </form>
+    <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% trans 'Ret selvangivet beløb' %}</a>
 
 {% endblock %}
