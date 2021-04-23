@@ -42,6 +42,9 @@ class CreateOrUpdateViewWithNotesAndDocuments:
             self.person_tax_year = get_object_or_404(PersonTaxYear, id=self.kwargs['pk'])
         return self.person_tax_year
 
+    def get_policy_tax_year(self):
+        return None
+
     def get_context_data(self, **kwargs):
         context = super(CreateOrUpdateViewWithNotesAndDocuments, self).get_context_data(**kwargs)
         context.update({
@@ -58,7 +61,7 @@ class CreateOrUpdateViewWithNotesAndDocuments:
                 note = note_form.save(commit=False)
                 note.person_tax_year = self.get_person_tax_year()
                 note.author = self.request.user
-                note.policy_tax_year = getattr(self, 'policy_tax_year', None)
+                note.policy_tax_year = self.get_policy_tax_year()
                 note.save()
 
         upload_form_set = self.UploadFormSet(self.request.POST, self.request.FILES, prefix='uploads')
@@ -68,7 +71,7 @@ class CreateOrUpdateViewWithNotesAndDocuments:
                 document.person_tax_year = self.get_person_tax_year()
                 document.created_by = self.request.user
                 document.name = document.file.name
-                document.policy_tax_year = getattr(self, 'policy_tax_year', None)
+                document.policy_tax_year = self.get_policy_tax_year()
                 document.save()
         return super(CreateOrUpdateViewWithNotesAndDocuments, self).form_valid(form)
 

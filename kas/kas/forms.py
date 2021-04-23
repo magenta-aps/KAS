@@ -102,6 +102,7 @@ class PolicyDocumentForm(forms.ModelForm, BootstrapForm):
 
 class SelfReportedAmountForm(forms.ModelForm, BootstrapForm):
     self_reported_amount = forms.IntegerField(required=True,
+                                              label=_('Selvangivet beløb'),
                                               widget=forms.NumberInput(attrs={'placeholder': _('Selvangivet beløb')}))
 
     class Meta:
