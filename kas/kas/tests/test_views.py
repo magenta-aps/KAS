@@ -82,7 +82,7 @@ class SelfReportedAmountUpdateViewTestCase(TestCase):
                                    'notes-INITIAL_FORMS': 0,
                                    'uploads-TOTAL_FORMS': 1,
                                    'uploads-0-description': 'test_description',
-                                   'uploads-0-file':  SimpleUploadedFile(name='test', content=b'test'),
+                                   'uploads-0-file': SimpleUploadedFile(name='test', content=b'test'),
                                    'uploads-INITIAL_FORMS': 0})
         self.assertEqual(r.status_code, 200)
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
@@ -102,7 +102,7 @@ class SelfReportedAmountUpdateViewTestCase(TestCase):
                                    'notes-0-content': 'test',
                                    'uploads-TOTAL_FORMS': 1,
                                    'uploads-0-description': 'test_description',
-                                   'uploads-0-file':  SimpleUploadedFile(name='test', content=b'test'),
+                                   'uploads-0-file': SimpleUploadedFile(name='test', content=b'test'),
                                    'uploads-INITIAL_FORMS': 0})
         self.assertEqual(r.status_code, 200)
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)

@@ -14,8 +14,7 @@ from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockMode
 from kas.forms import PersonListFilterForm, PersonTaxYearForm, PolicyTaxYearForm, SelfReportedAmountForm
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument
 from prisme.models import Transaction
-from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocuments, \
-    CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
+from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
 
 
 class FrontpageView(LoginRequiredMixin, TemplateView):
