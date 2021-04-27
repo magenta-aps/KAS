@@ -11,7 +11,8 @@ from django.views.generic import TemplateView, ListView, View, UpdateView
 from django.views.generic.detail import SingleObjectMixin
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
-from kas.forms import PersonListFilterForm, PersonTaxYearForm, PolicyTaxYearForm, SelfReportedAmountForm
+from kas.forms import PersonListFilterForm, PersonTaxYearForm, PolicyTaxYearForm, SelfReportedAmountForm, \
+    EditAmountsUpdateFrom
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument
 from prisme.models import Transaction
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
@@ -182,7 +183,6 @@ class PolicyTaxYearDetailView(LoginRequiredMixin, UpdateView):
         amount_choices_by_value = {x[0]: x[1] for x in PolicyTaxYear.active_amount_options}
 
         result['pension_company_amount_label'] = amount_choices_by_value[PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED]
-        result['estimated_amount_label'] = amount_choices_by_value[PolicyTaxYear.ACTIVE_AMOUNT_ESTIMATED]
         result['self_reported_amount_label'] = amount_choices_by_value[PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED]
 
         result['used_negativ_table'] = policy.previous_year_deduction_table_data
@@ -246,3 +246,21 @@ class SelfReportedAmountUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNot
     model = PolicyTaxYear
     form_class = SelfReportedAmountForm
     template_name = 'kas/selfreportedamount_form.html'
+
+
+class EditAmountsUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
+    form_class = EditAmountsUpdateFrom
+    template_name = 'kas/edit_amounts_form.html'
+
+    def get_queryset(self):
+        #  TODO add filtering for when we know the critiaer for when you should be able to use this form
+        return PolicyTaxYear.objects.all()
+
+    def get_form_kwargs(self):
+        if self.object.assessed_amount is None:
+            # if the assessed amount is not set prefill it
+            self.object.assessed_amount = self.object.get_assessed_amount()
+        if self.object.adjusted_r75_amount is None:
+            # Fill out adjusted_r75_amount since we are not allowed to change prefilled_amount.
+            self.object.adjusted_r75_amount = self.object.prefilled_amount
+        return super(EditAmountsUpdateView, self).get_form_kwargs()

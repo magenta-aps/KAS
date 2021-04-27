@@ -529,7 +529,6 @@ class PolicyTaxYearTest(RestTest):
                     'documents': [],
                     'year_adjusted_amount': policy_tax_year.year_adjusted_amount,
                     'calculated_result': policy_tax_year.calculated_result,
-                    'estimated_amount': policy_tax_year.estimated_amount,
                     'foreign_paid_amount_actual': policy_tax_year.foreign_paid_amount_actual,
                     **extra
                 }
@@ -588,7 +587,6 @@ class PolicyTaxYearTest(RestTest):
             'documents': [],
             'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
             'calculated_result': policy_tax_year1.calculated_result,
-            'estimated_amount': policy_tax_year1.estimated_amount,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
         }, response.json())
 
@@ -609,7 +607,6 @@ class PolicyTaxYearTest(RestTest):
             'documents': [],
             'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
             'calculated_result': policy_tax_year1.calculated_result,
-            'estimated_amount': policy_tax_year1.estimated_amount,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
         }, response.json())
 
@@ -668,7 +665,6 @@ class PolicyTaxYearTest(RestTest):
             'documents': [],
             'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
             'calculated_result': policy_tax_year1.calculated_result,
-            'estimated_amount': policy_tax_year1.estimated_amount,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
         }], response.json())
 
@@ -689,7 +685,6 @@ class PolicyTaxYearTest(RestTest):
             'documents': [],
             'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
             'calculated_result': policy_tax_year1.calculated_result,
-            'estimated_amount': policy_tax_year1.estimated_amount,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
         }], response.json())
 
@@ -710,7 +705,6 @@ class PolicyTaxYearTest(RestTest):
             'documents': [],
             'year_adjusted_amount': policy_tax_year2.year_adjusted_amount,
             'calculated_result': policy_tax_year2.calculated_result,
-            'estimated_amount': policy_tax_year2.estimated_amount,
             'foreign_paid_amount_actual': policy_tax_year2.foreign_paid_amount_actual,
         }], response.json())
 
@@ -758,7 +752,6 @@ class PolicyTaxYearTest(RestTest):
                 'documents': [],
                 'year_adjusted_amount': policy_tax_year.year_adjusted_amount,
                 'calculated_result': policy_tax_year.calculated_result,
-                'estimated_amount': policy_tax_year.estimated_amount,
                 'foreign_paid_amount_actual': policy_tax_year.foreign_paid_amount_actual,
             },
             self.strip_id(response.json())

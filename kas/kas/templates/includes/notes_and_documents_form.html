@@ -2,7 +2,6 @@
     <form id="notes-and-documents-form" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-row">
-            {% for field in form %}
             <div class="col col-1">
                 <a class="btn btn-secondary"
                    href="{% if policy_tax_year %}
@@ -11,6 +10,7 @@
                             {% url 'kas:person_in_year' person_tax_year.year person_tax_year.person_id %}
                          {% endif %}">{% trans 'Tilbage' %}</a>
             </div>
+            {% for field in form %}
             <div class="col-2 form-group">
                 <label class="col-form-label">{{ field.label }}:</label>{{ field }}
             </div>
@@ -32,31 +32,32 @@
                 </div>
             </div>
         {% endfor %}
-    </form>
-<div class="form-row mt-5">
-    <div class="col">
-        <input id="add-attachments" class="btn btn-primary" type="button" value="{% trans 'Tilføj flere billag' %}"/>
+
+    <div class="form-row mt-5">
+        <div class="col">
+            <input id="add-attachments" class="btn btn-primary" type="button" value="{% trans 'Tilføj flere billag' %}"/>
+        </div>
     </div>
-</div>
-<div class="form-row mt-5">
-    <div class="col">
-        <input class="btn btn-success float-right" type="submit" value="{% if create %}{% trans 'Opret' %}{% else %}{% trans 'Opdater' %}{% endif %}"/>
+    <div class="form-row mt-5">
+        <div class="col">
+            <input class="btn btn-success float-right" type="submit" value="{% if create %}{% trans 'Opret' %}{% else %}{% trans 'Opdater' %}{% endif %}"/>
+        </div>
     </div>
-</div>
-    <script>
-        $( document ).ready(function() {
-            $( "input#add-attachments" ).click(function() {
-                let count = $('input#id_uploads-TOTAL_FORMS').val();
-                let row = `<div class="form-row mt-2">
-                    <div class="col">
-                        <input type="text" name="uploads-${count}-description" placeholder="Fil-beskrivelse" autocomplete="off" class="form-control mr-2" id="id_uploads-${count}-description">
-                    </div>
-                    <div class="col">
-                        <input type="file" name="uploads-${count}-file" class="form-control mr-2" id="id_uploads-${count}-file">
-                    </div>
-                </div>`
-                $(row).appendTo($("form#notes-and-documents-form"))
-                $('input#id_uploads-TOTAL_FORMS').val(count+1);
-            })
+</form>
+<script>
+    $( document ).ready(function() {
+        $( "input#add-attachments" ).click(function() {
+            let count = $('input#id_uploads-TOTAL_FORMS').val();
+            let row = `<div class="form-row mt-2">
+                <div class="col">
+                    <input type="text" name="uploads-${count}-description" placeholder="Fil-beskrivelse" autocomplete="off" class="form-control mr-2" id="id_uploads-${count}-description">
+                </div>
+                <div class="col">
+                    <input type="file" name="uploads-${count}-file" class="form-control mr-2" id="id_uploads-${count}-file">
+                </div>
+            </div>`
+            $(row).appendTo($("form#notes-and-documents-form"))
+            $('input#id_uploads-TOTAL_FORMS').val(count+1);
         })
-    </script>
+    })
+</script>

@@ -233,7 +233,7 @@ class PolicyDetailView(HasUserMixin, TemplateView):
             'summary': {
                 key: sum([int(policy.get(key) or 0) for policy in policies])
                 for key in [
-                    'prefilled_amount', 'estimated_amount', 'self_reported_amount',
+                    'prefilled_amount', 'self_reported_amount',
                     'preliminary_paid_amount', 'foreign_paid_amount_self_reported',
                     'foreign_paid_amount_actual', 'applied_deduction_from_previous_years',
                     'calculated_result'
