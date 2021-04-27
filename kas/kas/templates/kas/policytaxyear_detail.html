@@ -62,12 +62,6 @@
             <td>{% trans 'Udfyldes fra R75' %}</td>
           </tr>
           <tr>
-            <th>{{ estimated_amount_label }}</th>
-            <td class="text-right">{% if policy.estimated_amount %}{{ policy.estimated_amount }}{% endif %}</td>
-            <td>{% trans 'kr' %}</td>
-            <td>{% trans 'Udfyldes eventuelt under sagsbehandling' %}</td>
-          </tr>
-          <tr>
             <th>{{ self_reported_amount_label }}</th>
             <td class="text-right">{% if policy.self_reported_amount %}{{ policy.self_reported_amount }}{% endif %}</td>
             <td>{% trans 'kr' %}</td>
@@ -244,6 +238,8 @@
   <hr/>
   <button type="submit" class="btn btn-primary">{% trans 'Gem' %}</button>
   </form>
+    {# TODO figure out when the button needs to be enabled/disabled. #}
     <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% trans 'Ret selvangivet beløb' %}</a>
+    <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% trans 'Ret beløb' %}</a>
 
 {% endblock %}

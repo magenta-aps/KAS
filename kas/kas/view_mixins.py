@@ -69,7 +69,7 @@ class CreateOrUpdateViewWithNotesAndDocuments:
             if upload_form.has_changed():  # no file no upload
                 document = upload_form.save(commit=False)
                 document.person_tax_year = self.get_person_tax_year()
-                document.created_by = self.request.user
+                document.uploaded_by = self.request.user
                 document.name = document.file.name
                 document.policy_tax_year = self.get_policy_tax_year()
                 document.save()

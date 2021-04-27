@@ -1,6 +1,7 @@
 from django.urls import path
 from kas.views import FrontpageView, PersonTaxYearListView, PersonTaxYearDetailView, \
-    PolicyTaxYearDetailView, PdfDownloadView, PolicyDocumentDownloadView, SelfReportedAmountUpdateView
+    PolicyTaxYearDetailView, PdfDownloadView, PolicyDocumentDownloadView, SelfReportedAmountUpdateView, \
+    EditAmountsUpdateView
 
 
 app_name = 'kas'
@@ -13,5 +14,7 @@ urlpatterns = [
     path(r'policy/<int:pk>/', PolicyTaxYearDetailView.as_view(), name='policy_detail'),
     path('policy_document/<int:pk>/', PolicyDocumentDownloadView.as_view(), name='policy_document_download'),
     path('change/selfreportedamount/<int:pk>/', SelfReportedAmountUpdateView.as_view(),
-         name='change-self-reported-amount')
+         name='change-self-reported-amount'),
+    path('change/editamounts/<int:pk>/', EditAmountsUpdateView.as_view(),
+         name='change-edit-amounts')
 ]

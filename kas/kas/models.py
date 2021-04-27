@@ -370,11 +370,6 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         null=True
     )
 
-    estimated_amount = models.BigIntegerField(
-        verbose_name=_('Skønsbeløb angivet af Skattestyrelsen'),
-        default=0
-    )
-
     self_reported_amount = models.BigIntegerField(
         verbose_name=_('Selvangivet beløb'),
         blank=False,
@@ -382,12 +377,10 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     )
 
     ACTIVE_AMOUNT_PREFILLED = 1
-    ACTIVE_AMOUNT_ESTIMATED = 2
     ACTIVE_AMOUNT_SELF_REPORTED = 3
 
     active_amount_options = (
         (ACTIVE_AMOUNT_PREFILLED, prefilled_amount.verbose_name),
-        (ACTIVE_AMOUNT_ESTIMATED, estimated_amount.verbose_name),
         (ACTIVE_AMOUNT_SELF_REPORTED, self_reported_amount.verbose_name),
     )
 
@@ -396,6 +389,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         choices=active_amount_options,
         default=ACTIVE_AMOUNT_PREFILLED
     )
+
+    adjusted_r75_amount = models.BigIntegerField(verbose_name=_('Justeret R75 beløb'), blank=True, null=True)
+    assessed_amount = models.BigIntegerField(verbose_name=_('Ansat beløb'), blank=True, null=True)
 
     year_adjusted_amount = models.BigIntegerField(
         verbose_name=_('Beløb justeret for dage i skatteår'),
@@ -560,8 +556,6 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     def initial_amount(self):
         if self.active_amount == self.ACTIVE_AMOUNT_PREFILLED:
             return self.prefilled_amount
-        if self.active_amount == self.ACTIVE_AMOUNT_ESTIMATED:
-            return self.estimated_amount
         if self.active_amount == self.ACTIVE_AMOUNT_SELF_REPORTED:
             return self.self_reported_amount
 
@@ -745,10 +739,21 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         self.prefilled_amount = sum([int(r['renteindtaegt']) for r in r75qs.values('renteindtaegt')])
         self.save()
 
+    def get_assessed_amount(self):
+        """
+        Return assessed_amount based on estimated_mount, self_reported_amount,
+        adjusted_r75_amount and prefilled_amount.
+        :return: assessed_amount or None
+        """
+        amounts_list = [self.self_reported_amount,
+                        self.adjusted_r75_amount,
+                        self.prefilled_amount]
+        return next((item for item in amounts_list if item is not None), None)
+
     def __str__(self):
         return f"{self.__class__.__name__}(policy_number={self.policy_number}, cpr={self.person.cpr}, " \
                f"year={self.tax_year.year}), prefilled_amount={self.prefilled_amount}, " \
-               f"estimated_amount={self.estimated_amount}, self_reported_amount={self.self_reported_amount}, " \
+               f"self_reported_amount={self.self_reported_amount}, " \
                f"calculations_model_options={self.calculations_model_options}, active_amount={self.active_amount}, " \
                f"year_adjusted_amount={self.year_adjusted_amount}, calculation_model={self.calculation_model}, " \
                f"preliminary_paid_amount={self.preliminary_paid_amount}, from_pension={self.from_pension}, " \
