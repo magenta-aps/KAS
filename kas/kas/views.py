@@ -105,6 +105,7 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
             **kwargs,
         })
 
+
 class PersonTaxYearDetailView(LoginRequiredMixin, UpdateView):
     template_name = 'kas/persontaxyear_detail.html'
     model = PersonTaxYear
