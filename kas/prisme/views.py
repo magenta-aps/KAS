@@ -1,3 +1,4 @@
+from django.urls import reverse
 from django.views.generic import CreateView, UpdateView
 
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocuments
@@ -12,6 +13,11 @@ class TransactionCreateView(CreateOrUpdateViewWithNotesAndDocuments, CreateView)
     model = Transaction
     form_class = TransActionForm
 
+    @property
+    def back_url(self):
+        person_tax_year = self.get_person_tax_year()
+        return reverse('kas:person_in_year', kwargs={'year': person_tax_year.year, 'person_id': person_tax_year.person.id})
+
     def get_form_kwargs(self):
         """
         Set person_tax_year as passed in by the url and set created_by to the current user
@@ -22,6 +28,12 @@ class TransactionCreateView(CreateOrUpdateViewWithNotesAndDocuments, CreateView)
                                     created_by=self.request.user)
         })
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**{
+            'back_url': self.back_url,
+            **kwargs,
+        })
 
 
 class TransactionUpdateView(CreateOrUpdateViewWithNotesAndDocuments, UpdateView):
@@ -35,3 +47,14 @@ class TransactionUpdateView(CreateOrUpdateViewWithNotesAndDocuments, UpdateView)
 
     def get_person_tax_year(self):
         return self.object.person_tax_year
+
+    @property
+    def back_url(self):
+        person_tax_year = self.get_person_tax_year()
+        return reverse('kas:person_in_year', kwargs={'year': person_tax_year.year, 'person_id': person_tax_year.person.id})
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**{
+            'back_url': self.back_url,
+            **kwargs,
+        })

@@ -10,6 +10,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{% static 'bootstrap/bootstrap.min.css' %}" >
     <link rel="stylesheet" href="{% static 'bootstrap/bootstrap-table.min.css' %}" >
+    <link rel="stylesheet" href="{% static 'font-awesome/css/all.min.css' %}" >
     <link rel="stylesheet" href="{% static 'css/kas.css' %}" >
     <script src="{% static 'jquery/jquery-3.5.1.min.js' %}"></script>
     <script src="{% static 'bootstrap/bootstrap.bundle.min.js' %}"></script>
@@ -19,6 +20,14 @@
 </head>
 <body>
     <nav class="nav d-flex p-2">
+
+        {% if back_url %}
+        <a class="p-2 btn btn-secondary" href="{{ back_url }}">
+            <span class="fas fa-chevron-left"></span>
+            {% if back_text %}{{ back_text }}{% else %}{% trans 'Tilbage' %}{% endif %}
+        </a>
+        {% endif %}
+
         <a class="p-2 text-muted" href="{% url 'kas:frontpage' %}">{% trans 'Forside' %}</a>
         {% if user.is_staff %}
         <a class="p-2 text-muted" href="{% url 'worker:job_list' %}">{% trans 'Jobadministration' %}</a>

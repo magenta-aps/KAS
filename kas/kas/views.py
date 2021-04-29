@@ -72,6 +72,10 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
 
     model = PersonTaxYear
 
+    @property
+    def back_url(self):
+        return reverse('kas:frontpage')
+
     def get_queryset(self):
         qs = super().get_queryset()
 
@@ -95,6 +99,12 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
 
         return qs
 
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**{
+            'back_url': self.back_url,
+            **kwargs,
+        })
+
 
 class PersonTaxYearDetailView(LoginRequiredMixin, UpdateView):
     template_name = 'kas/persontaxyear_detail.html'
@@ -108,6 +118,10 @@ class PersonTaxYearDetailView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return self.url
+
+    @property
+    def back_url(self):
+        return reverse('kas:persons_in_year', kwargs={'year': self.year})
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -152,6 +166,9 @@ class PersonTaxYearDetailView(LoginRequiredMixin, UpdateView):
         )])
         context['transactions'] = Transaction.objects.filter(
             person_tax_year=obj).select_related('created_by', 'transferred_by')
+
+        context['back_url'] = self.back_url
+
         return context
 
 
@@ -167,6 +184,10 @@ class PolicyTaxYearDetailView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return self.url
+
+    @property
+    def back_url(self):
+        return reverse('kas:person_in_year', kwargs={'year': self.object.year, 'person_id': self.object.person.id})
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -186,6 +207,8 @@ class PolicyTaxYearDetailView(LoginRequiredMixin, UpdateView):
         result['self_reported_amount_label'] = amount_choices_by_value[PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED]
 
         result['used_negativ_table'] = policy.previous_year_deduction_table_data
+
+        result['back_url'] = self.back_url
 
         return result
 
