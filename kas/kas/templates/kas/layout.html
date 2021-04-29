@@ -10,6 +10,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{% static 'bootstrap/bootstrap.min.css' %}" >
     <link rel="stylesheet" href="{% static 'bootstrap/bootstrap-table.min.css' %}" >
+    <link rel="stylesheet" href="{% static 'font-awesome/css/all.css' %}" >
     <link rel="stylesheet" href="{% static 'css/kas.css' %}" >
     <script src="{% static 'jquery/jquery-3.5.1.min.js' %}"></script>
     <script src="{% static 'bootstrap/bootstrap.bundle.min.js' %}"></script>
@@ -21,11 +22,9 @@
     <nav class="nav d-flex p-2">
 
         {% if back_url %}
-        <a class="p-2 btn btn-secondary fas fa-chevron-left" href="{{ back_url }}">
-            {# https://icons.getbootstrap.com/icons/chevron-left/ #}
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-            </svg>{% if back_text %}{{ back_text }}{% else %}{% trans 'Tilbage' %}{% endif %}
+        <a class="p-2 btn btn-secondary" href="{{ back_url }}">
+            <span class="fas fa-chevron-left"></span>
+            {% if back_text %}{{ back_text }}{% else %}{% trans 'Tilbage' %}{% endif %}
         </a>
         {% endif %}
 
