@@ -15,7 +15,7 @@ from kas.forms import PersonListFilterForm, PersonTaxYearForm, PolicyTaxYearForm
     EditAmountsUpdateFrom
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument
 from prisme.models import Transaction
-from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, BackMixin
+from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
 
 
 class FrontpageView(LoginRequiredMixin, TemplateView):
@@ -96,7 +96,7 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
         return qs
 
 
-class PersonTaxYearDetailView(LoginRequiredMixin, BackMixin, UpdateView):
+class PersonTaxYearDetailView(LoginRequiredMixin, UpdateView):
     template_name = 'kas/persontaxyear_detail.html'
     model = PersonTaxYear
     context_object_name = 'person_tax_year'
@@ -156,10 +156,13 @@ class PersonTaxYearDetailView(LoginRequiredMixin, BackMixin, UpdateView):
         )])
         context['transactions'] = Transaction.objects.filter(
             person_tax_year=obj).select_related('created_by', 'transferred_by')
+
+        context['back_url'] = self.back_url
+
         return context
 
 
-class PolicyTaxYearDetailView(LoginRequiredMixin, BackMixin, UpdateView):
+class PolicyTaxYearDetailView(LoginRequiredMixin, UpdateView):
     template_name = 'kas/policytaxyear_detail.html'
     model = PolicyTaxYear
     context_object_name = 'policy'
@@ -194,6 +197,8 @@ class PolicyTaxYearDetailView(LoginRequiredMixin, BackMixin, UpdateView):
         result['self_reported_amount_label'] = amount_choices_by_value[PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED]
 
         result['used_negativ_table'] = policy.previous_year_deduction_table_data
+
+        result['back_url'] = self.back_url
 
         return result
 
