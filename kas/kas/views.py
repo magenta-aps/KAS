@@ -72,6 +72,10 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
 
     model = PersonTaxYear
 
+    @property
+    def back_url(self):
+        return reverse('kas:frontpage')
+
     def get_queryset(self):
         qs = super().get_queryset()
 
@@ -95,6 +99,11 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
 
         return qs
 
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**{
+            'back_url': self.back_url,
+            **kwargs,
+        })
 
 class PersonTaxYearDetailView(LoginRequiredMixin, UpdateView):
     template_name = 'kas/persontaxyear_detail.html'
