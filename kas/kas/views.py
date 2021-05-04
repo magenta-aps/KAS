@@ -10,13 +10,13 @@ from django.db.models import Count
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.views.generic import TemplateView, ListView, View, UpdateView, FormView
+from django.views.generic import TemplateView, ListView, View, UpdateView, CreateView, FormView
 from django.views.generic.detail import SingleObjectMixin, BaseDetailView
 from ipware import get_client_ip
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from kas.forms import PersonListFilterForm, PersonTaxYearForm, PolicyTaxYearForm, SelfReportedAmountForm, \
-    EditAmountsUpdateFrom, PensionCompanySummaryFileForm
+    EditAmountsUpdateFrom, PensionCompanySummaryFileForm, CreatePolicyTaxYearForm
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument
 from prisme.models import Transaction
@@ -216,6 +216,27 @@ class PolicyTaxYearDetailView(LoginRequiredMixin, UpdateView):
         result['back_url'] = self.back_url
 
         return result
+
+
+class PolicyTaxYearCreateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, CreateView):
+    form_class = CreatePolicyTaxYearForm
+    template_name = "kas/policytaxyear_create.html"
+
+    def get_person_tax_year(self):
+        self.year = self.kwargs.get("year", None)
+        self.person_id = self.kwargs.get("person_id", None)
+        try:
+            return PersonTaxYear.objects.get(tax_year__year=self.year, person__id=self.person_id)
+        except PersonTaxYear.DoesNotExist:
+            raise Http404
+
+    def get_policy_tax_year(self):
+        return getattr(self, 'object')
+
+    def form_valid(self, form):
+        form.instance.person_tax_year = self.get_person_tax_year()
+        form.instance.active_amount = PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED
+        return super().form_valid(form)
 
 
 class PolicyDocumentDownloadView(LoginRequiredMixin, View):

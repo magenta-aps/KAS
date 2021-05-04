@@ -1,6 +1,6 @@
-from django import forms
+from django.forms import ModelChoiceField
 
 
-class PensionCompanyChoiceField(forms.ModelChoiceField):
-    def label_from_instance(self, obj):
-        return obj.name
+class PensionCompanyChoiceField(ModelChoiceField):
+    def label_from_instance(self, pension_company):
+        return f"{pension_company.name} ({pension_company.res})"

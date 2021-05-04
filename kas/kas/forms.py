@@ -122,3 +122,17 @@ class PensionCompanySummaryFileForm(BootstrapForm):
     pension_company = PensionCompanyChoiceField(
         queryset=PensionCompany.objects.filter(agreement_present=True),
     )
+
+
+class CreatePolicyTaxYearForm(forms.ModelForm, BootstrapForm):
+    class Meta:
+        model = PolicyTaxYear
+        fields = [
+            'pension_company',
+            'policy_number',
+            'self_reported_amount',
+        ]
+    pension_company = PensionCompanyChoiceField(
+        queryset=PensionCompany.objects.all(),
+        widget=forms.widgets.Select()
+    )

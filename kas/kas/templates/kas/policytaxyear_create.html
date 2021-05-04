@@ -1,0 +1,79 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+
+{% block content %}
+
+<a href="{% url 'kas:person_in_year' view.year view.person_id %}">{% trans 'Tilbage til personskatteåret' %}</a>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  <div class="p-4">
+    <table class="table table-bordered table-hover table-striped" style="width: auto;">
+      <thead>
+        <tr class="table-info">
+          <th>{% trans 'Beskrivelse' %}</th>
+          <th>{% trans 'Værdi / beløb' %}</th>
+          <th>{% trans 'Enhed' %}</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <th>{% trans 'Pensionsselskab' %}</th>
+        <td>
+          {{ form.pension_company.errors }}
+          {{ form.pension_company }}
+        </td>
+        <td></td>
+      </tr>
+      <tr>
+        <th>{% trans 'Policenummer' %}</th>
+        <td>
+          {{ form.policy_number.errors }}
+          {{ form.policy_number }}
+        </td>
+        <td></td>
+      </tr>
+      <tr>
+        <th>{% trans 'Selvangivet beløb' %}</th>
+        <td>
+          {{ form.self_reported_amount.errors }}
+          {{ form.self_reported_amount }}
+        </td>
+        <td>{% trans 'kr' %}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <h2 id="notes">{% trans 'Notat' %}</h2>
+  {{ notes_formset }}
+
+  <h2 id="Bilag">{% trans 'Bilag' %}</h2>
+  <p>
+    {% blocktrans %}For at tilføje et bilag udfyldes felterne for beskrivelse og valg af
+    fil og der klikkes på 'Gem' knappen nederst på siden.{% endblocktrans %}
+  </p>
+  <p>
+    {% blocktrans %}Borgeren vil kunne se beskrivelser og filnavne på bilag som borgeren
+    selv har uploadet ved selvangivelse via web. Borgeren kan ikke se bilag vedhæftet
+    under sagsbehandlingen via nedenstående formular.{% endblocktrans %}
+  </p>
+  {{ upload_formset.management_form }}
+  {% for upload_form in upload_formset  %}
+  <div class="form-row mt-2" id="upload-row">
+    <div class="col">
+      {{ upload_form.description }}
+    </div>
+    <div class="col">
+      {{ upload_form.file }}
+    </div>
+  </div>
+  {% endfor %}
+
+  <hr/>
+  <button type="submit" class="btn btn-primary">{% trans 'Gem' %}</button>
+</form>
+
+{% endblock %}
