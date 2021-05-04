@@ -57,7 +57,7 @@
         <tbody>
           <tr>
             <th>{{ pension_company_amount_label }}</th>
-            <td class="text-right">{{ policy.prefilled_amount }}</td>
+            <td class="text-right">{{ policy.prefilled_amount|default_if_none:'' }}</td>
             <td>{% trans 'kr' %}</td>
             <td>{% trans 'Udfyldes fra R75' %}</td>
           </tr>

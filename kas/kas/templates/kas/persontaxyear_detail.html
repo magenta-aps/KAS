@@ -101,6 +101,7 @@
   {% else %}
   <p>{% trans 'Ingen policer fundet' %}</p>
   {% endif %}
+    <a class="btn btn-primary" href="{% url 'kas:policy_create' view.year view.person_id %}">{% trans 'Opret ny police' %}</a>
 
   <h2 id="notes">{% trans 'Notater' %}</h2>
 
