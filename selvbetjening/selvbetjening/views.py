@@ -101,7 +101,7 @@ class CloseMixin(object):
 
     def redirect_if_close_time(self):
         today = timezone.now().date()
-        close_date = date(today.year, settings.CLOSE_MONTH, settings.CLOSE_DATE)
+        close_date = date(today.year, settings.CLOSE_AT['month'], settings.CLOSE_AT['date'])
         if today >= close_date:
             return redirect(reverse('selvbetjening:closed'))
 

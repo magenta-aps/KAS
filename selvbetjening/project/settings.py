@@ -159,5 +159,7 @@ NEMID_CONNECT = {
 }
 
 # Month and day where the interface should be closed
-CLOSE_MONTH = 5
-CLOSE_DATE = 4
+CLOSE_AT = {
+    'month': int(os.environ['CLOSE_AT_MONTH']),
+    'date': int(os.environ['CLOSE_AT_DATE']),
+}
