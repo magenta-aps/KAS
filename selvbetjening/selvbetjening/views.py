@@ -6,7 +6,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import redirect
 from django.template import Engine, Context
 from django.urls import reverse
-from django.utils import translation
+from django.utils import translation, timezone
 from django.utils.datetime_safe import date
 from django.utils.translation import gettext as _
 from django.utils.translation.trans_real import DjangoTranslation
@@ -97,7 +97,22 @@ class HasUserMixin(object):
         })
 
 
-class PolicyFormView(HasUserMixin, FormView):
+class CloseMixin(object):
+
+    def redirect_if_close_time(self):
+        today = timezone.now().date()
+        close_date = date(today.year, settings.CLOSE_MONTH, settings.CLOSE_DATE)
+        if today >= close_date:
+            return redirect(reverse('selvbetjening:closed'))
+
+    def dispatch(self, request, *args, **kwargs):
+        redir = self.redirect_if_close_time()
+        if redir:
+            return redir
+        return super().dispatch(request, *args, **kwargs)
+
+
+class PolicyFormView(HasUserMixin, CloseMixin, FormView):
     template_name = 'form.html'
     success_url = ''
     form_class = formset_factory(PolicyForm, min_num=0, extra=1)
@@ -210,7 +225,7 @@ class PolicyFormView(HasUserMixin, FormView):
         return redirect(reverse('selvbetjening:policy-submitted'))
 
 
-class PolicyDetailView(HasUserMixin, TemplateView):
+class PolicyDetailView(HasUserMixin, CloseMixin, TemplateView):
     template_name = 'view.html'
 
     def get_context_data(self, **kwargs):

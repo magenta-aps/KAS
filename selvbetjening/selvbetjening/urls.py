@@ -16,4 +16,5 @@ urlpatterns = [
         name='javascript-language-catalog'
     ),
     url(r'^language', SetLanguageView.as_view(), name='set-language'),
+    url(r'^policy/closed/', TemplateView.as_view(template_name='closed.html'), name='closed'),
 ]

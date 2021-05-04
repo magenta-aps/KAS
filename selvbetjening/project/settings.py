@@ -157,3 +157,7 @@ NEMID_CONNECT = {
     'private_key': '""',
     'get_user_service': '""',
 }
+
+# Month and day where the interface should be closed
+CLOSE_MONTH = 5
+CLOSE_DATE = 4
