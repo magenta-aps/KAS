@@ -1,0 +1,66 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+
+{% block content %}
+
+  {% if request.GET.download %}
+    {% url 'kas:policy_summary' object.year request.GET.download as download_url %}
+    {% if download_url %}
+      {{ download_url|json_script:"download_url" }}
+      <script>
+        $(function(){
+            const download_url = JSON.parse($('#download_url').text());
+            if (download_url) {
+                document.location = download_url;
+            }
+        });
+      </script>
+    {% endif %}
+  {% endif %}
+
+  <h1>{% blocktrans with year=view.year %}Liste over Policeopsummeringer i år {{year}}{% endblocktrans %}</h1>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="row justify-content-end">
+      <div class="col-2">
+        {{ form.pension_company }}
+      </div>
+      <button type="submit" class="btn btn-primary">{% trans 'Generér og hent' %}</button>
+    </div>
+  </form>
+
+  <hr/>
+
+  <table class="table">
+    <thead>
+    <tr>
+      <th>{% trans 'Pensionsselskab' %}</th>
+      <th>{% trans 'År' %}</th>
+      <th>{% trans 'Oprettet af' %}</th>
+      <th>{% trans 'Oprettet tidspunkt' %}</th>
+      <th>{% trans 'Fil' %}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for file in object_list %}
+    <tr>
+      <td>{{file.company.name}}</td>
+      <td>{{file.tax_year.year}}</td>
+      <td>{{file.creator.username}}</td>
+      <td>{{file.created}}</td>
+      <td><a href="{% url 'kas:policy_summary' object.year file.id %}">{% trans 'Download' %}</a></td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="4">
+        {% trans 'Ingen filer' %}
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  {% include 'includes/pager.html' %}
+
+{% endblock %}

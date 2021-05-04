@@ -1,18 +1,23 @@
 import mimetypes
 import os
+import csv
+import uuid
+from io import StringIO
 
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.views.generic import TemplateView, ListView, View, UpdateView
-from django.views.generic.detail import SingleObjectMixin
+from django.views.generic import TemplateView, ListView, View, UpdateView, FormView
+from django.views.generic.detail import SingleObjectMixin, BaseDetailView
+from ipware import get_client_ip
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from kas.forms import PersonListFilterForm, PersonTaxYearForm, PolicyTaxYearForm, SelfReportedAmountForm, \
-    EditAmountsUpdateFrom
+    EditAmountsUpdateFrom, PensionCompanySummaryFileForm
+from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument
 from prisme.models import Transaction
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
@@ -287,3 +292,75 @@ class EditAmountsUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDo
             # Fill out adjusted_r75_amount since we are not allowed to change prefilled_amount.
             self.object.adjusted_r75_amount = self.object.prefilled_amount
         return super(EditAmountsUpdateView, self).get_form_kwargs()
+
+
+class PensionCompanySummaryFileView(LoginRequiredMixin, SingleObjectMixin, FormView):
+    model = TaxYear
+    form_class = PensionCompanySummaryFileForm
+    template_name = "kas/policycompanysummary_list.html"
+    paginate_by = 20
+    slug_url_kwarg = 'year'
+    slug_field = 'year'
+
+    def get_context_data(self, **kwargs):
+        self.object = self.get_object()
+        return super().get_context_data(**{
+            'object_list': PensionCompanySummaryFile.objects.filter(tax_year=self.object).order_by('company', '-created'),
+            **kwargs
+        })
+
+    def get_success_url(self):
+        return reverse('kas:policy_summary_list', kwargs=self.kwargs)
+
+    def form_valid(self, form):
+        self.object = self.get_object()
+        # Generate a PensionCompanySummaryFile entry and populate a file for it
+        pension_company = form.cleaned_data['pension_company']
+        qs = PolicyTaxYear.objects.filter(
+            pension_company=pension_company,
+            person_tax_year__tax_year=self.object
+        ).prefetch_related('person_tax_year', 'person_tax_year__person')
+        file_entry = PensionCompanySummaryFile(company=pension_company, tax_year=self.object, creator=self.request.user)
+
+        csvfile = StringIO()
+        writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for policy_tax_year in qs.iterator():
+            calculation = policy_tax_year.get_calculation()
+            line = [
+                policy_tax_year.tax_year.year,  # TaxYear (Integer, 4 digits, positive. XXXX eg. 2013)
+                pension_company.res,  # Reg_se_nr (Integer, positive)
+                policy_tax_year.cpr,  # Cpr: The CPR on the person
+                policy_tax_year.policy_number,  # Police_no (Integer, positive)
+                calculation['initial_amount'],  # Tax base 1 per police (Return)(Integer)
+                calculation['used_negative_return'],  # The previous year's negative return (Integer)
+                calculation['taxable_amount'],  # Tax base 2 (Tax base 1 minus the previous year's negative return)(Integer, 10 digits)
+                policy_tax_year.preliminary_paid_amount or 0,  # Provisional tax paid (Integer, 10 digits, positive)
+                calculation['tax_with_deductions'],  # Wanted cash tax (Integer)
+                None,  # Actual settlement pension company (Empty column)
+            ]
+            writer.writerow(line)
+
+        file_entry.file.save(uuid.uuid4(), csvfile, save=True)
+        file_entry.save()
+        csvfile.close()
+
+        # Instruct the client to download the file after refreshing the page
+        return HttpResponseRedirect(self.get_success_url() + f'?download={file_entry.id}')
+
+
+class PensionCompanySummaryFileDownloadView(LoginRequiredMixin, BaseDetailView):
+
+    model = PensionCompanySummaryFile
+
+    # Register info about who is downloading, and serve the file
+    def render_to_response(self, context):
+        client_ip, is_routable = get_client_ip(self.request)
+        PensionCompanySummaryFileDownload.objects.create(
+            downloaded_by=self.request.user,
+            downloaded_to=client_ip,
+            file=self.object
+        )
+        response = HttpResponse(self.object.file, content_type='text/csv')
+        response['Content-Length'] = self.object.file.size
+        response['Content-Disposition'] = f"attachment; filename={os.path.basename(self.object.file.name)}"
+        return response
