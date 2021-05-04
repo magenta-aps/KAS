@@ -100,10 +100,11 @@ class HasUserMixin(object):
 class CloseMixin(object):
 
     def redirect_if_close_time(self):
-        today = timezone.now().date()
-        close_date = date(today.year, settings.CLOSE_AT['month'], settings.CLOSE_AT['date'])
-        if today >= close_date:
-            return redirect(reverse('selvbetjening:closed'))
+        if settings.CLOSE_AT['month'] > 0 and settings.CLOSE_AT['date'] > 0:  # Test server should be able to deactivate closing
+            today = timezone.now().date()
+            close_date = date(today.year, settings.CLOSE_AT['month'], settings.CLOSE_AT['date'])
+            if today >= close_date:
+                return redirect(reverse('selvbetjening:closed'))
 
     def dispatch(self, request, *args, **kwargs):
         redir = self.redirect_if_close_time()
