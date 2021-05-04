@@ -10,6 +10,7 @@ from django.db import models
 from django.db.models import Sum
 from django.db.models.signals import post_save
 from django.forms import model_to_dict
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from simple_history.models import HistoricalRecords
 from eskat.models import ImportedR75PrivatePension
@@ -93,11 +94,6 @@ class PensionCompany(models.Model):
         unique=True,
         null=True,  # This will be null when created as a self-reported company
         validators=(MinValueValidator(limit_value=1),),
-    )
-
-    agreement_present = models.BooleanField(
-        default=False,
-        verbose_name=_("Foreligger der en aftale med skattestyrelsen")
     )
 
     agreement_present = models.BooleanField(
@@ -913,3 +909,64 @@ def add_skatteaar_to_queue(sender, instance, **kwargs):
 
 
 post_save.connect(add_skatteaar_to_queue, TaxYear, dispatch_uid='Skatteaar.add_to_queue')
+
+
+def pensioncompanysummaryfile_path(instance, filename):
+    # settings.USE_TZ is True, so we get an aware datetime
+    return f"pensioncompany_summary/{instance.company.id}/" \
+           f"{instance.tax_year.year}/{timezone.now().strftime('%Y-%m-%d %H.%M.%S UTC')}.csv"
+
+
+class PensionCompanySummaryFile(models.Model):
+
+    company = models.ForeignKey(
+        PensionCompany,
+        null=False,
+        on_delete=models.CASCADE,
+    )
+
+    tax_year = models.ForeignKey(
+        TaxYear,
+        null=False,
+        on_delete=models.CASCADE,
+    )
+
+    file = models.FileField(
+        upload_to=pensioncompanysummaryfile_path,
+        null=False,
+    )
+
+    creator = models.ForeignKey(
+        User,
+        null=False,
+        on_delete=models.CASCADE,
+    )
+
+    created = models.DateTimeField(
+        auto_now_add=True,
+        null=False,
+    )
+
+
+class PensionCompanySummaryFileDownload(models.Model):
+
+    downloaded_by = models.ForeignKey(
+        User,
+        null=False,
+        on_delete=models.CASCADE,
+    )
+
+    downloaded_at = models.DateTimeField(
+        auto_now_add=True,
+        null=False,
+    )
+
+    downloaded_to = models.GenericIPAddressField(
+        null=True,
+    )
+
+    file = models.ForeignKey(
+        PensionCompanySummaryFile,
+        null=False,
+        on_delete=models.CASCADE,
+    )

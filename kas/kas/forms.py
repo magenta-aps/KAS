@@ -1,7 +1,8 @@
 from django import forms
 from django.utils.translation import gettext as _
 from kas.forms_mixin import BootstrapForm
-from kas.models import PersonTaxYear, PolicyTaxYear, Note, PolicyDocument
+from kas.models import PersonTaxYear, PolicyTaxYear, Note, PolicyDocument, PensionCompany
+from kas.fields import PensionCompanyChoiceField
 
 
 class PersonListFilterForm(BootstrapForm):
@@ -115,3 +116,9 @@ class EditAmountsUpdateFrom(forms.ModelForm, BootstrapForm):
     class Meta:
         model = PolicyTaxYear
         fields = ('adjusted_r75_amount', 'self_reported_amount', 'assessed_amount')
+
+
+class PensionCompanySummaryFileForm(BootstrapForm):
+    pension_company = PensionCompanyChoiceField(
+        queryset=PensionCompany.objects.filter(agreement_present=True),
+    )
