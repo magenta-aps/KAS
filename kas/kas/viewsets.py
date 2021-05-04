@@ -46,6 +46,7 @@ class PolicyTaxYearFilter(filters.FilterSet):
     year = filters.NumberFilter(field_name="person_tax_year__tax_year__year")
     year_lt = filters.NumberFilter(field_name="person_tax_year__tax_year__year", lookup_expr='lt')
     cpr = filters.CharFilter(field_name="person_tax_year__person__cpr")
+    active = filters.BooleanFilter(field_name="active")
     person_tax_year = filters.ModelChoiceFilter(queryset=PersonTaxYear.objects.all())
     pension_company = filters.ModelChoiceFilter(queryset=PensionCompany.objects.all())
 

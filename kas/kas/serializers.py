@@ -59,11 +59,11 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
             'id', 'policy_number', 'prefilled_amount', 'self_reported_amount', 'pension_company',
             'person_tax_year', 'preliminary_paid_amount', 'from_pension', 'calculated_result',
             'foreign_paid_amount_self_reported', 'foreign_paid_amount_actual', 'applied_deduction_from_previous_years',
-            'available_deduction_from_previous_years', 'year_adjusted_amount', 'documents'
+            'available_deduction_from_previous_years', 'year_adjusted_amount', 'documents', 'active',
         ]
         read_only_fields = [
-            'id', 'pension_company', 'person_tax_year', 'documents',
-            'applied_deduction_from_previous_years', 'available_deduction_from_previous_years'
+            'id', 'pension_company', 'person_tax_year', 'documents', 'active',
+            'applied_deduction_from_previous_years', 'available_deduction_from_previous_years',
         ]
         depth = 2
 

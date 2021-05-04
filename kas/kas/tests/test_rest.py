@@ -515,6 +515,7 @@ class PolicyTaxYearTest(RestTest):
         self.assertCountEqual(
             [
                 {
+                    'active': policy_tax_year.active,
                     'person_tax_year': person_tax_year.id,
                     'policy_number': policy_tax_year.policy_number,
                     'id': policy_tax_year.id,
@@ -573,6 +574,7 @@ class PolicyTaxYearTest(RestTest):
         response = self.client.get(f"{self.url}{policy_tax_year1.id}/")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
         self.assertDictEqual({
+            'active': policy_tax_year1.active,
             'person_tax_year': person_tax_year.id,
             'policy_number': policy_tax_year1.policy_number,
             'id': policy_tax_year1.id,
@@ -593,6 +595,7 @@ class PolicyTaxYearTest(RestTest):
         response = self.client.get(f"{self.url}{policy_tax_year2.id}/")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
         self.assertDictEqual({
+            'active': policy_tax_year2.active,
             'person_tax_year': person_tax_year.id,
             'policy_number': policy_tax_year2.policy_number,
             'id': policy_tax_year2.id,
@@ -651,6 +654,7 @@ class PolicyTaxYearTest(RestTest):
         response = self.client.get(f"{self.url}?cpr=1234567890")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual([{
+            'active': policy_tax_year1.active,
             'person_tax_year': person_tax_year1.id,
             'policy_number': policy_tax_year1.policy_number,
             'id': policy_tax_year1.id,
@@ -671,6 +675,7 @@ class PolicyTaxYearTest(RestTest):
         response = self.client.get(f"{self.url}?year=2020")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual([{
+            'active': policy_tax_year1.active,
             'person_tax_year': person_tax_year1.id,
             'policy_number': policy_tax_year1.policy_number,
             'id': policy_tax_year1.id,
@@ -691,6 +696,7 @@ class PolicyTaxYearTest(RestTest):
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2021")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual([{
+            'active': policy_tax_year2.active,
             'person_tax_year': person_tax_year2.id,
             'policy_number': policy_tax_year2.policy_number,
             'id': policy_tax_year2.id,
@@ -743,6 +749,7 @@ class PolicyTaxYearTest(RestTest):
         self.assertDictEqual(
             {
                 **item,
+                'active': policy_tax_year.active,
                 'pension_company': pension_company.id,
                 'person_tax_year': person_tax_year.id,
                 'policy_number': policy_tax_year.policy_number,

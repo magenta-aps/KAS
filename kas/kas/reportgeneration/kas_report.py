@@ -496,7 +496,7 @@ class TaxPDF(FPDF):
 
         policies = []
 
-        list_of_policies = PolicyTaxYear.objects.filter(
+        list_of_policies = PolicyTaxYear.objects.active().filter(
             person_tax_year=person_tax_year
         )
 

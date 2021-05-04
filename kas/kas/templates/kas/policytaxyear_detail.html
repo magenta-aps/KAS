@@ -30,6 +30,18 @@
   </ul>
 </div>
 
+<div class="float-right p-2">
+{% if policy.active %}
+  <button type="button" class="btn btn-danger" id="deactivate" data-toggle="modal" data-target="#deactivateModal">{% trans 'Afregistrer' %}</button>
+{% else %}
+  <p>{% blocktrans with year=policy.year %}Policen for {{year}}<br/> er afregistreret{% endblocktrans %}</p>
+  <form method="POST" action="{% url 'kas:policy_activate' policy.pk %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">{% trans 'Aktivér' %}</button>
+    <input type="hidden" name="active" value="true"/>
+  </form>
+{% endif %}
+</div>
 
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
@@ -204,7 +216,7 @@
   <ul>
   {% for x in policy.same_policy_qs.all %}
     {% if x != policy %}
-    <li><a href="{% url 'kas:policy_detail' x.pk %}">{{x.year}}</a></li>
+    <li><a href="{% url 'kas:policy_detail' x.pk %}">{{x.year}}{% if not x.active %} {% trans '(deaktiveret)' %}{% endif %}</a></li>
     {% endif %}
   {% endfor %}
   </ul>
@@ -241,5 +253,30 @@
     {# TODO figure out when the button needs to be enabled/disabled. #}
     <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% trans 'Ret selvangivet beløb' %}</a>
     <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% trans 'Ret beløb' %}</a>
+
+{# Modal dialog for deactivation confirm #}
+<div class="modal" tabindex="-1" role="dialog" id="deactivateModal" aria-labelledby="deactivateModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deactivateModalLabel">{% trans 'Afregistrer' %}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="{% trans 'Luk' %}">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{% trans 'Er du sikker på at du vil afregistrere policen for dette skatteår?' %}</p>
+      </div>
+      <div class="modal-footer">
+        <form method="POST" action="{% url 'kas:policy_activate' policy.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">{% trans 'Afregistrer' %}</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans 'Annullér' %}</button>
+          <input type="hidden" name="active" value="false"/>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

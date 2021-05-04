@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from simple_history.models import HistoricalRecords
 from eskat.models import ImportedR75PrivatePension
+from kas.managers import PolicyTaxYearManager
 
 
 class HistoryMixin(object):
@@ -337,6 +338,7 @@ class PersonTaxYearCensus(HistoryMixin, models.Model):
 
 class PolicyTaxYear(HistoryMixin, models.Model):
     history = HistoricalRecords()
+    objects = PolicyTaxYearManager()
 
     class Meta:
         unique_together = ['person_tax_year', 'pension_company', 'policy_number']
@@ -463,6 +465,11 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         verbose_name=_('Låst'),
         help_text=_('Låst'),
         default=False
+    )
+
+    active = models.BooleanField(
+        verbose_name=_('Aktiv'),
+        default=True,
     )
 
     @classmethod
@@ -600,7 +607,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     def calculate_available_yearly_deduction(self):
         available = {}
-        qs = self.previous_years_qs().filter(year_adjusted_amount__lt=0).order_by('person_tax_year__tax_year__year')
+        qs = self.previous_years_qs().filter(year_adjusted_amount__lt=0, active=True).order_by('person_tax_year__tax_year__year')
         # Loop over prior years, using deductible amounts from them until either we have used it all, or nothing more is needed
         for policy in qs.iterator():
             result = policy.payouts_using.exclude(used_for=self.id).aggregate(Sum('transferred_negative_payout'))
@@ -612,7 +619,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         self.payouts_used.all().delete()
         result = self.get_calculation()
 
-        other_policies = {policy.year: policy for policy in self.previous_years_qs()}
+        other_policies = {policy.year: policy for policy in self.previous_years_qs().filter(active=True)}
         for year, amount in result['desired_deduction_data'].items():
             other_policies[year].use_amount(amount, self)
 
@@ -672,7 +679,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         used_by_year = {}
         for_year_total = {}
 
-        for x in self.same_policy_qs.filter(person_tax_year__tax_year__year__lte=self.year).order_by('person_tax_year__tax_year__year'):
+        for x in self.same_policy_qs\
+                .filter(person_tax_year__tax_year__year__lte=self.year, active=True)\
+                .order_by('person_tax_year__tax_year__year'):
             years.append(x.year)
             policy_pks.append(x.pk)
             available_by_year[x.year] = min(x.year_adjusted_amount, 0) * -1
@@ -681,7 +690,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
         used_matrix = {}
 
-        for x in PreviousYearNegativePayout.objects.filter(used_from__in=policy_pks, used_for__person_tax_year__tax_year__year__lte=self.year):
+        for x in PreviousYearNegativePayout.objects.filter(used_from__in=policy_pks, used_for__in=policy_pks, used_for__person_tax_year__tax_year__year__lte=self.year):
             if x.from_year not in used_matrix:
                 used_matrix[x.from_year] = {}
 

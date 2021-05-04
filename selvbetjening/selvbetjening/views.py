@@ -160,7 +160,8 @@ class PolicyFormView(HasUserMixin, FormView):
         if person_tax_year is not None:
             self.request.session['person_tax_year'] = person_tax_year
             policy_tax_years = client.get_policies(
-                person_tax_year=person_tax_year['id']
+                person_tax_year=person_tax_year['id'],
+                active=True,
             )
             policy_tax_years.sort(key=lambda k: str(k['pension_company']['name']))
         else:
@@ -222,7 +223,11 @@ class PolicyDetailView(HasUserMixin, TemplateView):
         else:
             year = int(year)
 
-        policies = client.get_policies(cpr=self.cpr, year=year)
+        policies = client.get_policies(
+            cpr=self.cpr,
+            year=year,
+            active=True,
+        )
         context = {
             **kwargs,
             'items': policies,

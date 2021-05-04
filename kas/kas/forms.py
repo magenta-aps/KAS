@@ -79,6 +79,12 @@ class PolicyTaxYearForm(forms.ModelForm, BootstrapForm):
         return instance
 
 
+class PolicyTaxYearActivationForm(forms.ModelForm):
+    class Meta:
+        model = PolicyTaxYear
+        fields = ['active']
+
+
 class NoteForm(forms.ModelForm, BootstrapForm):
     content = forms.CharField(required=False,
                               label=_('Notat'),

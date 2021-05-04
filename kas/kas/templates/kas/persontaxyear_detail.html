@@ -95,7 +95,15 @@
   {% if person_tax_year.policytaxyear_set.count %}
   <ul>
   {% for policy in person_tax_year.policytaxyear_set.all %}
-    <li><a href="{% url 'kas:policy_detail' policy.pk %}">{{ policy.pension_company.name }} - {{ policy.policy_number }} - {% trans 'Før beregning:' %} {{ policy.initial_amount }}, {% trans 'anvendt negativt:' %} {{ policy.applied_deduction_from_previous_years }}, {% trans 'beregnet skat:' %} {{ policy.calculated_result }}</a></li>
+    <li>
+      <a href="{% url 'kas:policy_detail' policy.pk %}" {% if not policy.active %}class="text-secondary"{% endif %}>
+        {{ policy.pension_company.name }} - {{ policy.policy_number }} -
+        {% trans 'Før beregning:' %} {{ policy.initial_amount }},
+        {% trans 'anvendt negativt:' %} {{ policy.applied_deduction_from_previous_years }},
+        {% trans 'beregnet skat:' %} {{ policy.calculated_result }}
+        {% if not policy.active %}{% trans '(deaktiveret)' %}{% endif %}
+      </a>
+    </li>
   {% endfor %}
   </ul>
   {% else %}
