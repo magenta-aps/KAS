@@ -414,23 +414,23 @@ class PersonTaxYearHistoryListView(DetailView):
         ctx = super(PersonTaxYearHistoryListView, self).get_context_data(**kwargs)
         qs = self.object.history.all().annotate(
             klass=models.Value('PersonTaxYear', output_field=models.CharField()),
-        ).values('history_date', 'history_user', 'history_id', 'history_change_reason', 'history_type', 'klass')
+        ).values('history_date', 'history_user__username', 'history_id', 'history_change_reason', 'history_type', 'klass')
         person_qs = self.object.person.history.all().annotate(
             klass=models.Value('Person', output_field=models.CharField()),
-        ).values('history_date', 'history_user', 'history_id', 'history_change_reason', 'history_type', 'klass')
+        ).values('history_date', 'history_user__username', 'history_id', 'history_change_reason', 'history_type', 'klass')
 
         policy_qs = PolicyTaxYear.history.filter(person_tax_year=self.object).annotate(
             klass=models.Value('Policy', output_field=models.CharField()),
-        ).values('history_date', 'history_user', 'history_id', 'history_change_reason', 'history_type', 'klass')
+        ).values('history_date', 'history_user__username', 'history_id', 'history_change_reason', 'history_type', 'klass')
 
         notes_qs = Note.objects.filter(person_tax_year=self.object).annotate(
             history_type=models.Value('+', output_field=models.CharField()),
             klass=models.Value('Note', output_field=models.CharField()),
-        ).values('date', 'author', 'id', 'content', 'history_type', 'klass')
+        ).values('date', 'author__username', 'id', 'content', 'history_type', 'klass')
         documents_qs = PolicyDocument.objects.filter(person_tax_year=self.object).annotate(
             history_type=models.Value('+', output_field=models.CharField()),
             klass=models.Value('PolicyDocument', output_field=models.CharField()),
-        ).values('uploaded_at', 'uploaded_by', 'id', 'description', 'history_type', 'klass')
+        ).values('uploaded_at', 'uploaded_by__username', 'id', 'description', 'history_type', 'klass')
         ctx['objects'] = qs.union(policy_qs, person_qs, notes_qs, documents_qs, all=True).order_by('-history_date')
         # TODO add TaxSlipGenerated
 

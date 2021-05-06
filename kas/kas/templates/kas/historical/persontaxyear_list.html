@@ -20,7 +20,7 @@
             <td>{{ entry.history_date|date:'SHORT_DATETIME_FORMAT' }}</td>
             <td>
                 {% if  entry.klass == 'PersonTaxYear' %}
-                    {% trans 'Person i år' %}
+                    {% trans 'Personskatteår' %}
                 {% elif  entry.klass == 'Person' %}
                     {% trans 'Person' %}
                 {% elif  entry.klass == 'Policy' %}
@@ -42,7 +42,7 @@
                     {% trans 'Slettet' %}
                 {% endif %}
             </td>
-            <td>{{ entry.history_user|default_if_none:'' }}</td>
+            <td>{{ entry.history_user__username|default_if_none:'' }}</td>
             <td>
                 {{ entry.history_change_reason|default_if_none:'' }}
             </td>
