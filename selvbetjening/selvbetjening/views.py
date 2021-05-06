@@ -104,7 +104,7 @@ class CloseMixin(object):
             today = timezone.now().date()
             close_date = date(today.year, settings.CLOSE_AT['month'], settings.CLOSE_AT['date'])
             if today >= close_date:
-                return redirect(reverse('selvbetjening:closed'))
+                return redirect(reverse('selvbetjening:policy-view'))
 
     def dispatch(self, request, *args, **kwargs):
         redir = self.redirect_if_close_time()
@@ -227,7 +227,7 @@ class PolicyFormView(HasUserMixin, CloseMixin, FormView):
 
 
 class PolicyDetailView(HasUserMixin, CloseMixin, TemplateView):
-    template_name = 'view.html'
+    template_name = 'view_single.html'
 
     def get_context_data(self, **kwargs):
         client = RestClient()
@@ -249,9 +249,7 @@ class PolicyDetailView(HasUserMixin, CloseMixin, TemplateView):
             'summary': {
                 key: sum([int(policy.get(key) or 0) for policy in policies])
                 for key in [
-                    'prefilled_amount', 'estimated_amount', 'self_reported_amount',
-                    'preliminary_paid_amount', 'foreign_paid_amount_self_reported',
-                    'foreign_paid_amount_actual', 'applied_deduction_from_previous_years',
+                    'prefilled_amount', 'self_reported_amount',
                     'calculated_result'
                 ]
             },
