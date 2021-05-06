@@ -70,7 +70,7 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
     person_tax_year = serializers.PrimaryKeyRelatedField(queryset=PersonTaxYear.objects.all())
     pension_company = serializers.PrimaryKeyRelatedField(queryset=PensionCompany.objects.all())
     # Serializer based on the prefetch defined in the viewset. "documents" must match the prefetch to_attr
-    documents = PolicyDocumentSerializer(many=True)
+    documents = PolicyDocumentSerializer(many=True, required=False, allow_null=True)
 
     def get_citizen_documents(self, policy_tax_year):
         return PolicyDocumentSerializer(
