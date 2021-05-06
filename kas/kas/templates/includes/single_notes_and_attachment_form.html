@@ -1,7 +1,16 @@
 {% load i18n %}
-<h1>{{ header }}</h1>
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
+    <div class="form-row">
+        <div class="col-1 ml-auto">
+            {% if person_tax_year %}
+                <a href="{% url 'kas:person_in_year' object.year object.person.id %}">{% trans 'Tilbage til person' %}</a>
+            {% else %}
+                <a href="{% url 'kas:policy_detail' object.pk %}">{% trans 'Tilbage til police' %}</a>
+            {% endif %}
+        </div>
+    </div>
+    <h1>{{ header }}</h1>
     <h2 id="Note">{% trans 'Notat' %} {% include 'includes/help_text/question_mark.html' with target_id='js-note-collapse' only %}</h2>
     {% include 'includes/help_text/collapse.html' with help_text=notes_helptext target_id='js-note-collapse' only %}
     {{ form.note }}

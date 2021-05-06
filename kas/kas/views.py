@@ -10,7 +10,6 @@ from django.db.models import Count
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.utils.translation import gettext as _
 from django.views.generic import TemplateView, ListView, View, UpdateView, CreateView, FormView
 from django.views.generic.detail import DetailView
 from django.views.generic.detail import SingleObjectMixin, BaseDetailView
@@ -176,8 +175,6 @@ class PersonNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         ctx = super(PersonNotesAndAttachmentsView, self).get_context_data(**kwargs)
         ctx.update({
-            'back_url': self.get_success_url(),
-            'back_text': _('Tilbage til person for police'),
             'person_tax_year': self.object
         })
         return ctx
@@ -235,15 +232,6 @@ class PolicyNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
-
-    def get_context_data(self, **kwargs):
-        ctx = super(PolicyNotesAndAttachmentsView, self).get_context_data(**kwargs)
-        ctx.update({
-            'back_url': self.get_success_url(),
-            'back_text': _('Tilbage til police'),
-            'person_tax_year': self.object
-        })
-        return ctx
 
 
 class PolicyDocumentDownloadView(LoginRequiredMixin, View):
