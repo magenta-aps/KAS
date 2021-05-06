@@ -54,12 +54,40 @@
         {% endfor %}
 
         <div class="accordion-item">
+            <h2 class="accordion-header" id="heading_notes">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_notes" aria-expanded="false" aria-controls="collapse_notes">
+                    {% trans 'Er der yderligere information, som skal selvangives i forbindelse med udfyldelsen af KAS-selvangivelse?' %}
+                </button>
+            </h2>
+            <div id="collapse_notes" class="accordion-collapse collapse" aria-labelledby="heading_notes">
+                <div class="accordion-body">
+                    {% trans 'Ingen noter' as no_notes %}
+                    <p>{{ person_tax_year.foreign_pension_notes|default:no_notes }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading_foreign">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_foreign" aria-expanded="false" aria-controls="collapse_foreign">
+                    {% trans 'Privat indbetaling til pensionsordninger i andre lande. Angiv landet, som pensionsordningen er hjemmehørende i, samt størrelsen på det indskudte beløb' %}
+                </button>
+            </h2>
+            <div id="collapse_foreign" class="accordion-collapse collapse" aria-labelledby="heading_foreign">
+                <div class="accordion-body">
+                    {% trans 'Ingen noter' as no_notes %}
+                    <p>{{ person_tax_year.general_notes|default:no_notes }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
             <h2 class="accordion-header" id="heading_summary">
                 <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} " type="button" data-bs-toggle="collapse" data-bs-target="#collapse_summary" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse_summary">
                     {% trans 'Opsummering' %}
                 </button>
             </h2>
-            <div id="collapse_summary" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading_summary" data-bs-parent="#policies">
+            <div id="collapse_summary" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading_summary">
                 <div class="accordion-body">
                     <table class="table">
                         <thead>

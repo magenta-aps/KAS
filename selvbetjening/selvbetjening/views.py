@@ -226,8 +226,8 @@ class PolicyFormView(HasUserMixin, CloseMixin, FormView):
         return redirect(reverse('selvbetjening:policy-submitted'))
 
 
-class PolicyDetailView(HasUserMixin, CloseMixin, TemplateView):
-    template_name = 'view_single.html'
+class PolicyDetailView(HasUserMixin, TemplateView):
+    template_name = 'view_single_year.html'
 
     def get_context_data(self, **kwargs):
         client = RestClient()
@@ -239,9 +239,11 @@ class PolicyDetailView(HasUserMixin, CloseMixin, TemplateView):
             year = int(year)
 
         policies = client.get_policies(cpr=self.cpr, year=year)
+        person_tax_year = client.get_person_tax_year(cpr=self.cpr, year=year)
         context = {
             **kwargs,
             'items': policies,
+            'person_tax_year': person_tax_year,
             'year': year,
             'showing_current_year': year == nowyear,
             'newest_prior_year': nowyear - 1,
