@@ -10,7 +10,7 @@
             <td>{% trans 'Type' %}</td>
             <td>{% trans 'Hændelse' %}</td>
             <td>{% trans 'Af' %}</td>
-            <td>{% trans 'Årsag' %}</td>
+            <td>{% trans 'Årsag/indhold' %}</td>
             <td>{% trans 'Link' %}</td>
         </tr>
     </thead>
@@ -25,12 +25,12 @@
                     {% trans 'Person' %}
                 {% elif  entry.klass == 'Policy' %}
                     {% trans 'Police' %}
-                {% elif  entry.klass == 'PolicyTaxYear' %}
-                    {% trans 'Police' %}
                 {% elif  entry.klass == 'Note' %}
                     {% trans 'Notat' %}
                 {% elif  entry.klass == 'PolicyDocument' %}
                     {% trans 'Bilag' %}
+                {% else %}
+                    {{ entry }}
                 {% endif %}
             </td>
             <td>
@@ -44,11 +44,19 @@
             </td>
             <td>{{ entry.history_user|default_if_none:'' }}</td>
             <td>
-
+                {{ entry.history_change_reason|default_if_none:'' }}
             </td>
             <td>{% if  entry.klass == 'PersonTaxYear' %}
                     <a href="{% url 'kas:person_history_detail' entry.history_id %}">{% trans 'Gå til version' %}</a>
+                {% elif  entry.klass == 'Policy' %}
+
+                {% elif  entry.klass == 'Note' %}
+
+                {% elif  entry.klass == 'PolicyDocument' %}
+                    <a href="{% url 'kas:policy_document_download' entry.history_id %}">{% trans 'Vis bilag' %}</a>
+
                 {% else %}
+
                 {{ entry.history_id }}
                 {{ entry.klass }}
                 {% endif %}
