@@ -1,0 +1,51 @@
+{% load i18n %}
+<ul class="nav nav-tabs border-0" role="tablist">
+    {% if policy_col %}
+    <li class="nav-item">
+        <a class="nav-link active border border-secondary border-bottom-0" id="notes-tab" data-toggle="tab" href="#policer" role="tab" aria-selected="true">{% trans 'Policer' %}</a>
+    </li>
+    {% else %}
+    <li class="nav-item">
+        <a class="nav-link active border border-secondary border-bottom-0" id="beregnings-tab" data-toggle="tab" href="#beregning" role="tab" aria-selected="true">{% trans ' Beregningsdetaljer' %}</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link border border-secondary border-bottom-0" id="negativ-tab" data-toggle="tab" href="#negativ" role="tab" aria-selected="true">{% trans 'Anvendt negativt afkast' %}</a>
+    </li>
+    {% endif %}
+    <li class="nav-item">
+        <a class="nav-link border border-secondary border-bottom-0" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-selected="true">{% trans 'Notater' %}</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link border border-secondary border-bottom-0" id="bilag-tab" data-toggle="tab" href="#bilag" role="tab" aria-selected="false">{% trans 'Bilag' %}</a>
+    </li>
+    {% if policy_col %}
+        <li class="nav-item">
+            <a class="nav-link border border-secondary border-bottom-0" id="transaction-tab" data-toggle="tab" href="#transaction" role="tab" aria-selected="false">{% trans 'Transaktioner' %}</a>
+        </li>
+    {% endif %}
+</ul>
+<div class="tab-content">
+    {% if policy_col %}
+        <div id="policer" class="p-3 tab-pane active border border-secondary" role="tabpanel" aria-labelledby="policer-tab">
+            {% include 'includes/detail_tabs/policies_list.html' with policies=policies only %}
+        </div>
+    {% else %}
+        <div id="beregning" class="p-3 tab-pane active border border-secondary" role="tabpanel" aria-labelledby="beregning-tab">
+            {% include 'includes/detail_tabs/beregnings_detaljer.html' %}
+        </div>
+        <div id="negativ" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="negativ-tab">
+            {% include 'includes/detail_tabs/anvendt_negativt_afkast.html' %}
+        </div>
+    {% endif %}
+    <div id="notes" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="notes-tab">
+        {% include 'includes/notes.html' with notes=notes policy_col=policy_col only %}
+    </div>
+    <div id="bilag" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="bilag-tab">
+        {% include 'includes/detail_tabs/attachments.html' with attachments=attachments policy_col=policy_col only %}
+    </div>
+    {% if policy_col %}
+        <div id="transaction" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="trans-tab">
+            {% include 'includes/detail_tabs/transactions.html' with transactions=transactions only %}
+        </div>
+    {% endif %}
+</div>
