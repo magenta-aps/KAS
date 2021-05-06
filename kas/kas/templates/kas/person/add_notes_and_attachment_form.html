@@ -1,0 +1,20 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+
+{% block content %}
+    {% blocktrans asvar notes_helptext %}Her listes notater der er oprettet på personen og dennes policer. Notaterne findes kun i KAS-systemet og kan ikke ses af borgeren.
+        For at tilføje et nyt notat udfyldes feltet 'Nyt notat' og der trykkes på 'Gem' i bunden af siden.
+        Ønsker man at tilføje et notat for en specifik police bør man bruge linket til policen ovenfor til at gå til policen og tilføje notatet der.
+        Hvis et notat er tilknyttet en bestemt police kan man klikke på linket i 'Police' kolonnen for at få vist policen.
+        Bemærk at det er muligt at vedhæfte et bilag sammen med et nyt notat ved også at udfylde bilag-feltet nedenfor når notatet oprettes.{% endblocktrans %}
+
+    {% blocktrans asvar bilag_helptext %}Her listes bilag der er tilknyttet til personen og dennes policer.
+        For at tilføje et nyt notat udfyldes vælges der en fil via knappen under listen og
+        der angives en beskrivelse af filen i feltet 'Fil-beskrivelse'. Efterfølgende klikkes på 'Gem' for at vedhæfte filen.
+        Bilag der vedhæftes via nedenstående formular kan ikke ses af borgeren.
+        Ønsker man at tilføje et bilag på en specifik police skal man bruge linket til policen ovenfor for at gå til policen og tilføje bilaget der.
+        Hvis et bilag er tilknyttet en bestemt police kan man klikke på linket i 'Police' kolonnen for at få vist policen.{% endblocktrans %}
+
+    {% include 'includes/single_notes_and_attachment_form.html' with notes_helptext=notes_helptext bilag_helptext=bilag_helptext %}
+
+{% endblock %}

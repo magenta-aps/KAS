@@ -1,6 +1,6 @@
+import csv
 import mimetypes
 import os
-import csv
 import uuid
 from io import StringIO
 
@@ -10,16 +10,22 @@ from django.db.models import Count
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.utils.translation import gettext as _
 from django.views.generic import TemplateView, ListView, View, UpdateView, CreateView, FormView
+from django.views.generic.detail import DetailView
+from django.views.generic.detail import SingleObjectMixin, BaseDetailView
 from django.views.generic.detail import SingleObjectMixin, BaseDetailView, DetailView
 from ipware import get_client_ip
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
-from kas.forms import PersonListFilterForm, PersonTaxYearForm, PolicyTaxYearForm, SelfReportedAmountForm, \
+from kas.forms import PersonListFilterForm, SelfReportedAmountForm, \
     EditAmountsUpdateFrom, PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, \
     PolicyTaxYearActivationForm
+from kas.forms import PolicyNotesAndAttachmentForm, PersonNotesAndAttachmentForm
+from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument
+from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
 from prisme.models import Transaction
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
 from django.db import models
@@ -113,27 +119,10 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
         })
 
 
-class PersonTaxYearDetailView(LoginRequiredMixin, UpdateView):
+class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
     template_name = 'kas/persontaxyear_detail.html'
     model = PersonTaxYear
     context_object_name = 'person_tax_year'
-    form_class = PersonTaxYearForm
-
-    @property
-    def url(self):
-        return reverse('kas:person_in_year', kwargs={'year': self.object.year, 'person_id': self.object.person.id})
-
-    def get_success_url(self):
-        return self.url
-
-    @property
-    def back_url(self):
-        return reverse('kas:persons_in_year', kwargs={'year': self.year})
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.request.user
-        return kwargs
 
     def get_object(self, queryset=None):
         if queryset is None:
@@ -156,67 +145,64 @@ class PersonTaxYearDetailView(LoginRequiredMixin, UpdateView):
             )
         except queryset.model.DoesNotExist:
             raise Http404("Persontaxyear not found")
-
+        self.object = obj
         return obj
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
 
-        obj = self.get_object()
-
         context['joined_address'] = "\n".join([x or "" for x in (
-            obj.person.address_line_1,
-            obj.person.address_line_2,
-            obj.person.address_line_3,
-            obj.person.address_line_4,
-            obj.person.address_line_5,
+            self.object.person.address_line_1,
+            self.object.person.address_line_2,
+            self.object.person.address_line_3,
+            self.object.person.address_line_4,
+            self.object.person.address_line_5,
         )])
         context['transactions'] = Transaction.objects.filter(
-            person_tax_year=obj).select_related('created_by', 'transferred_by')
-
-        context['back_url'] = self.back_url
-
+            person_tax_year=self.object).select_related('created_by', 'transferred_by')
+        context['person_tax_years'] = PersonTaxYear.objects.filter(person=self.object.person)
         return context
 
 
-class PolicyTaxYearDetailView(LoginRequiredMixin, UpdateView):
+class PersonNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):
+    form_class = PersonNotesAndAttachmentForm
+    model = PersonTaxYear
+    template_name = 'kas/person/add_notes_and_attachment_form.html'
+
+    def get_form_kwargs(self):
+        kwargs = super(PersonNotesAndAttachmentsView, self).get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+    def get_success_url(self):
+        return reverse('kas:person_in_year', kwargs={'year': self.object.year, 'person_id': self.object.person.id})
+
+    def get_context_data(self, **kwargs):
+        ctx = super(PersonNotesAndAttachmentsView, self).get_context_data(**kwargs)
+        ctx.update({
+            'back_url': self.get_success_url(),
+            'back_text': _('Tilbage til person for police'),
+            'person_tax_year': self.object
+        })
+        return ctx
+
+
+class PolicyTaxYearDetailView(LoginRequiredMixin, DetailView):
     template_name = 'kas/policytaxyear_detail.html'
     model = PolicyTaxYear
     context_object_name = 'policy'
-    form_class = PolicyTaxYearForm
-
-    @property
-    def url(self):
-        return reverse('kas:policy_detail', kwargs={'pk': self.object.pk})
-
-    def get_success_url(self):
-        return self.url
-
-    @property
-    def back_url(self):
-        return reverse('kas:person_in_year', kwargs={'year': self.object.year, 'person_id': self.object.person.id})
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.request.user
-        return kwargs
 
     def get_context_data(self, *args, **kwargs):
         result = super().get_context_data(*args, **kwargs)
 
-        policy = self.get_object()
-
-        result['calculation'] = policy.get_calculation()
+        result['calculation'] = self.object.get_calculation()
 
         amount_choices_by_value = {x[0]: x[1] for x in PolicyTaxYear.active_amount_options}
 
         result['pension_company_amount_label'] = amount_choices_by_value[PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED]
         result['self_reported_amount_label'] = amount_choices_by_value[PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED]
 
-        result['used_negativ_table'] = policy.previous_year_deduction_table_data
-
-        result['back_url'] = self.back_url
-
+        result['used_negativ_table'] = self.object.previous_year_deduction_table_data
         return result
 
 
@@ -239,6 +225,29 @@ class PolicyTaxYearCreateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAnd
         form.instance.person_tax_year = self.get_person_tax_year()
         form.instance.active_amount = PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED
         return super().form_valid(form)
+
+
+class PolicyNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):
+    model = PolicyTaxYear
+    form_class = PolicyNotesAndAttachmentForm
+    template_name = 'kas/policy/add_notes_and_attachment_form.html'
+
+    def get_success_url(self):
+        return reverse('kas:policy_detail', kwargs={'pk': self.object.pk})
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        ctx = super(PolicyNotesAndAttachmentsView, self).get_context_data(**kwargs)
+        ctx.update({
+            'back_url': self.get_success_url(),
+            'back_text': _('Tilbage til police'),
+            'person_tax_year': self.object
+        })
+        return ctx
 
 
 class PolicyDocumentDownloadView(LoginRequiredMixin, View):

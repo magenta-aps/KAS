@@ -1,282 +1,121 @@
 {% extends 'kas/layout.html' %}
 {% load i18n %}
-
 {% block content %}
-
-<div class="float-right border p-2">
-  <h3>Navigation</h3>
-  <ul class="nav flex-column">
-    <li class="nav-item">
-      <a class="nav-link active" href="#Beregning">{% trans 'Beregning' %}</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="#Negativt-afkast">{% trans 'Anvendt negativt afkast' %}</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="#Andre-aar">{% trans 'Policen i andre år' %}</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="#notes">{% trans 'Notater' %}</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="#Bilag">{% trans 'Bilag' %}</a>
-    </li>
-  </ul>
-  <hr>
-  <ul class="nav flex-column">
-    <li class="nav-item">
-      <a class="nav-link active" href="{% url 'kas:person_in_year' policy.person_tax_year.tax_year.year policy.person_tax_year.person.pk %}">Vis personen for policen</a>
-    </li>
-  </ul>
-</div>
-
-<div class="float-right p-2">
-{% if policy.active %}
-  <button type="button" class="btn btn-danger" id="deactivate" data-toggle="modal" data-target="#deactivateModal">{% trans 'Afregistrer' %}</button>
-{% else %}
-  <p>{% blocktrans with year=policy.year %}Policen for {{year}}<br/> er afregistreret{% endblocktrans %}</p>
-  <form method="POST" action="{% url 'kas:policy_activate' policy.pk %}">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary">{% trans 'Aktivér' %}</button>
-    <input type="hidden" name="active" value="true"/>
-  </form>
-{% endif %}
-</div>
-
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-
-  <h1>{% blocktrans with number=policy.polciy_number company=policy.pension_company.name name=policy.person.name year=policy.year %}Police {{ number }} ved {{ company }} for '{{ name }}' år {{ year}}{% endblocktrans %}</h1>
-  <p>{% blocktrans %}På denne side kan ses detaljer for den valgte police for det givne år. Der vises beregningen der danner grundlag for skatten og
-     en tabel der viser hvordan negativt afkast fra tidligere år eventuelt er blevet anvendt.{% endblocktrans %}</p>
-  <p>{% blocktrans %}I bunden af siden er det muligt at tilføje notater og vedhæfte bilag på policen.{% endblocktrans %}</p>
-  <p>{% blocktrans %}Brug navigationsboksen til højre til at hoppe til en bestemt del af siden.{% endblocktrans %}</p>
-
-  {% if policy.pension_company.agreement_present %}
-  <p class="bg-secondary p-2">{% trans 'Pensionsselskabet har aftale med Skattestyrelsen om automatisk betaling' %}</p>
-  {% endif %}
-  <h2 id="Beregning">{% trans 'Beregning' %}</h2>
-  <div class="p-4">
-    <table class="table table-bordered table-hover table-striped" style="width: auto;">
-        <thead>
-            <tr class="table-info">
-                <th>{% trans 'Beskrivelse' %}</th>
-                <th>{% trans 'Værdi / beløb' %}</th>
-                <th>{% trans 'Enhed' %}</th>
-                <th>{% trans 'Forklaring' %}</th>
+  <h1>{% blocktrans with number=policy.policy_number company=policy.pension_company.name name=policy.person.name year=policy.year %}Police {{ number }} ved {{ company }} for '{{ name }}' år {{ year}}{% endblocktrans %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
+  {% blocktrans asvar top_help %}På denne side kan ses detaljer for den valgte police for det givne år. Der vises beregningen der danner grundlag for skatten og
+     en tabel der viser hvordan negativt afkast fra tidligere år eventuelt er blevet anvendt.
+    I bunden af siden er det muligt at tilføje notater og vedhæfte bilag på policen.
+    Brug navigationsboksen til højre til at hoppe til en bestemt del af siden.{% endblocktrans %}
+  {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
+    <h2 id="Stamdata">{% trans 'Stamdata' %}</h2>
+    <table class="table table-bordered table-sm" style="width: auto;">
+        {% with person=policy.person_tax_year.person %}
+            <tbody>
+            <tr>
+                <th>{% trans 'Cpr nr og navn' %}</th>
+                <td><a href="{% url 'kas:person_in_year' policy.person_tax_year.tax_year.year person.pk %}"> {{ person.cpr }} / {{ person.name }}</a></td>
             </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th>{{ pension_company_amount_label }}</th>
-            <td class="text-right">{{ policy.prefilled_amount|default_if_none:'' }}</td>
-            <td>{% trans 'kr' %}</td>
-            <td>{% trans 'Udfyldes fra R75' %}</td>
-          </tr>
-          <tr>
-            <th>{{ self_reported_amount_label }}</th>
-            <td class="text-right">{% if policy.self_reported_amount %}{{ policy.self_reported_amount }}{% endif %}</td>
-            <td>{% trans 'kr' %}</td>
-            <td>{% trans 'Selvangivet beløb fra borgeren' %}</td>
-          </tr>
-          <tr class="table-info">
-            <td colspan="4" class="text-center">{% blocktrans with amount=policy.get_active_amount_display %}Beløb brugt til beregning: {{ amount }}{% endblocktrans %}</td>
-          </tr>
-          <tr>
-            <th>{% trans 'Startbeløb' %}</th>
-            <td class="text-right">{{ calculation.initial_amount }}</td>
-            <td>{% trans 'kr' %}</td>
-            <td>{% blocktrans with amount=polciy.get_active_amount_display %}Beløb for hele året ({{ amount }}){% endblocktrans %}</td>
-          </tr>
-          <tr>
-            <th>{% blocktrans with year=policy.year %}Antal dage i {{ year }}{% endblocktrans %}</th>
-            <td class="text-right">{{ calculation.days_in_year }}</td>
-            <td>{% trans 'dage' %}</td>
-            <td></td>
-          </tr>
-          <tr>
-            <th>{% blocktrans with year=policy.year %}Borgerens skattepligtige dage i {{ year }}{% endblocktrans %}</th>
-            <td class="text-right">{{  calculation.taxable_days_in_year }}</td>
-            <td>{% trans 'dage' %}</td>
-            <td></td>
-          </tr>
-          <tr>
-            <th>{% trans 'Justeringsfaktor for antal skattepligtige dage' %}</th>
-            <td class="text-right">{{ calculation.tax_days_adjust_factor }}</td>
-            <td></td>
-            <td> {% blocktrans with year=policy.year taxable_days=calculation.taxable_days_in_year days=calculation.days_in_year %}Skattepligtige dage ({{ taxable_days }}) / Dage i {{ year }} ({{ days }}){% endblocktrans %}</td>
-          </tr>
-          <tr>
-            <th>{% trans 'Beløb justeret for år' %}</th>
-            <td class="text-right">{{ calculation.year_adjusted_amount }}</td>
-            <td>kr</td>
-            <td>{% blocktrans with amount=calculation.initial_amount tax_days=calculation.tax_days_adjust_factor %}Beløb for hele året ({{ amount }}) &times; Justeringsfaktor for antal dage ({{ tax_days }}){% endblocktrans %}</td>
-          </tr>
-          <tr>
-            <th>{% trans 'Tilgængeligt negativt afkast' %}</th>
-            <td class="text-right">{{ calculation.available_negative_return }}</td>
-            <td>{% trans 'kr' %}</td>
-            <td>{% trans 'Se tabel nedenfor' %}</td>
-          </tr>
-          <tr>
-            <th>{% trans 'Anvendt negativt afkast' %}</th>
-            <td class="text-right">{{ calculation.used_negative_return }}</td>
-            <td>{% trans 'kr' %}</td>
-            <td>{% trans 'Maksimalt det fulde skattepligtige beløb' %}</td>
-          </tr>
-          <tr>
-            <th>{% trans 'Skattegrundlag efter justering for negativt afkast' %}</th>
-            <td class="text-right">{{ calculation.taxable_amount }}</td>
-            <td>{% trans 'kr' %}</td>
-            <td>{% blocktrans with amount=calculation.year_adjusted_amount return=calculation.used_negative_return %}Beløb justeret for dage ({{ amount }}) - anvendt negativt afkast ({{ return }}){% endblocktrans %}</td>
-          </tr>
-          <tr>
-            <th>{% trans 'Skat før fraregning af skat betalt i udlandet' %}</th>
-            <td class="text-right">{{ calculation.full_tax }}</td>
-            <td>{% trans 'kr' %}</td>
-            <td>{% blocktrans with amount=calculation.taxable_amount %}15,3% af skattegrundlag efter justering for negativt afkast ({{ amount }}){% endblocktrans %}</td>
-          </tr>
-          <tr>
-            <th>{% trans 'Skat betalt i udlandet' %}</th>
-            <td class="text-right">{{ calculation.foreign_paid_amount }}</td>
-            <td>{% trans 'kr' %}</td>
-            <td>{% trans 'Selvangivet beløb' %}</td>
-          </tr>
-          <tr>
-            <th>{% trans 'Skat fratrukket betaling i udland' %}</th>
-            <td class="text-right">{{ calculation.tax_with_deductions }}</td>
-            <td>{% trans 'kr' %}kr</td>
-            <td>{% blocktrans with tax=calculation.full_tax paid=calculation.foreign_paid_amount %}Skat før fraregning af skat betalt i udlandet ({{ tax }}) - Skat betalt i udlandet ({{ paid }}){% endblocktrans %}</td>
-          </tr>
-        </tbody>
+            <tr>
+                <th>{% trans 'År' %}</th>
+                <td>
+                    <select class="form-control" id="js-year-select">
+                    {% for x in policy.same_policy_qs.all %}
+                        <option {% if x == policy %}selected="selected"{% endif %} value="{% url 'kas:policy_detail' x.pk %}">{{x.year}}</option>
+                    {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>{% trans 'Pensionsselskab' %}</th>
+                <td>{{ policy.pension_company.name }}</td>
+            </tr>
+            <tr>
+                <th>{% trans 'Policenummer' %}</th>
+                <td>{{ policy.policy_number }}</td>
+            </tr>
+            <tr>
+                <th>{% trans 'R75 beløb' %}</th>
+                <td>{% if policy.adjusted_r75_amount %}
+                        {{ policy.adjusted_r75_amount }}
+                    {% else %}
+                        {{ policy.prefilled_amount|default_if_none:'' }}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>{% trans 'Selvangivet beløb' %}</th>
+                <td>{{ policy.self_reported_amount|default_if_none:'' }}</td>
+            </tr>
+            <tr>
+                <th>{% trans 'Lignet beløb' %}</th>
+                <td>{{ policy.get_assessed_amount|default_if_none:'' }}</td>
+            </tr>
+            <tr>
+                <th>{% trans 'Beregnet skat' %}</th>
+                <td><a href="#beregnings-tab">{{ calculation.tax_with_deductions }} {% trans 'kr' %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans 'Aktiv' %}</th>
+                <th>
+                    {% if policy.active %}<span>{% trans 'Ja' %}</span>{% else %}<span style="color:red">{% trans 'Nej' %}</span>{% endif %}
+                </th>
+            </tr>
+            </tbody>
+        {% endwith %}
     </table>
-  </div>
-  <p><strong>{% blocktrans with tax=calculation.tax_with_deductions %}I alt til betaling: {{ tax }} kr {% endblocktrans %}</strong></p>
-
-  <h2 id="Negativt-afkast">{% trans 'Anvendt negativt afkast' %}</h2>
-
-  <p>{% blocktrans %}Her vises hvordan negativt afkast fra tidligere år er blevet allokeret.{% endblocktrans %}</p>
-
-  {% with marked_year=policy.year %}
-  <div class="p-4">
-    <table class="table table-bordered table-hover table-sm" style="width: auto;">
-      <thead>
-        <tr class="table-info">
-          <th colspan="2"></th>
-          <th colspan="{{ used_negativ_table|length|add:-1 }}" class="text-center">{% trans 'Anvendt i år' %}</th>
-          <th></th>
-        </tr>
-        <tr>
-          <th class="table-info">{% trans 'År' %}</th>
-          <th class="table-info">{% trans 'Negativt afkast' %}</th>
-          {% for year in used_negativ_table.keys %}
-          {% if not forloop.first %}
-          <th class="table-{% if marked_year == year %}primary{% else %}info{% endif %}">{{ year }}</th>
-          {% endif %}
-          {% endfor %}
-          <th class="table-info">{% trans 'Resterende' %}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for year, data in used_negativ_table.items %}
-        {% if not forloop.last %}
-        <tr>
-          <th>{{ year }}</th>
-          <td class="text-right">{{ data.available }}</td>
-          {% for year2, value in data.used_by_year.items %}
-          {% if not forloop.first %}
-          {% if value == "-" %}
-          <td class="table-secondary"></td>
-          {% else %}
-          <td class="text-right{% if marked_year == year2 %} table-success{% endif %}">{{ value }}</td>
-          {% endif %}
-          {% endif %}
-          {% endfor%}
-          <td class="text-right">{{ data.remaining }}</td>
-        </tr>
-        {% endif %}
-        {% endfor %}
-        <tr>
-          <th colspan="2">{% trans 'Totalt anvendt' %}</th>
-          {% for year, data in used_negativ_table.items %}
-          {% if not forloop.first %}
-          <td class="text-right{% if marked_year == year %} table-success{% endif %}">{{ data.used_total }}</td>
-          {% endif %}
-          {% endfor %}
-          <td></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  {% endwith %}
-
-  <h2 id="Andre-aar">{% trans 'Policen i andre år' %}</h2>
-
-  <p>{% blocktrans %}Klik på et af links'ene herunder for at få vist den samme police for andre år.{% endblocktrans %}</p>
-  <ul>
-  {% for x in policy.same_policy_qs.all %}
-    {% if x != policy %}
-    <li><a href="{% url 'kas:policy_detail' x.pk %}">{{x.year}}{% if not x.active %} {% trans '(deaktiveret)' %}{% endif %}</a></li>
+    {% if policy.pension_company.agreement_present %}
+        <p class="bg-secondary p-2">{% trans 'Pensionsselskabet har aftale med Skattestyrelsen om automatisk betaling' %}</p>
     {% endif %}
-  {% endfor %}
-  </ul>
+    <fieldset class="border pl-4 pb-4 mb-4">
+        <legend  class="w-auto">{% trans 'Handlinger' %}</legend>
+        <a class="btn btn-info" href="{% url 'kas:policy_add_notes_or_attachement' policy.pk %}">{% trans 'Tilføj bilag/notater' %}</a>
+        {# TODO figure out when the button needs to be enabled/disabled. #}
+        <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% trans 'Ret selvangivet beløb' %}</a>
+        <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% trans 'Ret beløb' %}</a>
+        {% if policy.active %}
+            <button type="button" class="btn btn-danger" id="deactivate" data-toggle="modal" data-target="#deactivateModal">{% trans 'Afregistrer' %}</button>
+        {% else %}
+            <form style="display: inline" method="POST" action="{% url 'kas:policy_activate' policy.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">{% trans 'Aktivér' %}</button>
+                <input type="hidden" name="active" value="true"/>
+            </form>
+        {% endif %}
+    </fieldset>
 
-  <h2 id="notes">{% trans 'Notater' %}</h2>
-  <p>{% blocktrans %}Her vises en liste af notater tilknyttet policen. Notaterne findes kun i KAS systemet og kan ikke ses af borgeren.{% endblocktrans %}</p>
-  <p>{% blocktrans %}For at tilføje et nyt notat udfyldes 'Nyt notat' feltet og der klikkes på 'Gem' knappen nederst på siden.{% endblocktrans %}</p>
-  <p>{% blocktrans %}Bilag kan tilknyttes sammen med notatet ved at udfylde bilag-felterne nedenfor.{% endblocktrans %}</p>
-
-  <p>{% blocktrans %}Brug følgende link til at se alle notater og bilag:{% endblocktrans %} <a href="{% url 'kas:person_in_year' policy.year policy.person.id %}#notes">{% trans 'Se alle notater og bilag på borgeren for dette år' %}</a></p>
-
-  {% include 'includes/notes.html' with notes=policy.notes.all %}
+    {% include 'includes/detail_tabs.html' with notes=policy.notes.all attachments=policy.policy_documents.all %}
 
 
-  {{ form.note }}
-  <h2 id="Bilag">{% trans 'Bilag' %}</h2>
-  <p>{% blocktrans %}Her vises en liste af bilag tilknyttet policen.{% endblocktrans %}</p>
-  <p>{% blocktrans %}For at tilføje et nyt bilag udfyldes felterne for beskrivelse og valg af fil og der klikkes på 'Gem' knappen nederst på siden.{% endblocktrans %}</p>
-  <p>{% blocktrans %}Borgeren vil kunne se beskrivelser og filnavne på bilag som borgeren
-     selv har uploadet ved selvangivelse via web. Borgeren kan ikke se bilag vedhæftet
-     under sagsbehandlingen via nedenstående formular.{% endblocktrans %}</p>
-  {% include 'includes/attachments.html' with attachments=policy.policy_documents.all %}
-  <div class="form-row">
-      <div class="col">
-          {{ form.attachment_description }}
-      </div>
-      <div class="col">
-          {{ form.attachment }}
-      </div>
-  </div>
-  <hr/>
-  <button type="submit" class="btn btn-primary">{% trans 'Gem' %}</button>
-  </form>
-    {# TODO figure out when the button needs to be enabled/disabled. #}
-    <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% trans 'Ret selvangivet beløb' %}</a>
-    <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% trans 'Ret beløb' %}</a>
 
-{# Modal dialog for deactivation confirm #}
-<div class="modal" tabindex="-1" role="dialog" id="deactivateModal" aria-labelledby="deactivateModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="deactivateModalLabel">{% trans 'Afregistrer' %}</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="{% trans 'Luk' %}">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p>{% trans 'Er du sikker på at du vil afregistrere policen for dette skatteår?' %}</p>
-      </div>
-      <div class="modal-footer">
-        <form method="POST" action="{% url 'kas:policy_activate' policy.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-danger">{% trans 'Afregistrer' %}</button>
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans 'Annullér' %}</button>
-          <input type="hidden" name="active" value="false"/>
-        </form>
+    {# Modal dialog for deactivation confirm #}
+    <div class="modal" tabindex="-1" role="dialog" id="deactivateModal" aria-labelledby="deactivateModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deactivateModalLabel">{% trans 'Afregistrer' %}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="{% trans 'Luk' %}">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>{% trans 'Er du sikker på at du vil afregistrere policen for dette skatteår?' %}</p>
+          </div>
+          <div class="modal-footer">
+            <form method="POST" action="{% url 'kas:policy_activate' policy.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">{% trans 'Afregistrer' %}</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans 'Annullér' %}</button>
+              <input type="hidden" name="active" value="false"/>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
-
+    <script type="application/javascript">
+        $( document ).ready(function() {
+            $('select#js-year-select').on('change', function(){
+                window.location = this.value;
+            });
+        });
+    </script>
 {% endblock %}

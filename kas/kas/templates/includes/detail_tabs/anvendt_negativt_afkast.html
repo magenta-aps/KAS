@@ -1,0 +1,51 @@
+{% load i18n %}
+{% with marked_year=policy.year %}
+<table class="table table-bordered table-hover table-sm" style="width: auto;">
+    <thead>
+    <tr class="table-info">
+        <th colspan="2"></th>
+        <th colspan="{{ used_negativ_table|length|add:-1 }}" class="text-center">{% trans 'Anvendt i år' %}</th>
+        <th></th>
+    </tr>
+    <tr>
+        <th class="table-info">{% trans 'År' %}</th>
+        <th class="table-info">{% trans 'Negativt afkast' %}</th>
+        {% for year in used_negativ_table.keys %}
+            {% if not forloop.first %}
+                <th class="table-{% if marked_year == year %}primary{% else %}info{% endif %}">{{ year }}</th>
+            {% endif %}
+        {% endfor %}
+        <th class="table-info">{% trans 'Resterende' %}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for year, data in used_negativ_table.items %}
+        {% if not forloop.last %}
+            <tr>
+                <th>{{ year }}</th>
+                <td class="text-right">{{ data.available }}</td>
+                {% for year2, value in data.used_by_year.items %}
+                    {% if not forloop.first %}
+                        {% if value == "-" %}
+                            <td class="table-secondary"></td>
+                        {% else %}
+                            <td class="text-right{% if marked_year == year2 %} table-success{% endif %}">{{ value }}</td>
+                        {% endif %}
+                    {% endif %}
+                {% endfor%}
+                <td class="text-right">{{ data.remaining }}</td>
+            </tr>
+        {% endif %}
+    {% endfor %}
+    <tr>
+        <th colspan="2">{% trans 'Totalt anvendt' %}</th>
+        {% for year, data in used_negativ_table.items %}
+            {% if not forloop.first %}
+                <td class="text-right{% if marked_year == year %} table-success{% endif %}">{{ data.used_total }}</td>
+            {% endif %}
+        {% endfor %}
+        <td></td>
+    </tr>
+    </tbody>
+</table>
+{% endwith %}

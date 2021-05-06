@@ -1,0 +1,19 @@
+{% load i18n %}
+<h1>{{ header }}</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <h2 id="Note">{% trans 'Notat' %} {% include 'includes/help_text/question_mark.html' with target_id='js-note-collapse' only %}</h2>
+    {% include 'includes/help_text/collapse.html' with help_text=notes_helptext target_id='js-note-collapse' only %}
+    {{ form.note }}
+    <h2 id="Bilag">{% trans 'Bilag' %} {% include 'includes/help_text/question_mark.html' with target_id='js-billag-collapse' only %}</h2></h2>
+    {% include 'includes/help_text/collapse.html' with help_text=bilag_helptext target_id='js-billag-collapse' %}
+    <div class="form-row">
+        <div class="col">
+            {{ form.attachment_description }}
+        </div>
+        <div class="col">
+            {{ form.attachment }}
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mt-2 mb-5">{% trans 'Gem' %}</button>
+</form>
