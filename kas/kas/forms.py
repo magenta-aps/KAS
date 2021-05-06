@@ -25,8 +25,6 @@ class PersonTaxYearForm(forms.ModelForm, BootstrapForm):
 
     def save(self, commit=True):
         instance = super().save(commit)
-        print("Saving")
-        print(self.cleaned_data)
         if self.cleaned_data['note']:
             Note(
                 person_tax_year=instance,
