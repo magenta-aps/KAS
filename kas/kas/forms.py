@@ -10,7 +10,7 @@ class PersonListFilterForm(BootstrapForm):
     name = forms.CharField(label=_('Navn'), required=False)
 
 
-class PersonTaxYearForm(forms.ModelForm, BootstrapForm):
+class PersonNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
     note = forms.CharField(widget=forms.Textarea(attrs={'placeholder': _('Nyt notat')}), required=False, )
     attachment = forms.FileField(required=False)
     attachment_description = forms.CharField(required=False,
@@ -25,9 +25,7 @@ class PersonTaxYearForm(forms.ModelForm, BootstrapForm):
         fields = []
 
     def save(self, commit=True):
-        instance = super().save(commit)
-        print("Saving")
-        print(self.cleaned_data)
+        instance = super().save(False)  # no reason to trigger a re-save when nothing was changed
         if self.cleaned_data['note']:
             Note(
                 person_tax_year=instance,
@@ -43,7 +41,7 @@ class PersonTaxYearForm(forms.ModelForm, BootstrapForm):
         return instance
 
 
-class PolicyTaxYearForm(forms.ModelForm, BootstrapForm):
+class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
     attachment = forms.FileField(required=False)
     attachment_description = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': _('Fil-beskrivelse')}))
 
