@@ -245,9 +245,6 @@ class PolicyDetailView(HasUserMixin, TemplateView):
             'items': policies,
             'person_tax_year': person_tax_year,
             'year': year,
-            'showing_current_year': year == nowyear,
-            'newest_prior_year': nowyear - 1,
-            'current_nav': 'view-current' if nowyear == year else 'view-prior',
             'summary': {
                 key: sum([int(policy.get(key) or 0) for policy in policies])
                 for key in [
@@ -256,15 +253,5 @@ class PolicyDetailView(HasUserMixin, TemplateView):
                 ]
             },
         }
-
-        if year < nowyear:
-            all_years = client.get_person_tax_years(self.cpr)
-            years = [
-                p['tax_year']
-                for p in all_years
-                if p['tax_year'] < nowyear
-            ] if all_years is not None else []
-            years.sort()
-            context['years'] = years
 
         return context
