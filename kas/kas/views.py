@@ -11,17 +11,18 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import TemplateView, ListView, View, UpdateView, CreateView, FormView
-from django.views.generic.detail import SingleObjectMixin, BaseDetailView
+from django.views.generic.detail import SingleObjectMixin, BaseDetailView, DetailView
 from ipware import get_client_ip
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from kas.forms import PersonListFilterForm, PersonTaxYearForm, PolicyTaxYearForm, SelfReportedAmountForm, \
     EditAmountsUpdateFrom, PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, \
     PolicyTaxYearActivationForm
-from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload
+from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument
 from prisme.models import Transaction
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
+from django.db import models
 
 
 class FrontpageView(LoginRequiredMixin, TemplateView):
@@ -395,3 +396,48 @@ class ActivatePolicyTaxYearView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse('kas:policy_detail', kwargs=self.kwargs)
+
+
+class PersonTaxYearHistoryListView(DetailView):
+    """
+    shows all changes related to a person tax year
+    """
+    model = PersonTaxYear
+    template_name = 'kas/historical/persontaxyear_list.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(PersonTaxYearHistoryListView, self).get_context_data(**kwargs)
+        qs = self.object.history.all().annotate(
+            klass=models.Value('PersonTaxYear', output_field=models.CharField()),
+        ).values('history_date', 'history_user', 'history_id', 'history_type', 'history_change_reason', 'klass')
+        person_qs = self.object.person.history.all().annotate(
+            klass=models.Value('Person', output_field=models.CharField()),
+        ).values('history_date', 'history_user', 'history_id', 'history_type', 'history_change_reason', 'klass')
+
+        policy_qs = PolicyTaxYear.history.filter(person_tax_year=self.object).annotate(
+            klass=models.Value('Policy', output_field=models.CharField()),
+        ).values('history_date', 'history_user', 'history_id', 'history_type', 'history_change_reason', 'klass')
+
+        notes_qs = Note.objects.filter(person_tax_year=self.object).annotate(
+            klass=models.Value('Note', output_field=models.CharField()),
+            history_type=models.Value('+', output_field=models.CharField()),
+            history_change_reason=models.Value('', output_field=models.CharField())
+        ).values('date', 'author', 'id', 'history_type', 'history_change_reason', 'klass')
+        documents_qs = PolicyDocument.objects.filter(person_tax_year=self.object).annotate(
+            klass=models.Value('PolicyDocument', output_field=models.CharField()),
+            history_type=models.Value('+', output_field=models.CharField()),
+            history_change_reason=models.Value('', output_field=models.CharField())
+        ).values('uploaded_at', 'uploaded_by', 'id', 'history_type', 'history_change_reason', 'klass')
+        ctx['objects'] = qs.union(policy_qs, person_qs, notes_qs, documents_qs, all=True).order_by('-history_date')
+        # TODO add TaxSlipGenerated
+        return ctx
+
+
+class PersonTaxYearHistoryDetailView(DetailView):
+    """
+    Shows a specific "version" of a person_tax_year
+    """
+    model = PersonTaxYear.history.model
+    slug_field = 'history_id'
+    template_name = 'kas/historical/persontaxyear_detail.html'
+    # TODO i think we might be able to reuse the persontaxyear_deatil template by disabling all the actions etc. waiting on feature/#43309

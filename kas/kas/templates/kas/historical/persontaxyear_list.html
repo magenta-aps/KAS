@@ -1,0 +1,61 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+{% block content %}
+    <h1>{% blocktrans with name=object.person.name year=object.tax_year.year %} Historik for {{ name }} i år {{ year }}{% endblocktrans%}</h1>
+
+<table class="table table-bordered table-hover table-striped">
+    <thead>
+        <tr>
+            <td>{% trans 'Dato' %}</td>
+            <td>{% trans 'Type' %}</td>
+            <td>{% trans 'Hændelse' %}</td>
+            <td>{% trans 'Af' %}</td>
+            <td>{% trans 'Årsag' %}</td>
+            <td>{% trans 'Link' %}</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in objects.iterator %}
+        <tr>
+            <td>{{ entry.history_date|date:'SHORT_DATETIME_FORMAT' }}</td>
+            <td>
+                {% if  entry.klass == 'PersonTaxYear' %}
+                    {% trans 'Person i år' %}
+                {% elif  entry.klass == 'Person' %}
+                    {% trans 'Person' %}
+                {% elif  entry.klass == 'Policy' %}
+                    {% trans 'Police' %}
+                {% elif  entry.klass == 'PolicyTaxYear' %}
+                    {% trans 'Police' %}
+                {% elif  entry.klass == 'Note' %}
+                    {% trans 'Notat' %}
+                {% elif  entry.klass == 'PolicyDocument' %}
+                    {% trans 'Bilag' %}
+                {% endif %}
+            </td>
+            <td>
+                {% if entry.history_type == '+' %}
+                    {% trans 'Oprettet' %}
+                {% elif entry.history_type == '~' %}
+                    {% trans 'Ændret' %}
+                {% elif entry.history_type == '-' %}
+                    {% trans 'Slettet' %}
+                {% endif %}
+            </td>
+            <td>{{ entry.history_user|default_if_none:'' }}</td>
+            <td>
+
+            </td>
+            <td>{% if  entry.klass == 'PersonTaxYear' %}
+                    <a href="{% url 'kas:person_history_detail' entry.history_id %}">{% trans 'Gå til version' %}</a>
+                {% else %}
+                {{ entry.history_id }}
+                {{ entry.klass }}
+                {% endif %}
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
