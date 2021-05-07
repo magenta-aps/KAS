@@ -20,6 +20,10 @@
         {% with person=policy.person_tax_year.person %}
             <tbody>
             <tr>
+                <th>{% trans 'Policenummer' %}</th>
+                <td><b>{{ policy.policy_number }}</b></td>
+            </tr>
+            <tr>
                 <th>{% trans 'Cpr nr og navn' %}</th>
                 <td>
                     {% if historical %}
@@ -46,10 +50,6 @@
             <tr>
                 <th>{% trans 'Pensionsselskab' %}</th>
                 <td>{{ policy.pension_company.name }}</td>
-            </tr>
-            <tr>
-                <th>{% trans 'Policenummer' %}</th>
-                <td>{{ policy.policy_number }}</td>
             </tr>
             <tr>
                 <th>{% trans 'R75 beløb' %}</th>

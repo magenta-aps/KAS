@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+
+<div class="container">
+
+    <p>{% blocktrans %}Digital indberetning af selvangivelse for 2020 er ikke længere tilgængelig. Kontakt venligst Skattestyrelsen.{% endblocktrans %}</p>
+
+    <div class="accordion" id="policies">
+
+        {% for policy in items %}
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} " type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ forloop.counter }}">
+                    {{ policy.pension_company.name }}, Police nr {{ policy.policy_number }}
+                </button>
+            </h2>
+            <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#policies">
+                <div class="accordion-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="col-8-sm">{% trans 'Feltnavn' %}</th>
+                                <th class="col-3-sm">{% trans 'Værdi' %}</th>
+                                <th class="col-1-sm">{% trans 'Felt nr.' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="col-8-sm">{% trans 'Kapitalafkast PBL (DK) § 53 A' %}</td>
+                                <td class="col-3-sm">{{ policy.self_reported_amount|default:policy.prefilled_amount }}</td>
+                                <td class="col-1-sm">KAS-201</td>
+                            </tr>
+
+                            {% for document in policy.policy_documents %}
+                            <tr>
+                                {% if forloop.first %}
+                                <td class="col-8-sm" rowspan="{{ policy.policy_documents|length }}">{% trans 'Dokumentation' %}</td>
+                                {% endif %}
+                                <td class="col-4-sm" colspan="2">{{ document.name }} | {{ document.description }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td class="col-8-sm">{% trans 'Dokumentation' %}</td>
+                                <td class="col-4-sm"></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading_notes">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_notes" aria-expanded="false" aria-controls="collapse_notes">
+                    {% trans 'Yderligere information til selvangivelsen.' %}
+                </button>
+            </h2>
+            <div id="collapse_notes" class="accordion-collapse collapse" aria-labelledby="heading_notes">
+                <div class="accordion-body">
+                    {% trans 'Ingen noter' as no_notes %}
+                    <p>{{ person_tax_year.foreign_pension_notes|default:no_notes }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading_foreign">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_foreign" aria-expanded="false" aria-controls="collapse_foreign">
+                    {% trans 'Indbetaling til private pensionsordninger i andre lande. Angiv beløb samt land.' %}
+                </button>
+            </h2>
+            <div id="collapse_foreign" class="accordion-collapse collapse" aria-labelledby="heading_foreign">
+                <div class="accordion-body">
+                    {% trans 'Ingen noter' as no_notes %}
+                    <p>{{ person_tax_year.general_notes|default:no_notes }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading_summary">
+                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} " type="button" data-bs-toggle="collapse" data-bs-target="#collapse_summary" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse_summary">
+                    {% trans 'Opsummering' %}
+                </button>
+            </h2>
+            <div id="collapse_summary" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading_summary">
+                <div class="accordion-body">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th class="col-8-sm">{% trans 'Feltnavn' %}</th>
+                            <th class="col-3-sm">{% trans 'Værdi' %}</th>
+                            <th class="col-1-sm">{% trans 'Felt nr.' %}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td class="col-8-sm">{% trans 'Kapitalafkast PBL (DK) § 53 A' %}</td>
+                            <td class="col-3-sm">{{ summary.self_reported_amount|default:summary.prefilled_amount }}</td>
+                            <td class="col-1-sm">KAS-201</td>
+                        </tr>
+                        <tr>
+                            <td class="col-8-sm">{% trans 'Forudbetalt kapitalafkastskat' %}</td>
+                            <td class="col-3-sm">{{ summary.preliminary_paid_amount|default:0 }}</td>
+                            <td class="col-1-sm">KAS-205</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

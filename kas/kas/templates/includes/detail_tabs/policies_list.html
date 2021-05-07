@@ -9,7 +9,7 @@
     </thead>
     <tbody>
     {% for policy in policies %}
-        <tr>
+        <tr{% if not policy.active %} class="text-muted"{% endif %}>
             <td>{{ policy.person_tax_year.year }}</td>
             <td>{{ policy.pension_company.name }}</td>
             <td><a href="{% url 'kas:policy_detail' policy.pk %}">{{ policy.policy_number }}</a></td>
