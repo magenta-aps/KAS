@@ -68,7 +68,6 @@
         <a class="btn btn-success" href="{% url 'kas:policy_create' view.year view.person_id %}">{% trans 'Opret ny police' %}</a>
         <a class="btn btn-info" href="{% url 'kas:person_add_notes_or_attachement' person_tax_year.pk %}" >{% trans 'Tilføj bilag/notater' %}</a>
         {# TODO figure out when the buttons needs to be enabled/disabled. #}
-        <a href="" class="btn btn-primary">{% trans 'Ret pension i udlandet' %}</a> {# TODO needs to be implemented #}
         <a href="" class="btn btn-warning">{% trans 'Udsend ny slutopgørelse' %}</a> {# TODO needs to be implemented #}
     </fieldset>
     {% include 'includes/detail_tabs.html' with policy_col=True policies=person_tax_year.policytaxyear_set.all notes=person_tax_year.notes.all attachments=person_tax_year.policydocument_set.all transactions=transactions %}
