@@ -6,7 +6,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import redirect
 from django.template import Engine, Context
 from django.urls import reverse
-from django.utils import translation
+from django.utils import translation, timezone
 from django.utils.datetime_safe import date
 from django.utils.translation import gettext as _
 from django.utils.translation.trans_real import DjangoTranslation
@@ -97,7 +97,23 @@ class HasUserMixin(object):
         })
 
 
-class PolicyFormView(HasUserMixin, FormView):
+class CloseMixin(object):
+
+    def redirect_if_close_time(self):
+        if settings.CLOSE_AT['month'] > 0 and settings.CLOSE_AT['date'] > 0:  # Test server should be able to deactivate closing
+            today = timezone.now().date()
+            close_date = date(today.year, settings.CLOSE_AT['month'], settings.CLOSE_AT['date'])
+            if today >= close_date:
+                return redirect(reverse('selvbetjening:policy-view'))
+
+    def dispatch(self, request, *args, **kwargs):
+        redir = self.redirect_if_close_time()
+        if redir:
+            return redir
+        return super().dispatch(request, *args, **kwargs)
+
+
+class PolicyFormView(HasUserMixin, CloseMixin, FormView):
     template_name = 'form.html'
     success_url = ''
     form_class = formset_factory(PolicyForm, min_num=0, extra=1)
@@ -212,7 +228,7 @@ class PolicyFormView(HasUserMixin, FormView):
 
 
 class PolicyDetailView(HasUserMixin, TemplateView):
-    template_name = 'view.html'
+    template_name = 'view_single_year.html'
 
     def get_context_data(self, **kwargs):
         client = RestClient()
@@ -223,37 +239,20 @@ class PolicyDetailView(HasUserMixin, TemplateView):
         else:
             year = int(year)
 
-        policies = client.get_policies(
-            cpr=self.cpr,
-            year=year,
-            active=True,
-        )
+        policies = client.get_policies(cpr=self.cpr, year=year)
+        person_tax_year = client.get_person_tax_year(cpr=self.cpr, year=year)
         context = {
             **kwargs,
             'items': policies,
+            'person_tax_year': person_tax_year,
             'year': year,
-            'showing_current_year': year == nowyear,
-            'newest_prior_year': nowyear - 1,
-            'current_nav': 'view-current' if nowyear == year else 'view-prior',
             'summary': {
                 key: sum([int(policy.get(key) or 0) for policy in policies])
                 for key in [
                     'prefilled_amount', 'self_reported_amount',
-                    'preliminary_paid_amount', 'foreign_paid_amount_self_reported',
-                    'foreign_paid_amount_actual', 'applied_deduction_from_previous_years',
                     'calculated_result'
                 ]
             },
         }
-
-        if year < nowyear:
-            all_years = client.get_person_tax_years(self.cpr)
-            years = [
-                p['tax_year']
-                for p in all_years
-                if p['tax_year'] < nowyear
-            ] if all_years is not None else []
-            years.sort()
-            context['years'] = years
 
         return context

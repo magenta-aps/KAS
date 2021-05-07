@@ -1,6 +1,5 @@
 import json as jsonlib
 import locale
-import math
 import re
 from html import unescape
 
@@ -24,10 +23,10 @@ def json(data):
     return jsonlib.dumps(data)
 
 
-@register.filter
-def max(text, filter):
+@register.filter(name='max')
+def max_int(text, filter):
     try:
-        return math.max(int(text), int(filter))
+        return max(int(text), int(filter))
     except TypeError:
         return text
 
