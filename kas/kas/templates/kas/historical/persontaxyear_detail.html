@@ -1,5 +1,0 @@
-{% extends 'kas/layout.html' %}
-{% load i18n %}
-{% block content %}
-<h1>{% blocktrans with name=object.person.name year=object.tax_year.year %} Historik for {{ name }} i år {{ year }}{% endblocktrans%}</h1>
-{% endblock %}

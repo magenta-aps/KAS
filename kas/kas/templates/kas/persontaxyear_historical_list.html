@@ -2,7 +2,14 @@
 {% load i18n %}
 {% block content %}
     <h1>{% blocktrans with name=object.person.name year=object.tax_year.year %} Historik for {{ name }} i år {{ year }}{% endblocktrans%}</h1>
-
+    <table class="table table-bordered table-sm" style="width: auto;">
+        <tbody>
+        <tr>
+            <td>{% trans 'Personskatteår' %}</td>
+            <td><a href="{% url 'kas:person_in_year' object.tax_year.year object.person.pk %}">{% blocktrans with cpr=object.person.cpr name=object.person.name year=object.tax_year.year %} {{ cpr }} / {{ name }} i {{ year }}{% endblocktrans %}</a></td>
+        </tr>
+        </tbody>
+    </table>
 <table class="table table-bordered table-hover table-striped">
     <thead>
         <tr>
@@ -49,19 +56,11 @@
             <td>{% if  entry.klass == 'PersonTaxYear' %}
                     <a href="{% url 'kas:person_history_detail' entry.history_id %}">{% trans 'Gå til version' %}</a>
                 {% elif  entry.klass == 'Policy' %}
-
-                {% elif  entry.klass == 'Note' %}
-
+                    <a href="{% url 'kas:policy_history_list' entry.history_id %}">{% trans 'Gå til historik' %}</a>
                 {% elif  entry.klass == 'PolicyDocument' %}
                     <a href="{% url 'kas:policy_document_download' entry.history_id %}">{% trans 'Vis bilag' %}</a>
-
-                {% else %}
-
-                {{ entry.history_id }}
-                {{ entry.klass }}
                 {% endif %}
             </td>
-
         </tr>
         {% endfor %}
     </tbody>

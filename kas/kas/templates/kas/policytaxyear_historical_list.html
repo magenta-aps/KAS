@@ -1,0 +1,68 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+{% block content %}
+    <h1>{% blocktrans with name=object.person_tax_year.person.name year=object.person_tax_year.tax_year.year policy_number=object.policy_number %} Historik for police {{ policy_number }} for {{ name }} i år {{ year }}{% endblocktrans%}</h1>
+    <table class="table table-bordered table-sm" style="width: auto;">
+        <tbody>
+            <tr>
+                <td>{% trans 'Police' %}</td>
+                <td><a href="{% url 'kas:policy_detail' object.id %}">{% blocktrans with policy_number=object.policy_number year=object.person_tax_year.tax_year.year %}{{ policy_number }} i år {{ year }}{% endblocktrans %}</a></td>
+            </tr>
+            <tr>
+                <td>{% trans 'Personskatteår' %}</td>
+                <td><a href="{% url 'kas:person_in_year' object.person_tax_year.tax_year.year object.person_tax_year.person.pk %}">{% blocktrans with cpr=object.person_tax_year.person.cpr name=object.person_tax_year.person.name year=object.person_tax_year.tax_year.year %}{{ cpr }} / {{ name }} i år {{ year }}{% endblocktrans %}</a></td>
+            </tr>
+            <tr>
+                <td>{% trans 'Pensionsselskab' %}</td>
+                <td>{{ object.pension_company.name }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-bordered table-hover table-striped">
+        <thead>
+        <tr>
+            <td>{% trans 'Dato' %}</td>
+            <td>{% trans 'Type' %}</td>
+            <td>{% trans 'Hændelse' %}</td>
+            <td>{% trans 'Af' %}</td>
+            <td>{% trans 'Årsag/indhold' %}</td>
+            <td>{% trans 'Link' %}</td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for entry in objects.iterator %}
+            <tr>
+                <td>{{ entry.history_date|date:'SHORT_DATETIME_FORMAT' }}</td>
+                <td>
+                    {% if  entry.klass == 'Policy' %}
+                        {% trans 'Police' %}
+                    {% elif  entry.klass == 'Note' %}
+                        {% trans 'Notat' %}
+                    {% elif  entry.klass == 'PolicyDocument' %}
+                        {% trans 'Bilag' %}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if entry.history_type == '+' %}
+                        {% trans 'Oprettet' %}
+                    {% elif entry.history_type == '~' %}
+                        {% trans 'Ændret' %}
+                    {% elif entry.history_type == '-' %}
+                        {% trans 'Slettet' %}
+                    {% endif %}
+                </td>
+                <td>{{ entry.history_user__username|default_if_none:'' }}</td>
+                <td>
+                    {{ entry.history_change_reason|default_if_none:'' }}
+                </td>
+                <td>{% if  entry.klass == 'Policy' %}
+                    <a href="{% url 'kas:policy_history_detail' entry.history_id %}">{% trans 'Gå til version' %}</a>
+                {% elif  entry.klass == 'PolicyDocument' %}
+                    <a href="{% url 'kas:policy_document_download' entry.history_id %}">{% trans 'Vis bilag' %}</a>
+                {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
