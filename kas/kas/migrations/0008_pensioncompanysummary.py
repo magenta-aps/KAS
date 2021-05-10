@@ -36,4 +36,14 @@ class Migration(migrations.Migration):
                 ('file', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='kas.PensionCompanySummaryFile')),
             ],
         ),
+        migrations.AddField(
+            model_name='historicalpolicytaxyear',
+            name='active',
+            field=models.BooleanField(default=True, verbose_name='Aktiv'),
+        ),
+        migrations.AddField(
+            model_name='policytaxyear',
+            name='active',
+            field=models.BooleanField(default=True, verbose_name='Aktiv'),
+        ),
     ]
