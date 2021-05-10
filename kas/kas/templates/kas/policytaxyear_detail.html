@@ -1,11 +1,19 @@
 {% extends 'kas/layout.html' %}
 {% load i18n %}
 {% block content %}
+  {% if historical %}
+    <div class="row float-right">
+        <a href="{% url 'kas:policy_history_list' policy.id %}">{% trans 'Tilbage til historik oversigt' %}</a>
+    </div>
+  <h1>{% blocktrans with name=policy.person_tax_year.person.name year=policy.person_tax_year.tax_year.year history_date=policy.history_date|date:'SHORT_DATETIME_FORMAT' %}{{ name }} i år {{year}} fra <b>{{ history_date }}</b>{% endblocktrans %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only %}</h1>
+  {% blocktrans asvar top_help with history_date=policy.history_date|date:'SHORT_DATETIME_FORMAT' %} Denne side viser en tidligere version af policen fra <b>{{ history_date }}</b> {% endblocktrans %}
+  {% else %}
   <h1>{% blocktrans with number=policy.policy_number company=policy.pension_company.name name=policy.person.name year=policy.year %}Police {{ number }} ved {{ company }} for '{{ name }}' år {{ year}}{% endblocktrans %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
   {% blocktrans asvar top_help %}På denne side kan ses detaljer for den valgte police for det givne år. Der vises beregningen der danner grundlag for skatten og
      en tabel der viser hvordan negativt afkast fra tidligere år eventuelt er blevet anvendt.
     I bunden af siden er det muligt at tilføje notater og vedhæfte bilag på policen.
     Brug navigationsboksen til højre til at hoppe til en bestemt del af siden.{% endblocktrans %}
+  {% endif %}
   {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
     <h2 id="Stamdata">{% trans 'Stamdata' %}</h2>
     <table class="table table-bordered table-sm" style="width: auto;">
@@ -17,16 +25,26 @@
             </tr>
             <tr>
                 <th>{% trans 'Cpr nr og navn' %}</th>
-                <td><a href="{% url 'kas:person_in_year' policy.person_tax_year.tax_year.year person.pk %}"> {{ person.cpr }} / {{ person.name }}</a></td>
+                <td>
+                    {% if historical %}
+                        {{ person.cpr }} / {{ person.name }}
+                    {% else %}
+                        <a href="{% url 'kas:person_in_year' policy.person_tax_year.tax_year.year person.pk %}"> {{ person.cpr }} / {{ person.name }}</a><
+                    {% endif %}
+                </td>
             </tr>
             <tr>
                 <th>{% trans 'År' %}</th>
                 <td>
-                    <select class="form-control" id="js-year-select">
-                    {% for x in policy.same_policy_qs.all %}
-                        <option {% if x == policy %}selected="selected"{% endif %} value="{% url 'kas:policy_detail' x.pk %}">{{x.year}}</option>
-                    {% endfor %}
-                    </select>
+                    {% if historical %}
+                        {{ policy.person_tax_year.tax_year.year }}
+                    {% else %}
+                        <select class="form-control" id="js-year-select">
+                        {% for x in policy.same_policy_qs.all %}
+                            <option {% if x == policy %}selected="selected"{% endif %} value="{% url 'kas:policy_detail' x.pk %}">{{x.year}}</option>
+                        {% endfor %}
+                        </select>
+                    {% endif %}
                 </td>
             </tr>
             <tr>
@@ -66,26 +84,26 @@
     {% if policy.pension_company.agreement_present %}
         <p class="bg-secondary p-2">{% trans 'Pensionsselskabet har aftale med Skattestyrelsen om automatisk betaling' %}</p>
     {% endif %}
-    <fieldset class="border pl-4 pb-4 mb-4">
-        <legend  class="w-auto">{% trans 'Handlinger' %}</legend>
-        <a class="btn btn-info" href="{% url 'kas:policy_add_notes_or_attachement' policy.pk %}">{% trans 'Tilføj bilag/notater' %}</a>
-        {# TODO figure out when the button needs to be enabled/disabled. #}
-        <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% trans 'Ret selvangivet beløb' %}</a>
-        <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% trans 'Ret beløb' %}</a>
-        {% if policy.active %}
-            <button type="button" class="btn btn-danger" id="deactivate" data-toggle="modal" data-target="#deactivateModal">{% trans 'Afregistrer' %}</button>
-        {% else %}
-            <form style="display: inline" method="POST" action="{% url 'kas:policy_activate' policy.pk %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-primary">{% trans 'Aktivér' %}</button>
-                <input type="hidden" name="active" value="true"/>
-            </form>
-        {% endif %}
-    </fieldset>
-
+    {% if not historical %}
+        <fieldset class="border pl-4 pb-4 mb-4">
+            <legend  class="w-auto">{% trans 'Handlinger' %}</legend>
+            <a class="btn btn-info" href="{% url 'kas:policy_add_notes_or_attachement' policy.pk %}">{% trans 'Tilføj bilag/notater' %}</a>
+            {# TODO figure out when the button needs to be enabled/disabled. #}
+            <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% trans 'Ret selvangivet beløb' %}</a>
+            <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% trans 'Ret beløb' %}</a>
+            {% if policy.active %}
+                <button type="button" class="btn btn-danger" id="deactivate" data-toggle="modal" data-target="#deactivateModal">{% trans 'Afregistrer' %}</button>
+            {% else %}
+                <form style="display: inline" method="POST" action="{% url 'kas:policy_activate' policy.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">{% trans 'Aktivér' %}</button>
+                    <input type="hidden" name="active" value="true"/>
+                </form>
+            {% endif %}
+            <a href="{% url 'kas:policy_history_list' policy.pk %}" class="btn btn-secondary">{% trans 'Vis historik' %}</a>
+        </fieldset>
+    {% endif %}
     {% include 'includes/detail_tabs.html' with notes=policy.notes.all attachments=policy.policy_documents.all %}
-
-
 
     {# Modal dialog for deactivation confirm #}
     <div class="modal" tabindex="-1" role="dialog" id="deactivateModal" aria-labelledby="deactivateModalLabel" aria-hidden="true">

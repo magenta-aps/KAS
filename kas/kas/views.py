@@ -6,13 +6,13 @@ from io import StringIO
 
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import models
 from django.db.models import Count
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import TemplateView, ListView, View, UpdateView, CreateView, FormView
-from django.views.generic.detail import DetailView
-from django.views.generic.detail import SingleObjectMixin, BaseDetailView
+from django.views.generic.detail import SingleObjectMixin, BaseDetailView, DetailView
 from ipware import get_client_ip
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
@@ -20,7 +20,7 @@ from kas.forms import PersonListFilterForm, SelfReportedAmountForm, \
     EditAmountsUpdateFrom, PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, \
     PolicyTaxYearActivationForm
 from kas.forms import PolicyNotesAndAttachmentForm, PersonNotesAndAttachmentForm
-from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload
+from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
 from prisme.models import Transaction
@@ -389,3 +389,85 @@ class ActivatePolicyTaxYearView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse('kas:policy_detail', kwargs=self.kwargs)
+
+
+class PersonTaxYearHistoryListView(DetailView):
+    """
+    shows all changes related to a person tax year
+    """
+    model = PersonTaxYear
+    template_name = 'kas/persontaxyear_historical_list.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(PersonTaxYearHistoryListView, self).get_context_data(**kwargs)
+        qs = self.object.history.all().annotate(
+            klass=models.Value('PersonTaxYear', output_field=models.CharField()),
+        ).values('history_date', 'history_user__username', 'history_id', 'history_change_reason', 'history_type', 'klass')
+        person_qs = self.object.person.history.all().annotate(
+            klass=models.Value('Person', output_field=models.CharField()),
+        ).values('history_date', 'history_user__username', 'history_id', 'history_change_reason', 'history_type', 'klass')
+
+        policy_qs = PolicyTaxYear.history.filter(person_tax_year=self.object).annotate(
+            klass=models.Value('Policy', output_field=models.CharField()),
+        ).values('history_date', 'history_user__username', 'id', 'history_change_reason', 'history_type', 'klass')
+
+        notes_qs = Note.objects.filter(person_tax_year=self.object).annotate(
+            history_type=models.Value('+', output_field=models.CharField()),
+            klass=models.Value('Note', output_field=models.CharField()),
+        ).values('date', 'author__username', 'id', 'content', 'history_type', 'klass')
+        documents_qs = PolicyDocument.objects.filter(person_tax_year=self.object).annotate(
+            history_type=models.Value('+', output_field=models.CharField()),
+            klass=models.Value('PolicyDocument', output_field=models.CharField()),
+        ).values('uploaded_at', 'uploaded_by__username', 'id', 'description', 'history_type', 'klass')
+        ctx['objects'] = qs.union(policy_qs, person_qs, notes_qs, documents_qs, all=True).order_by('-history_date')
+        # TODO add TaxSlipGenerated
+
+        return ctx
+
+
+class PersonTaxYearHistoryDetailView(DetailView):
+    """
+    Shows a specific "version" of a person_tax_year
+    """
+    model = PersonTaxYear.history.model
+    slug_field = 'history_id'
+    template_name = 'kas/persontaxyear_detail.html'
+    context_object_name = 'person_tax_year'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(PersonTaxYearHistoryDetailView, self).get_context_data(**kwargs)
+        ctx['historical'] = True
+        return ctx
+
+
+class PolicyTaxYearHistoryListView(DetailView):
+    model = PolicyTaxYear
+    template_name = 'kas/policytaxyear_historical_list.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(PolicyTaxYearHistoryListView, self).get_context_data(**kwargs)
+        qs = self.object.history.all().annotate(
+            klass=models.Value('Policy', output_field=models.CharField()),
+        ).values('history_date', 'history_user__username', 'history_id', 'history_change_reason', 'history_type', 'klass')
+        notes_qs = Note.objects.filter(policy_tax_year=self.object).annotate(
+            history_type=models.Value('+', output_field=models.CharField()),
+            klass=models.Value('Note', output_field=models.CharField()),
+        ).values('date', 'author__username', 'id', 'content', 'history_type', 'klass')
+        documents_qs = PolicyDocument.objects.filter(policy_tax_year=self.object).annotate(
+            history_type=models.Value('+', output_field=models.CharField()),
+            klass=models.Value('PolicyDocument', output_field=models.CharField()),
+        ).values('uploaded_at', 'uploaded_by__username', 'id', 'description', 'history_type', 'klass')
+        ctx['objects'] = qs.union(notes_qs, documents_qs, all=True).order_by('-history_date')
+        return ctx
+
+
+class PolicyTaxYearHistoryDetailView(DetailView):
+    model = PolicyTaxYear.history.model
+    slug_field = 'history_id'
+    template_name = 'kas/policytaxyear_detail.html'
+    context_object_name = 'policy'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(PolicyTaxYearHistoryDetailView, self).get_context_data(**kwargs)
+        ctx['historical'] = True
+        return ctx

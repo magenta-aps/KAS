@@ -4,7 +4,8 @@ from kas.views import FrontpageView, PersonTaxYearListView, PersonTaxYearDetailV
     PolicyTaxYearDetailView, PdfDownloadView, PolicyDocumentDownloadView, SelfReportedAmountUpdateView, \
     PersonNotesAndAttachmentsView, PolicyNotesAndAttachmentsView, \
     EditAmountsUpdateView, PensionCompanySummaryFileView, PensionCompanySummaryFileDownloadView, \
-    PolicyTaxYearCreateView, ActivatePolicyTaxYearView
+    PolicyTaxYearCreateView, ActivatePolicyTaxYearView, PersonTaxYearHistoryListView, PersonTaxYearHistoryDetailView, \
+    PolicyTaxYearHistoryDetailView, PolicyTaxYearHistoryListView
 
 app_name = 'kas'
 
@@ -26,5 +27,15 @@ urlpatterns = [
     path('policy/<int:pk>/add/notes-attachments/', PolicyNotesAndAttachmentsView.as_view(),
          name='policy_add_notes_or_attachement'),
     path(r'tax_year/<int:year>/company-summary/', PensionCompanySummaryFileView.as_view(), name='policy_summary_list'),
-    path(r'tax_year/<int:year>/company-summary/<int:pk>', PensionCompanySummaryFileDownloadView.as_view(), name='policy_summary')
+    path(r'tax_year/<int:year>/company-summary/<int:pk>', PensionCompanySummaryFileDownloadView.as_view(), name='policy_summary'),
+    path('persontaxyear/<int:pk>/history/', PersonTaxYearHistoryListView.as_view(),
+         name='person_history_list'),
+    path('persontaxyear/history/<int:pk>', PersonTaxYearHistoryDetailView.as_view(),
+         name='person_history_detail'),
+    path('policytaxyear/<int:pk>/history/', PolicyTaxYearHistoryListView.as_view(),
+         name='policy_history_list'),
+    path('policytaxyear/history/<int:pk>', PolicyTaxYearHistoryDetailView.as_view(),
+         name='policy_history_detail')
+
+
 ]

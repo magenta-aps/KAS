@@ -8,20 +8,24 @@
     <li class="nav-item">
         <a class="nav-link active border border-secondary border-bottom-0" id="beregnings-tab" data-toggle="tab" href="#beregning" role="tab" aria-selected="true">{% trans ' Beregningsdetaljer' %}</a>
     </li>
+    {% if not historical %}
     <li class="nav-item">
         <a class="nav-link border border-secondary border-bottom-0" id="negativ-tab" data-toggle="tab" href="#negativ" role="tab" aria-selected="true">{% trans 'Anvendt negativt afkast' %}</a>
     </li>
     {% endif %}
-    <li class="nav-item">
-        <a class="nav-link border border-secondary border-bottom-0" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-selected="true">{% trans 'Notater' %}</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link border border-secondary border-bottom-0" id="bilag-tab" data-toggle="tab" href="#bilag" role="tab" aria-selected="false">{% trans 'Bilag' %}</a>
-    </li>
-    {% if policy_col %}
+    {% endif %}
+    {% if not historical %}
         <li class="nav-item">
-            <a class="nav-link border border-secondary border-bottom-0" id="transaction-tab" data-toggle="tab" href="#transaction" role="tab" aria-selected="false">{% trans 'Transaktioner' %}</a>
+            <a class="nav-link border border-secondary border-bottom-0" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-selected="true">{% trans 'Notater' %}</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link border border-secondary border-bottom-0" id="bilag-tab" data-toggle="tab" href="#bilag" role="tab" aria-selected="false">{% trans 'Bilag' %}</a>
+        </li>
+        {% if policy_col %}
+            <li class="nav-item">
+                <a class="nav-link border border-secondary border-bottom-0" id="transaction-tab" data-toggle="tab" href="#transaction" role="tab" aria-selected="false">{% trans 'Transaktioner' %}</a>
+            </li>
+        {% endif %}
     {% endif %}
 </ul>
 <div class="tab-content">
