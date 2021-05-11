@@ -1,13 +1,63 @@
+import re
+
 from django import forms
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from kas.forms_mixin import BootstrapForm
-from kas.models import PersonTaxYear, PolicyTaxYear, Note, PolicyDocument, PensionCompany
+from kas.models import PersonTaxYear, PolicyTaxYear, Note, PolicyDocument, PensionCompany, TaxYear
 from kas.fields import PensionCompanyChoiceField
 
 
 class PersonListFilterForm(BootstrapForm):
-    cpr = forms.CharField(label=_('Cpr'), required=False)
+
+    cpr = forms.CharField(label=_('Personnummer'), required=False)
     name = forms.CharField(label=_('Navn'), required=False)
+    year = forms.IntegerField(label=_('År'), required=False, widget=forms.Select())
+    municipality_code = forms.IntegerField(label=_('Kommunekode'), required=False)
+    municipality_name = forms.CharField(label=_('Kommunenavn'), required=False)
+    address = forms.CharField(label=_('Adresse'), required=False)
+    tax_liability = forms.NullBooleanField(
+        label=_('Skattepligt'),
+        widget=forms.Select(  # NullBooleanSelect doesn't quite give us what we need
+            choices=[(False, _('Ikke fuldt skattepligtig')), (True, _('Fuldt skattepligtig')), (None, _('Alle'))],
+        )
+    )
+    foreign_pension_notes = forms.NullBooleanField(
+        label=_('Noter om indbetaling i udlandet'),
+        widget=forms.Select(  # NullBooleanSelect doesn't quite give us what we need
+            choices=[(False, _('Har ikke noter')), (True, _('Har noter')), (None, _('Alle'))],
+        )
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(PersonListFilterForm, self).__init__(*args, **kwargs)
+        years = [tax_year.year for tax_year in TaxYear.objects.order_by('year')]
+        self.fields['year'].widget.choices = [
+            (year, year) for year in years
+        ]
+        current_year = timezone.now().year
+        self.fields['year'].initial = current_year \
+            if current_year in years \
+            else max([y for y in years if y < current_year])
+        self.fields['tax_liability'].initial = None
+        self.fields['foreign_pension_notes'].initial = None
+
+    def clean_cpr(self):
+        cpr = self.cleaned_data['cpr']
+        if not re.match(r'\d', cpr):
+            raise ValidationError(_('Ugyldigt cpr-nummer'))
+        cpr = re.sub(r'\D', '', cpr)
+        return cpr
+
+    def as_table(self):
+        return self._html_output(
+            normal_row='<tr%(html_class_attr)s><th>%(label)s</th><td>%(field)s%(help_text)s</td><td>%(errors)s</td></tr>',
+            error_row='<tr><td colspan="3">%s</td></tr>',
+            row_ender='</td></tr>',
+            help_text_html='<br /><span class="helptext">%s</span>',
+            errors_on_separate_row=False
+        )
 
 
 class PersonNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):

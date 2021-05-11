@@ -28,7 +28,7 @@
         </a>
         {% endif %}
 
-        <a class="p-2 text-muted" href="{% url 'kas:frontpage' %}">{% trans 'Forside' %}</a>
+        <a class="p-2 text-muted" href="{% url 'kas:person_search' %}">{% trans 'Find person' %}</a>
         {% if user.is_staff %}
         <a class="p-2 text-muted" href="{% url 'worker:job_list' %}">{% trans 'Jobadministration' %}</a>
         {% endif %}

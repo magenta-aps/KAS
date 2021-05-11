@@ -11,7 +11,7 @@
         <tr>
             <th></th>
             {% for year in years%}
-            <th><a href="{% url 'kas:persons_in_year' year %}">{{ year }}</a></th>
+            <th><a href="{% url 'kas:person_search' %}?year={{year}}">{{ year }}</a></th>
             {% endfor %}
         </tr>
     </thead>

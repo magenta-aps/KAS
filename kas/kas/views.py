@@ -7,12 +7,13 @@ from io import StringIO
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import TemplateView, ListView, View, UpdateView, CreateView, FormView
-from django.views.generic.detail import SingleObjectMixin, BaseDetailView, DetailView
+from django.views.generic.detail import DetailView
+from django.views.generic.detail import SingleObjectMixin, BaseDetailView
 from ipware import get_client_ip
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
@@ -26,8 +27,8 @@ from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxY
 from prisme.models import Transaction
 
 
-class FrontpageView(LoginRequiredMixin, TemplateView):
-    template_name = 'kas/frontpage.html'
+class StatisticsView(LoginRequiredMixin, TemplateView):
+    template_name = 'kas/statistics.html'
 
     def get_context_data(self, *args, **kwargs):
         result = super().get_context_data(*args, **kwargs)
@@ -79,39 +80,48 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     model = PersonTaxYear
+    form_class = PersonListFilterForm
 
-    @property
-    def back_url(self):
-        return reverse('kas:frontpage')
+    def get_form(self):
+        # Initial value for the form (such as year) doesn't get used if the form is bound
+        kwargs = {'data': self.request.GET} if self.request.GET else {}
+        return PersonListFilterForm(**kwargs)
 
     def get_queryset(self):
-        qs = super().get_queryset()
-
-        self.year = self.kwargs.get("year", None)
-
-        if not self.year:
-            raise Http404("No year specified")
-
-        filters = {'tax_year__year': self.year}
-
-        form = PersonListFilterForm(self.request.GET)
-
-        if form.is_valid():
-            if form.cleaned_data['cpr']:
-                filters['person__cpr__icontains'] = form.cleaned_data['cpr']
-            if form.cleaned_data['name']:
-                filters['person__name__icontains'] = form.cleaned_data['name']
-
+        form = self.get_form()
+        if form.is_valid() and form.has_changed():
+            qs = super().get_queryset()
+            self.year = form.cleaned_data['year']
+            # Check whether there are any fields filled out apart from 'year'
+            if len([
+                v for k, v in form.cleaned_data.items()
+                if v not in ('', None) and k not in ['year']
+            ]):
+                self.searching = True
+                qs = qs.filter(tax_year__year=self.year)
+                if form.cleaned_data['cpr']:
+                    qs = qs.filter(person__cpr__icontains=form.cleaned_data['cpr'])
+                if form.cleaned_data['name']:
+                    qs = qs.filter(person__name__icontains=form.cleaned_data['name'])
+                if form.cleaned_data['municipality_code']:
+                    qs = qs.filter(person__municipality_code=form.cleaned_data['municipality_code'])
+                if form.cleaned_data['municipality_name']:
+                    qs = qs.filter(person__municipality_name__icontains=form.cleaned_data['municipality_name'])
+                if form.cleaned_data['address']:
+                    qs = qs.filter(person__full_address__icontains=form.cleaned_data['address'])
+                if form.cleaned_data['tax_liability'] is not None:  # False is a valid value
+                    qs = qs.filter(fully_tax_liable=form.cleaned_data['tax_liability'])
+                if form.cleaned_data['foreign_pension_notes'] is not None:
+                    empty = Q(foreign_pension_notes='') | Q(foreign_pension_notes__isnull=True)
+                    if form.cleaned_data['foreign_pension_notes'] is True:
+                        qs = qs.exclude(empty)
+                    else:
+                        qs = qs.filter(empty)
+        else:
+            # Don't find anything if form is invalid or empty
+            qs = self.model.objects.none()
         self.form = form
-        qs = qs.filter(**filters)
-
         return qs
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**{
-            'back_url': self.back_url,
-            **kwargs,
-        })
 
 
 class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
@@ -232,6 +242,13 @@ class PolicyNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        ctx = super(PolicyNotesAndAttachmentsView, self).get_context_data(**kwargs)
+        ctx.update({
+            'person_tax_year': self.object
+        })
+        return ctx
 
 
 class PolicyDocumentDownloadView(LoginRequiredMixin, View):
