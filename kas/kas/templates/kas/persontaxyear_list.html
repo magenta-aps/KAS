@@ -2,43 +2,66 @@
 {% load i18n %}
 
 {% block content %}
-  <h1>List over personer i år {{view.year}}</h1>
-  <p>{% blocktrans %}I listen nedenfor kan fremsøges borgere som man ønsker at sagsbehandle for. Udfyld felterne over listen og klik på 'Søg'
-     for at filtrere listen og finde frem til specifikke borgere.{% endblocktrans %}</p>
+  <h1>{% trans 'Søgning efter personer' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
 
-  <p>{% blocktrans %}I feltet CPR kan angives et fuldt CPR-nummer eller en del af CPR-nummer.
-     Nummeret skal angives uden bindestreger eller mellemrum.{% endblocktrans %}</p>
+{% blocktrans asvar top_help %}
+I listen nedenfor kan fremsøges borgere som man ønsker at sagsbehandle for. Udfyld felterne over listen og klik på 'Søg' for at filtrere listen og finde frem til specifikke borgere.
 
-  <p>{% blocktrans %}I feltet Navn kan angives en del af navnet på en person eller det fulde navn på personen.
-     Der skelnes ikke mellem store og små bogstaver.{% endblocktrans %}</p>
+I feltet CPR kan angives et fuldt CPR-nummer eller en del af CPR-nummer. Nummeret skal angives uden bindestreger eller mellemrum.
 
-  <p>{% blocktrans %}Klik på en borger i listen for at få vist detaljer for borgeren og
-     for at få vist borgerens policer for det valgte år.{% endblocktrans %}</p>
+I feltet Navn kan angives en del af navnet på en person eller det fulde navn på personen. Der skelnes ikke mellem store og små bogstaver.
+
+Klik på en borger i listen for at få vist detaljer for borgeren og for at få vist borgerens policer for det valgte år.{% endblocktrans %}
+
+  {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
 
   <div>
-    <form action="" method="GET" class="form-inline">
-      {{ view.form }}
+    <form action="" method="GET">
+      <table>
+      {{ view.form.as_table }}
+      </table>
       <input type="submit" value="{% trans 'Søg' %}" class="btn btn-primary" />
     </form>
   </div>
 
-  <hr>
+  <hr/>
 
-  {% if personstaxyears %}
-  <ul>
-    {% for personstaxyear in personstaxyears %}
-      <li>
-        <a href="{% url 'kas:person_in_year' view.year personstaxyear.person.pk %}">{{ personstaxyear.person.name }} - {{ personstaxyear.policytaxyear_set.count }} police(r)</a>
-      </li>
-    {% endfor %}
-  </ul>
+  {% if view.form.has_changed %}
+    {% if personstaxyears %}
+    <table class="table table-striped">
+      <thead>
+      <tr>
+        <th>{% trans 'Personnummer' %}</th>
+        <th>{% trans 'Navn' %}</th>
+        <th>{% trans 'Adresse' %}</th>
+        <th>{% trans 'Kommune' %}</th>
+        <th>{% trans 'Antal policer' %}</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for person_tax_year in personstaxyears %}
+        {% with person_tax_year.person as person %}
+        {% url 'kas:person_in_year' view.year person.pk as person_url %}
+        <tr>
+          <td><a href="{{ person_url }}">{{ person.cpr }}</a></td>
+          <td><a href="{{ person_url }}">{{ person.name }}</a></td>
+          <td>{{ person.full_address }}</td>
+          <td>{{ person.municipality_name }}</td>
+          <td>{{ person_tax_year.policytaxyear_set.count|default:0 }}</td>
+        </tr>
+        {% endwith %}
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p>{% blocktrans with year=view.year %}Ingen personer fundet for {{year}} med søgekriterierne{% endblocktrans %}</p>
+    {% endif %}
   {% else %}
-    <p>Ingen personer fundet for år {{view.year}}</p>
+    <p>{% trans 'Udfyld mindst ét søgefelt' %}</p>
   {% endif %}
 
-  <hr>
+  <hr/>
 
   {% include 'includes/pager.html' %}
 
-  <hr>
 {% endblock %}

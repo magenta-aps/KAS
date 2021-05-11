@@ -5,8 +5,18 @@ input.form-control[type=checkbox] {
 ul.errorlist {
     list-style-type: none;
     padding-left: 0;
+    color: #ff0000;
 }
 
+td ul.errorlist {
+    margin-bottom: 0;
+}
+
+table.table tr td a {
+    display:block;
+    height:100%;
+    width:100%;
+}
 /* Firefox-specific beautification of select dropdown buttons - rather than have an ugly grey box, put in a nice arrow */
 
 @media screen and (min--moz-device-pixel-ratio:0) {
