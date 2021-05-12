@@ -12,7 +12,7 @@ td ul.errorlist {
     margin-bottom: 0;
 }
 
-table.table tr td a {
+table.table tr td > a:only-child {
     display:block;
     height:100%;
     width:100%;

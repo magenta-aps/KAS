@@ -206,6 +206,8 @@ class PolicyTaxYearDetailView(LoginRequiredMixin, DetailView):
         result['self_reported_amount_label'] = amount_choices_by_value[PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED]
 
         result['used_negativ_table'] = self.object.previous_year_deduction_table_data
+
+        result['used_from'] = self.object.payouts_used.order_by('used_from__person_tax_year__tax_year__year')
         return result
 
 
