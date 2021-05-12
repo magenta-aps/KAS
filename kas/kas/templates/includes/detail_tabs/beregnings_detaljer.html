@@ -1,98 +1,121 @@
 {% load i18n %}
-<table class="table table-bordered table-hover table-striped" style="width: auto;">
-    <thead>
-    <tr class="table-info">
-        <th>{% trans 'Beskrivelse' %}</th>
-        <th>{% trans 'Værdi / beløb' %}</th>
-        <th>{% trans 'Enhed' %}</th>
-        <th>{% trans 'Forklaring' %}</th>
-    </tr>
-    </thead>
-    <tbody>
+{% load l10n %}
+{% load kas_tags %}
+
+<table class="table table-bordered">
     <tr>
-        <th>{{ pension_company_amount_label }}</th>
-        <td class="text-right">{{ policy.prefilled_amount }}</td>
-        <td>{% trans 'kr' %}</td>
-        <td>{% trans 'Udfyldes fra R75' %}</td>
+        <td>
+            {{ pension_company_amount_label }}
+            {% trans 'Udfyldes fra R75' as help_text_prefilled %}
+            {% include 'includes/help_text/question_mark.html' with target_id='prefilled' right=True %}
+            {% include 'includes/help_text/collapse.html' with help_text=help_text_prefilled target_id='prefilled' %}
+        </td>
+        <td>{{ policy.prefilled_amount }}</td>
     </tr>
     <tr>
-        <th>{{ self_reported_amount_label }}</th>
-        <td class="text-right">{{ policy.self_reported_amount|default_if_none:'' }}</td>
-        <td>{% trans 'kr' %}</td>
-        <td>{% trans 'Selvangivet beløb fra borgeren' %}</td>
-    </tr>
-    <tr class="table-info">
-        <td colspan="4" class="text-center">{% blocktrans with amount=policy.get_active_amount_display %}Beløb brugt til beregning: {{ amount }}{% endblocktrans %}</td>
-    </tr>
-    <tr>
-        <th>{% trans 'Startbeløb' %}</th>
-        <td class="text-right">{{ calculation.initial_amount }}</td>
-        <td>{% trans 'kr' %}</td>
-        <td>{% blocktrans with amount=polciy.get_active_amount_display %}Beløb for hele året ({{ amount }}){% endblocktrans %}</td>
+        <td>
+            {{ self_reported_amount_label }}
+            {% trans 'Selvangivet beløb fra borgeren' as help_text_self_reported %}
+            {% include 'includes/help_text/question_mark.html' with target_id='self_reported' right=True %}
+            {% include 'includes/help_text/collapse.html' with help_text=help_text_self_reported target_id='self_reported' %}
+        </td>
+        <td>{{ policy.self_reported_amount|default_if_none:'' }}</td>
     </tr>
     <tr>
-        <th>{% blocktrans with year=policy.year %}Antal dage i {{ year }}{% endblocktrans %}</th>
-        <td class="text-right">{{ calculation.days_in_year }}</td>
-        <td>{% trans 'dage' %}</td>
-        <td></td>
+        <td>{% blocktrans with amount=policy.get_active_amount_display %}Kapitalafkast ({{ amount }}){% endblocktrans %}</td>
+        <th>{{ policy.get_assessed_amount }}</th>
     </tr>
     <tr>
-        <th>{% blocktrans with year=policy.year %}Borgerens skattepligtige dage i {{ year }}{% endblocktrans %}</th>
-        <td class="text-right">{{  calculation.taxable_days_in_year }}</td>
-        <td>{% trans 'dage' %}</td>
-        <td></td>
+        <td>
+            {% blocktrans with taxable_days=calculation.taxable_days_in_year total_days=calculation.days_in_year factor=calculation.tax_days_adjust_factor|percent:1 %}
+                Justeret for antal skattepligtsdage i året ({{taxable_days}} af {{total_days}} dage = {{ factor }})
+            {% endblocktrans %}
+            {% blocktrans asvar help_text_year_adjusted with amount=calculation.initial_amount year=policy.year taxable_days=calculation.taxable_days_in_year days=calculation.days_in_year %}
+                Beløb for hele året ({{ amount }}) &times; skattepligtsdage ({{ taxable_days }}) / dage i {{ year }} ({{ days }})
+            {% endblocktrans %}
+            {% include 'includes/help_text/question_mark.html' with target_id='year_adjusted' right=True %}
+            {% include 'includes/help_text/collapse.html' with help_text=help_text_year_adjusted target_id='year_adjusted' %}
+        </td>
+        <td>{{ calculation.year_adjusted_amount }}</td>
+    </tr>
+
+    {% if calculation.year_adjusted_amount <= 0 %}
+    <tr>
+        <td>
+            {% blocktrans %}Negativt afkast til fremførsel{% endblocktrans %}
+            {% blocktrans asvar help_text_negative with amount=calculation.year_adjusted_amount|negative %}
+            {{ amount }} kr fremføres til modregning i fremtidige opgørelser
+            {% endblocktrans %}
+            {% include 'includes/help_text/question_mark.html' with target_id='deduction_future' right=True %}
+            {% include 'includes/help_text/collapse.html' with help_text=help_text_negative target_id='deduction_future' %}
+        </td>
+        <th>{{ calculation.year_adjusted_amount|negative }}</th>
+    </tr>
+    {% else %}
+
+
+    {% for deduction in used_from %}
+    <tr>
+        <td>
+            {% blocktrans with year=deduction.from_year %}Modregning af tidligere negativt kapitalafkast ({{year}}){% endblocktrans %}
+            {% blocktrans asvar help_text_deduction with year=deduction.from_year amount=deduction.transferred_negative_payout|negative %}
+            Der er modregnes kr {{ amount }} i negativt kapitalafkast fra {{ year }}
+            {% endblocktrans %}
+            {% include 'includes/help_text/question_mark.html' with target_id='deduction'|append:forloop.counter right=True %}
+            {% include 'includes/help_text/collapse.html' with help_text=help_text_deduction target_id='deduction'|append:forloop.counter %}
+        </td>
+        <td>{{ deduction.transferred_negative_payout|negative }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td>
+            {% blocktrans %}Modregning af tidligere negativt kapitalafkast{% endblocktrans %}
+            {% blocktrans asvar help_text_deduction %}
+            Der er ikke noget tilgængeligt negativt kapitalafkast til modregning
+            {% endblocktrans %}
+            {% include 'includes/help_text/question_mark.html' with target_id='deduction0' right=True %}
+            {% include 'includes/help_text/collapse.html' with help_text=help_text_deduction target_id='deduction0' %}
+        </td>
+        <td>0</td>
+    </tr>
+    {% endfor %}
+
+    <tr>
+        <td>
+            {% trans 'Beskatningsgrundlag (kapitalafkast efter modregning)' %}
+            {% blocktrans asvar help_text_taxable with amount=calculation.year_adjusted_amount return=calculation.used_negative_return %}
+                Beløb justeret for dage ({{ amount }}) - anvendt negativt afkast ({{ return }})
+            {% endblocktrans %}
+            {% include 'includes/help_text/question_mark.html' with target_id='taxable_amount' right=True %}
+            {% include 'includes/help_text/collapse.html' with help_text=help_text_taxable target_id='taxable_amount' %}
+        </td>
+        <td>{{ calculation.taxable_amount }}</td>
     </tr>
     <tr>
-        <th>{% trans 'Justeringsfaktor for antal skattepligtige dage' %}</th>
-        <td class="text-right">{{ calculation.tax_days_adjust_factor }}</td>
-        <td></td>
-        <td> {% blocktrans with year=policy.year taxable_days=calculation.taxable_days_in_year days=calculation.days_in_year %}Skattepligtige dage ({{ taxable_days }}) / Dage i {{ year }} ({{ days }}){% endblocktrans %}</td>
+        <td>
+            {% trans 'Kapitalafkastskat (15,3% af beskatningsgrundlag)' %}
+            {% blocktrans asvar help_text_full_tax with amount=calculation.taxable_amount %}
+                15,3% af beskatningsgrundlag efter justering for negativt afkast (0,153 &times; {{ amount }})
+            {% endblocktrans %}
+            {% include 'includes/help_text/question_mark.html' with target_id='full_tax' right=True %}
+            {% include 'includes/help_text/collapse.html' with help_text=help_text_full_tax target_id='full_tax' %}
+        </td>
+        <td>{{ calculation.full_tax }}</td>
     </tr>
     <tr>
-        <th>{% trans 'Beløb justeret for år' %}</th>
-        <td class="text-right">{{ calculation.year_adjusted_amount }}</td>
-        <td>{% trans 'kr' %}</td>
-        <td>{% blocktrans with amount=calculation.initial_amount tax_days=calculation.tax_days_adjust_factor %}Beløb for hele året ({{ amount }}) &times; Justeringsfaktor for antal dage ({{ tax_days }}){% endblocktrans %}</td>
+        <td>{% trans 'Nedslag for betalt skat i udlandet' %}</td>
+        <td>{{ calculation.foreign_paid_amount|negative }}</td>
     </tr>
     <tr>
-        <th>{% trans 'Tilgængeligt negativt afkast' %}</th>
-        <td class="text-right">{{ calculation.available_negative_return }}</td>
-        <td>{% trans 'kr' %}</td>
-        <td>{% trans 'Se tabel nedenfor' %}</td>
+        <td>
+            {% trans 'Kapitalafkastskat' %}
+            {% blocktrans asvar help_text_with_deductions with tax=calculation.full_tax paid=calculation.foreign_paid_amount %}
+                Skat før fraregning af skat betalt i udlandet ({{ tax }}) - Skat betalt i udlandet ({{ paid }})
+            {% endblocktrans %}
+            {% include 'includes/help_text/question_mark.html' with target_id='tax_with_deductions' right=True %}
+            {% include 'includes/help_text/collapse.html' with help_text=help_text_with_deductions target_id='tax_with_deductions' %}
+        </td>
+        <th>{{ calculation.tax_with_deductions }}</th>
     </tr>
-    <tr>
-        <th>{% trans 'Anvendt negativt afkast' %}</th>
-        <td class="text-right">{{ calculation.used_negative_return }}</td>
-        <td>{% trans 'kr' %}</td>
-        <td>{% trans 'Maksimalt det fulde skattepligtige beløb' %}</td>
-    </tr>
-    <tr>
-        <th>{% trans 'Skattegrundlag efter justering for negativt afkast' %}</th>
-        <td class="text-right">{{ calculation.taxable_amount }}</td>
-        <td>{% trans 'kr' %}</td>
-        <td>{% blocktrans with amount=calculation.year_adjusted_amount return=calculation.used_negative_return %}Beløb justeret for dage ({{ amount }}) - anvendt negativt afkast ({{ return }}){% endblocktrans %}</td>
-    </tr>
-    <tr>
-        <th>{% trans 'Skat før fraregning af skat betalt i udlandet' %}</th>
-        <td class="text-right">{{ calculation.full_tax }}</td>
-        <td>{% trans 'kr' %}</td>
-        <td>{% blocktrans with amount=calculation.taxable_amount %}15,3% af skattegrundlag efter justering for negativt afkast ({{ amount }}){% endblocktrans %}</td>
-    </tr>
-    <tr>
-        <th>{% trans 'Skat betalt i udlandet' %}</th>
-        <td class="text-right">{{ calculation.foreign_paid_amount }}</td>
-        <td>{% trans 'kr' %}</td>
-        <td>{% trans 'Selvangivet beløb' %}</td>
-    </tr>
-    <tr>
-        <th>{% trans 'Skat fratrukket betaling i udland' %}</th>
-        <td class="text-right">{{ calculation.tax_with_deductions }}</td>
-        <td>{% trans 'kr' %}</td>
-        <td>{% blocktrans with tax=calculation.full_tax paid=calculation.foreign_paid_amount %}Skat før fraregning af skat betalt i udlandet ({{ tax }}) - Skat betalt i udlandet ({{ paid }}){% endblocktrans %}</td>
-    </tr>
-    <th>{% trans 'I alt til betaling' %}</th>
-    <td class="text-right">{{ calculation.tax_with_deductions }}</td>
-    <td>{% trans 'kr' %}</td>
-    <td></td>
-    </tbody>
+    {% endif %}
 </table>
