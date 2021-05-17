@@ -410,7 +410,7 @@ class ActivatePolicyTaxYearView(LoginRequiredMixin, UpdateView):
         return reverse('kas:policy_detail', kwargs=self.kwargs)
 
 
-class PersonTaxYearHistoryListView(DetailView):
+class PersonTaxYearHistoryListView(LoginRequiredMixin, DetailView):
     """
     shows all changes related to a person tax year
     """
@@ -444,7 +444,7 @@ class PersonTaxYearHistoryListView(DetailView):
         return ctx
 
 
-class PersonTaxYearHistoryDetailView(DetailView):
+class PersonTaxYearHistoryDetailView(LoginRequiredMixin, DetailView):
     """
     Shows a specific "version" of a person_tax_year
     """
@@ -459,7 +459,7 @@ class PersonTaxYearHistoryDetailView(DetailView):
         return ctx
 
 
-class PolicyTaxYearHistoryListView(DetailView):
+class PolicyTaxYearHistoryListView(LoginRequiredMixin, DetailView):
     model = PolicyTaxYear
     template_name = 'kas/policytaxyear_historical_list.html'
 
@@ -480,7 +480,7 @@ class PolicyTaxYearHistoryListView(DetailView):
         return ctx
 
 
-class PolicyTaxYearHistoryDetailView(DetailView):
+class PolicyTaxYearHistoryDetailView(LoginRequiredMixin, DetailView):
     model = PolicyTaxYear.history.model
     slug_field = 'history_id'
     template_name = 'kas/policytaxyear_detail.html'
