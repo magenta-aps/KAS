@@ -72,6 +72,14 @@
         <th>{% blocktrans with year=view.year %}Skattedage i {{ year }}{% endblocktrans %}</th>
         <td>{{ person_tax_year.number_of_days }}</td>
       </tr>
+      <tr>
+          <th>{% trans 'Slutlignet' %}</th>
+          <td>{% if person_tax_year.slutlignet %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}</td>
+      </tr>
+      <tr>
+          <th>{% trans 'Kræver efterbehandling' %}</th>
+          <td>{% if person_tax_year.efterbehandling %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}</td>
+      </tr>
     </tbody>
     {% endwith %}
   </table>

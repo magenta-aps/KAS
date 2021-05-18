@@ -243,14 +243,8 @@ class PolicyNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
+        kwargs['tax_year_periode'] = self.object.tax_year.periode
         return kwargs
-
-    def get_context_data(self, **kwargs):
-        ctx = super(PolicyNotesAndAttachmentsView, self).get_context_data(**kwargs)
-        ctx.update({
-            'person_tax_year': self.object
-        })
-        return ctx
 
 
 class PolicyDocumentDownloadView(LoginRequiredMixin, View):
@@ -306,9 +300,11 @@ class PdfDownloadView(LoginRequiredMixin, SingleObjectMixin, View):
 
 
 class SelfReportedAmountUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
-    model = PolicyTaxYear
     form_class = SelfReportedAmountForm
     template_name = 'kas/selfreportedamount_form.html'
+
+    def get_queryset(self):
+        return PolicyTaxYear.objects.filter(person_tax_year__tax_year__periode='selvangivelse')
 
 
 class EditAmountsUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
@@ -316,8 +312,7 @@ class EditAmountsUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDo
     template_name = 'kas/edit_amounts_form.html'
 
     def get_queryset(self):
-        #  TODO add filtering for when we know the critiaer for when you should be able to use this form
-        return PolicyTaxYear.objects.all()
+        return PolicyTaxYear.objects.filter(person_tax_year__tax_year__periode__in=['ligning', 'efterbehandling'])
 
     def get_form_kwargs(self):
         if self.object.assessed_amount is None:
