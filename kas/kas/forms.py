@@ -104,7 +104,7 @@ class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
         super().__init__(**kwargs)
         if periode in ('ligning', 'efterbehandling'):
             # add slutlignet checkbox
-            self.fields['slutlignet'] = forms.BooleanField(required=False, label=_('Markere som slutlignet'),
+            self.fields['slutlignet'] = forms.BooleanField(required=False, label=_('Markér som slutlignet'),
                                                            widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
 
     def save(self, commit=True):

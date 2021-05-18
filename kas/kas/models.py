@@ -108,7 +108,7 @@ class PensionCompany(models.Model):
 
 tax_year_periode_choices = (
     ('selvangivelse', _('Selvangivelsesperiode')),
-    ('ligning', _('Ligningsperiod')),
+    ('ligning', _('Ligningsperiode')),
     ('efterbehandling', _('Efterbehandlingsperiode'))
 )
 
