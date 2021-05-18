@@ -29,7 +29,7 @@
                     {% if historical %}
                         {{ person.cpr }} / {{ person.name }}
                     {% else %}
-                        <a href="{% url 'kas:person_in_year' policy.person_tax_year.tax_year.year person.pk %}"> {{ person.cpr }} / {{ person.name }}</a><
+                        <a href="{% url 'kas:person_in_year' policy.person_tax_year.tax_year.year person.pk %}"> {{ person.cpr }} / {{ person.name }}</a>
                     {% endif %}
                 </td>
             </tr>
@@ -73,10 +73,22 @@
                 <td><a href="#beregnings-tab">{{ calculation.tax_with_deductions }} {% trans 'kr' %}</a></td>
             </tr>
             <tr>
+                <th>{% trans 'Slutlignet' %}</th>
+                <td>
+                    {% if policy.slutlignet %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>{% trans 'Kræver efterbehandling' %}</th>
+                <td>
+                    {% if policy.efterbehandling %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}
+                </td>
+            </tr>
+            <tr>
                 <th>{% trans 'Aktiv' %}</th>
-                <th>
+                <td>
                     {% if policy.active %}<span>{% trans 'Ja' %}</span>{% else %}<span style="color:red">{% trans 'Nej' %}</span>{% endif %}
-                </th>
+                </td>
             </tr>
             </tbody>
         {% endwith %}
@@ -89,8 +101,11 @@
             <legend  class="w-auto">{% trans 'Handlinger' %}</legend>
             <a class="btn btn-info" href="{% url 'kas:policy_add_notes_or_attachement' policy.pk %}">{% trans 'Tilføj bilag/notater' %}</a>
             {# TODO figure out when the button needs to be enabled/disabled. #}
-            <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% trans 'Ret selvangivet beløb' %}</a>
-            <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% trans 'Ret beløb' %}</a>
+            {% if policy.person_tax_year.tax_year.year_part == 'selvangivelse' %}
+                <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% trans 'Ret selvangivet beløb' %}</a>
+            {% else %}
+                <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% trans 'Ret beløb' %}</a>
+            {% endif %}
             {% if policy.active %}
                 <button type="button" class="btn btn-danger" id="deactivate" data-toggle="modal" data-target="#deactivateModal">{% trans 'Afregistrer' %}</button>
             {% else %}

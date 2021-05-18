@@ -106,13 +106,20 @@ class PensionCompany(models.Model):
         return f"{self.__class__.__name__}(name={self.name}, res={self.res})"
 
 
+tax_year_part_year_choices = (
+    ('selvangivelse', _('Selvangivelsesperiode')),
+    ('ligning', _('Ligningsperiode')),
+    ('efterbehandling', _('Efterbehandlingsperiode'))
+)
+
+
 class TaxYear(models.Model):
 
     class Meta:
         ordering = ['-year']
 
     year = models.IntegerField(
-        db_index=True,
+        db_index=True,  # This should most likely be removed unless there is a point in having 2 exact same indices?
         verbose_name=_('Skatteår'),
         help_text=_('Skatteår'),
         unique=True,
@@ -120,6 +127,7 @@ class TaxYear(models.Model):
         blank=False,
         validators=(MinValueValidator(limit_value=2000),)
     )
+    year_part = models.TextField(choices=tax_year_part_year_choices, default='selvangivelse')
 
     @property
     def is_leap_year(self):
@@ -309,6 +317,14 @@ class PersonTaxYear(HistoryMixin, models.Model):
         self.fully_tax_liable = fully_tax_liable
         self.save()
 
+    @property
+    def slutlignet(self):
+        return not self.policytaxyear_set.filter(slutlignet=False).exists()
+
+    @property
+    def efterbehandling(self):
+        return self.policytaxyear_set.filter(efterbehandling=True).exists()
+
     def __str__(self):
         return f"{self.__class__.__name__}(cpr={self.person.cpr}, year={self.tax_year.year})"
 
@@ -471,6 +487,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         verbose_name=_('Aktiv'),
         default=True,
     )
+
+    slutlignet = models.BooleanField(verbose_name=_('Slutlignet'), default=False)
+    efterbehandling = models.BooleanField(verbose_name=_('Kræver efterbehandling'), default=False)
 
     @classmethod
     def perform_calculation(

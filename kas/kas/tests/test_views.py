@@ -125,6 +125,8 @@ class SelfReportedAmountUpdateViewTestCase(BaseTestCase):
 class EditAmountsUpdateViewTestCase(BaseTestCase):
     def setUp(self) -> None:
         super(EditAmountsUpdateViewTestCase, self).setUp()
+        self.tax_year.year_part = 'ligning'
+        self.tax_year.save()
         self.client.login(username=self.username, password=self.password)
 
     def test_not_logged_in(self):

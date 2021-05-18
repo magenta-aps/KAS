@@ -24,5 +24,17 @@
             {{ form.attachment }}
         </div>
     </div>
-    <button type="submit" class="btn btn-primary mt-2 mb-5">{% trans 'Gem' %}</button>
+    {% if form.slutlignet %}
+        <div class="form-row">
+            <div class="form-check mt-3 ml-auto">
+                {{ form.slutlignet }}
+                <label class="form-check-label">{{ form.slutlignet.label }}</label>
+            </div>
+        </div>
+    {% endif %}
+    <div class="form-row">
+        <div class="ml-auto"></div>
+            <button type="submit" class="btn btn-success mt-2 mb-5">{% trans 'Gem' %}</button>
+        </div>
+    </div>
 </form>
