@@ -101,7 +101,7 @@
             <legend  class="w-auto">{% trans 'Handlinger' %}</legend>
             <a class="btn btn-info" href="{% url 'kas:policy_add_notes_or_attachement' policy.pk %}">{% trans 'Tilføj bilag/notater' %}</a>
             {# TODO figure out when the button needs to be enabled/disabled. #}
-            {% if policy.person_tax_year.tax_year.periode == 'selvangivelse' %}
+            {% if policy.person_tax_year.tax_year.year_part == 'selvangivelse' %}
                 <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% trans 'Ret selvangivet beløb' %}</a>
             {% else %}
                 <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% trans 'Ret beløb' %}</a>

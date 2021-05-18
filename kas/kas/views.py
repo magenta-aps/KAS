@@ -243,7 +243,7 @@ class PolicyNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
-        kwargs['tax_year_periode'] = self.object.tax_year.periode
+        kwargs['year_part'] = self.object.tax_year.year_part
         return kwargs
 
 
@@ -304,7 +304,7 @@ class SelfReportedAmountUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNot
     template_name = 'kas/selfreportedamount_form.html'
 
     def get_queryset(self):
-        return PolicyTaxYear.objects.filter(person_tax_year__tax_year__periode='selvangivelse')
+        return PolicyTaxYear.objects.filter(person_tax_year__tax_year__year_part='selvangivelse')
 
 
 class EditAmountsUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
@@ -312,7 +312,7 @@ class EditAmountsUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDo
     template_name = 'kas/edit_amounts_form.html'
 
     def get_queryset(self):
-        return PolicyTaxYear.objects.filter(person_tax_year__tax_year__periode__in=['ligning', 'efterbehandling'])
+        return PolicyTaxYear.objects.filter(person_tax_year__tax_year__year_part__in=['ligning', 'efterbehandling'])
 
     def get_form_kwargs(self):
         if self.object.assessed_amount is None:

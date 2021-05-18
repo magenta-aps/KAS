@@ -106,7 +106,7 @@ class PensionCompany(models.Model):
         return f"{self.__class__.__name__}(name={self.name}, res={self.res})"
 
 
-tax_year_periode_choices = (
+tax_year_part_year_choices = (
     ('selvangivelse', _('Selvangivelsesperiode')),
     ('ligning', _('Ligningsperiode')),
     ('efterbehandling', _('Efterbehandlingsperiode'))
@@ -127,7 +127,7 @@ class TaxYear(models.Model):
         blank=False,
         validators=(MinValueValidator(limit_value=2000),)
     )
-    periode = models.TextField(choices=tax_year_periode_choices, default='selvangivelse')
+    year_part = models.TextField(choices=tax_year_part_year_choices, default='selvangivelse')
 
     @property
     def is_leap_year(self):

@@ -100,9 +100,9 @@ class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
 
     def __init__(self, **kwargs):
         self.user = kwargs.pop('user')
-        periode = kwargs.pop('tax_year_periode')
+        year_part = kwargs.pop('year_part')
         super().__init__(**kwargs)
-        if periode in ('ligning', 'efterbehandling'):
+        if year_part in ('ligning', 'efterbehandling'):
             # add slutlignet checkbox
             self.fields['slutlignet'] = forms.BooleanField(required=False, label=_('Markér som slutlignet'),
                                                            widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
