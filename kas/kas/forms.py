@@ -45,7 +45,7 @@ class PersonListFilterForm(BootstrapForm):
 
     def clean_cpr(self):
         cpr = self.cleaned_data['cpr']
-        if not re.match(r'\d', cpr):
+        if cpr and not re.match(r'\d', cpr):
             raise ValidationError(_('Ugyldigt cpr-nummer'))
         cpr = re.sub(r'\D', '', cpr)
         return cpr

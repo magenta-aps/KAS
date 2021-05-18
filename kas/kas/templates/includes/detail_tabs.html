@@ -2,7 +2,7 @@
 <ul class="nav nav-tabs border-0" role="tablist">
     {% if policy_col %}
     <li class="nav-item">
-        <a class="nav-link active border border-secondary border-bottom-0" id="notes-tab" data-toggle="tab" href="#policer" role="tab" aria-selected="true">{% trans 'Policer' %}</a>
+        <a class="nav-link active border border-secondary border-bottom-0" id="policer-tab" data-toggle="tab" href="#policer" role="tab" aria-selected="true">{% trans 'Policer' %}</a>
     </li>
     {% else %}
     <li class="nav-item">
@@ -22,6 +22,9 @@
             <a class="nav-link border border-secondary border-bottom-0" id="bilag-tab" data-toggle="tab" href="#bilag" role="tab" aria-selected="false">{% trans 'Bilag' %}</a>
         </li>
         {% if policy_col %}
+            <li class="nav-item">
+                <a class="nav-link border border-secondary border-bottom-0" id="udlandsnoter-tab" data-toggle="tab" href="#udlandsnoter" role="tab" aria-selected="false">{% trans 'Notater om betaling i udlandet' %}</a>
+            </li>
             <li class="nav-item">
                 <a class="nav-link border border-secondary border-bottom-0" id="transaction-tab" data-toggle="tab" href="#transaction" role="tab" aria-selected="false">{% trans 'Transaktioner' %}</a>
             </li>
@@ -48,6 +51,9 @@
         {% include 'includes/detail_tabs/attachments.html' with attachments=attachments policy_col=policy_col only %}
     </div>
     {% if policy_col %}
+        <div id="udlandsnoter" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="udlandsnoter-tab">
+            {% include 'includes/detail_tabs/foreign_notes.html' %}
+        </div>
         <div id="transaction" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="trans-tab">
             {% include 'includes/detail_tabs/transactions.html' with transactions=transactions only %}
         </div>
