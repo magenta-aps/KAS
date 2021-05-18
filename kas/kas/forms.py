@@ -93,20 +93,19 @@ class PersonNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
 
 class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
     attachment = forms.FileField(required=False)
-    attachment_description = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': _('Fil-beskrivelse')}))
+    attachment_description = forms.CharField(required=False,
+                                             widget=forms.TextInput(attrs={'placeholder': _('Fil-beskrivelse')}))
+    note = forms.CharField(widget=forms.Textarea(attrs={'placeholder': _('Nyt notat')}),
+                           required=False)
 
-    class Meta:
-        model = PolicyTaxYear
-        fields = []
-
-    def __init__(self, user=None, **kwargs):
+    def __init__(self, **kwargs):
+        self.user = kwargs.pop('user')
+        periode = kwargs.pop('tax_year_periode')
         super().__init__(**kwargs)
-        self.user = user
-
-    note = forms.CharField(
-        widget=forms.Textarea(attrs={'placeholder': _('Nyt notat')}),
-        required=False,
-    )
+        if periode in ('ligning', 'efterbehandling'):
+            # add slutlignet checkbox
+            self.fields['slutlignet'] = forms.BooleanField(required=False, label=_('Markere som slutlignet'),
+                                                            widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
 
     def save(self, commit=True):
         instance = super().save(commit)
@@ -125,6 +124,10 @@ class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
                                           uploaded_by=self.user,
                                           file=self.cleaned_data['attachment'])
         return instance
+
+    class Meta:
+        model = PolicyTaxYear
+        fields = ['slutlignet']
 
 
 class PolicyTaxYearActivationForm(forms.ModelForm):
@@ -169,7 +172,7 @@ class EditAmountsUpdateFrom(forms.ModelForm, BootstrapForm):
 
     class Meta:
         model = PolicyTaxYear
-        fields = ('adjusted_r75_amount', 'self_reported_amount', 'assessed_amount')
+        fields = ('adjusted_r75_amount', 'self_reported_amount', 'assessed_amount', 'slutlignet')
 
 
 class PensionCompanySummaryFileForm(BootstrapForm):
