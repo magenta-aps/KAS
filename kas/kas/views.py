@@ -17,12 +17,13 @@ from django.views.generic.detail import SingleObjectMixin, BaseDetailView
 from ipware import get_client_ip
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
-from kas.forms import PersonListFilterForm, SelfReportedAmountForm, \
-    EditAmountsUpdateFrom, PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, \
+from kas.forms import PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, \
     PolicyTaxYearActivationForm
+from kas.forms import PersonListFilterForm, SelfReportedAmountForm, \
+    EditAmountsUpdateFrom
 from kas.forms import PolicyNotesAndAttachmentForm, PersonNotesAndAttachmentForm
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note
-from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument
+from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
 from prisme.models import Transaction
 
@@ -485,3 +486,16 @@ class PolicyTaxYearHistoryDetailView(LoginRequiredMixin, DetailView):
         ctx = super(PolicyTaxYearHistoryDetailView, self).get_context_data(**kwargs)
         ctx['historical'] = True
         return ctx
+
+
+class FinalSettlementDownloadView(LoginRequiredMixin, SingleObjectMixin, View):
+    slug_field = 'uuid'
+    slug_url_kwarg = 'uuid'
+    model = FinalSettlement
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        response = HttpResponse(self.object.pdf.read(), content_type='application/pdf')
+        response['Content-Disposition'] = "attachment; filename={year}_{cpr}.pdf".format(
+            year=self.object.person_tax_year.tax_year.year, cpr=self.object.person_tax_year.person.cpr)
+        return response

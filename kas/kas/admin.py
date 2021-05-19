@@ -3,6 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
 
+from kas.models import FinalSettlement
 from kas.models import PensionCompany, TaxYear, Person, PersonTaxYear, PolicyTaxYear, PolicyDocument, TaxSlipGenerated
 
 
@@ -85,3 +86,6 @@ class TaxSlipGeneratedAdmin(admin.ModelAdmin):
 
 
 admin.site.register(TaxSlipGenerated, TaxSlipGeneratedAdmin)
+
+
+admin.site.register(FinalSettlement)

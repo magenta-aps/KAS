@@ -472,11 +472,12 @@ class TaxPDF(FPDF):
     def write_tax_slip_to_disk(self, path):
         self.output(path, 'F')
 
-    def perform_complete_write_of_one_person_tax_year(self, person_tax_year):
+    def perform_complete_write_of_one_person_tax_year(self, person_tax_year, title):
         """
         Calling this method appends reportcontent to the pdf-file in progress, and saves the result to person_tax_year
         :param destination_path:
         :param person_tax_year:
+        :param title:
         :return:
         """
         tax_year = person_tax_year.tax_year.year
@@ -531,7 +532,7 @@ class TaxPDF(FPDF):
         self.print_tax_slip('gl')
         self.print_tax_slip('dk')
 
-        ts = TaxSlipGenerated(persontaxyear=person_tax_year)
+        ts = TaxSlipGenerated(persontaxyear=person_tax_year, title=title)
         ts.file.save(content=ContentFile(self.output(dest='S').encode('latin-1')), name=policy_file_name)
         person_tax_year.tax_slip = ts
         person_tax_year.save()
@@ -539,7 +540,7 @@ class TaxPDF(FPDF):
 
 class TaxSlipHandling(FPDF):
 
-    def perform_complete_write_of_one_tax_year(self, tax_year):
+    def perform_complete_write_of_one_tax_year(self, tax_year, title):
 
         list_of_person_tax_year = PersonTaxYear.objects.filter(
             tax_year__year=tax_year
@@ -547,4 +548,4 @@ class TaxSlipHandling(FPDF):
 
         for person_tax_year in list_of_person_tax_year:
             pdf_document = TaxPDF()
-            pdf_document.perform_complete_write_of_one_person_tax_year(person_tax_year=person_tax_year)
+            pdf_document.perform_complete_write_of_one_person_tax_year(person_tax_year=person_tax_year, title=title)

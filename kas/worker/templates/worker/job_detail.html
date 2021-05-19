@@ -32,7 +32,9 @@
     <tr>
         <th>{% trans 'Opsummering' %}</th>
         <td class="job-summary">
-            {% include object.job_type_dict.result_template with result=object.result %}
+            {% if object.job_type_dict.result_template %}
+                {% include object.job_type_dict.result_template with result=object.result %}
+            {% endif %}
         </td>
     </tr>
     {% elif object.status == 'started' %}

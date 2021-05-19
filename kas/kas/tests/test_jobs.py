@@ -125,8 +125,8 @@ class JobsTest(TransactionTestCase):
                                       created_by=self.user)
 
         self.assertEqual(Job.objects.filter(parent=parent_job).count(), 1)
-        # all slips where marked as sent
-        self.assertEqual(TaxSlipGenerated.objects.filter(status='sent').count(), 7)
+        # all slips where marked as send
+        self.assertEqual(TaxSlipGenerated.objects.filter(status='send').count(), 7)
 
     @patch.object(EboksClient, 'get_recipient_status')
     @patch.object(EboksClient, 'send_message')
@@ -142,4 +142,4 @@ class JobsTest(TransactionTestCase):
                                       job_kwargs=self.job_kwargs,
                                       created_by=self.user)
         self.assertEqual(Job.objects.filter(parent=parent_job).count(), 4)  # 4 jobs should have been started
-        self.assertEqual(TaxSlipGenerated.objects.filter(status='sent').count(), 7)
+        self.assertEqual(TaxSlipGenerated.objects.filter(status='send').count(), 7)
