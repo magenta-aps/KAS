@@ -1,26 +1,26 @@
 # -*- coding: utf-8 -*-
+import base64
+from time import sleep
+
 from django.conf import settings
 from django.db import transaction
 from django.db.models import IntegerField, Sum
 from django.db.models.functions import Cast
 from django.utils import timezone
+from requests.exceptions import HTTPError, ConnectionError
+from rq import get_current_job
+
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension
 from eskat.models import MockModels, EskatModels
 from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.management.commands.create_initial_years import Command as CreateInitialYears
 from kas.management.commands.import_default_pension_companies import Command as CreateInitialPensionComanies
-from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated, PreviousYearNegativePayout
-from requests.exceptions import HTTPError, ConnectionError
-from rq import get_current_job
-from time import sleep
-
-from kas.reportgeneration.kas_report import TaxPDF
-from worker.models import job_decorator, Job
-from worker.job_registry import get_job_types, resolve_job_function
-
-import base64
-
+from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated, \
+    PreviousYearNegativePayout, FinalSettlement
 from kas.models import PersonTaxYearCensus
+from kas.reportgeneration.kas_report import TaxPDF
+from worker.job_registry import get_job_types, resolve_job_function
+from worker.models import job_decorator, Job
 
 
 @job_decorator
@@ -224,7 +224,7 @@ def generate_reports_for_year(job):
     total_count = qs.count()
     for i, person_tax_year in enumerate(qs.iterator(), 1):
         pdf_generator = TaxPDF()  # construct a new pdf generator everytime to start a new pdf file
-        pdf_generator.perform_complete_write_of_one_person_tax_year(person_tax_year)
+        pdf_generator.perform_complete_write_of_one_person_tax_year(person_tax_year, title=job.arguments['title'])
         job.set_progress(i, total_count)
 
 
@@ -235,23 +235,19 @@ def chunks(lst, size):
 
 
 def update_status_for_pending_dispatches(eboks_client, pending_messages):
-    for message_id_chunk in chunks(list(pending_messages.keys()), size=10):
+    for message_id_chunk in chunks(list(pending_messages.keys()), size=50):
         # Send up to 50 message_ids to get status information for
         r = eboks_client.get_recipient_status(message_id_chunk)
         for message in r.json():
             # we only use 1 recipient
+
             recipient = message['recipients'][0]
             if message['message_id'] in pending_messages and recipient['post_processing_status'] != 'pending':
                 # if state change update it
-                slip = pending_messages[message['message_id']]
-                slip.post_processing_status = recipient['post_processing_status']
-                if recipient['post_processing_status'] in ('address resolved', 'remote printed'):
-                    # mark the message as sent when post processing is done
-                    slip.status = 'sent'
-                elif recipient['post_processing_status'] == 'address not found':
-                    # if we could not find an address mark it as failed.
-                    slip.status = 'failed'
-                slip.save()
+                message = pending_messages[message['message_id']]
+                message.post_processing_status = recipient['post_processing_status']
+                message.status = 'send'
+                message.save(update_fields=['post_processing_status', 'status'])
 
 
 def dispatch_tax_year():
@@ -288,8 +284,7 @@ def mark_parent_job_as_failed(child_job, progress=None):
 def dispatch_eboks_tax_slips(job):
     from django.conf import settings
     dispatch_page_size = settings.EBOKS['dispatch_bulk_size']
-    title = job.parent.arguments['title']
-    generator = EboksDispatchGenerator.from_settings(title=title)
+    generator = EboksDispatchGenerator.from_settings()
     client = EboksClient.from_settings()
     i = 1
     has_more = False
@@ -305,44 +300,28 @@ def dispatch_eboks_tax_slips(job):
             message_id = client.get_message_id()
             slip.file.open(mode='rb')
             try:
-                resp = client.send_message(message=generator.generate_dispatch(slip.persontaxyear.person.cpr,
+                resp = client.send_message(message=generator.generate_dispatch(slip.title,
+                                                                               slip.persontaxyear.person.cpr,
                                                                                pdf_data=base64.b64encode(slip.file.read())),
                                            message_id=message_id)
-            except ConnectionError:
-                job.result = {'error': 'ConnectionError'}
+            except (ConnectionError, HTTPError) as e:
                 job.status = 'failed'
-                job.save(update_fields=['status', 'result'])
-                mark_parent_job_as_failed(job)
-                break
-            except HTTPError as e:
-                error = {'error': 'HTTPError'}
-                # get json response or fallback to text response
-                if e.response is not None:
-                    status_code = e.response.status_code
-                    try:
-                        error = {'status_code': status_code, 'error': e.response.json()}
-                    except ValueError:
-                        error = {'status_code': status_code, 'error': e.response.text}
-                job.status = 'failed'
-                job.result = error
+                job.result = client.parse_exception(e)
                 job.save(update_fields=['status', 'result'])
                 mark_parent_job_as_failed(job)
                 break
             else:
-                recipient = resp.json()['recipients'][0]
                 # we only use 1 recipient
-                slip.message_id = message_id
+                json = resp.json()
+                recipient = json['recipients'][0]
+                slip.message_id = json['message_id']  # message_id might have changed so get it from the response
                 slip.recipient_status = recipient['status']
-                if slip.recipient_status == 'dead':
-                    # mark the message as failed
-                    slip.status = 'failed'
-                    slip.save(update_fields=['status', 'message_id', 'recipient_status'])
-                elif recipient['post_processing_status'] == '':
-                    slip.status = 'sent'
-                    slip.save(update_fields=['status', 'message_id', 'recipient_status'])
+                slip.send_at = timezone.now()
+                if recipient['post_processing_status'] == '':
+                    slip.status = 'send'
                 else:
                     slip.status = 'post_processing'
-                    slip.save(update_fields=['status', 'message_id', 'recipient_status'])
+                slip.save(update_fields=['status', 'message_id', 'recipient_status', 'send_at'])
             finally:
                 slip.file.close()
             i += 1
@@ -366,11 +345,7 @@ def dispatch_eboks_tax_slips(job):
         job.set_progress(current_count, parent.arguments['total_count'])
         if has_more is False:
             # if we are done mark the parent job as finished
-            parent.progress = 100
-            parent.end_at = timezone.now()
-            parent.status = 'finished'
-            parent.result = {'dispatched_items': current_count}
-        parent.save()
+            parent.finish(result={'dispatched_items': current_count})
 
     if has_more:
         Job.schedule_job(dispatch_eboks_tax_slips, 'dispatch_tax_year_child', job.parent.created_by, parent=job.parent)
@@ -465,3 +440,95 @@ def import_all_r75(job):
     ]
 
     dispatch_chained_jobs(jobs, job)
+
+
+def generate_final_settlements_for_year():
+    # TODO wait fo mmj to finish the layout for the final settlement.
+    pass
+
+
+def dispatch_final_settlements_for_year():
+    rq_job = get_current_job()
+    with transaction.atomic():
+        job = Job.objects.select_for_update().filter(uuid=rq_job.meta['job_uuid'])[0]
+        job.status = rq_job.get_status()
+        job.progress = 0
+        job.started_at = timezone.now()
+        total = FinalSettlement.objects.filter(status='created'). \
+            filter(person_tax_year__tax_year__pk=job.arguments['year_pk']).count()
+        job.arguments['total_count'] = total
+        job.arguments['current_count'] = 0
+        job.save(update_fields=['status', 'progress', 'started_at', 'arguments'])
+
+    if job.arguments['total_count'] > 0:
+        Job.schedule_job(dispatch_final_settlements, 'dispatch_final_settlements_child', job.created_by, parent=job)
+    else:
+        job.finish()
+
+
+@job_decorator
+def dispatch_final_settlements(job):
+    from django.conf import settings
+    dispatch_page_size = settings.EBOKS['dispatch_bulk_size']
+    generator = EboksDispatchGenerator.from_settings()
+    client = EboksClient.from_settings()
+    has_more = False
+    settlements = FinalSettlement.objects.filter(
+        status='created').filter(person_tax_year__tax_year__pk=job.parent.arguments['year_pk'])[:dispatch_page_size+1]
+    pending_messages = {}
+    current_number_of_items = 0
+    for i, settlement in enumerate(settlements, start=1):
+        if i == dispatch_page_size+1:
+            has_more = True
+            # we have more so we need to spawn a new job
+            break
+        try:
+            send_settlement = settlement.dispatch_to_eboks(client, generator)
+        except (ConnectionError, HTTPError) as e:
+            job.status = 'failed'
+            job.result = client.parse_exception(e)
+            job.save(update_fields=['status', 'result'])
+            mark_parent_job_as_failed(job)
+            break
+        else:
+            if send_settlement.status == 'post_processing':
+                pending_messages[send_settlement.message_id] = send_settlement
+            current_number_of_items = i
+
+    while pending_messages:
+        update_status_for_pending_dispatches(client, pending_messages)
+        pending_messages = {settlement.message_id: settlement for settlement in FinalSettlement.objects.filter(
+            status='post_processing', persontaxyear__tax_year__pk=job.parent.arguments['year_pk'])[:50]}
+        if pending_messages:
+            sleep(10)
+
+    with transaction.atomic():
+        parent = Job.objects.filter(pk=job.parent.pk).select_for_update()[0]
+        current_count = parent.arguments['current_count'] + min(current_number_of_items, dispatch_page_size)
+        job.set_progress(current_count, parent.arguments['total_count'])
+        if has_more is False:
+            # if we are done mark the parent job as finished
+            parent.finish(result={'dispatched_items': current_count})
+
+    if has_more:
+        # start a new child job to handle the next hundred
+        Job.schedule_job(dispatch_final_settlements,
+                         'dispatch_final_settlements_child',
+                         job.parent.created_by,
+                         parent=job.parent)
+
+
+@job_decorator
+def dispatch_final_settlement(job):
+    """
+    expects a final_settlmenet uuid
+    :return:
+    """
+    client = EboksClient.from_settings()
+    settlement = FinalSettlement.objects.get(uuid=job.arguments['uuid'])
+    generator = EboksDispatchGenerator.from_settings(title=settlement.title)
+    send_settlement = settlement.dispatch_to_eboks(client, generator)
+    if send_settlement.status == 'post_processing':
+        job.set_progress_pct(50)
+        send_settlement.get_final_status(client)
+    job.finish()

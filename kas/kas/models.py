@@ -1,5 +1,8 @@
+import base64
 import calendar
 import math
+from time import sleep
+from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -12,8 +15,11 @@ from django.db.models.signals import post_save
 from django.forms import model_to_dict
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from requests.exceptions import HTTPError
 from simple_history.models import HistoricalRecords
+
 from eskat.models import ImportedR75PrivatePension
+from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.managers import PolicyTaxYearManager
 
 
@@ -201,37 +207,86 @@ class Person(HistoryMixin, models.Model):
                f"full_address={self.full_address})"
 
 
-tax_slip_statuses = (
-    ('created', _('KAS Selvangivelse genereret')),
-    ('sent', _('KAS Selvangivelse afsendt')),  # sent means that the processing is done
-    ('post_processing', _('Afventer efterbehandling')),
-    ('failed', _('Afsendelse fejlet'))
+eboks_dispatch_statuses = (
+    ('created', _('Genereret')),
+    ('send', _('Afsendt')),  # sent means that the message was successfully delivered to e-boks.
+    ('post_processing', _('Afventer efterbehandling')),  # Sucessfully sent to proxy but awaiting post-processing next status is send
+    ('failed', _('Afsendelse fejlet'))  # Could not deliver message.
 )
 # final state is either sent or failed
+
+post_procssing_statuses = (
+    ('pending', _('Afventer processering')),
+    ('address resolved', _('Fundet gyldig postadresse')),
+    ('address not found', _('Ingen gyldig postadresse')),
+    ('remote printed', _('Overført til fjernprint')),
+)
+
+recipient_statuses = (
+    ('', _('Gyldig E-boks modtager')),
+    ('exempt', _('Fritaget modtager')),
+    ('invalid', _('Ugyldig E-boks modtager (sendes til efterbehandling)')),
+    ('dead', _('Afdød')),
+    ('minor', _('Mindreårig'))
+)
 
 
 def taxslip_path_by_year(instance, filename):
     return 'reports/{filename}'.format(filename=filename)
 
 
-class TaxSlipGenerated(models.Model):
-    file = models.FileField(upload_to=taxslip_path_by_year, null=True)
-    status = models.TextField(choices=tax_slip_statuses, default='created', blank=True)
-    post_processing_status = models.TextField(default='', blank=True)
-    recipient_status = models.TextField(default='', blank=True)
+class EboksDispatch(models.Model):
+    title = models.TextField()
+    status = models.TextField(choices=eboks_dispatch_statuses, default='created', blank=True)
+    post_processing_status = models.TextField(choices=post_procssing_statuses, default='', blank=True)
+    recipient_status = models.TextField(choices=recipient_statuses, default='', blank=True)
     message_id = models.TextField(blank=True, default='')  # eboks message_id
+    created_at = models.DateTimeField(auto_now_add=True)  # When the settlement was created
+    send_at = models.DateTimeField(null=True, blank=True)  # When the settlement was sendt
 
     @property
-    def delivery_method(self):
-        if self.status == 'sent':
+    def delivery_status(self):
+        if self.status == 'created':
+            return _('Afventer afsendelse')
+        elif self.status == 'send':
             if self.recipient_status == '':
                 return _('E-boks')
             elif self.recipient_status == 'dead':
-                return None
+                return _('Ikke afsendt (afdød)')
             else:
                 # exempt, minor, invalid
                 if self.post_processing_status in ('address resolved', 'remote printed'):
                     return _('Fjernprint')
+                elif self.post_processing_status == 'address not found':
+                    return _('Ingen gyldig postadresse')
+        elif self.status == 'post_processing':
+            return _('Afventer efterbehandling')
+        elif self.status == 'failed':
+            return _('Afsendelse fejlet')
+
+    def get_final_status(self, client: EboksClient):
+        if self.status != 'post_processing':
+            raise RuntimeError('Cannot get updates for status {status} (needs status post_processing)'.format(status=self.status))
+        while self.status == 'post_processing':
+            resp = client.get_recipient_status([self.message_id])
+            for message in resp.json():
+                if self.message_id == message['message_id']:
+                    recipient = message['recipients'][0]
+                    if recipient['post_processing_status'] != 'pending':
+                        self.status = 'send'
+                        self.recipient_status = recipient['post_processing_status']
+                        self.save(update_fields=['status', 'post_processing_status'])
+
+            if self.status == 'post_processing':
+                # wait 10 seconds before getting another update
+                sleep(10)
+
+    class Meta:
+        abstract = True
+
+
+class TaxSlipGenerated(EboksDispatch):
+    file = models.FileField(upload_to=taxslip_path_by_year, null=True)
 
 
 class PersonTaxYear(HistoryMixin, models.Model):
@@ -998,3 +1053,44 @@ class PensionCompanySummaryFileDownload(models.Model):
         null=False,
         on_delete=models.CASCADE,
     )
+
+
+def final_settlement_file_path(instance, filename):
+    return 'settlements/{year}/{uuid}.pdf'.format(year=instance.person_tax_year.tax_year.year, uuid=instance.uuid.hex)
+
+
+class FinalSettlement(EboksDispatch):
+    """
+    Slutopgørelse
+    """
+    uuid = models.UUIDField(primary_key=True, default=uuid4)
+    person_tax_year = models.ForeignKey(PersonTaxYear, null=False, db_index=True, on_delete=models.PROTECT)
+    pdf = models.FileField(upload_to=final_settlement_file_path)
+
+    def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
+        if self.status == 'send':
+            raise RuntimeError('This final settlement has already been dispatched!')
+        self.pdf.open(mode='rb')
+        try:
+            resp = client.send_message(message=generator.generate_dispatch(title=self.title,
+                                                                           number=self.person_tax_year.person.cpr,
+                                                                           pdf_data=base64.b64encode(self.pdf.read())),
+                                       message_id=client.get_message_id())
+        except HTTPError:
+            self.status = 'failed'
+            self.status.save(update_fields=['status'])
+            raise
+        else:
+            self.message_id = resp.json()['message_id']  # message_id might have changed so get it from the response
+            # we always only have 1 recipient
+            recipient = resp.json()['recipients'][0]
+            self.recipient_status = recipient['status']
+            self.send_at = timezone.now()
+            if recipient['post_processing_status'] == '':
+                self.status = 'send'
+            else:
+                self.status = 'post_processing'
+            self.save(update_fields=['status', 'message_id', 'recipient_status', 'send_at'])
+        finally:
+            self.pdf.close()
+        return self

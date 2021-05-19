@@ -7,7 +7,7 @@ def get_job_types():
     """
     :returns a registry dictionary with label and form_class for each job type
     """
-    from worker.forms import MandtalImportJobForm, R75ImportJobForm, DispatchTaxYearForm, ConfirmForm, YearPkForm
+    from worker.forms import MandtalImportJobForm, R75ImportJobForm, YearAndTitleForm, ConfirmForm, YearPkForm
     return {
         'ImportMandtalJob': {
             'label': _('Import af mandtal'),  # translated label
@@ -26,15 +26,24 @@ def get_job_types():
         },
         'GenerateReportsForYear': {
             'label': _('Generere KAS selvangivelser'),
-            'form_class': YearPkForm,
+            'form_class': YearAndTitleForm,
             'function': 'kas.jobs.generate_reports_for_year'
         },
         'DispatchTaxYear': {
-            'label': ('Afsendelse af KAS selvangivelser for et givent år'),
-            'form_class': DispatchTaxYearForm,
+            'label': _('Afsendelse af KAS selvangivelser for et givent år'),
+            'form_class': YearPkForm,
             'function': 'kas.jobs.dispatch_tax_year',
         },
-
+        'GenerateFinalSettlements': {
+            'label': _('Generering af slutopgørelser for et given år'),
+            'form_class': YearAndTitleForm,
+            'function': 'kas.jobs.generate_final_settlements_for_year'
+        },
+        'DispatchFinalSettlements': {
+            'label': _('Afsendelse af slutopgørelser for et given år'),
+            'form_class': YearPkForm,
+            'function': 'kas.jobs.dispatch_final_settlements_for_year'
+        },
         'ImportEskatMockup': {
             'label': _('Import af mockup data for eSkat'),  # translated label
             'form_class': ConfirmForm,  # form class used in the start job workflow

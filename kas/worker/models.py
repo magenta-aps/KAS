@@ -135,14 +135,18 @@ class Job(models.Model):
 
         return job
 
-    def finish(self):
+    def finish(self, result=None):
         """
         Mark a job as done/successfully completed.
         """
         self.status = 'finished'
         self.progress = 100
         self.end_at = timezone.now()
-        self.save(update_fields=['status', 'progress', 'end_at', 'result'])
+        fields = ['status', 'progress', 'end_at']
+        if result is not None:
+            self.result = result
+            fields.append('result')
+        self.save(update_fields=fields)
 
     def __str__(self):
         return '{} {}%'.format(self.status, self.progress)
