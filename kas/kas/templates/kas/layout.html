@@ -31,13 +31,12 @@
         <a class="p-2 text-muted" href="{% url 'kas:person_search' %}">{% trans 'Find person' %}</a>
 
         <a class="p-2 text-muted dropdown-toggle" href="#" role="button" id="searchMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            {% trans 'Avanceret søgning' %}
+            {% trans 'Udtrækslister' %}
         </a>
         <ul class="dropdown-menu" aria-labelledby="searchMenuLink">
-            <li><a class="dropdown-item" href="{% url 'kas:person_search_unfinished' %}">{% trans 'Personer med ikke-slutlignede policer' %}</a></li>
             <li><a class="dropdown-item" href="{% url 'kas:person_search_failsend' %}">{% trans 'Personer med fejlet afsendelse af selvangivelse' %}</a></li>
-            <li><a class="dropdown-item" href="{% url 'kas:policy_search_unfinished' %}">{% trans 'Ikke-slutlignede policer' %}</a></li>
-            <li><a class="dropdown-item" href="{% url 'kas:policy_search_postprocess' %}">{% trans 'Sager der skal efterhandles efter afsendelse af første slutopgørelse' %}</a></li>
+            <li><a class="dropdown-item" href="{% url 'kas:policy_search_unfinished' %}">{% trans 'Policer der kræver efterbehandling' %}</a></li>
+            <li><a class="dropdown-item" href="{% url 'kas:person_search_unfinished' %}">{% trans 'Personer med policer der kræver efterbehandling' %}</a></li>
         </ul>
 
         {% if user.is_staff %}
