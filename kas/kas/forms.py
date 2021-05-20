@@ -11,9 +11,9 @@ from kas.fields import PensionCompanyChoiceField
 
 class PersonListFilterForm(BootstrapForm):
 
+    year = forms.IntegerField(label=_('År'), required=False, widget=forms.Select())
     cpr = forms.CharField(label=_('Personnummer'), required=False)
     name = forms.CharField(label=_('Navn'), required=False)
-    year = forms.IntegerField(label=_('År'), required=False, widget=forms.Select())
     municipality_code = forms.IntegerField(label=_('Kommunekode'), required=False)
     municipality_name = forms.CharField(label=_('Kommunenavn'), required=False)
     address = forms.CharField(label=_('Adresse'), required=False)
@@ -50,14 +50,19 @@ class PersonListFilterForm(BootstrapForm):
         cpr = re.sub(r'\D', '', cpr)
         return cpr
 
-    def as_table(self):
-        return self._html_output(
-            normal_row='<tr%(html_class_attr)s><th>%(label)s</th><td>%(field)s%(help_text)s</td><td>%(errors)s</td></tr>',
-            error_row='<tr><td colspan="3">%s</td></tr>',
-            row_ender='</td></tr>',
-            help_text_html='<br /><span class="helptext">%s</span>',
-            errors_on_separate_row=False
-        )
+
+class PolicyListFilterForm(BootstrapForm):
+
+    year = forms.IntegerField(label=_('År'), required=False, widget=forms.Select())
+    pension_company = forms.CharField(label=_('Pensionsselskab'), required=False)
+    policy_number = forms.CharField(label=_('Policenummer'), required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(PolicyListFilterForm, self).__init__(*args, **kwargs)
+        years = [tax_year.year for tax_year in TaxYear.objects.order_by('year')]
+        self.fields['year'].widget.choices = [
+            (year, year) for year in years
+        ]
 
 
 class PersonNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):

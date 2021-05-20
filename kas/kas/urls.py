@@ -5,18 +5,23 @@ from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetail
     PersonNotesAndAttachmentsView, PolicyNotesAndAttachmentsView, \
     EditAmountsUpdateView, PensionCompanySummaryFileView, PensionCompanySummaryFileDownloadView, \
     PolicyTaxYearCreateView, ActivatePolicyTaxYearView, PersonTaxYearHistoryListView, PersonTaxYearHistoryDetailView, \
-    PolicyTaxYearHistoryDetailView, PolicyTaxYearHistoryListView
+    PolicyTaxYearHistoryDetailView, PolicyTaxYearHistoryListView, PersonTaxYearUnfinishedListView, \
+    PersonTaxYearFailSendListView, PolicyTaxYearUnfinishedListView, PolicyTaxYearPostprocessListView
 
 app_name = 'kas'
 
 urlpatterns = [
     path('', PersonTaxYearListView.as_view(), name='person_search'),
+    path('person/unfinished', PersonTaxYearUnfinishedListView.as_view(), name='person_search_unfinished'),
+    path('person/failsend', PersonTaxYearFailSendListView.as_view(), name='person_search_failsend'),
     path('statistics', StatisticsView.as_view(), name='statistics'),
     path('tax_year/<int:year>/persons/<int:person_id>/', PersonTaxYearDetailView.as_view(), name='person_in_year'),
     path('tax_year/<int:year>/persons/<int:person_id>/pdf/', PdfDownloadView.as_view(), name='get_pdf'),
     path('tax_year/<int:year>/persons/<int:person_id>/policy/', PolicyTaxYearCreateView.as_view(), name='policy_create'),
     path('policy/<int:pk>/', PolicyTaxYearDetailView.as_view(), name='policy_detail'),
     path('policy/<int:pk>/activate/', ActivatePolicyTaxYearView.as_view(), name='policy_activate'),
+    path('policy/unfinished', PolicyTaxYearUnfinishedListView.as_view(), name='policy_search_unfinished'),
+    path('policy/postprocess', PolicyTaxYearPostprocessListView.as_view(), name='policy_search_postprocess'),
     path('policy_document/<int:pk>/', PolicyDocumentDownloadView.as_view(), name='policy_document_download'),
     path('finalsettlement/<uuid:uuid>/', FinalSettlementDownloadView.as_view(), name='final_settlement_download'),
     path('change/selfreportedamount/<int:pk>/', SelfReportedAmountUpdateView.as_view(),
