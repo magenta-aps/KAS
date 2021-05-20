@@ -1,5 +1,5 @@
 {% load i18n %}
 <p>
     {% trans 'Ingen noter' as empty %}
-    {{ person_tax_year.general_notes|default:empty }}
+    {{ person_tax_year.foreign_pension_notes|default:empty }}
 </p>
