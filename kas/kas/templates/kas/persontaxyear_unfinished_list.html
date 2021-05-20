@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block content %}
-  <h1>{% trans 'Personer med ikke slutlignede policer' %}</h1>
+  <h1>{% trans 'Personer med policer der kræver efterbehandling' %}</h1>
 
   <div>
     <form action="" method="GET">
@@ -36,8 +36,8 @@
         {% include 'includes/order_by_link.html' with key="order_by" value="person__municipality_name" text=kommune %}
       </th>
       <th>
-        {% trans 'Antal ikke slutlignede policer' as antal_ikkelignede %}
-        {% include 'includes/order_by_link.html' with key="order_by" value="unlocked_count" text=antal_ikkelignede %}
+        {% trans 'Antal policer der kræver efterbehandling' as antal_efterbehandling %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="efterbehandling_count" text=antal_efterbehandling %}
       </th>
       <th>
         {% trans 'Antal policer' as antal_policer %}
@@ -54,7 +54,7 @@
         <td><a href="{{ person_url }}">{{ person.name }}</a></td>
         <td>{{ person.full_address }}</td>
         <td>{{ person.municipality_name }}</td>
-        <td>{{ person_tax_year.unfinished_count }}</td>
+        <td>{{ person_tax_year.efterbehandling_count }}</td>
         <td>{{ person_tax_year.policy_count }}</td>
       </tr>
       {% endwith %}

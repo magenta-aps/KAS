@@ -660,6 +660,20 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             policy_number=self.policy_number,
         )
 
+    @property
+    def reported_difference(self):
+        if self.self_reported_amount is None or self.prefilled_amount is None:
+            return None
+        return self.self_reported_amount - self.prefilled_amount
+
+    @property
+    def reported_difference_pct(self):
+        diff = self.reported_difference
+        if diff is None or self.prefilled_amount == 0:
+            return None
+
+        return diff / self.prefilled_amount * 100
+
     def previous_years_qs(self, years=10):
 
         # Finds posts for the last ten years with the same

@@ -7,7 +7,7 @@ from io import StringIO
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
-from django.db.models import Count, Q
+from django.db.models import Count, F, Q
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -151,7 +151,8 @@ class PersonTaxYearSpecialListView(PersonTaxYearListView):
         return self.filter_queryset(
             super().get_queryset()
         ).order_by(
-            self.request.GET.get('order_by', self.default_order_by)
+            self.request.GET.get('order_by', self.default_order_by),
+            'person__name'
         )
 
     def filter_queryset(self, qs):
@@ -161,17 +162,17 @@ class PersonTaxYearSpecialListView(PersonTaxYearListView):
 class PersonTaxYearUnfinishedListView(PersonTaxYearSpecialListView):
 
     template_name = 'kas/persontaxyear_unfinished_list.html'
-    default_order_by = '-unfinished_count'
+    default_order_by = '-efterbehandling_count'
 
     def filter_queryset(self, qs):
         return qs.annotate(
             policy_count=Count('policytaxyear')
         ).annotate(
-            unfinished_count=Count(
+            efterbehandling_count=Count(
                 'policytaxyear',
-                filter=Q(policytaxyear__slutlignet=False)
+                filter=Q(policytaxyear__efterbehandling=True)
             )
-        ).filter(unfinished_count__gt=0)
+        ).filter(efterbehandling_count__gt=0)
 
 
 class PersonTaxYearFailSendListView(PersonTaxYearSpecialListView):
@@ -180,7 +181,9 @@ class PersonTaxYearFailSendListView(PersonTaxYearSpecialListView):
     default_order_by = 'person__name'
 
     def filter_queryset(self, qs):
-        return qs.filter(tax_slip__status='failed')
+        return qs.annotate(
+            policy_count=Count('policytaxyear')
+        ).filter(tax_slip__status='failed')
 
 
 class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
@@ -307,11 +310,20 @@ class PolicyTaxYearSpecialListView(PolicyTaxYearListView):
         return not form.errors
 
     def get_queryset(self):
+
+        order_by = self.request.GET.get('order_by', self.default_order_by)
+
+        # Handle fields that should always have null last when sorting
+        if order_by.endswith("_nulllast"):
+            order_by = order_by[:-9]
+            if order_by.startswith("-"):
+                order_by = F(order_by[1:]).desc(nulls_last=True)
+            else:
+                order_by = F(order_by).asc(nulls_last=True)
+
         return self.filter_queryset(
             super().get_queryset()
-        ).order_by(
-            self.request.GET.get('order_by', self.default_order_by)
-        )
+        ).order_by(order_by, 'person_tax_year__person__name', 'policy_number')
 
     def filter_queryset(self, qs):
         return qs
@@ -320,17 +332,14 @@ class PolicyTaxYearSpecialListView(PolicyTaxYearListView):
 class PolicyTaxYearUnfinishedListView(PolicyTaxYearSpecialListView):
 
     template_name = 'kas/policytaxyear_unfinished_list.html'
+    default_order_by = 'difference_pct_nulllast'
 
     def filter_queryset(self, qs):
-        return qs.filter(slutlignet=False)
-
-
-class PolicyTaxYearPostprocessListView(PolicyTaxYearSpecialListView):
-
-    template_name = 'kas/policytaxyear_postprocess_list.html'
-
-    def filter_queryset(self, qs):
-        return qs.filter(efterbehandling=True)
+        return qs.filter(efterbehandling=True).annotate(
+            difference=F('self_reported_amount') - F('prefilled_amount')
+        ).annotate(
+            difference_pct=F('difference') * 100 / F('prefilled_amount')
+        )
 
 
 class PolicyTaxYearDetailView(LoginRequiredMixin, DetailView):

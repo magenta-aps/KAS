@@ -6,7 +6,7 @@ from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetail
     EditAmountsUpdateView, PensionCompanySummaryFileView, PensionCompanySummaryFileDownloadView, \
     PolicyTaxYearCreateView, ActivatePolicyTaxYearView, PersonTaxYearHistoryListView, PersonTaxYearHistoryDetailView, \
     PolicyTaxYearHistoryDetailView, PolicyTaxYearHistoryListView, PersonTaxYearUnfinishedListView, \
-    PersonTaxYearFailSendListView, PolicyTaxYearUnfinishedListView, PolicyTaxYearPostprocessListView
+    PersonTaxYearFailSendListView, PolicyTaxYearUnfinishedListView
 
 app_name = 'kas'
 
@@ -21,7 +21,6 @@ urlpatterns = [
     path('policy/<int:pk>/', PolicyTaxYearDetailView.as_view(), name='policy_detail'),
     path('policy/<int:pk>/activate/', ActivatePolicyTaxYearView.as_view(), name='policy_activate'),
     path('policy/unfinished', PolicyTaxYearUnfinishedListView.as_view(), name='policy_search_unfinished'),
-    path('policy/postprocess', PolicyTaxYearPostprocessListView.as_view(), name='policy_search_postprocess'),
     path('policy_document/<int:pk>/', PolicyDocumentDownloadView.as_view(), name='policy_document_download'),
     path('finalsettlement/<uuid:uuid>/', FinalSettlementDownloadView.as_view(), name='final_settlement_download'),
     path('change/selfreportedamount/<int:pk>/', SelfReportedAmountUpdateView.as_view(),

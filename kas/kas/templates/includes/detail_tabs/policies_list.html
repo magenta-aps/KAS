@@ -7,6 +7,9 @@
         <th>{% trans 'Police nr.' %}</th>
         <th>{% trans 'Slutlignet' %}</th>
         <th>{% trans 'Kræver efterbehandling' %}</th>
+        <th class="text-right">{% trans 'Fortrykt beløb'%}</th>
+        <th class="text-right">{% trans 'Selvangivet beløb'%}</th>
+        <th class="text-right">{% trans 'Forskel'%}</th>
     </tr>
     </thead>
     <tbody>
@@ -17,6 +20,9 @@
             <td><a href="{% url 'kas:policy_detail' policy.pk %}">{{ policy.policy_number }}</a></td>
             <td>{% if policy.slutlignet %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}</td>
             <td>{% if policy.efterbehandling %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}</td>
+            <td class="text-right">{{ policy.prefilled_amount|default_if_none:"" }}</td>
+            <td class="text-right">{{ policy.self_reported_amount|default_if_none:"" }}</td>
+            <td class="text-right">{% if policy.reported_difference %}{{ policy.reported_difference }} ({{ policy.reported_difference_pct }} %){% endif %}</td>
         </tr>
     {% empty %}
         <tr>
