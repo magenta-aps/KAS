@@ -11,17 +11,18 @@ from django.db.models import Count, Q
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.utils import timezone
 from django.views.generic import TemplateView, ListView, View, UpdateView, CreateView, FormView
 from django.views.generic.detail import DetailView
 from django.views.generic.detail import SingleObjectMixin, BaseDetailView
 from ipware import get_client_ip
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
-from kas.forms import PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, \
-    PolicyTaxYearActivationForm
 from kas.forms import PersonListFilterForm, SelfReportedAmountForm, \
-    EditAmountsUpdateFrom
-from kas.forms import PolicyNotesAndAttachmentForm, PersonNotesAndAttachmentForm
+    EditAmountsUpdateFrom, PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, \
+    PolicyTaxYearActivationForm
+from kas.forms import PolicyNotesAndAttachmentForm, PersonNotesAndAttachmentForm, \
+    PolicyListFilterForm
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
@@ -84,45 +85,102 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
     form_class = PersonListFilterForm
 
     def get_form(self):
-        # Initial value for the form (such as year) doesn't get used if the form is bound
-        kwargs = {'data': self.request.GET} if self.request.GET else {}
+        years = [tax_year.year for tax_year in TaxYear.objects.order_by('year')]
+        current_year = timezone.now().year
+        if current_year not in years:
+            current_year = max([y for y in years if y < current_year])
+        kwargs = {'initial': {'year': current_year}}
+        if self.request.GET:
+            kwargs['data'] = self.request.GET
         return PersonListFilterForm(**kwargs)
+
+    def should_search(self, form):
+        return form.is_valid() and form.has_changed()
 
     def get_queryset(self):
         form = self.get_form()
-        if form.is_valid() and form.has_changed():
-            qs = super().get_queryset()
+
+        qs = super().get_queryset()
+        try:
             self.year = form.cleaned_data['year']
-            # Check whether there are any fields filled out apart from 'year'
-            if len([
-                v for k, v in form.cleaned_data.items()
-                if v not in ('', None) and k not in ['year']
-            ]):
-                self.searching = True
-                qs = qs.filter(tax_year__year=self.year)
-                if form.cleaned_data['cpr']:
-                    qs = qs.filter(person__cpr__icontains=form.cleaned_data['cpr'])
-                if form.cleaned_data['name']:
-                    qs = qs.filter(person__name__icontains=form.cleaned_data['name'])
-                if form.cleaned_data['municipality_code']:
-                    qs = qs.filter(person__municipality_code=form.cleaned_data['municipality_code'])
-                if form.cleaned_data['municipality_name']:
-                    qs = qs.filter(person__municipality_name__icontains=form.cleaned_data['municipality_name'])
-                if form.cleaned_data['address']:
-                    qs = qs.filter(person__full_address__icontains=form.cleaned_data['address'])
-                if form.cleaned_data['tax_liability'] is not None:  # False is a valid value
-                    qs = qs.filter(fully_tax_liable=form.cleaned_data['tax_liability'])
-                if form.cleaned_data['foreign_pension_notes'] is not None:
-                    empty = Q(foreign_pension_notes='') | Q(foreign_pension_notes__isnull=True)
-                    if form.cleaned_data['foreign_pension_notes'] is True:
-                        qs = qs.exclude(empty)
-                    else:
-                        qs = qs.filter(empty)
+        except (AttributeError, KeyError):
+            self.year = form.initial['year']
+        qs = qs.filter(tax_year__year=self.year)
+
+        if self.should_search(form):
+            if hasattr(form, 'cleaned_data'):
+                # Check whether there are any fields filled out apart from 'year'
+                if len([
+                    v for k, v in form.cleaned_data.items()
+                    if v not in ('', None) and k not in ['year']
+                ]):
+                    if form.cleaned_data['cpr']:
+                        qs = qs.filter(person__cpr__icontains=form.cleaned_data['cpr'])
+                    if form.cleaned_data['name']:
+                        qs = qs.filter(person__name__icontains=form.cleaned_data['name'])
+                    if form.cleaned_data['municipality_code']:
+                        qs = qs.filter(person__municipality_code=form.cleaned_data['municipality_code'])
+                    if form.cleaned_data['municipality_name']:
+                        qs = qs.filter(person__municipality_name__icontains=form.cleaned_data['municipality_name'])
+                    if form.cleaned_data['address']:
+                        qs = qs.filter(person__full_address__icontains=form.cleaned_data['address'])
+                    if form.cleaned_data['tax_liability'] is not None:  # False is a valid value
+                        qs = qs.filter(fully_tax_liable=form.cleaned_data['tax_liability'])
+                    if form.cleaned_data['foreign_pension_notes'] is not None:
+                        empty = Q(foreign_pension_notes='') | Q(foreign_pension_notes__isnull=True)
+                        if form.cleaned_data['foreign_pension_notes'] is True:
+                            qs = qs.exclude(empty)
+                        else:
+                            qs = qs.filter(empty)
         else:
             # Don't find anything if form is invalid or empty
             qs = self.model.objects.none()
         self.form = form
         return qs
+
+
+class PersonTaxYearSpecialListView(PersonTaxYearListView):
+
+    default_order_by = 'person__cpr'
+
+    def should_search(self, form):
+        # Allow searching with an unbound form (just the default year)
+        return not form.errors
+
+    def get_queryset(self):
+        return self.filter_queryset(
+            super().get_queryset()
+        ).order_by(
+            self.request.GET.get('order_by', self.default_order_by)
+        )
+
+    def filter_queryset(self, qs):
+        return qs
+
+
+class PersonTaxYearUnfinishedListView(PersonTaxYearSpecialListView):
+
+    template_name = 'kas/persontaxyear_unfinished_list.html'
+    default_order_by = '-unfinished_count'
+
+    def filter_queryset(self, qs):
+        return qs.annotate(
+            policy_count=Count('policytaxyear')
+        ).annotate(
+            unfinished_count=Count(
+                'policytaxyear',
+                filter=Q(policytaxyear__slutlignet=False)
+            )
+        ).filter(unfinished_count__gt=0)
+
+
+class PersonTaxYearFailSendListView(PersonTaxYearSpecialListView):
+
+    template_name = 'kas/persontaxyear_failsend_list.html'
+    default_order_by = 'person__name'
+
+    def filter_queryset(self, qs):
+        return qs.filter(tax_slip__status='failed')
 
 
 class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
@@ -189,6 +247,90 @@ class PersonNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):
             'person_tax_year': self.object
         })
         return ctx
+
+
+class PolicyTaxYearListView(LoginRequiredMixin, ListView):
+    # template_name = 'kas/persontaxyear_list.html'
+    context_object_name = 'policytaxyears'
+    paginate_by = 20
+
+    model = PolicyTaxYear
+    form_class = PolicyListFilterForm
+
+    def get_form(self):
+        years = [tax_year.year for tax_year in TaxYear.objects.order_by('year')]
+        current_year = timezone.now().year
+        if current_year not in years:
+            current_year = max([y for y in years if y < current_year])
+        kwargs = {'initial': {'year': current_year}}
+        if self.request.GET:
+            kwargs['data'] = self.request.GET
+        return PolicyListFilterForm(**kwargs)
+
+    def should_search(self, form):
+        return form.is_valid() and form.has_changed()
+
+    def get_queryset(self):
+        form = self.get_form()
+
+        qs = super().get_queryset()
+        try:
+            self.year = form.cleaned_data['year']
+        except (AttributeError, KeyError):
+            self.year = form.initial['year']
+        qs = qs.filter(person_tax_year__tax_year__year=self.year)
+
+        if self.should_search(form):
+            if hasattr(form, 'cleaned_data'):
+                # Check whether there are any fields filled out apart from 'year'
+                if len([
+                    v for k, v in form.cleaned_data.items()
+                    if v not in ('', None) and k not in ['year']
+                ]):
+                    if form.cleaned_data['pension_company']:
+                        qs = qs.filter(pension_company__name__icontains=form.cleaned_data['pension_company'])
+                    if form.cleaned_data['policy_number']:
+                        qs = qs.filter(policy_number__icontains=form.cleaned_data['policy_number'])
+        else:
+            # Don't find anything if form is invalid or empty
+            qs = self.model.objects.none()
+        self.form = form
+        return qs
+
+
+class PolicyTaxYearSpecialListView(PolicyTaxYearListView):
+
+    default_order_by = 'policy_number'
+
+    def should_search(self, form):
+        # Allow searching with an unbound form (just the default year)
+        return not form.errors
+
+    def get_queryset(self):
+        return self.filter_queryset(
+            super().get_queryset()
+        ).order_by(
+            self.request.GET.get('order_by', self.default_order_by)
+        )
+
+    def filter_queryset(self, qs):
+        return qs
+
+
+class PolicyTaxYearUnfinishedListView(PolicyTaxYearSpecialListView):
+
+    template_name = 'kas/policytaxyear_unfinished_list.html'
+
+    def filter_queryset(self, qs):
+        return qs.filter(slutlignet=False)
+
+
+class PolicyTaxYearPostprocessListView(PolicyTaxYearSpecialListView):
+
+    template_name = 'kas/policytaxyear_postprocess_list.html'
+
+    def filter_queryset(self, qs):
+        return qs.filter(efterbehandling=True)
 
 
 class PolicyTaxYearDetailView(LoginRequiredMixin, DetailView):

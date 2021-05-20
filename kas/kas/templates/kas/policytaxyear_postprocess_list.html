@@ -1,0 +1,59 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+
+{% block content %}
+  <h1>{% trans 'Sager der skal efterhandles efter afsendelse af første slutopgørelse' %}</h1>
+
+  <div>
+    <form action="" method="GET">
+      <table>
+        {{ view.form.as_table }}
+      </table>
+      <input type="submit" value="{% trans 'Søg' %}" class="btn btn-primary" />
+    </form>
+  </div>
+
+  <hr/>
+
+  {% if policytaxyears %}
+  <table class="table table-striped">
+    <thead>
+    <tr>
+      <th>
+        {% trans 'Pensionsselskab' as pensionsselskab %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="pension_company__name" text=pensionsselskab %}
+      </th>
+      <th>
+        {% trans 'Policenummer' as policenummer %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="policy_number" text=policenummer %}
+      </th>
+      <th>
+        {% trans 'Personnummer' as personnummer %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="persontaxyear__person__cpr" text=personnummer %}
+      </th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for policy_tax_year in policytaxyears %}
+      {% with persontaxyear=policy_tax_year.person_tax_year %}
+      {% with person=persontaxyear.person %}
+      {% url 'kas:policy_search_postprocess' policy_tax_year.id as policy_url %}
+      <tr>
+        <td><a href="{{ policy_url }}">{{ policy_tax_year.pension_company.name }}</a></td>
+        <td><a href="{{ policy_url }}">{{ policy_tax_year.policy_number }}</a></td>
+        <td>{{ person.cpr }}</td>
+      </tr>
+    {% endwith %}
+    {% endwith %}
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p>{% blocktrans with year=view.year %}Ingen policer fundet{% endblocktrans %}</p>
+  {% endif %}
+
+  <hr/>
+
+  {% include 'includes/pager.html' %}
+
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+
+{% block content %}
+  <h1>{% trans 'Personer med ikke slutlignede policer' %}</h1>
+
+  <div>
+    <form action="" method="GET">
+      <table>
+        {{ view.form.as_table }}
+      </table>
+      <input type="submit" value="{% trans 'Søg' %}" class="btn btn-primary" />
+    </form>
+  </div>
+
+  <hr/>
+
+  {% if personstaxyears %}
+  <table class="table table-striped">
+    <thead>
+    <tr>
+      <th>
+        {% trans 'Personnummer' as personnummer %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="person__cpr" text=personnummer %}
+      </th>
+      <th>
+        {% trans 'Navn' as navn %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="person__name" text=navn %}
+      </th>
+      <th>
+        {% trans 'Adresse' as adresse %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="person__full_address" text=adresse %}
+      </th>
+      <th>
+        {% trans 'Kommune' as kommune %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="person__municipality_name" text=kommune %}
+      </th>
+      <th>
+        {% trans 'Antal ikke slutlignede policer' as antal_ikkelignede %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="unlocked_count" text=antal_ikkelignede %}
+      </th>
+      <th>
+        {% trans 'Antal policer' as antal_policer %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="policy_count" text=antal_policer %}
+      </th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for person_tax_year in personstaxyears %}
+      {% with person=person_tax_year.person %}
+      {% url 'kas:person_in_year' person_tax_year.year person.pk as person_url %}
+      <tr>
+        <td><a href="{{ person_url }}">{{ person.cpr }}</a></td>
+        <td><a href="{{ person_url }}">{{ person.name }}</a></td>
+        <td>{{ person.full_address }}</td>
+        <td>{{ person.municipality_name }}</td>
+        <td>{{ person_tax_year.unfinished_count }}</td>
+        <td>{{ person_tax_year.policy_count }}</td>
+      </tr>
+      {% endwith %}
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p>{% blocktrans with year=view.year %}Ingen personer fundet{% endblocktrans %}</p>
+  {% endif %}
+
+  <hr/>
+
+  {% include 'includes/pager.html' %}
+
+{% endblock %}
