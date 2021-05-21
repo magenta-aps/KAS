@@ -25,7 +25,7 @@ class TransactionCreateView(CreateOrUpdateViewWithNotesAndDocuments, CreateView)
         kwargs = super(TransactionCreateView, self).get_form_kwargs()
         kwargs.update({
             'instance': Transaction(person_tax_year=self.get_person_tax_year(),
-                                    created_by=self.request.user)
+                                    source_object=self.request.user)
         })
         return kwargs
 

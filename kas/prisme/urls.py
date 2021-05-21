@@ -6,5 +6,5 @@ app_name = 'prisme'
 
 urlpatterns = [
     path('transaction/create/<int:pk>/', TransactionCreateView.as_view(), name='create-transaction'),
-    path('transaction/update/<uuid:pk>/', TransactionUpdateView.as_view(), name='update-transaction')
+    path('transaction/update/<uuid:pk>/', TransactionUpdateView.as_view(), name='update-transaction'),
 ]

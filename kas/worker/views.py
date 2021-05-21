@@ -75,10 +75,19 @@ class StartJobView(LoginRequiredMixin, FormView):
         function = resolve_job_function(function_string)
 
         if function:
+            job_kwargs = form.cleaned_data
+            if self.kwargs['job_type'] == 'ImportPrePaymentFile':
+                # we need to store the upload file in the file field
+                # since we cant json serialize it
+                instance = form.save(commit=False)
+                instance.uploaded_by = self.request.user
+                instance.save()
+                job_kwargs = {'pk': str(instance.pk)}
+
             Job.schedule_job(function=function,
                              job_type=self.kwargs['job_type'],
                              created_by=self.request.user,
-                             job_kwargs=form.cleaned_data)
+                             job_kwargs=job_kwargs)
         return super(StartJobView, self).form_valid(form)
 
     def get_success_url(self):
