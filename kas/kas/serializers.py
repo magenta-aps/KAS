@@ -62,10 +62,13 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
             'available_deduction_from_previous_years', 'year_adjusted_amount', 'documents', 'active',
         ]
         read_only_fields = [
-            'id', 'pension_company', 'person_tax_year', 'documents', 'active',
+            'id', 'pension_company', 'person_tax_year', 'documents', 'active', 'prefilled_amount',
             'applied_deduction_from_previous_years', 'available_deduction_from_previous_years',
         ]
         depth = 2
+
+    # Explicitly define this to be required; PolicyTaxYears may have this empty in the DB, but we don't accept incoming objects without it
+    self_reported_amount = serializers.IntegerField(required=True)
 
     person_tax_year = serializers.PrimaryKeyRelatedField(queryset=PersonTaxYear.objects.all())
     pension_company = serializers.PrimaryKeyRelatedField(queryset=PensionCompany.objects.all())

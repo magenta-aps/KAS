@@ -566,6 +566,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         if taxable_days_in_year > days_in_year:
             raise ValueError("More taxable days than days in year")
 
+        if initial_amount is None:
+            raise ValueError("Initial amount is not set")
+
         if available_deduction_data is None:
             available_deduction_data = {}
 
