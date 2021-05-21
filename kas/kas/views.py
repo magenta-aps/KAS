@@ -226,7 +226,7 @@ class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
             self.object.person.address_line_5,
         )])
         context['transactions'] = Transaction.objects.filter(
-            person_tax_year=self.object).select_related('created_by', 'transferred_by')
+            person_tax_year=self.object).select_related('transferred_by')
         context['person_tax_years'] = PersonTaxYear.objects.filter(person=self.object.person)
         return context
 

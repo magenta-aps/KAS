@@ -8,7 +8,15 @@ def get_job_types():
     :returns a registry dictionary with label and form_class for each job type
     """
     from worker.forms import MandtalImportJobForm, R75ImportJobForm, YearAndTitleForm, ConfirmForm, YearPkForm
+    from prisme.forms import PrePaymentFileModelForm
+
     return {
+        'ImportPrePaymentFile': {
+            'label': _('Import af forudindbetalinger'),  # translated label
+            'form_class': PrePaymentFileModelForm,
+            'result_template': 'worker/includes/forudindbetalinger.html',
+            'function': 'prisme.jobs.import_pre_payment_file'
+        },
         'ImportMandtalJob': {
             'label': _('Import af mandtal'),  # translated label
             'form_class': MandtalImportJobForm,  # form class used in the start job workflow

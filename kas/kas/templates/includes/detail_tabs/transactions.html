@@ -17,7 +17,7 @@
             <td>{{ transaction.get_status_display }}</td>
             <td>{{ transaction.get_type_display }}</td>
             <td>{{ transaction.amount }}</td>
-            <td>{{ transaction.created_by }}</td>
+            <td>{{ transaction.source_object }}</td>
             <td>{{ transaction.created_at|date:"SHORT_DATETIME_FORMAT" }}</td>
             <td>{{ transaction.transferred_by|default_if_none:'-' }}</td>
             <td>{{ transaction.transferred_at|date:"SHORT_DATETIME_FORMAT" }}</td>

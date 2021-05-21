@@ -1,0 +1,29 @@
+{% load i18n %}
+<table class="table job-summary">
+    <thead>
+        <tr>
+            <td class="float-left">{% trans 'Oprettede transaktioner' %}</td>
+        </tr>
+    </thead>
+    <tbody>
+    {% for transaction in result.created_transactions %}
+        <tr>
+            <td><a href="{% url 'kas:person_in_year' person_id=transaction.person year=transaction.year  %}">{{ transaction.transaction }}</a><td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    {% if result.errors %}
+        <thead>
+        <tr>
+            <td class="float-left">{% trans 'Ikke fundet skatteår for import' %}</td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for error in result.errors %}
+            <tr>
+                <td>{{ error }}<td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    {% endif %}
+</table>
