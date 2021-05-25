@@ -99,16 +99,21 @@
     {% if not historical %}
         <fieldset class="border pl-4 pb-4 mb-4">
             <legend  class="w-auto">{% trans 'Handlinger' %}</legend>
-            <a class="btn btn-info" href="{% url 'kas:policy_add_notes_or_attachement' policy.pk %}">{% trans 'Tilføj bilag/notater' %}</a>
-            {# TODO figure out when the button needs to be enabled/disabled. #}
-            {% if policy.person_tax_year.tax_year.year_part == 'selvangivelse' %}
-                <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% trans 'Ret selvangivet beløb' %}</a>
-            {% else %}
-                <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% trans 'Ret beløb' %}</a>
-            {% endif %}
             {% if policy.active %}
+                <a class="btn btn-info" href="{% url 'kas:policy_add_notes_or_attachement' policy.pk %}">{% trans 'Tilføj bilag/notater' %}</a>
+                {% if policy.person_tax_year.tax_year.year_part == 'selvangivelse' %}
+                    <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% trans 'Ret selvangivet beløb' %}</a>
+                {% else %}
+                    <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% trans 'Ret beløb' %}</a>
+                {% endif %}
                 <button type="button" class="btn btn-danger" id="deactivate" data-toggle="modal" data-target="#deactivateModal">{% trans 'Afregistrer' %}</button>
             {% else %}
+                <button type="button" class="btn btn-info" disabled="disabled" aria-disabled="true" title="{% trans 'Policen er afregistreret' %}">{% trans 'Tilføj bilag/notater' %}</button>
+                {% if policy.person_tax_year.tax_year.year_part == 'selvangivelse' %}
+                    <button type="button" class="btn btn-warning" disabled="disabled" aria-disabled="true" title="{% trans 'Policen er afregistreret' %}">{% trans 'Ret selvangivet beløb' %}</button>
+                {% else %}
+                    <button type="button" class="btn btn-warning"  disabled="disabled" aria-disabled="true" title="{% trans 'Policen er afregistreret' %}">{% trans 'Ret beløb' %}</button>
+                {% endif %}
                 <form style="display: inline" method="POST" action="{% url 'kas:policy_activate' policy.pk %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-primary">{% trans 'Aktivér' %}</button>

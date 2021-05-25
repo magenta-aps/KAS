@@ -454,6 +454,7 @@ class PdfDownloadView(LoginRequiredMixin, SingleObjectMixin, View):
 class SelfReportedAmountUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
     form_class = SelfReportedAmountForm
     template_name = 'kas/selfreportedamount_form.html'
+    allowed_year_parts = ['selvangivelse']
 
     def get_queryset(self):
         return PolicyTaxYear.objects.filter(person_tax_year__tax_year__year_part='selvangivelse')
