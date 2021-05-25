@@ -24,12 +24,20 @@
             {{ form.attachment }}
         </div>
     </div>
-    {% if form.slutlignet %}
+    {% if form.slutlignet or form.efterbehandling %}
         <div class="form-row">
-            <div class="form-check mt-3 ml-auto">
-                {{ form.slutlignet }}
-                <label class="form-check-label">{{ form.slutlignet.label }}</label>
-            </div>
+            {% if form.slutlignet %}
+                <div class="form-check mt-3 ml-auto">
+                    {{ form.slutlignet }}
+                    <label class="form-check-label">{{ form.slutlignet.label }}</label>
+                </div>
+            {% endif %}
+            {% if form.efterbehandling %}
+                <div class="form-check mt-3 ml-5">
+                    {{ form.efterbehandling }}
+                    <label class="form-check-label">{{ form.efterbehandling.label }}</label>
+                </div>
+            {% endif %}
         </div>
     {% endif %}
     <div class="form-row">

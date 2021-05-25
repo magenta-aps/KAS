@@ -111,6 +111,9 @@ class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
             # add slutlignet checkbox
             self.fields['slutlignet'] = forms.BooleanField(required=False, label=_('Markér som slutlignet'),
                                                            widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
+        if year_part == 'ligning':
+            self.fields['efterbehandling'] = forms.BooleanField(required=False, label=_('Markér til efterbehandling'),
+                                                                widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
 
     def save(self, commit=True):
         instance = super().save(commit)
@@ -132,7 +135,7 @@ class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
 
     class Meta:
         model = PolicyTaxYear
-        fields = ['slutlignet']
+        fields = ['slutlignet', 'efterbehandling']
 
 
 class PolicyTaxYearActivationForm(forms.ModelForm):
