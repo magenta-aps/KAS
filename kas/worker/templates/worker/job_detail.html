@@ -28,7 +28,7 @@
         <td>{{ object.duration|duration }}</td>
     </tr>
     {% endif %}
-    {% if object.status == 'finished' %}
+    {% if object.status == 'finished' or object.status == 'failed' %}
     <tr>
         <th>{% trans 'Opsummering' %}</th>
         <td class="job-summary">

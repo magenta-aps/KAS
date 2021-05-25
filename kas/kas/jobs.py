@@ -3,9 +3,11 @@ import base64
 from time import sleep
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import IntegerField, Sum
+from django.db.models import IntegerField, Sum, Q
 from django.db.models.functions import Cast
+from django.db.utils import IntegrityError
 from django.utils import timezone
 from requests.exceptions import HTTPError, ConnectionError
 from rq import get_current_job
@@ -16,7 +18,7 @@ from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.management.commands.create_initial_years import Command as CreateInitialYears
 from kas.management.commands.import_default_pension_companies import Command as CreateInitialPensionComanies
 from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated, \
-    PreviousYearNegativePayout, FinalSettlement
+    PreviousYearNegativePayout, FinalSettlement, PolicyDocument
 from kas.models import PersonTaxYearCensus
 from kas.reportgeneration.kas_report import TaxPDF
 from worker.job_registry import get_job_types, resolve_job_function
@@ -164,10 +166,32 @@ def import_r75(job):
         indtaegter_sum=Sum(Cast('renteindtaegt', output_field=IntegerField()))
     )
     count = qs.count()
+    # mock data for autoligning
+    changed_by_citizen = None
+    changed_by_clerk = None
+    general_note_set = None
+    with_documents = None
+    rest_user = get_user_model().objects.get(username='rest')
+    clerk_user = get_user_model().objects.exclude(username='rest').first()
+    til_efterbahndling = []
+    person, _ = Person.objects.get_or_create(cpr='1212121212', defaults={'name': 'Til efterbehandling'})
+    person_tax_year, _ = PersonTaxYear.objects.get_or_create(person=person, tax_year=tax_year)
+    company, _ = PensionCompany.objects.get_or_create(name='test123')
+    # Created by citizen
+    try:
+        policy_tax_year = PolicyTaxYear(person_tax_year=person_tax_year,
+                                        pension_company=company,
+                                        policy_number=200)
+        policy_tax_year._history_user = rest_user  # fake creating through the res API
+        policy_tax_year.save()
+    except IntegrityError:
+        #
+        pass
+    else:
+        til_efterbahndling.append(policy_tax_year)
 
     with transaction.atomic():
         for i, item in enumerate(qs):
-
             person, c = Person.objects.get_or_create(cpr=item['cpr'])
             try:
                 person_tax_year = PersonTaxYear.objects.get(
@@ -187,13 +211,33 @@ def import_r75(job):
                     'prefilled_amount': item['indtaegter_sum'],
                 }
                 (policy_tax_year, status) = PolicyTaxYear.update_or_create(policy_data, 'person_tax_year', 'pension_company', 'policy_number')
-
                 if status in (PersonTaxYear.CREATED, PersonTaxYear.UPDATED):
+                    policy_tax_year._change_reason = 'Updated by import'  # needed for autoligning
                     policy_tax_year.recalculate()
+                    policy_tax_year._change_reason = ''
                     if status == PersonTaxYear.CREATED:
                         policies_created += 1
                     elif status == PersonTaxYear.UPDATED:
                         policies_updated += 1
+
+                if changed_by_citizen is None:
+                    policy_tax_year.self_reported_amount = 300
+                    policy_tax_year._history_user = rest_user  # changed by citizen
+                    policy_tax_year.save()
+                    changed_by_citizen = policy_tax_year
+                elif changed_by_clerk is None:
+                    policy_tax_year.self_reported_amount = 600
+                    policy_tax_year._history_user = clerk_user  # changed by clerk
+                    policy_tax_year.save()
+                    changed_by_clerk = policy_tax_year
+                elif general_note_set is None:
+                    policy_tax_year.general_notes = 'this is a general note'
+                    policy_tax_year.save()
+                    general_note_set = policy_tax_year
+                elif with_documents is None:
+                    # Create empty document
+                    with_documents = PolicyDocument.objects.create(person_tax_year=person_tax_year,
+                                                                   name='test', description='Trigger to efterbhandling')
 
             except PersonTaxYear.DoesNotExist:
                 pass
@@ -440,6 +484,64 @@ def import_all_r75(job):
     ]
 
     dispatch_chained_jobs(jobs, job)
+
+
+@job_decorator
+def autoligning(job):
+    """Kør autoligning for et given år"""
+    year = TaxYear.objects.get(pk=job.arguments['year_pk'])
+    if year.year_part != 'selvangivelse':
+        job.status = 'failed'
+        job.result = {'error': 'Kan kun autoligne år som er i perioden selvangivelse'}
+        job.end_at = timezone.now()
+        job.save(update_fields=['status', 'result', 'end_at'])
+        return
+
+    # if no user is found this will raise an exception which is what we want
+    rest_user = get_user_model().objects.get(username='rest')
+
+    with transaction.atomic():
+        policies = PolicyTaxYear.objects.select_related(
+            'person_tax_year').filter(active=True, person_tax_year__tax_year=year).select_for_update()
+        autolignet = 0
+        post_processing = 0
+        total = 0
+        for policy in policies:
+            if policy.history.filter((Q(history_type='~',) & ~ Q(
+                    history_change_reason='Updated by import')) | Q(
+                        history_type='+', history_user=rest_user)).exists():
+
+                # policy has changes or policy was created by citizen
+                policy.efterbehandling = True
+                policy.slutlignet = False
+                post_processing += 1
+            elif policy.person_tax_year.general_notes and len(policy.person_tax_year.general_notes.replace(' ', '')) > 0:
+                # General note on PersonTaxYear is not null and contains at least 1 character
+                policy.efterbehandling = True
+                policy.slutlignet = False
+                post_processing += 1
+            elif policy.person_tax_year.notes.exists() or policy.person_tax_year.policydocument_set.exists():
+                # notes or documents was created for the related person_tax_year
+                policy.efterbehandling = True
+                policy.slutlignet = False
+                post_processing += 1
+            else:
+                policy.efterbehandling = False
+                policy.slutlignet = True
+                autolignet += 1
+
+            total += 1
+            policy._change_reason = 'autoligning'
+            policy._history_user = job.created_by
+            policy.save()
+
+        year.year_part = 'ligning'
+        year.save()
+
+        result = {'autolignet': autolignet,
+                  'post_processing': post_processing,
+                  'total': total}
+        job.finish(result)
 
 
 def generate_final_settlements_for_year():

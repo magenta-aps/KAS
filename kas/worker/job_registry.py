@@ -7,10 +7,18 @@ def get_job_types():
     """
     :returns a registry dictionary with label and form_class for each job type
     """
-    from worker.forms import MandtalImportJobForm, R75ImportJobForm, YearAndTitleForm, ConfirmForm, YearPkForm
+    from worker.forms import MandtalImportJobForm, R75ImportJobForm, YearAndTitleForm, ConfirmForm, YearPkForm, \
+        AutoligningsYearForm
     from prisme.forms import PrePaymentFileModelForm
 
     return {
+        'Autoligning': {
+            'label': _('Kør autoligning'),
+            'form_class': AutoligningsYearForm,  # form class used in the start job workflow
+            'result_template': 'worker/includes/autoligning.html',
+            'function': 'kas.jobs.autoligning',
+
+        },
         'ImportPrePaymentFile': {
             'label': _('Import af forudindbetalinger'),  # translated label
             'form_class': PrePaymentFileModelForm,

@@ -42,7 +42,7 @@
               {% else %}
               <select class="form-control" id="js-year-select">
                   {% for tax_year in person_tax_years %}
-                      <option {% if tax_year == person_tax_year %}selected="selected"{% endif %} value="{% url 'kas:person_in_year' tax_year.year tax_year.person.pk %}">{{tax_year.year}}</option>
+                      <option {% if tax_year == person_tax_year %}selected="selected"{% endif %} value="{% url 'kas:person_in_year' tax_year.year tax_year.person.pk %}">{{tax_year.tax_year.year}} ({{ tax_year.tax_year.get_year_part_display }})</option>
                   {% endfor %}
               </select>
               {% endif %}

@@ -41,7 +41,7 @@
                     {% else %}
                         <select class="form-control" id="js-year-select">
                         {% for x in policy.same_policy_qs.all %}
-                            <option {% if x == policy %}selected="selected"{% endif %} value="{% url 'kas:policy_detail' x.pk %}">{{x.year}}</option>
+                            <option {% if x == policy %}selected="selected"{% endif %} value="{% url 'kas:policy_detail' x.pk %}">{{x.tax_year.year}} ({{ x.tax_year.get_year_part_display }})</option>
                         {% endfor %}
                         </select>
                     {% endif %}

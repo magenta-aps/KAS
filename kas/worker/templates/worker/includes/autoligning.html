@@ -1,0 +1,13 @@
+{% load i18n %}
+<table class="table job-summary">
+    {% for key, value in result.items %}
+        <tr>
+        {% if key == 'post_processing' %}
+            <td class="col-sm-3">{% trans 'Kræver efterbehandling' %}</td>
+        {% else %}
+            <td class="col-sm-3">{{ key }}</td>
+        {% endif %}
+            <td class="col-sm-9">{{ value }}</td>
+        </tr>
+    {% endfor %}
+</table>

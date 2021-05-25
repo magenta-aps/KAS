@@ -1,9 +1,10 @@
 from django import forms
 from django.conf import settings
-from worker.job_registry import get_job_types
-from kas.forms_mixin import BootstrapForm
 from django.utils.translation import gettext as _
+
+from kas.forms_mixin import BootstrapForm
 from kas.models import TaxYear
+from worker.job_registry import get_job_types
 
 
 class JobTypeSelectForm(BootstrapForm):
@@ -93,6 +94,15 @@ class YearPkForm(BootstrapForm):
     def __init__(self, *args, **kwargs):
         super(YearPkForm, self).__init__(*args, **kwargs)
         self.fields['year_pk'].choices = ((year.pk, str(year)) for year in TaxYear.objects.all())
+
+
+class AutoligningsYearForm(BootstrapForm):
+    year_pk = forms.ChoiceField(choices=[], required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(AutoligningsYearForm, self).__init__(*args, **kwargs)
+        self.fields['year_pk'].choices = ((year.pk, '{} ({})'.format(year.year, year.year_part)) for year
+                                          in TaxYear.objects.filter(year_part='selvangivelse'))
 
 
 class YearAndTitleForm(YearPkForm):
