@@ -36,6 +36,8 @@
                     {% trans 'Notat' %}
                 {% elif  entry.klass == 'PolicyDocument' %}
                     {% trans 'Bilag' %}
+                {% elif  entry.klass == 'TaxSlipGenerated' %}
+                    {% trans 'Selvangivelse' %}
                 {% else %}
                     {{ entry }}
                 {% endif %}
