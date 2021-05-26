@@ -70,7 +70,11 @@
             </tr>
             <tr>
                 <th>{% trans 'Beregnet skat' %}</th>
-                <td><a href="#beregnings-tab">{{ calculation.tax_with_deductions }} {% trans 'kr' %}</a></td>
+                {% if historical %}
+                <td>{{ policy.calculated_result }} {% trans 'kr' %}</td>
+                {% else %}
+                <td><a href="#beregnings-tab">{{ policy.calculated_result }} {% trans 'kr' %}</a></td>
+                {% endif %}
             </tr>
             <tr>
                 <th>{% trans 'Slutlignet' %}</th>
