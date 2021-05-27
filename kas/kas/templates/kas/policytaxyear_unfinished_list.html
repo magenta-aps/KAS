@@ -2,7 +2,18 @@
 {% load i18n %}
 
 {% block content %}
-  <h1>{% trans 'Policer der kræver efterbehandling' %}</h1>
+  <h1>{% trans 'Policer der kræver efterbehandling' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
+    {% blocktrans asvar top_help %} En police bliver markeret til efterbehandling som en del af autoligning
+        hvis policen opfylder et eller flere af følgende kriterier:
+        <ul>
+            <li>Policen er blevet <b>oprettet af en borger</b> via selvbetjening.</li>
+            <li>Der er blevet <b>tilføjet notater eller bilag</b> såsom dokumentation til policen.</li>
+            <li>Det <b>fortrykte beløb</b> er forskelligt fra det <b>selvangivne beløb.</b></li>
+        </ul>
+        Fremsøg en enkelt police eller begræns søgningen til et angivet pensionsselskab ved at benytte nedenstående formular.
+
+        Indholdet af tabellen kan sorteres ved at klikke på de enkelte overskrifter.{% endblocktrans %}
+    {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
 
   <div>
     <form action="" method="GET">
