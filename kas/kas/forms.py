@@ -104,14 +104,13 @@ class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
     note = forms.CharField(widget=forms.Textarea(attrs={'placeholder': _('Nyt notat')}),
                            required=False)
     slutlignet = forms.BooleanField(required=False, label=_('Markér som slutlignet'),
-                                    widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
+                                   widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
     efterbehandling = forms.BooleanField(required=False, label=_('Markér til efterbehandling'),
                                          widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
 
     def __init__(self, **kwargs):
         self.user = kwargs.pop('user')
         year_part = kwargs.pop('year_part')
-        print(year_part)
         super().__init__(**kwargs)
         if year_part in ('ligning', 'genoptagelsesperiode'):
             self.original_efterbehandling = self.instance.efterbehandling
