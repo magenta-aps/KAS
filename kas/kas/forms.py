@@ -2,11 +2,12 @@ import re
 
 from django import forms
 from django.core.exceptions import ValidationError
+from django.forms import CheckboxInput
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from kas.forms_mixin import BootstrapForm
 from kas.models import PersonTaxYear, PolicyTaxYear, Note, PolicyDocument, PensionCompany, TaxYear
-from kas.fields import PensionCompanyChoiceField
+from kas.fields import PensionCompanyChoiceField, DateInput
 
 
 class PersonListFilterForm(BootstrapForm):
@@ -135,7 +136,11 @@ class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
 
     class Meta:
         model = PolicyTaxYear
-        fields = ['slutlignet', 'efterbehandling']
+        fields = ['slutlignet', 'efterbehandling', 'next_processing_date']
+        widgets = {
+            'slutlignet': CheckboxInput(attrs={'class': 'form-check-input'}),
+            'next_processing_date': DateInput()
+        }
 
 
 class PolicyTaxYearActivationForm(forms.ModelForm):
@@ -173,14 +178,16 @@ class SelfReportedAmountForm(forms.ModelForm, BootstrapForm):
 
     class Meta:
         model = PolicyTaxYear
-        fields = ('self_reported_amount', )
+        fields = ('self_reported_amount', 'next_processing_date')
+        widgets = {'next_processing_date': DateInput()}
 
 
-class EditAmountsUpdateFrom(forms.ModelForm, BootstrapForm):
+class EditAmountsUpdateForm(forms.ModelForm, BootstrapForm):
 
     class Meta:
         model = PolicyTaxYear
-        fields = ('adjusted_r75_amount', 'self_reported_amount', 'assessed_amount', 'slutlignet')
+        fields = ('adjusted_r75_amount', 'self_reported_amount', 'assessed_amount', 'slutlignet', 'next_processing_date')
+        widgets = {'next_processing_date': DateInput()}
 
 
 class PensionCompanySummaryFileForm(BootstrapForm):

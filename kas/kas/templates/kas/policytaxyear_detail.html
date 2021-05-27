@@ -90,6 +90,10 @@
                 {% endif %}
             </tr>
             <tr>
+                <th>{% trans 'Næste behandlingsdato' %}</th>
+                <td>{{ policy.next_processing_date|default_if_none:'' }}</td>
+            </tr>
+            <tr>
                 <th>{% trans 'Slutlignet' %}</th>
                 <td>
                     {% if policy.slutlignet %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}

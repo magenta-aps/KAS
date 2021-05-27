@@ -35,6 +35,7 @@
         <th>{% trans 'Adresse' %}</th>
         <th>{% trans 'Kommune' %}</th>
         <th>{% trans 'Antal policer' %}</th>
+        <th>{% trans 'Næste behandlingsdato' %}</th>
       </tr>
       </thead>
       <tbody>
@@ -47,6 +48,7 @@
           <td>{{ person.full_address }}</td>
           <td>{{ person.municipality_name }}</td>
           <td>{{ person_tax_year.policytaxyear_set.count|default:0 }}</td>
+          <td>{{ person_tax_year.next_processing_date|date:'SHORT_DATE_FORMAT'|default_if_none:'' }}</td>
         </tr>
         {% endwith %}
       {% endfor %}

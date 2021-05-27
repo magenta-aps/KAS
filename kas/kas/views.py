@@ -7,7 +7,7 @@ from io import StringIO
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
-from django.db.models import Count, F, Q
+from django.db.models import Count, F, Q, Min
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -19,7 +19,7 @@ from ipware import get_client_ip
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from kas.forms import PersonListFilterForm, SelfReportedAmountForm, \
-    EditAmountsUpdateFrom, PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, \
+    EditAmountsUpdateForm, PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, \
     PolicyTaxYearActivationForm
 from kas.forms import PolicyNotesAndAttachmentForm, PersonNotesAndAttachmentForm, \
     PolicyListFilterForm
@@ -99,8 +99,9 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         form = self.get_form()
-
         qs = super().get_queryset()
+        qs = qs.annotate(next_processing_date=Min('policytaxyear__next_processing_date'))
+
         try:
             self.year = form.cleaned_data['year']
         except (AttributeError, KeyError):
@@ -148,12 +149,20 @@ class PersonTaxYearSpecialListView(PersonTaxYearListView):
         return not form.errors
 
     def get_queryset(self):
+
+        order_by = self.request.GET.get('order_by', self.default_order_by)
+
+        # Handle fields that should always have null last when sorting
+        if order_by.endswith("_nulllast"):
+            order_by = order_by[:-9]
+            if order_by.startswith("-"):
+                order_by = F(order_by[1:]).desc(nulls_last=True)
+            else:
+                order_by = F(order_by).asc(nulls_last=True)
+
         return self.filter_queryset(
             super().get_queryset()
-        ).order_by(
-            self.request.GET.get('order_by', self.default_order_by),
-            'person__name'
-        )
+        ).order_by(order_by, 'person__name')
 
     def filter_queryset(self, qs):
         return qs
@@ -461,7 +470,7 @@ class SelfReportedAmountUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNot
 
 
 class EditAmountsUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
-    form_class = EditAmountsUpdateFrom
+    form_class = EditAmountsUpdateForm
     template_name = 'kas/edit_amounts_form.html'
 
     def get_queryset(self):
