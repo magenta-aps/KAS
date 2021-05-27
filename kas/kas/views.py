@@ -567,9 +567,11 @@ class PersonTaxYearHistoryListView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super(PersonTaxYearHistoryListView, self).get_context_data(**kwargs)
+
         qs = self.object.history.all().annotate(
             klass=models.Value('PersonTaxYear', output_field=models.CharField()),
         ).values('history_id', 'history_date', 'history_user__username', 'history_change_reason', 'history_type', 'klass')
+
         person_qs = self.object.person.history.all().annotate(
             klass=models.Value('Person', output_field=models.CharField()),
         ).values('history_id', 'history_date', 'history_user__username', 'history_change_reason', 'history_type', 'klass')
@@ -582,6 +584,7 @@ class PersonTaxYearHistoryListView(LoginRequiredMixin, DetailView):
             history_type=models.Value('+', output_field=models.CharField()),
             klass=models.Value('Note', output_field=models.CharField()),
         ).values('id', 'date', 'author__username', 'content', 'history_type', 'klass')
+
         documents_qs = PolicyDocument.objects.filter(person_tax_year=self.object).annotate(
             history_type=models.Value('+', output_field=models.CharField()),
             klass=models.Value('PolicyDocument', output_field=models.CharField()),
@@ -594,6 +597,7 @@ class PersonTaxYearHistoryListView(LoginRequiredMixin, DetailView):
             history_type=models.Value('+', output_field=models.CharField()),
             klass=models.Value('TaxSlipGenerated', output_field=models.CharField()),
         ).values('id', 'created_at', 'created_by', 'description', 'history_type', 'klass')
+
         # send tax slips
         tax_slip_sendt_qs = TaxSlipGenerated.objects.filter(persontaxyear=self.object).exclude(send_at__isnull=True).annotate(
             created_by=models.Value('', output_field=models.CharField()),
@@ -601,6 +605,7 @@ class PersonTaxYearHistoryListView(LoginRequiredMixin, DetailView):
             history_type=models.Value('~', output_field=models.CharField()),
             klass=models.Value('TaxSlipGenerated', output_field=models.CharField()),
         ).values('id', 'send_at', 'created_by', 'description', 'history_type', 'klass')
+
         # TODO add final settlements
         ctx['objects'] = qs.union(policy_qs, person_qs, notes_qs, documents_qs,
                                   tax_slip_generated_qs, tax_slip_sendt_qs, all=True).order_by('-history_date')
