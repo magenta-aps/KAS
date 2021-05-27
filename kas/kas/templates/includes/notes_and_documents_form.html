@@ -12,11 +12,27 @@
         </div>
         <div class="form-row">
             {% for field in form %}
+                {% if field.name != 'next_processing_date' %}
                 <div class="col form-group">
                     <label class="">{{ field.label }}:</label>{{ field }}
                 </div>
+                {% endif %}
             {% endfor %}
         </div>
+
+        {% if form.next_processing_date %}
+        <div class="form-row">
+            <div>
+                <button id="collapseButtonNextProcessingDate" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseNextProcessingDate" aria-expanded="false"  aria-controls="collapseNextProcessingDate">
+                    {% trans 'Opdatér næste behandlingsdato' %}
+                </button>
+                <div id="collapseNextProcessingDate" class="collapse">
+                    {{ form.next_processing_date }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="form-row mt-2 mb-2">
             <div class="col">
                 {{ notes_formset }}
@@ -45,6 +61,7 @@
         </div>
     </div>
 </form>
+{{ form.next_processing_date.id_for_label|json_script:"next_processing_date_id" }}
 <script>
     $( document ).ready(function() {
         $( "input#add-attachments" ).click(function() {
@@ -59,6 +76,17 @@
             </div>`
             $(row).appendTo($("form#notes-and-documents-form"))
             $('input#id_uploads-TOTAL_FORMS').val(count+1);
-        })
+        });
+
+        // Don't submit date field if it's hidden
+        const nextProcessingDateField = $("#" + JSON.parse($('#next_processing_date_id').text()));
+        $('#collapseNextProcessingDate').on({
+            'shown.bs.collapse': function() {
+                nextProcessingDateField.removeAttr("disabled");
+            },
+            'hidden.bs.collapse': function() {
+                nextProcessingDateField.attr("disabled", "disabled");
+            }
+        });
     })
 </script>

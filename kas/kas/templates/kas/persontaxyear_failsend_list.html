@@ -39,6 +39,10 @@
         {% trans 'Antal policer' as antal_policer %}
         {% include 'includes/order_by_link.html' with key="order_by" value="policy_count" text=antal_policer %}
       </th>
+      <th>
+        {% trans 'Næste behandlingsdato' as processing_date %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="next_processing_date_nulllast" text=processing_date %}
+      </th>
     </tr>
     </thead>
     <tbody>
@@ -51,6 +55,7 @@
         <td>{{ person.full_address }}</td>
         <td>{{ person.municipality_name }}</td>
         <td>{{ person_tax_year.policy_count }}</td>
+        <td>{{ person_tax_year.next_processing_date|date:'SHORT_DATE_FORMAT'|default_if_none:'' }}</td>
       </tr>
       {% endwith %}
     {% endfor %}

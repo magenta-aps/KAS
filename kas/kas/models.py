@@ -546,6 +546,12 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     slutlignet = models.BooleanField(verbose_name=_('Slutlignet'), default=False)
     efterbehandling = models.BooleanField(verbose_name=_('Kræver efterbehandling'), default=False)
 
+    next_processing_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_('Næste behandlingsdato')
+    )
+
     @classmethod
     def perform_calculation(
         cls,

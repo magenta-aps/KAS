@@ -7,6 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('kas', '0012_fix_policy_history'),
+        ('kas', '0013_auto_20210525_1320'),
     ]
 
     operations = [

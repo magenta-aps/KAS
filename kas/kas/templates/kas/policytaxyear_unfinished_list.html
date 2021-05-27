@@ -42,6 +42,10 @@
         {% trans 'Policenummer' as policenummer %}
         {% include 'includes/order_by_link.html' with key="order_by" value="policy_number" text=policenummer %}
       </th>
+      <th>
+        {% trans 'Næste behandlingsdato' as behandlingsdato %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="next_processing_date_nulllast" text=behandlingsdato %}
+      </th>
       <th class="text-right">
         {% trans 'Fortrykt beløb' as fortrykt %}
         {% include 'includes/order_by_link.html' with key="order_by" value="prefilled_amount_nulllast" text=fortrykt %}
@@ -70,6 +74,7 @@
         <td><a href="{{ person_url }}">{{ person.name }} ({{ person.cpr }})</a></td>
         <td><a href="{{ policy_url }}">{{ policy_tax_year.pension_company.name }}</a></td>
         <td><a href="{{ policy_url }}">{{ policy_tax_year.policy_number }}</a></td>
+        <td>{{ policy_tax_year.next_processing_date|date:'SHORT_DATE_FORMAT'|default_if_none:'' }}</td>
         <td class="text-right">{{ policy_tax_year.prefilled_amount|default_if_none:"" }}</td>
         <td class="text-right">{{ policy_tax_year.self_reported_amount|default_if_none:"" }}</td>
         <td class="text-right">{{ policy_tax_year.difference|default_if_none:"" }}</td>
