@@ -157,3 +157,52 @@ class EditAmountsUpdateViewTestCase(BaseTestCase):
         r = self.client.get(reverse('kas:change-edit-amounts', kwargs={'pk': self.policy_tax_year.pk}))
         self.assertEqual(r.context['form']['assessed_amount'].value(), 35)
         self.assertEqual(r.context['form']['adjusted_r75_amount'].value(), 35)
+
+    def test_set_efterbehandling(self):
+        r = self.client.post(reverse('kas:change-edit-amounts', kwargs={'pk': self.policy_tax_year.pk}),
+                             follow=True,
+                             data={'efterbehandling': True,
+                                   'notes-TOTAL_FORMS': 0,
+                                   'notes-INITIAL_FORMS': 0,
+                                   'uploads-TOTAL_FORMS': 0,
+                                   'uploads-INITIAL_FORMS': 0,
+                                   'self_reported_amount': 200})
+        self.assertEqual(r.status_code, 200)
+        policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
+        self.assertTrue(policy_tax_year.efterbehandling)
+
+    def test_unset_efterbehandling(self):
+        """
+        we should not be able to unset efterbehandling if it was previously set
+        """
+        self.policy_tax_year.efterbehandling = True
+        self.policy_tax_year.save()
+        r = self.client.post(reverse('kas:change-edit-amounts', args=[self.policy_tax_year.pk]),
+                             follow=True,
+                             data={'efterbehandling': False,
+                                   'notes-TOTAL_FORMS': 0,
+                                   'notes-INITIAL_FORMS': 0,
+                                   'uploads-TOTAL_FORMS': 0,
+                                   'uploads-INITIAL_FORMS': 0,
+                                   'self_reported_amount': 200})
+        self.assertEqual(r.status_code, 200)
+        policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
+        # Efterbehandling should still be true since we cannot unset it using the form.
+        self.assertTrue(policy_tax_year.efterbehandling)
+
+    def test_set_slutlignet_clears_efterbehandling(self):
+        self.policy_tax_year.efterbehandling = True
+        self.policy_tax_year.save()
+        r = self.client.post(reverse('kas:change-edit-amounts', args=[self.policy_tax_year.pk]),
+                             follow=True,
+                             data={'slutlignet': True,
+                                   'notes-TOTAL_FORMS': 0,
+                                   'notes-INITIAL_FORMS': 0,
+                                   'uploads-TOTAL_FORMS': 0,
+                                   'uploads-INITIAL_FORMS': 0,
+                                   'self_reported_amount': 200})
+        self.assertEqual(r.status_code, 200)
+        policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
+        # Efterbehandling should still be true since we cannot unset it using the form.
+        self.assertTrue(policy_tax_year.slutlignet)
+        self.assertFalse(policy_tax_year.efterbehandling)
