@@ -2,12 +2,12 @@ import re
 
 from django import forms
 from django.core.exceptions import ValidationError
-from django.forms import CheckboxInput
 from django.utils import timezone
 from django.utils.translation import gettext as _
+
+from kas.fields import PensionCompanyChoiceField, DateInput
 from kas.forms_mixin import BootstrapForm
 from kas.models import PersonTaxYear, PolicyTaxYear, Note, PolicyDocument, PensionCompany, TaxYear
-from kas.fields import PensionCompanyChoiceField, DateInput
 
 
 class PersonListFilterForm(BootstrapForm):
@@ -104,7 +104,7 @@ class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
     note = forms.CharField(widget=forms.Textarea(attrs={'placeholder': _('Nyt notat')}),
                            required=False)
     slutlignet = forms.BooleanField(required=False, label=_('Markér som slutlignet'),
-                                   widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
+                                    widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
     efterbehandling = forms.BooleanField(required=False, label=_('Markér til efterbehandling'),
                                          widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
 
