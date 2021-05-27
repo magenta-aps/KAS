@@ -441,7 +441,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     self_reported_amount = models.BigIntegerField(
         verbose_name=_('Selvangivet beløb'),
-        blank=False,
+        blank=True,
         null=True
     )
 
