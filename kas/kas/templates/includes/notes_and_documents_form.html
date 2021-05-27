@@ -12,13 +12,30 @@
         </div>
         <div class="form-row">
             {% for field in form %}
-                {% if field.name != 'next_processing_date' %}
+                {% if field.name != 'next_processing_date' and field.name != 'slutlignet' and field.name != 'efterbehandling' %}
                 <div class="col form-group">
-                    <label class="">{{ field.label }}:</label>{{ field }}
+                    <label class="" for="{{field.id_for_label}}">{{ field.label }}:</label>{{ field }}
                 </div>
                 {% endif %}
             {% endfor %}
         </div>
+
+        {% if form.slutlignet or form.efterbehandling %}
+        <div class="form-row form-group">
+        {% if form.slutlignet %}
+        <div class="form-check mt-3">
+            {{ form.slutlignet }}
+            <label class="form-check-label">{{ form.slutlignet.label }}</label>
+        </div>
+        {% endif %}
+        {% if form.efterbehandling %}
+        <div class="form-check mt-3 ml-5">
+            {{ form.efterbehandling }}
+            <label class="form-check-label">{{ form.efterbehandling.label }}</label>
+        </div>
+        {% endif %}
+        </div>
+        {% endif %}
 
         {% if form.next_processing_date %}
         <div class="form-row">
@@ -91,30 +108,4 @@
     })
 </script>
 
-{% if form.next_processing_date %}
-{{ object.next_processing_date|json_script:"next_processing_date" }}
-{{ form.next_processing_date.id_for_label|json_script:"next_processing_date_id" }}
-<script>
-    const objectNextProcessingDate = JSON.parse($('#next_processing_date').text());
-    const nextProcessingDateFieldId = JSON.parse($('#next_processing_date_id').text());
-    if (nextProcessingDateFieldId) {
-        $(function () {
-            const nextProcessingDateField = $("#" + nextProcessingDateFieldId);
-            $('#collapseNextProcessingDate').on({
-                'shown.bs.collapse': function () {
-                    // Update processing date field to 30 days in the future if it is not already set
-                    if (!objectNextProcessingDate) {
-                        var processingDate = new Date();
-                        // Adding a number to the days field automatically updates months and years as needed
-                        processingDate.setDate(processingDate.getDate() + 30);
-                        nextProcessingDateField.val(processingDate.toISOString().split('T')[0]);
-                    }
-                },
-                'hidden.bs.collapse': function () {
-                    nextProcessingDateField.val(objectNextProcessingDate);
-                }
-            });
-        });
-    }
-</script>
-{% endif %}
+{% include 'includes/processing_date_scripts.html' with modal_id='processingWarningModal' checkbox_id=form.slutlignet.id_for_label %}

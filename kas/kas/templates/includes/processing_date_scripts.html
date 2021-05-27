@@ -1,0 +1,98 @@
+{% load i18n %}
+
+{% if form.slutlignet or form.next_processing_date %}
+
+    {{ object.next_processing_date|json_script:"next_processing_date" }}
+    {{ form.next_processing_date.id_for_label|json_script:"next_processing_date_id" }}
+    {{ form.slutlignet.id_for_label|json_script:"slutlignet_id" }}
+    <script>
+        const objectNextProcessingDate = JSON.parse($('#next_processing_date').text());
+        const nextProcessingDateFieldId = JSON.parse($('#next_processing_date_id').text());
+        const slutlignetFieldId = JSON.parse($('#slutlignet_id').text());
+    </script>
+{% endif%}
+
+
+{% if form.slutlignet %}
+    {# Modal dialog for processing date warning #}
+    <div class="modal" tabindex="-1" role="dialog" id="{{ modal_id }}" aria-labelledby="{{ modal_id }}Label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="{{ modal_id }}Label">{% trans 'Advarsel' %}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="{% trans 'Luk' %}">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>{% trans 'Næste behandlingsdato er endnu ikke nået. Er du sikker på at du vil slutligne?' %}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" data-action="ok">{% trans 'Ja' %}</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" data-action="cancel">{% trans 'Nej' %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{ checkbox_id|json_script:"checkbox_id" }}
+    {{ modal_id|json_script:"modal_id" }}
+    <script>
+        $(function() {
+            const checkbox = $("#" + JSON.parse($("#checkbox_id").text()));
+            const modal = $("#" + JSON.parse($("#modal_id").text()));
+            modal.find("[data-action=ok]").click(function () {
+                checkbox.prop("checked", true);
+            });
+        });
+    </script>
+
+    <script>
+        if (slutlignetFieldId) {
+            $(function(){
+                const nextProcessingDateField = nextProcessingDateFieldId ? $("#"+nextProcessingDateFieldId) : null;
+                const slutlignetField = $("#" + slutlignetFieldId);
+                slutlignetField.change(function () {
+                    if ($(this).prop("checked")) {
+                        const next_processing_date_str = (nextProcessingDateField && !nextProcessingDateField.attr("disabled")) ? nextProcessingDateField.val() : objectNextProcessingDate;
+                        if (next_processing_date_str) {
+                            const next_processing_date_arr = next_processing_date_str.split("-");
+                            const next_processing_date = new Date(next_processing_date_arr[0], next_processing_date_arr[1] - 1, next_processing_date_arr[2]);
+                            const current_date = new Date();
+                            if (next_processing_date > current_date) {
+                                $(this).prop("checked", false);
+                                $('#processingWarningModal').modal({});
+                            }
+                        }
+                    }
+                });
+            });
+        }
+    </script>
+{% endif %}
+
+
+{% if form.next_processing_date %}
+    <script>
+        if (nextProcessingDateFieldId) {
+            $(function () {
+                const nextProcessingDateField = $("#" + nextProcessingDateFieldId);
+                $('#collapseNextProcessingDate').on({
+                    'shown.bs.collapse': function () {
+                        // Update processing date field to 30 days in the future if it is not already set
+                        if (!objectNextProcessingDate) {
+                            var processingDate = new Date();
+                            // Adding a number to the days field automatically updates months and years as needed
+                            processingDate.setDate(processingDate.getDate() + 30);
+                            nextProcessingDateField.val(processingDate.toISOString().split('T')[0]);
+                        }
+                    },
+                    'hidden.bs.collapse': function () {
+                        nextProcessingDateField.val(objectNextProcessingDate);
+                    }
+                });
+            });
+        }
+    </script>
+{% endif %}
+
