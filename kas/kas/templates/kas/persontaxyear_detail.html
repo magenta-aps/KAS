@@ -88,12 +88,12 @@
         <legend class="w-auto">{% trans 'Handlinger' %}</legend>
         <a class="btn btn-success" href="{% url 'kas:policy_create' view.year view.person_id %}">{% trans 'Opret ny police' %}</a>
         <a class="btn btn-info" href="{% url 'kas:person_add_notes_or_attachement' person_tax_year.pk %}" >{% trans 'Tilføj bilag/notater' %}</a>
-        {% if person_tax_year.tax_year.year_part == 'efterbehandling' %}
-            <a href="" class="btn btn-warning"> {# TODO needs to be implemented. When implementing view, check the tax_year.year_part to make sure it's 'efterbehandling' #}
+        {% if person_tax_year.tax_year.year_part == 'genoptagelsesperiode' %}
+            <a href="" class="btn btn-warning"> {# TODO needs to be implemented. When implementing view, check the tax_year.year_part to make sure it's 'genoptagelsesperiode' #}
                 {% trans 'Udsend ny slutopgørelse' %}
             </a>
         {% else %}
-            <button type="button" class="btn btn-warning" disabled="disabled" aria-disabled="true" title="{% trans 'Udsendelse af slutopgørelse er kun tilgængelig i efterbehandlingsperioden' %}">
+            <button type="button" class="btn btn-warning" disabled="disabled" aria-disabled="true" title="{% trans 'Udsendelse af slutopgørelse er kun tilgængelig i genoptagelsesperioden' %}">
                 {% trans 'Udsend ny slutopgørelse' %}
             </button>
         {% endif %}

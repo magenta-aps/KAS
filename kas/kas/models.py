@@ -115,7 +115,7 @@ class PensionCompany(models.Model):
 tax_year_part_year_choices = (
     ('selvangivelse', _('Selvangivelsesperiode')),
     ('ligning', _('Ligningsperiode')),
-    ('efterbehandling', _('Efterbehandlingsperiode'))
+    ('genoptagelsesperiode', _('Genoptagelsesperiode'))
 )
 
 

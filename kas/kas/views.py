@@ -465,7 +465,7 @@ class EditAmountsUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDo
     template_name = 'kas/edit_amounts_form.html'
 
     def get_queryset(self):
-        return PolicyTaxYear.objects.filter(person_tax_year__tax_year__year_part__in=['ligning', 'efterbehandling'])
+        return PolicyTaxYear.objects.filter(person_tax_year__tax_year__year_part__in=['ligning', 'genoptagelsesperiode'])
 
     def get_form_kwargs(self):
         if self.object.assessed_amount is None:
