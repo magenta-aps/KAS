@@ -694,7 +694,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     def get_calculation(self):
         return PolicyTaxYear.perform_calculation(
-            self.initial_amount,
+            self.get_assessed_amount(),
             days_in_year=self.tax_year.days_in_year,
             taxable_days_in_year=self.person_tax_year.number_of_days,
             available_deduction_data=self.calculate_available_yearly_deduction(),
@@ -847,7 +847,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         adjusted_r75_amount and prefilled_amount.
         :return: assessed_amount or None
         """
-        amounts_list = [self.self_reported_amount,
+        amounts_list = [self.assessed_amount,
+                        self.self_reported_amount,
                         self.adjusted_r75_amount,
                         self.prefilled_amount]
         return next((item for item in amounts_list if item is not None), None)
