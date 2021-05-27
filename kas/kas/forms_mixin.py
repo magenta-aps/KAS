@@ -9,9 +9,11 @@ class BootstrapForm(Form):
             self.set_field_classes(name, field)
 
     def full_clean(self):
-        super(BootstrapForm, self).full_clean()
+        result = super(BootstrapForm, self).full_clean()
         for name, field in self.fields.items():
-            self.set_field_classes(name, field)
+            self.set_field_classes(name, field, True)
+
+        return result
 
     def as_table(self):
         return self._html_output(
@@ -22,15 +24,16 @@ class BootstrapForm(Form):
             errors_on_separate_row=False
         )
 
-    def set_field_classes(self, name, field):
+    def set_field_classes(self, name, field, check_for_errors=False):
         classes = self.split_class(field.widget.attrs.get('class'))
         classes.append('mr-2')
         if isinstance(field.widget, (CheckboxInput, RadioSelect)):
             classes.append('form-check-input')
         else:
             classes.append('form-control')
-        if self.has_error(name) is True:
-            classes.append('is-invalid')
+        if check_for_errors:
+            if self.has_error(name) is True:
+                classes.append('is-invalid')
         field.widget.attrs['class'] = ' '.join(set(classes))
 
     def split_class(self, class_string):
