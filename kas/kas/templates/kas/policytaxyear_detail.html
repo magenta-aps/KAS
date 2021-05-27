@@ -8,14 +8,27 @@
   <h1>{% blocktrans with name=policy.person_tax_year.person.name year=policy.person_tax_year.tax_year.year history_date=policy.history_date|date:'SHORT_DATETIME_FORMAT' %}{{ name }} i år {{year}} fra <b>{{ history_date }}</b>{% endblocktrans %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only %}</h1>
   {% blocktrans asvar top_help with history_date=policy.history_date|date:'SHORT_DATETIME_FORMAT' %} Denne side viser en tidligere version af policen fra <b>{{ history_date }}</b> {% endblocktrans %}
   {% else %}
-  <h1>{% blocktrans with number=policy.policy_number company=policy.pension_company.name name=policy.person.name year=policy.year %}Police {{ number }} ved {{ company }} for '{{ name }}' år {{ year}}{% endblocktrans %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
-  {% blocktrans asvar top_help %}På denne side kan ses detaljer for den valgte police for det givne år. Der vises beregningen der danner grundlag for skatten og
-     en tabel der viser hvordan negativt afkast fra tidligere år eventuelt er blevet anvendt.
-    I bunden af siden er det muligt at tilføje notater og vedhæfte bilag på policen.
-    Brug navigationsboksen til højre til at hoppe til en bestemt del af siden.{% endblocktrans %}
+  <h1>{% blocktrans with number=policy.policy_number company=policy.pension_company.name name=policy.person.name year=policy.year %}Police {{ number }} ved {{ company }} for '{{ name }}' år {{ year}}{% endblocktrans %}</h1>
+    <h2 id="Stamdata">{% trans 'Stamdata' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h2>
+      {% blocktrans asvar top_help %}<b>Cpr og navn</b> Klik for at gå til borger.
+
+          <b>År</b> Viste år for police.
+
+          <b>R75 beløb</b> Importeret beløb fra R75 data.
+
+          <b>Selvangivet beløb</b> Borgerens selvangivne beløb
+
+          <b>Lignet beløb</b> Fastsat beløb under ligning.
+
+          <b>Beregnet skat</b> Beregnet skat ud fra startbeløb, fradrag og skatteprocent.
+
+          <b>Slutlignet</b> Er policen slutlignet.
+
+          <b>Kræver efterbehandling</b> Er policen markeret til efterbehandling.
+
+          <b>Aktiv</b> Policen er aktiv og gældende.{% endblocktrans %}
+      {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
   {% endif %}
-  {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
-    <h2 id="Stamdata">{% trans 'Stamdata' %}</h2>
     <table class="table table-bordered table-sm" style="width: auto;">
         {% with person=policy.person_tax_year.person %}
             <tbody>
@@ -127,6 +140,17 @@
             <a href="{% url 'kas:policy_history_list' policy.pk %}" class="btn btn-secondary">{% trans 'Vis historik' %}</a>
         </fieldset>
     {% endif %}
+    <div class="mb-2">
+        {% include 'includes/help_text/question_mark.html' with target_id='js-bottom-collapse' only%}
+        {% blocktrans asvar bottom_help %}<b>Beregningsdetaljer</b> Beregningsgrundlag for negativ afkast.
+
+            <b>Anvendt negativt afkast</b> Oversigt over anvendt negativt afkast fra tidligere år.
+
+            <b>Notat</b> Liste af notater tilknyttet police.
+
+            <b>Bilag</b> Liste af bilag tilknyttet police.{% endblocktrans %}
+        {% include 'includes/help_text/collapse.html' with help_text=bottom_help target_id='js-bottom-collapse' %}
+    </div>
     {% include 'includes/detail_tabs.html' with notes=policy.notes.all attachments=policy.policy_documents.all %}
 
     {# Modal dialog for deactivation confirm #}

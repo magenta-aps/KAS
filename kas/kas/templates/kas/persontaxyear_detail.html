@@ -9,20 +9,19 @@
         <h1>{% blocktrans with name=person_tax_year.person.name year=person_tax_year.tax_year.year history_date=person_tax_year.history_date|date:'SHORT_DATETIME_FORMAT' %}{{ name }} i år {{year}} fra <b>{{ history_date }}</b>{% endblocktrans %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only %}</h1>
         {% blocktrans asvar help_text with history_date=person_tax_year.history_date|date:'SHORT_DATETIME_FORMAT' %} Denne side viser en tidligere version af personskatteåret fra <b>{{ history_date }}</b> {% endblocktrans %}
     {% else %}
-        <h1>{% blocktrans with name=person_tax_year.person.name year=person_tax_year.year %}{{ name }} i år {{year}}{% endblocktrans %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only %}</h1>
-      {% blocktrans asvar help_text %}På denne side kan man se detaljer for borgeren og borgerens policer, og oprette notater og vedhæfte bilag relateret til borgeren.
-          Navigationsboksen til højre kan bruges til hurtigt at springe til den del af siden der ønskes at arbejde med.
-          Hvis der er blevet genereret en selvangivelse for borgeren for det pågældende år kan der klikkes på linket 'Hent selvangivelse PDF' øverst på siden for at få vist selvangivelsen.
-          Hvis borgeren har policer i det pågældende år vises der en liste over disse under tabellen med borgerens stamdata.
-          Klik på en police for at se detaljer for policen og for at oprette notater og bilag relateret til policen.
-          Nederst på siden vises se notater og bilag og det er muligt at tilføje nye notater og bilag.{% endblocktrans %}
+        <h1>{% blocktrans with name=person_tax_year.person.name year=person_tax_year.year %}{{ name }} i år {{year}}{% endblocktrans %}</h1>
+        {% if person_tax_year.tax_slip %}
+            <h2 id="Selvangivelse">{% trans 'Selvangivelse' %}</h2>
+            <p><a href="{% url 'kas:get_pdf' view.year person_tax_year.person.pk %}">{% trans 'Hent selvangivelse PDF' %}</a></p>
+        {% endif %}
+        <h2 id="Stamdata">{% trans 'Stamdata' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only %}</h2>
+        {% blocktrans asvar help_text %}<b>År</b> Viste år for borger.
+
+            <b>Slutlignet</b> Er alle policer for borger i det givne år slutlignede.
+
+            <b>Kræver efterbehandling</b> Er en eller flere policer for borgeren i det givne år markeret til efterbehandling.{% endblocktrans %}
+            {% include 'includes/help_text/collapse.html' with help_text=help_text target_id="js-top-collapse" %}
     {% endif %}
-    {% include 'includes/help_text/collapse.html' with help_text=help_text target_id="js-top-collapse" %}
-  {% if person_tax_year.tax_slip %}
-  <h2 id="Selvangivelse">{% trans 'Selvangivelse' %}</h2>
-  <p><a href="{% url 'kas:get_pdf' view.year person_tax_year.person.pk %}">{% trans 'Hent selvangivelse PDF' %}</a></p>
-  {% endif %}
-  <h2 id="Stamdata">{% trans 'Stamdata' %}</h2>
   <table class="table table-bordered table-sm" style="width: auto;">
     {% with person=person_tax_year.person %}
     <tbody>
@@ -99,6 +98,21 @@
         {% endif %}
         <a href="{% url 'kas:person_history_list' person_tax_year.pk %}" class="btn btn-secondary">{% trans 'Vis historik' %}</a>
     </fieldset>
+    <div class="mb-2">
+        {% include 'includes/help_text/question_mark.html' with target_id='js-nav-collapse' only %}
+        {% blocktrans asvar help_text_nav %}<b>Policer</b> Borgerens police for det valgte år. Klik på <b>Police nr.</b> for at gå til police.
+
+            <b>Notater</b> Liste af notater tilknyttet borger eller police
+
+            <b>Bilag</b> Liste af uploadede bilag tilknyttet en borger eller police.
+
+            <b>Notat om betaling i udlandet</b> Borgerudfyldt tekst om betaling af kapitalafkastskat i udlandet.
+
+            <b>Slutopgørelse</b> Genererede og afsendte slutopgørelser.
+
+            <b>Transaktioner</b> Forudindbetalinger og opkrævninger.{% endblocktrans %}
+        {% include 'includes/help_text/collapse.html' with help_text=help_text_nav target_id="js-nav-collapse" %}
+    </div>
     {% include 'includes/detail_tabs.html' with policy_col=True policies=person_tax_year.policytaxyear_set.all notes=person_tax_year.notes.all attachments=person_tax_year.policydocument_set.all transactions=transactions settlements=person_tax_year.finalsettlement_set.all %}
     <script type="application/javascript">
         $( document ).ready(function() {
