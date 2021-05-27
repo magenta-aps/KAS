@@ -2,12 +2,12 @@ import re
 
 from django import forms
 from django.core.exceptions import ValidationError
-from django.forms import CheckboxInput
 from django.utils import timezone
 from django.utils.translation import gettext as _
+
+from kas.fields import PensionCompanyChoiceField, DateInput
 from kas.forms_mixin import BootstrapForm
 from kas.models import PersonTaxYear, PolicyTaxYear, Note, PolicyDocument, PensionCompany, TaxYear
-from kas.fields import PensionCompanyChoiceField, DateInput
 
 
 class PersonListFilterForm(BootstrapForm):
@@ -103,18 +103,39 @@ class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
                                              widget=forms.TextInput(attrs={'placeholder': _('Fil-beskrivelse')}))
     note = forms.CharField(widget=forms.Textarea(attrs={'placeholder': _('Nyt notat')}),
                            required=False)
+    slutlignet = forms.BooleanField(required=False, label=_('Markér som slutlignet'),
+                                    widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
+    efterbehandling = forms.BooleanField(required=False, label=_('Markér til efterbehandling'),
+                                         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
 
     def __init__(self, **kwargs):
         self.user = kwargs.pop('user')
         year_part = kwargs.pop('year_part')
         super().__init__(**kwargs)
         if year_part in ('ligning', 'genoptagelsesperiode'):
-            # add slutlignet checkbox
-            self.fields['slutlignet'] = forms.BooleanField(required=False, label=_('Markér som slutlignet'),
-                                                           widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
-        if year_part == 'ligning':
-            self.fields['efterbehandling'] = forms.BooleanField(required=False, label=_('Markér til efterbehandling'),
-                                                                widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
+            self.original_efterbehandling = self.instance.efterbehandling
+            if self.instance.efterbehandling is True:
+                self.fields['efterbehandling'].disabled = True
+                # add tooltip
+                self.fields['efterbehandling'].widget.attrs['title'] = _('Fjern markering ved at slutligne.')
+                self.fields['efterbehandling'].widget.attrs['data-toggle'] = 'tooltip'
+                self.fields['efterbehandling'].widget.attrs['data-placement'] = 'top'
+        else:
+            # remove the fields
+            self.fields.pop('efterbehandling')
+            self.fields.pop('slutlignet')
+
+    def clean_efterbehandling(self):
+        if self.original_efterbehandling is True:
+            return True
+        else:
+            return self.cleaned_data['efterbehandling']
+
+    def clean(self):
+        if self.cleaned_data['slutlignet'] is True and 'slutlignet' in self.changed_data:
+            if self.cleaned_data['efterbehandling']:
+                self.cleaned_data['efterbehandling'] = False
+        return self.cleaned_data
 
     def save(self, commit=True):
         instance = super().save(commit)
@@ -138,7 +159,6 @@ class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
         model = PolicyTaxYear
         fields = ['slutlignet', 'efterbehandling', 'next_processing_date']
         widgets = {
-            'slutlignet': CheckboxInput(attrs={'class': 'form-check-input'}),
             'next_processing_date': DateInput()
         }
 
