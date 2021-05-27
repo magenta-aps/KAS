@@ -26,6 +26,9 @@
                 <a class="nav-link border border-secondary border-bottom-0" id="udlandsnoter-tab" data-toggle="tab" href="#udlandsnoter" role="tab" aria-selected="false">{% trans 'Notater om betaling i udlandet' %}</a>
             </li>
             <li class="nav-item">
+                <a class="nav-link border border-secondary border-bottom-0" id="generellenoter-tab" data-toggle="tab" href="#generellenoter" role="tab" aria-selected="false">{% trans 'Generelle notater fra borger' %}</a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link border border-secondary border-bottom-0" id="settlement-tab" data-toggle="tab" href="#settlement" role="tab" aria-selected="false">{% trans 'Slutopgørelser' %}</a>
             </li>
             <li class="nav-item">
@@ -60,7 +63,10 @@
         <div id="udlandsnoter" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="udlandsnoter-tab">
             {% include 'includes/detail_tabs/foreign_notes.html' %}
         </div>
-        <div id="settlement" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="trans-tab">
+        <div id="generellenoter" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="generellenoter-tab">
+            {% include 'includes/detail_tabs/general_notes.html' %}
+        </div>
+        <div id="settlement" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="settlement-tab">
             {% include 'includes/detail_tabs/settlements.html' with settlements=settlements only %}
         </div>
         <div id="transaction" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="trans-tab">
