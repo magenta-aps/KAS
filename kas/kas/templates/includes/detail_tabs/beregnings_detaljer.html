@@ -14,6 +14,14 @@
     </tr>
     <tr>
         <td>
+            {% trans  'Justeret beløb fra pensionsselskab' %}
+            {% trans 'Justeret beløb fra pensionsselskab, ændret i forhold til de oprindelige R75 data' as help_text_r75_adjusted %}
+            {% include 'includes/help_text/collapse.html' with help_text=help_text_r75_adjusted target_id='adjusted_r75_amount' %}
+        </td>
+        <td>{{ policy.adjusted_r75_amount|default_if_none:'' }}</td>
+    </tr>
+    <tr>
+        <td>
             {{ self_reported_amount_label }}
             {% trans 'Selvangivet beløb fra borgeren' as help_text_self_reported %}
             {% include 'includes/help_text/question_mark.html' with target_id='self_reported' right=True %}
@@ -22,7 +30,15 @@
         <td>{{ policy.self_reported_amount|default_if_none:'' }}</td>
     </tr>
     <tr>
-        <td>{% blocktrans with amount=policy.get_active_amount_display %}Kapitalafkast ({{ amount }}){% endblocktrans %}</td>
+        <td>
+            {% trans  'Ansat beløb' %}
+            {% trans 'Beløb ansat undsagsbehandling eller autoligning' as help_text_assessed %}
+            {% include 'includes/help_text/collapse.html' with help_text=help_text_assessed target_id='assessed_amount' %}
+        </td>
+        <td>{{ policy.assessed_amount|default_if_none:'' }}</td>
+    </tr>
+    <tr>
+        <td>{% trans 'Kapitalafkast' %}</td>
         <th>{{ policy.get_assessed_amount }}</th>
     </tr>
     <tr>
