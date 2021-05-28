@@ -161,11 +161,10 @@ class EditAmountsUpdateViewTestCase(BaseTestCase):
         self.assertEqual(r.context['form']['assessed_amount'].value(), 35)
         self.assertEqual(r.context['form']['adjusted_r75_amount'].value(), 35)
 
-    def test_set_efterbehandling(self):
+    def test_set_efterbehandling_by_self_reported_amount(self):
         r = self.client.post(reverse('kas:change-edit-amounts', kwargs={'pk': self.policy_tax_year.pk}),
                              follow=True,
-                             data={'efterbehandling': True,
-                                   'notes-TOTAL_FORMS': 0,
+                             data={'notes-TOTAL_FORMS': 0,
                                    'notes-INITIAL_FORMS': 0,
                                    'uploads-TOTAL_FORMS': 0,
                                    'uploads-INITIAL_FORMS': 0,
@@ -174,23 +173,30 @@ class EditAmountsUpdateViewTestCase(BaseTestCase):
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
         self.assertTrue(policy_tax_year.efterbehandling)
 
-    def test_unset_efterbehandling(self):
-        """
-        we should not be able to unset efterbehandling if it was previously set
-        """
-        self.policy_tax_year.efterbehandling = True
-        self.policy_tax_year.save()
-        r = self.client.post(reverse('kas:change-edit-amounts', args=[self.policy_tax_year.pk]),
+    def test_set_efterbehandling_by_note(self):
+        r = self.client.post(reverse('kas:change-edit-amounts', kwargs={'pk': self.policy_tax_year.pk}),
                              follow=True,
-                             data={'efterbehandling': False,
-                                   'notes-TOTAL_FORMS': 0,
+                             data={'notes-TOTAL_FORMS': 1,
                                    'notes-INITIAL_FORMS': 0,
+                                   'notes-0-content': 'test',
                                    'uploads-TOTAL_FORMS': 0,
                                    'uploads-INITIAL_FORMS': 0,
-                                   'self_reported_amount': 200})
+                                   })
         self.assertEqual(r.status_code, 200)
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
-        # Efterbehandling should still be true since we cannot unset it using the form.
+        self.assertTrue(policy_tax_year.efterbehandling)
+
+    def test_set_efterbehandling_by_attachment(self):
+        r = self.client.post(reverse('kas:change-edit-amounts', kwargs={'pk': self.policy_tax_year.pk}),
+                             follow=True,
+                             data={'notes-TOTAL_FORMS': 1,
+                                   'notes-INITIAL_FORMS': 0,
+                                   'uploads-TOTAL_FORMS': 1,
+                                   'uploads-INITIAL_FORMS': 0,
+                                   'uploads-0-description': 'test_description',
+                                   'uploads-0-file': SimpleUploadedFile(name='test', content=b'test')})
+        self.assertEqual(r.status_code, 200)
+        policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
         self.assertTrue(policy_tax_year.efterbehandling)
 
     def test_set_slutlignet_clears_efterbehandling(self):
@@ -203,7 +209,7 @@ class EditAmountsUpdateViewTestCase(BaseTestCase):
                                    'notes-INITIAL_FORMS': 0,
                                    'uploads-TOTAL_FORMS': 0,
                                    'uploads-INITIAL_FORMS': 0,
-                                   'self_reported_amount': 200})
+                                   'self_reported_amount': 300})
         self.assertEqual(r.status_code, 200)
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
         # Efterbehandling should still be true since we cannot unset it using the form.

@@ -484,6 +484,19 @@ class EditAmountsUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDo
             self.object.adjusted_r75_amount = self.object.prefilled_amount
         return super(EditAmountsUpdateView, self).get_form_kwargs()
 
+    def form_valid(self, form):
+        if self.has_changes or form.changed_data:
+            # if the formsets or the form has changes we need to set efterbehandling=True
+            # unless slutlignet=True
+            self.object = form.save(False)
+            if self.object.slutlignet:
+                # always clear efterbehandling when slutlignet is set
+                self.object.efterbehandling = False
+            else:
+                self.object.efterbehandling = True
+                # super handles saving of the object
+        return super(EditAmountsUpdateView, self).form_valid(form)
+
 
 class PensionCompanySummaryFileView(LoginRequiredMixin, SingleObjectMixin, FormView):
     model = TaxYear

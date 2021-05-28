@@ -183,31 +183,9 @@ class SelfReportedAmountForm(forms.ModelForm, BootstrapForm):
 
 class EditAmountsUpdateForm(forms.ModelForm, BootstrapForm):
 
-    def __init__(self, *args, **kwargs):
-        super(EditAmountsUpdateForm, self).__init__(*args, **kwargs)
-        self.original_efterbehandling = self.instance.efterbehandling
-        if self.instance.efterbehandling is True:
-            self.fields['efterbehandling'].disabled = True
-            # add tooltip
-            self.fields['efterbehandling'].widget.attrs['title'] = _('Fjern markering ved at slutligne.')
-            self.fields['efterbehandling'].widget.attrs['data-toggle'] = 'tooltip'
-            self.fields['efterbehandling'].widget.attrs['data-placement'] = 'top'
-
-    def clean_efterbehandling(self):
-        if self.original_efterbehandling is True:
-            return True
-        else:
-            return self.cleaned_data['efterbehandling']
-
-    def clean(self):
-        if self.cleaned_data['slutlignet'] is True and 'slutlignet' in self.changed_data:
-            if self.cleaned_data['efterbehandling']:
-                self.cleaned_data['efterbehandling'] = False
-        return self.cleaned_data
-
     class Meta:
         model = PolicyTaxYear
-        fields = ('adjusted_r75_amount', 'self_reported_amount', 'assessed_amount', 'slutlignet', 'efterbehandling', 'next_processing_date')
+        fields = ('adjusted_r75_amount', 'self_reported_amount', 'assessed_amount', 'slutlignet', 'next_processing_date')
         widgets = {'next_processing_date': DateInput()}
 
 

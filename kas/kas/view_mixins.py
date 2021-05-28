@@ -30,6 +30,7 @@ class CreateOrUpdateViewWithNotesAndDocuments:
         super(CreateOrUpdateViewWithNotesAndDocuments, self).__init__(**kwargs)
         self.NoteFormSet = formset_factory(NoteForm)
         self.UploadFormSet = formset_factory(PolicyDocumentForm)
+        self.has_changes = False  # tracks if either formsets have changed
 
     def get_person_tax_year(self):
         """
@@ -63,6 +64,7 @@ class CreateOrUpdateViewWithNotesAndDocuments:
                 note.author = self.request.user
                 note.policy_tax_year = self.get_policy_tax_year()
                 note.save()
+                self.has_changes = True
 
         upload_form_set = self.UploadFormSet(self.request.POST, self.request.FILES, prefix='uploads')
         for upload_form in upload_form_set:
@@ -73,6 +75,8 @@ class CreateOrUpdateViewWithNotesAndDocuments:
                 document.name = document.file.name
                 document.policy_tax_year = self.get_policy_tax_year()
                 document.save()
+                self.has_changes = True
+
         return super(CreateOrUpdateViewWithNotesAndDocuments, self).form_valid(form)
 
     def get_success_url(self):
