@@ -404,7 +404,6 @@ class PolicyNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
-        kwargs['year_part'] = self.object.tax_year.year_part
         return kwargs
 
 
