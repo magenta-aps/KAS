@@ -2,16 +2,17 @@
 {% load i18n %}
 
 {% block content %}
-    {% blocktrans asvar header with policy_number=object.policy_number name=object.person_tax_year.person.name %}Tilføj notat og eller bilag til police nr. {{policy_number}}(for {{ name }}){% endblocktrans %}
-    {% blocktrans asvar notes_helptext %}Her vises en liste af notater tilknyttet policen. Notaterne findes kun i KAS systemet og kan ikke ses af borgeren.
-    For at tilføje et nyt notat udfyldes 'Nyt notat' feltet og der klikkes på 'Gem' knappen nederst på siden.
-    Bilag kan tilknyttes sammen med notatet ved at udfylde bilag-felterne nedenfor.{% endblocktrans %}
 
-    {% blocktrans asvar bilag_helptext %}Her vises en liste af bilag tilknyttet policen.
-    For at tilføje et nyt bilag udfyldes felterne for beskrivelse og valg af fil og der klikkes på 'Gem' knappen nederst på siden.
-    Borgeren vil kunne se beskrivelser og filnavne på bilag som borgeren
-    selv har uploadet ved selvangivelse via web. Borgeren kan ikke se bilag som er vedhæftet
-    under sagsbehandlingen via nedenstående formular.{% endblocktrans %}
+    {% blocktrans asvar instructions %}Her kan tilføjes notater og bilag til policen for dette skatteår. Det vil blive tilknyttet denne police, men kan også ses på listen på personen.
+
+    Notaterne og bilagene findes kun i KAS-systemet og kan ikke ses af borgeren.{% endblocktrans %}
+
+    {% blocktrans asvar header with policy_number=object.policy_number name=object.person_tax_year.person.name %}Tilføj notat og eller bilag til police nr. {{policy_number}}(for {{ name }}){% endblocktrans %}
+    {% blocktrans asvar notes_helptext %}For at tilføje et nyt notat udfyldes feltet <b>Nyt notat</b>. Tryk derefter på knappen <b>Gem</b> for at gemme notatet for personen.{% endblocktrans %}
+
+    {% blocktrans asvar bilag_helptext %}For at tilføje et nyt bilag bruges <b>filfeltet</b> til højre.
+    Der er mulighed for at angive en beskrivelse af filen i feltet <b>Fil-beskrivelse</b>.
+    Efterfølgende klikkes på knappen <b>Gem</b> for at vedhæfte filen.{% endblocktrans %}
 
     {% include 'includes/single_notes_and_attachment_form.html' with notes_helptext=notes_helptext bilag_helptext=bilag_helptext target=object%}
 
