@@ -103,42 +103,21 @@ class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
                                              widget=forms.TextInput(attrs={'placeholder': _('Fil-beskrivelse')}))
     note = forms.CharField(widget=forms.Textarea(attrs={'placeholder': _('Nyt notat')}),
                            required=False)
-    slutlignet = forms.BooleanField(required=False, label=_('Markér som slutlignet'),
-                                    widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
-    efterbehandling = forms.BooleanField(required=False, label=_('Markér til efterbehandling'),
-                                         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
 
     def __init__(self, **kwargs):
         self.user = kwargs.pop('user')
-        year_part = kwargs.pop('year_part')
         super().__init__(**kwargs)
-        if year_part in ('ligning', 'genoptagelsesperiode'):
-            self.original_efterbehandling = self.instance.efterbehandling
-            if self.instance.efterbehandling is True:
-                self.fields['efterbehandling'].disabled = True
-                # add tooltip
-                self.fields['efterbehandling'].widget.attrs['title'] = _('Fjern markering ved at slutligne.')
-                self.fields['efterbehandling'].widget.attrs['data-toggle'] = 'tooltip'
-                self.fields['efterbehandling'].widget.attrs['data-placement'] = 'top'
-        else:
-            # remove the fields
-            self.fields.pop('efterbehandling')
-            self.fields.pop('slutlignet')
-
-    def clean_efterbehandling(self):
-        if self.original_efterbehandling is True:
-            return True
-        else:
-            return self.cleaned_data['efterbehandling']
-
-    def clean(self):
-        if self.cleaned_data['slutlignet'] is True and 'slutlignet' in self.changed_data:
-            if self.cleaned_data['efterbehandling']:
-                self.cleaned_data['efterbehandling'] = False
-        return self.cleaned_data
 
     def save(self, commit=True):
-        instance = super().save(commit)
+        instance = super().save(False)  # avoid saving the instance twice.
+        if self.cleaned_data['note'] or self.cleaned_data['attachment'] or 'next_processing_date' in self.changed_data:
+            # save the instance if either one of the 2 fields where set or 'next_processing_date' where changed
+            # this ensures we dont do spurious saves when none of the fields are set
+            # (but validates) and the user clicks save to go back
+            instance.efterbehandling = True
+            instance.slutlignet = False
+            instance.save()
+
         if self.cleaned_data['note']:
             Note(
                 person_tax_year=instance.person_tax_year,
@@ -157,7 +136,7 @@ class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
 
     class Meta:
         model = PolicyTaxYear
-        fields = ['slutlignet', 'efterbehandling', 'next_processing_date']
+        fields = ['next_processing_date']
         widgets = {
             'next_processing_date': DateInput()
         }

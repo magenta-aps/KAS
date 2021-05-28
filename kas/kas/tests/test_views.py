@@ -1,7 +1,10 @@
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear
 
@@ -206,3 +209,63 @@ class EditAmountsUpdateViewTestCase(BaseTestCase):
         # Efterbehandling should still be true since we cannot unset it using the form.
         self.assertTrue(policy_tax_year.slutlignet)
         self.assertFalse(policy_tax_year.efterbehandling)
+
+
+class PolicyNotesAndAttachmentsViewTestCase(BaseTestCase):
+    def setUp(self) -> None:
+        super(PolicyNotesAndAttachmentsViewTestCase, self).setUp()
+        self.client.login(username=self.username, password=self.password)
+
+    def test_not_logged_in(self):
+        self.client.logout()
+        r = self.client.get(reverse('kas:policy_add_notes_or_attachement', args=[self.policy_tax_year.pk]))
+        # should redirect to login page
+        self.assertEqual(r.status_code, 302)
+
+    def _check_status(self, policy_tax_year):
+        # ensure the policy tax years status is set correctly when the processing_date is changed
+        # or documents/notes are added
+        self.assertEqual(policy_tax_year.efterbehandling, True)
+        self.assertEqual(policy_tax_year.slutlignet, False)
+
+    def test_save_note(self):
+        note_string = 'this is a note 456'
+        self.client.post(reverse('kas:policy_add_notes_or_attachement', args=[self.policy_tax_year.pk]),
+                         follow=True,
+                         data={'note': note_string})
+        policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
+        self.assertEqual(policy_tax_year.notes.count(), 1)
+        self.assertEqual(policy_tax_year.notes.first().content, note_string)
+        self._check_status(policy_tax_year)
+
+    def test_save_attachment(self):
+        attachment_description = 'this is a test file'
+        self.client.post(reverse('kas:policy_add_notes_or_attachement', args=[self.policy_tax_year.pk]),
+                         follow=True,
+                         data={'attachment': SimpleUploadedFile(name='test', content=b'test'),
+                               'attachment_description': attachment_description})
+        policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
+        self.assertEqual(policy_tax_year.policy_documents.count(), 1)
+        document = policy_tax_year.policy_documents.first()
+        self.assertEqual(document.description, attachment_description)
+        self._check_status(policy_tax_year)
+
+    def test_set_processing_date(self):
+        next_processing_date = (timezone.now()+timedelta(days=2)).date()
+        self.client.post(reverse('kas:policy_add_notes_or_attachement', args=[self.policy_tax_year.pk]),
+                         follow=True,
+                         data={'next_processing_date': next_processing_date})
+        policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
+        self.assertEqual(policy_tax_year.next_processing_date, next_processing_date)
+        self._check_status(policy_tax_year)
+
+    def test_change_processing_date(self):
+        self.policy_tax_year.next_processing_date = (timezone.now()+timedelta(days=2)).date()
+        self.policy_tax_year.save()
+        next_processing_date = (timezone.now()+timedelta(days=5)).date()
+        self.client.post(reverse('kas:policy_add_notes_or_attachement', args=[self.policy_tax_year.pk]),
+                         follow=True,
+                         data={'next_processing_date': next_processing_date})
+        policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
+        self.assertEqual(policy_tax_year.next_processing_date, next_processing_date)
+        self._check_status(policy_tax_year)
