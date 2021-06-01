@@ -12,6 +12,7 @@ from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models import Sum
 from django.db.models.signals import post_save
+from django.db.transaction import atomic
 from django.forms import model_to_dict
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -290,12 +291,7 @@ class TaxSlipGenerated(EboksDispatch):
 
 
 class PersonTaxYear(HistoryMixin, models.Model):
-
-    class Meta:
-        ordering = ['-tax_year__year', 'person__name']
-        unique_together = ['tax_year', 'person']
-
-    history = HistoricalRecords()
+    all_documents_and_notes_handled = models.BooleanField(default=True)
 
     tax_slip = models.OneToOneField(
         TaxSlipGenerated,
@@ -382,6 +378,12 @@ class PersonTaxYear(HistoryMixin, models.Model):
 
     def __str__(self):
         return f"{self.__class__.__name__}(cpr={self.person.cpr}, year={self.tax_year.year})"
+
+    history = HistoricalRecords()
+
+    class Meta:
+        ordering = ['-tax_year__year', 'person__name']
+        unique_together = ['tax_year', 'person']
 
 
 class PersonTaxYearCensus(HistoryMixin, models.Model):
@@ -927,6 +929,18 @@ class PolicyDocument(models.Model):
     )
 
 
+def set_all_documents_and_notes_handled(sender, instance, created, raw, using, update_fields, **kwargs):
+    if created is True:
+        with atomic():
+            person_tax_year = PersonTaxYear.objects.filter(pk=instance.person_tax_year_id).select_for_update()[0]
+            if person_tax_year.all_documents_and_notes_handled is True:
+                person_tax_year.all_documents_and_notes_handled = False
+                person_tax_year.save(update_fields=['all_documents_and_notes_handled'])
+
+
+post_save.connect(set_all_documents_and_notes_handled, PolicyDocument, dispatch_uid='set_document_and_notes_handled')
+
+
 class R75(models.Model):
 
     person_tax_year = models.ForeignKey(
@@ -995,6 +1009,9 @@ class Note(models.Model):
     content = models.TextField(
         verbose_name=_('Tekst'),
     )
+
+
+post_save.connect(set_all_documents_and_notes_handled, Note, dispatch_uid='set_document_and_notes_handled')
 
 
 def add_all_user_permission_if_staff(sender, instance, **kwargs):

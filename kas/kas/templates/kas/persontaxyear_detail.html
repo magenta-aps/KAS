@@ -72,6 +72,20 @@
         <td>{{ person_tax_year.number_of_days }}</td>
       </tr>
       <tr>
+          <th>{% trans 'Alle bilag og notater behandlet' %}</th>
+          <td>
+              {% if person_tax_year.all_documents_and_notes_handled %}
+                  <span>{% trans 'Ja' %}</span>
+              {% else %}
+                  <form method="POST" action="{% url 'kas:person_in_year_handled' person_tax_year.pk %}">
+                  {% csrf_token %}
+                  <span>{% trans 'Nej' %} </span><button class="btn btn-success" type="submit">{% trans 'Sæt alle bilag og notater som behandlet' %}</button>
+                  </form>
+
+              {% endif %}
+          </td>
+      </tr>
+      <tr>
           <th>{% trans 'Slutlignet' %}</th>
           <td>{% if person_tax_year.slutlignet %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}</td>
       </tr>
