@@ -30,12 +30,30 @@
     <table class="table table-striped">
       <thead>
       <tr>
-        <th>{% trans 'Personnummer' %}</th>
-        <th>{% trans 'Navn' %}</th>
-        <th>{% trans 'Adresse' %}</th>
-        <th>{% trans 'Kommune' %}</th>
-        <th>{% trans 'Antal policer' %}</th>
-        <th>{% trans 'Næste behandlingsdato' %}</th>
+        <th>
+          {% trans 'Personnummer' as cpr %}
+          {% include 'includes/order_by_link.html' with key="order_by" value="person__cpr" text=cpr %}
+        </th>
+        <th>
+          {% trans 'Navn' as name %}
+          {% include 'includes/order_by_link.html' with key="order_by" value="person__name" text=name %}
+        </th>
+        <th>
+          {% trans 'Adresse' as address %}
+          {% include 'includes/order_by_link.html' with key="order_by" value="person__full_address_nulllast" text=address %}
+        </th>
+        <th>
+          {% trans 'Kommune' as municipality %}
+          {% include 'includes/order_by_link.html' with key="order_by" value="person__municipality_name_nulllast" text=municipality %}
+        </th>
+        <th>
+          {% trans 'Antal policer' as antal_policer %}
+          {% include 'includes/order_by_link.html' with key="order_by" value="policy_count" text=antal_policer %}
+        </th>
+        <th>
+          {% trans 'Næste behandlingsdato' as processing_date %}
+          {% include 'includes/order_by_link.html' with key="order_by" value="next_processing_date_nulllast" text=processing_date %}
+        </th>
       </tr>
       </thead>
       <tbody>
@@ -45,8 +63,8 @@
         <tr>
           <td><a href="{{ person_url }}">{{ person.cpr }}</a></td>
           <td><a href="{{ person_url }}">{{ person.name }}</a></td>
-          <td>{{ person.full_address }}</td>
-          <td>{{ person.municipality_name }}</td>
+          <td>{{ person.full_address|default_if_none:'' }}</td>
+          <td>{{ person.municipality_name|default_if_none:'' }}</td>
           <td>{{ person_tax_year.policytaxyear_set.count|default:0 }}</td>
           <td>{{ person_tax_year.next_processing_date|date:'SHORT_DATE_FORMAT'|default_if_none:'' }}</td>
         </tr>
