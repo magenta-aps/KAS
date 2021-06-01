@@ -37,6 +37,7 @@
             <li><a class="dropdown-item" href="{% url 'kas:person_search_failsend' %}">{% trans 'Personer med fejlet afsendelse af selvangivelse' %}</a></li>
             <li><a class="dropdown-item" href="{% url 'kas:policy_search_unfinished' %}">{% trans 'Policer der kræver efterbehandling' %}</a></li>
             <li><a class="dropdown-item" href="{% url 'kas:person_search_unfinished' %}">{% trans 'Personer med policer der kræver efterbehandling' %}</a></li>
+            <li><a class="dropdown-item" href="{% url 'kas:person_search_unhandled' %}">{% trans 'Personer med nye dokumenter eller notater' %}</a></li>
         </ul>
 
         {% if user.is_staff %}

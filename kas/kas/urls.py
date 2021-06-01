@@ -6,7 +6,8 @@ from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetail
     EditAmountsUpdateView, PensionCompanySummaryFileView, PensionCompanySummaryFileDownloadView, \
     PolicyTaxYearCreateView, ActivatePolicyTaxYearView, PersonTaxYearHistoryListView, PersonTaxYearHistoryDetailView, \
     PolicyTaxYearHistoryDetailView, PolicyTaxYearHistoryListView, PersonTaxYearUnfinishedListView, \
-    PersonTaxYearFailSendListView, PolicyTaxYearUnfinishedListView
+    PersonTaxYearFailSendListView, PolicyTaxYearUnfinishedListView, PersonTaxYearDocumentsAndNotesUpdateView, \
+    PersonTaxYearUnhandledDocumentsAndNotes
 
 app_name = 'kas'
 
@@ -14,10 +15,13 @@ urlpatterns = [
     path('', PersonTaxYearListView.as_view(), name='person_search'),
     path('person/unfinished', PersonTaxYearUnfinishedListView.as_view(), name='person_search_unfinished'),
     path('person/failsend', PersonTaxYearFailSendListView.as_view(), name='person_search_failsend'),
+    path('person/unhanlded/', PersonTaxYearUnhandledDocumentsAndNotes.as_view(), name='person_search_unhandled'),
+
     path('statistics', StatisticsView.as_view(), name='statistics'),
     path('tax_year/<int:year>/persons/<int:person_id>/', PersonTaxYearDetailView.as_view(), name='person_in_year'),
     path('tax_year/<int:year>/persons/<int:person_id>/pdf/', PdfDownloadView.as_view(), name='get_pdf'),
     path('tax_year/<int:year>/persons/<int:person_id>/policy/', PolicyTaxYearCreateView.as_view(), name='policy_create'),
+    path('person_tax_year/<int:pk>/handled/', PersonTaxYearDocumentsAndNotesUpdateView.as_view(), name='person_in_year_handled'),
     path('policy/<int:pk>/', PolicyTaxYearDetailView.as_view(), name='policy_detail'),
     path('policy/<int:pk>/activate/', ActivatePolicyTaxYearView.as_view(), name='policy_activate'),
     path('policy/unfinished', PolicyTaxYearUnfinishedListView.as_view(), name='policy_search_unfinished'),

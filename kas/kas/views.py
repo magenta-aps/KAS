@@ -195,6 +195,13 @@ class PersonTaxYearFailSendListView(PersonTaxYearSpecialListView):
         ).filter(tax_slip__status='failed')
 
 
+class PersonTaxYearUnhandledDocumentsAndNotes(PersonTaxYearSpecialListView):
+    template_name = 'kas/persontaxyear_unhandled_list.html'
+
+    def filter_queryset(self, qs):
+        return qs.filter(all_documents_and_notes_handled=False).annotate(next_processing_date=Min('policytaxyear__next_processing_date'))
+
+
 class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
     template_name = 'kas/persontaxyear_detail.html'
     model = PersonTaxYear
@@ -238,6 +245,17 @@ class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
             person_tax_year=self.object).select_related('transferred_by')
         context['person_tax_years'] = PersonTaxYear.objects.filter(person=self.object.person)
         return context
+
+
+class PersonTaxYearDocumentsAndNotesUpdateView(LoginRequiredMixin, SingleObjectMixin, View):
+    model = PersonTaxYear
+
+    def post(self, *args, **kwargs):
+        instance = self.get_object()
+        instance.all_documents_and_notes_handled = True
+        instance.save(update_fields=['all_documents_and_notes_handled'])
+        return HttpResponseRedirect(reverse('kas:person_in_year', kwargs={'year': instance.year,
+                                                                          'person_id': instance.person.id}))
 
 
 class PersonNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):
