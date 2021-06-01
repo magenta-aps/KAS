@@ -99,7 +99,7 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
         return form.is_valid() and form.has_changed()
 
     def get_queryset(self):
-
+        self.form = self.get_form()
         order_by = self.request.GET.get('order_by', self.default_order_by)
 
         # Handle fields that should always have null last when sorting
@@ -115,7 +115,7 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
         ).order_by(order_by, 'person__name')
 
     def filter_queryset(self, qs):
-        form = self.get_form()
+        form = self.form
         qs = qs.annotate(next_processing_date=Min('policytaxyear__next_processing_date'))
 
         try:
@@ -155,7 +155,6 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
         else:
             # Don't find anything if form is invalid or empty
             qs = self.model.objects.none()
-        self.form = form
         return qs
 
 
