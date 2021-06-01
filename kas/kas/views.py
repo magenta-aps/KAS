@@ -83,6 +83,7 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
 
     model = PersonTaxYear
     form_class = PersonListFilterForm
+    default_order_by = 'person__cpr'
 
     def get_form(self):
         years = [tax_year.year for tax_year in TaxYear.objects.order_by('year')]
@@ -98,8 +99,23 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
         return form.is_valid() and form.has_changed()
 
     def get_queryset(self):
+
+        order_by = self.request.GET.get('order_by', self.default_order_by)
+
+        # Handle fields that should always have null last when sorting
+        if order_by.endswith("_nulllast"):
+            order_by = order_by[:-9]
+            if order_by.startswith("-"):
+                order_by = F(order_by[1:]).desc(nulls_last=True)
+            else:
+                order_by = F(order_by).asc(nulls_last=True)
+
+        return self.filter_queryset(
+            super().get_queryset()
+        ).order_by(order_by, 'person__name')
+
+    def filter_queryset(self, qs):
         form = self.get_form()
-        qs = super().get_queryset()
         qs = qs.annotate(next_processing_date=Min('policytaxyear__next_processing_date'))
 
         try:
@@ -133,6 +149,9 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
                             qs = qs.exclude(empty)
                         else:
                             qs = qs.filter(empty)
+            qs = qs.annotate(
+                policy_count=Count('policytaxyear')
+            )
         else:
             # Don't find anything if form is invalid or empty
             qs = self.model.objects.none()
@@ -147,25 +166,6 @@ class PersonTaxYearSpecialListView(PersonTaxYearListView):
     def should_search(self, form):
         # Allow searching with an unbound form (just the default year)
         return not form.errors
-
-    def get_queryset(self):
-
-        order_by = self.request.GET.get('order_by', self.default_order_by)
-
-        # Handle fields that should always have null last when sorting
-        if order_by.endswith("_nulllast"):
-            order_by = order_by[:-9]
-            if order_by.startswith("-"):
-                order_by = F(order_by[1:]).desc(nulls_last=True)
-            else:
-                order_by = F(order_by).asc(nulls_last=True)
-
-        return self.filter_queryset(
-            super().get_queryset()
-        ).order_by(order_by, 'person__name')
-
-    def filter_queryset(self, qs):
-        return qs
 
 
 class PersonTaxYearUnfinishedListView(PersonTaxYearSpecialListView):

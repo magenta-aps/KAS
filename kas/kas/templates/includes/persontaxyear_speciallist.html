@@ -23,11 +23,11 @@
                 </th>
                 <th>
                     {% trans 'Adresse' as adresse %}
-                    {% include 'includes/order_by_link.html' with key="order_by" value="person__full_address" text=adresse %}
+                    {% include 'includes/order_by_link.html' with key="order_by" value="person__full_address_nulllast" text=adresse %}
                 </th>
                 <th>
                     {% trans 'Kommune' as kommune %}
-                    {% include 'includes/order_by_link.html' with key="order_by" value="person__municipality_name" text=kommune %}
+                    {% include 'includes/order_by_link.html' with key="order_by" value="person__municipality_name_nulllast" text=kommune %}
                 </th>
                 <th>
                     {% trans 'Antal policer' as antal_policer %}
