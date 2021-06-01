@@ -25,13 +25,13 @@
         {% if form.slutlignet %}
         <div class="form-check mt-3">
             {{ form.slutlignet }}
-            <label class="form-check-label">{{ form.slutlignet.label }}</label>
+            <label for="{{ form.slutlignet.id_for_label }}" class="form-check-label">{{ form.slutlignet.label }}</label>
         </div>
         {% endif %}
         {% if form.efterbehandling %}
         <div class="form-check mt-3 ml-5">
             {{ form.efterbehandling }}
-            <label class="form-check-label">{{ form.efterbehandling.label }}</label>
+            <label for="{{ form.slutlignet.id_for_label }}" class="form-check-label">{{ form.efterbehandling.label }}</label>
         </div>
         {% endif %}
         </div>
