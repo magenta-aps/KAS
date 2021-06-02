@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear
+from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear, PolicyDocument
 
 
 class BaseTestCase(TestCase):
@@ -73,7 +73,7 @@ class SelfReportedAmountUpdateViewTestCase(BaseTestCase):
                                    'uploads-INITIAL_FORMS': 0})
         self.assertEqual(r.status_code, 200)
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
-        self.assertFalse(policy_tax_year.person_tax_year.all_documents_and_notes_handled)
+        self.assertTrue(policy_tax_year.person_tax_year.all_documents_and_notes_handled)
         self.assertEqual(policy_tax_year.self_reported_amount, 99)
         self.assertEqual(policy_tax_year.notes.count(), 1)
         self.assertEqual(policy_tax_year.notes.first().author, self.user)
@@ -94,7 +94,7 @@ class SelfReportedAmountUpdateViewTestCase(BaseTestCase):
                                    'uploads-INITIAL_FORMS': 0})
         self.assertEqual(r.status_code, 200)
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
-        self.assertFalse(policy_tax_year.person_tax_year.all_documents_and_notes_handled)
+        self.assertTrue(policy_tax_year.person_tax_year.all_documents_and_notes_handled)
         self.assertEqual(policy_tax_year.self_reported_amount, 99)
         self.assertFalse(policy_tax_year.notes.exists())
         self.assertFalse(policy_tax_year.person_tax_year.notes.exists())
@@ -117,7 +117,7 @@ class SelfReportedAmountUpdateViewTestCase(BaseTestCase):
                                    'uploads-INITIAL_FORMS': 0})
         self.assertEqual(r.status_code, 200)
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
-        self.assertFalse(policy_tax_year.person_tax_year.all_documents_and_notes_handled)
+        self.assertTrue(policy_tax_year.person_tax_year.all_documents_and_notes_handled)
         self.assertEqual(policy_tax_year.self_reported_amount, 99)
         self.assertEqual(policy_tax_year.notes.count(), 1)
         self.assertEqual(policy_tax_year.notes.first().author, self.user)
@@ -236,6 +236,7 @@ class PolicyNotesAndAttachmentsViewTestCase(BaseTestCase):
         # or documents/notes are added
         self.assertEqual(policy_tax_year.efterbehandling, True)
         self.assertEqual(policy_tax_year.slutlignet, False)
+        self.assertTrue(policy_tax_year.person_tax_year.all_documents_and_notes_handled)
 
     def test_save_note(self):
         note_string = 'this is a note 456'
@@ -243,7 +244,6 @@ class PolicyNotesAndAttachmentsViewTestCase(BaseTestCase):
                          follow=True,
                          data={'note': note_string})
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
-        self.assertFalse(policy_tax_year.person_tax_year.all_documents_and_notes_handled)
         self.assertEqual(policy_tax_year.notes.count(), 1)
         self.assertEqual(policy_tax_year.notes.first().content, note_string)
         self._check_status(policy_tax_year)
@@ -255,7 +255,6 @@ class PolicyNotesAndAttachmentsViewTestCase(BaseTestCase):
                          data={'attachment': SimpleUploadedFile(name='test', content=b'test'),
                                'attachment_description': attachment_description})
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
-        self.assertFalse(policy_tax_year.person_tax_year.all_documents_and_notes_handled)
         self.assertEqual(policy_tax_year.policy_documents.count(), 1)
         document = policy_tax_year.policy_documents.first()
         self.assertEqual(document.description, attachment_description)
@@ -280,3 +279,54 @@ class PolicyNotesAndAttachmentsViewTestCase(BaseTestCase):
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
         self.assertEqual(policy_tax_year.next_processing_date, next_processing_date)
         self._check_status(policy_tax_year)
+
+
+class PersonNotesAndAttachmentsViewTestCase(BaseTestCase):
+    def setUp(self) -> None:
+        super(PersonNotesAndAttachmentsViewTestCase, self).setUp()
+        self.client.login(username=self.username, password=self.password)
+        
+    def test_not_logged_in(self):
+        self.client.logout()
+        r = self.client.get(reverse('kas:person_add_notes_or_attachement', args=[self.person_tax_year.pk]))
+        # should redirect to login page
+        self.assertEqual(r.status_code, 302)
+
+    def test_add_note(self):
+        note_string = 'this is a note 6234325'
+        self.client.post(reverse('kas:person_add_notes_or_attachement', args=[self.person_tax_year.pk]),
+                         follow=True,
+                         data={'note': note_string})
+        person_tax_year = PersonTaxYear.objects.get(pk=self.person_tax_year.pk)
+        self.assertEqual(person_tax_year.notes.count(), 1)
+        self.assertEqual(person_tax_year.notes.first().content, note_string)
+        self.assertFalse(person_tax_year.all_documents_and_notes_handled)
+
+    def test_save_attachment(self):
+        attachment_description = 'this is a test file 1531253'
+        self.client.post(reverse('kas:person_add_notes_or_attachement', args=[self.person_tax_year.pk]),
+                         follow=True,
+                         data={'attachment': SimpleUploadedFile(name='test', content=b'test'),
+                               'attachment_description': attachment_description})
+
+        person_tax_year = PersonTaxYear.objects.get(pk=self.person_tax_year.pk)
+        self.assertEqual(person_tax_year.policydocument_set.count(), 1)
+        document = person_tax_year.policydocument_set.first()
+        self.assertEqual(document.description, attachment_description)
+        self.assertFalse(person_tax_year.all_documents_and_notes_handled)
+
+    def test_save_attachment_and_note(self):
+        note_string = 'this is a note 6234325'
+        attachment_description = 'this is a test file 1531253'
+        self.client.post(reverse('kas:person_add_notes_or_attachement', args=[self.person_tax_year.pk]),
+                         follow=True,
+                         data={'attachment': SimpleUploadedFile(name='test', content=b'test'),
+                               'attachment_description': attachment_description,
+                               'note': note_string})
+        person_tax_year = PersonTaxYear.objects.get(pk=self.person_tax_year.pk)
+        self.assertEqual(person_tax_year.notes.count(), 1)
+        self.assertEqual(person_tax_year.notes.first().content, note_string)
+        self.assertEqual(person_tax_year.policydocument_set.count(), 1)
+        document = person_tax_year.policydocument_set.first()
+        self.assertEqual(document.description, attachment_description)
+        self.assertFalse(person_tax_year.all_documents_and_notes_handled)
