@@ -2,11 +2,6 @@
 {% load i18n %}
 
 {% block content %}
-
-    {% blocktrans asvar instructions %}Her kan tilføjes notater og bilag til policen for dette skatteår. Det vil blive tilknyttet denne police, men kan også ses på listen på personen.
-
-    Notaterne og bilagene findes kun i KAS-systemet og kan ikke ses af borgeren.{% endblocktrans %}
-
     {% blocktrans asvar header with policy_number=object.policy_number name=object.person_tax_year.person.name %}Tilføj notat og eller bilag til police nr. {{policy_number}}(for {{ name }}){% endblocktrans %}
     {% blocktrans asvar notes_helptext %}For at tilføje et nyt notat udfyldes feltet <b>Nyt notat</b>. Tryk derefter på knappen <b>Gem</b> for at gemme notatet for personen.{% endblocktrans %}
 

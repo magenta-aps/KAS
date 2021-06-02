@@ -50,16 +50,14 @@
   <h2 id="notes">{% trans 'Notat' %}</h2>
   {{ notes_formset }}
 
-  <h2 id="Bilag">{% trans 'Bilag' %}</h2>
-  <p>
-    {% blocktrans %}For at tilføje et bilag udfyldes felterne for beskrivelse og valg af
-    fil og der klikkes på 'Gem' knappen nederst på siden.{% endblocktrans %}
-  </p>
-  <p>
-    {% blocktrans %}Borgeren vil kunne se beskrivelser og filnavne på bilag som borgeren
+  <h2 id="Bilag">{% trans 'Bilag' %}{% include 'includes/help_text/question_mark.html' with target_id='js-billag-collapse' only %}</h2>
+    {% blocktrans asvar bilag_helptext %}For at tilføje et bilag udfyldes felterne for beskrivelse og valg af
+    fil og der klikkes på <b>Gem</b> knappen nederst på siden.
+
+    Borgeren vil kunne se beskrivelser og filnavne på bilag som borgeren
     selv har uploadet ved selvangivelse via web. Borgeren kan ikke se bilag vedhæftet
     under sagsbehandlingen via nedenstående formular.{% endblocktrans %}
-  </p>
+    {% include 'includes/help_text/collapse.html' with help_text=bilag_helptext target_id='js-billag-collapse' %}
   {{ upload_formset.management_form }}
   {% for upload_form in upload_formset  %}
   <div class="form-row mt-2" id="upload-row">
@@ -71,9 +69,11 @@
     </div>
   </div>
   {% endfor %}
-
-  <hr/>
-  <button type="submit" class="btn btn-primary">{% trans 'Gem' %}</button>
+    <div class="form-row">
+        <div class="ml-auto">
+            <button type="submit" class="btn btn-success mt-2 mb-5">{% trans 'Gem' %}</button>
+        </div>
+    </div>
 </form>
 
 {% endblock %}

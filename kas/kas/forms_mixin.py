@@ -1,4 +1,4 @@
-from django.forms import Form, CheckboxInput, RadioSelect
+from django.forms import Form, CheckboxInput, RadioSelect, FileInput
 
 
 class BootstrapForm(Form):
@@ -30,7 +30,8 @@ class BootstrapForm(Form):
         if isinstance(field.widget, (CheckboxInput, RadioSelect)):
             classes.append('form-check-input')
         else:
-            classes.append('form-control')
+            if not isinstance(field.widget, FileInput):
+                classes.append('form-control')
         if check_for_errors:
             if self.has_error(name) is True:
                 classes.append('is-invalid')
