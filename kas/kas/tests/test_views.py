@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear, PolicyDocument
+from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear
 
 
 class BaseTestCase(TestCase):
@@ -285,7 +285,7 @@ class PersonNotesAndAttachmentsViewTestCase(BaseTestCase):
     def setUp(self) -> None:
         super(PersonNotesAndAttachmentsViewTestCase, self).setUp()
         self.client.login(username=self.username, password=self.password)
-        
+
     def test_not_logged_in(self):
         self.client.logout()
         r = self.client.get(reverse('kas:person_add_notes_or_attachement', args=[self.person_tax_year.pk]))
