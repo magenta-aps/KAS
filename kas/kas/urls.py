@@ -15,7 +15,7 @@ urlpatterns = [
     path('', PersonTaxYearListView.as_view(), name='person_search'),
     path('person/unfinished', PersonTaxYearUnfinishedListView.as_view(), name='person_search_unfinished'),
     path('person/failsend', PersonTaxYearFailSendListView.as_view(), name='person_search_failsend'),
-    path('person/unhanlded/', PersonTaxYearUnhandledDocumentsAndNotes.as_view(), name='person_search_unhandled'),
+    path('person/unhandled/', PersonTaxYearUnhandledDocumentsAndNotes.as_view(), name='person_search_unhandled'),
 
     path('statistics', StatisticsView.as_view(), name='statistics'),
     path('tax_year/<int:year>/persons/<int:person_id>/', PersonTaxYearDetailView.as_view(), name='person_in_year'),
