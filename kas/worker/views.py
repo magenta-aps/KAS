@@ -1,4 +1,3 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect, Http404
 from django.urls import reverse
 from django.views.generic import TemplateView, DetailView
@@ -7,25 +6,26 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 from worker.job_registry import get_job_types, resolve_job_function
 from kas.view_mixins import BootstrapTableMixin
 from worker.forms import JobTypeSelectForm
 from worker.models import Job
 from worker.serializers import JobSerializer
+from project.view_mixin import IsStaffMixin
 
 
-class JobListTemplateView(LoginRequiredMixin, BootstrapTableMixin, TemplateView):
+class JobListTemplateView(IsStaffMixin, BootstrapTableMixin, TemplateView):
     template_name = 'worker/job_list.html'
 
 
-class JobDetailView(LoginRequiredMixin, DetailView):
+class JobDetailView(IsStaffMixin, DetailView):
     slug_field = 'uuid'
     slug_url_kwarg = 'uuid'
     model = Job
 
 
-class JobListAPIView(LoginRequiredMixin, ListAPIView):
+class JobListAPIView(ListAPIView):
     authentication_classes = [SessionAuthentication]
     serializer_class = JobSerializer
     pagination_class = LimitOffsetPagination
@@ -33,13 +33,13 @@ class JobListAPIView(LoginRequiredMixin, ListAPIView):
     ordering_fields = ['created_at', 'status', 'progress']
     ordering = ['-created_at']
 
-    permission_classes = [IsAuthenticated, ]
+    permission_classes = [IsAdminUser, ]
 
     def get_queryset(self):
         return Job.objects.filter(parent__isnull=True).select_related('created_by')
 
 
-class JobTypeSelectFormView(LoginRequiredMixin, FormView):
+class JobTypeSelectFormView(IsStaffMixin, FormView):
     template_name = 'worker/job_type_select.html'
     form_class = JobTypeSelectForm
 
@@ -47,7 +47,7 @@ class JobTypeSelectFormView(LoginRequiredMixin, FormView):
         return HttpResponseRedirect(reverse('worker:job_start', kwargs={'job_type': form.cleaned_data['job_type']}))
 
 
-class StartJobView(LoginRequiredMixin, FormView):
+class StartJobView(IsStaffMixin, FormView):
     template_name = 'worker/job_create_form.html'
 
     def job_data(self):
