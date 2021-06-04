@@ -930,7 +930,7 @@ class PolicyDocument(models.Model):
 
 
 def set_all_documents_and_notes_handled(sender, instance, created, raw, using, update_fields, **kwargs):
-    if created is True:
+    if created is True and instance.policy_tax_year is None:
         with atomic():
             person_tax_year = PersonTaxYear.objects.filter(pk=instance.person_tax_year_id).select_for_update()[0]
             if person_tax_year.all_documents_and_notes_handled is True:
