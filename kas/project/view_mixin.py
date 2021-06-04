@@ -8,6 +8,6 @@ class IsStaffMixin(AccessMixin):
     # like accessing the url directly and not by a link on the site
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated and request.user.is_staff is True:
+        if request.user.is_authenticated and request.user.is_staff:
             return super(IsStaffMixin, self).dispatch(request, *args, **kwargs)
         return self.handle_no_permission()
