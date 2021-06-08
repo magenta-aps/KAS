@@ -546,7 +546,7 @@ class PensionCompanySummaryFileView(LoginRequiredMixin, HighestSingleObjectMixin
         })
 
     def get_success_url(self):
-        return reverse('kas:policy_summary_list', kwargs=self.kwargs)
+        return reverse('kas:policy_summary_list', kwargs={'year': self.get_object().year})
 
     def form_valid(self, form):
         self.object = self.get_object()
