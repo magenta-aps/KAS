@@ -554,6 +554,12 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         verbose_name=_('Næste behandlingsdato')
     )
 
+    # Overstyring af pensionsselskabs-betaling; borgeren skal betale selvom der foreligger aftale med pensionsselskab
+    citizen_pay_override = models.BooleanField(
+        default=False,
+        verbose_name=_('Borgeren betaler selvom der foreligger aftale med pensionsselskab')
+    )
+
     @classmethod
     def perform_calculation(
         cls,
@@ -854,6 +860,10 @@ class PolicyTaxYear(HistoryMixin, models.Model):
                         self.adjusted_r75_amount,
                         self.prefilled_amount]
         return next((item for item in amounts_list if item is not None), None)
+
+    @property
+    def pension_company_pays(self):
+        return self.pension_company.agreement_present and not self.citizen_pay_override
 
     def __str__(self):
         return f"{self.__class__.__name__}(policy_number={self.policy_number}, cpr={self.person.cpr}, " \

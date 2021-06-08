@@ -392,7 +392,7 @@ class TaxPDF(FPDF):
             self.multi_cell(h=rowheight, align='L', w=c3w, txt='', border=1)
             self.yposition += rowheight
             self.set_xy(self.left_margin, self.yposition)
-            if policy.get('agreement_present'):
+            if policy.get('pension_company_pays'):
                 self.multi_cell(self.std_document_width, 5, align='L', txt=self.text26D[language], border=0)
             self.yposition += 15
             any_policys_added = True
@@ -516,7 +516,7 @@ class TaxPDF(FPDF):
                 'policy': ((policy.pension_company.name or ' - ')+' - '+policy.policy_number),
                 'preliminary_paid_amount': policy.preliminary_paid_amount,
                 'prefilled_amount': policy.prefilled_amount,
-                'agreement_present': policy.pension_company.agreement_present,
+                'pension_company_pays': policy.pension_company_pays,
                 'year_adjusted_amount': policy.year_adjusted_amount,
                 'available_negative_return': policy.available_negative_return
             }
