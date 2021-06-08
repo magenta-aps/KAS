@@ -58,7 +58,7 @@
             <span class="p-2">{% blocktrans with username=user.username %}Du er logget ind som {{username}}{% endblocktrans %}</span>
             <a class="btn btn-secondary" href="{% url 'logout' %}">{% trans 'Log ud' %}</a>
             {% if user.is_staff or user.is_superuser %}
-                <a class="btn btn-primary" href="{% url 'admin:index' %}">{% trans 'Admin' %}</a>
+                <a class="btn btn-primary" href="{% url 'kasadmin:index' %}">{% trans 'Admin' %}</a>
             {% endif %}
         {% else %}
             <a class="btn btn-secondary" href="{% url 'login' %}">{% trans 'Log ind' %}</a>
