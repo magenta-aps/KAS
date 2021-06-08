@@ -35,6 +35,7 @@ urlpatterns = [
          name='person_add_notes_or_attachement'),
     path('policy/<int:pk>/add/notes-attachments/', PolicyNotesAndAttachmentsView.as_view(),
          name='policy_add_notes_or_attachement'),
+    path(r'tax_year/latest/company-summary/', PensionCompanySummaryFileView.as_view(), name='policy_summary_list_latest'),
     path(r'tax_year/<int:year>/company-summary/', PensionCompanySummaryFileView.as_view(), name='policy_summary_list'),
     path(r'tax_year/<int:year>/company-summary/<int:pk>', PensionCompanySummaryFileDownloadView.as_view(), name='policy_summary'),
     path('persontaxyear/<int:pk>/history/', PersonTaxYearHistoryListView.as_view(),
