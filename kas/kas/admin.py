@@ -5,9 +5,41 @@ from django.utils.translation import gettext as _
 
 from kas.models import FinalSettlement
 from kas.models import PensionCompany, TaxYear, Person, PersonTaxYear, PolicyTaxYear, PolicyDocument, TaxSlipGenerated
+from project.admin import kasadmin  # used by is_staff users
 
 
-class KasUserAdmin(UserAdmin):
+class IsStaffPermission(admin.ModelAdmin):
+
+    def has_delete_permission(self, request, obj=None):
+        # never allow deletion
+        return False
+
+    def has_add_permission(self, request):
+        if request.user.is_authenticated:
+            if request.user.is_staff or request.user.is_superuser:
+                return True
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_authenticated:
+            if request.user.is_staff or request.user.is_superuser:
+                return True
+        return False
+
+    def has_view_or_change_permission(self, request, obj=None):
+        if request.user.is_authenticated:
+            if request.user.is_staff or request.user.is_superuser:
+                return True
+        return False
+
+    def has_module_permission(self, request):
+        if request.user.is_authenticated:
+            if request.user.is_staff or request.user.is_superuser:
+                return True
+        return False
+
+
+class KasUserAdmin(UserAdmin, IsStaffPermission):
     # Specialized admin
 
     def get_fieldsets(self, request, obj=None):
@@ -23,30 +55,37 @@ class KasUserAdmin(UserAdmin):
         return super().get_fieldsets(request, obj)
 
     list_display = ['username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active']
-
+    list_filter = ('is_staff', 'is_active')
     save_as_continue = False
 
-    # Cannot delete users
-    def has_delete_permission(self, request, obj=None):
+
+kasadmin.register(User, KasUserAdmin)
+
+
+class PensionCompanyAdmin(IsStaffPermission, admin.ModelAdmin):
+    list_display = ('name', 'res', 'email', 'phone', 'agreement_present')
+    list_filter = ('agreement_present', )
+    search_fields = ('name', 'res', 'email')
+
+
+kasadmin.register(PensionCompany, PensionCompanyAdmin)
+
+
+class TaxYearAdmin(IsStaffPermission, admin.ModelAdmin):
+    list_display = ('year', 'year_part')
+
+    def has_change_permission(self, request, obj=None):
         return False
 
-
-admin.site.unregister(User)
-admin.site.register(User, KasUserAdmin)
-
-
-class PensionCompanyAdmin(admin.ModelAdmin):
-    pass
+    def get_fieldsets(self, request, obj=None):
+        if obj is None:
+            return [(None, {'fields': ('year', )})]
+        return super(TaxYearAdmin, self).get_fieldsets(request, obj)
 
 
-admin.site.register(PensionCompany, PensionCompanyAdmin)
+kasadmin.register(TaxYear, TaxYearAdmin)
 
-
-class TaxYearAdmin(admin.ModelAdmin):
-    pass
-
-
-admin.site.register(TaxYear, TaxYearAdmin)
+# ------------------/django-admin/-------------------------------#
 
 
 class PersonAdmin(admin.ModelAdmin):
