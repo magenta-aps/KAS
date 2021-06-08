@@ -42,6 +42,7 @@
 
         {% if user.is_staff %}
         <a class="p-2 text-muted" href="{% url 'worker:job_list' %}">{% trans 'Jobadministration' %}</a>
+        <a class="p-2 text-muted" href="{% url 'kas:policy_summary_list_latest' %}">{% trans 'Policeopsummering' %}</a>
         {% endif %}
         <span class="ml-auto">
         {% if user.is_authenticated %}

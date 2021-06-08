@@ -1,8 +1,10 @@
 from django.forms import formset_factory
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import formats
-from django.utils.translation import to_locale, get_language
+from django.utils.translation import to_locale, get_language, gettext as _
+from django.views.generic.detail import SingleObjectMixin
 
 from kas.forms import NoteForm, PolicyDocumentForm
 from kas.models import PersonTaxYear, PolicyTaxYear
@@ -117,3 +119,17 @@ class CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear(CreateOrUpdateView
         By default return to the policy-detail page
         """
         return reverse('kas:policy_detail', args=[self.get_policy_tax_year().pk])
+
+
+class HighestSingleObjectMixin(SingleObjectMixin):
+    def get_object(self, queryset=None):
+        try:
+            return super(HighestSingleObjectMixin, self).get_object(queryset)
+        except AttributeError:
+            if queryset is None:
+                queryset = self.get_queryset()
+            item = queryset.order_by(f"-{self.slug_field}").first()
+            if item is None:
+                raise Http404(_("No %(verbose_name)s found matching the query") %
+                              {'verbose_name': queryset.model._meta.verbose_name})
+            return item

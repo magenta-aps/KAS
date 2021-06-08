@@ -27,6 +27,7 @@ from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownl
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
 from prisme.models import Transaction
+from kas.view_mixins import HighestSingleObjectMixin
 
 
 class StatisticsView(LoginRequiredMixin, TemplateView):
@@ -515,7 +516,7 @@ class EditAmountsUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDo
         return super(EditAmountsUpdateView, self).form_valid(form)
 
 
-class PensionCompanySummaryFileView(LoginRequiredMixin, SingleObjectMixin, FormView):
+class PensionCompanySummaryFileView(LoginRequiredMixin, HighestSingleObjectMixin, FormView):
     model = TaxYear
     form_class = PensionCompanySummaryFileForm
     template_name = "kas/policycompanysummary_list.html"
@@ -527,6 +528,7 @@ class PensionCompanySummaryFileView(LoginRequiredMixin, SingleObjectMixin, FormV
         self.object = self.get_object()
         return super().get_context_data(**{
             'object_list': PensionCompanySummaryFile.objects.filter(tax_year=self.object).order_by('company', '-created'),
+            'years': TaxYear.objects.values_list('year', flat=True).order_by('-year'),
             **kwargs
         })
 

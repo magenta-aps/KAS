@@ -18,16 +18,30 @@
     {% endif %}
   {% endif %}
 
-  <h1>{% blocktrans with year=view.year %}Liste over Policeopsummeringer i år {{year}}{% endblocktrans %}</h1>
+  <h1>{% blocktrans with year=object.year %}Liste over Policeopsummeringer i år {{year}}{% endblocktrans %}</h1>
 
   <form method="post">
     {% csrf_token %}
-    <div class="row justify-content-end">
-      <div class="col-2">
+    <div class="form-row">
+
+      <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle" role="button" id="yearMenuLink" data-toggle="dropdown" aria-expanded="false">
+          {% trans 'Skift år' %}
+        </button>
+
+        <ul class="dropdown-menu" aria-labelledby="yearMenuLink">
+          {% for year in years %}
+          <li><a class="dropdown-item" href="{% url 'kas:policy_summary_list' year %}">{{year}}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="ml-auto col-2">
         {{ form.pension_company }}
       </div>
       <button type="submit" class="btn btn-primary">{% trans 'Generér og hent' %}</button>
-    </div>
+
+      </div>
   </form>
 
   <hr/>
