@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-10 10:01+0000\n"
+"POT-Creation-Date: 2021-06-03 09:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,6 +18,1349 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: reportgeneration/kas_report.py:140
-msgid "Vejledning til bilag vedrørende beskatning af visse kapitalafkast"
+#: admin.py:20
+msgid "Personal info"
+msgstr ""
+
+#: admin.py:21
+msgid "Permissions"
+msgstr ""
+
+#: forms.py:15 forms.py:57
+#: templates/includes/detail_tabs/anvendt_negativt_afkast.html:11
+#: templates/includes/detail_tabs/policies_list.html:5
+#: templates/kas/persontaxyear_detail.html:37
+#: templates/kas/policycompanysummary_list.html:39
+#: templates/kas/policytaxyear_detail.html:50
+msgid "År"
+msgstr ""
+
+#: forms.py:16 templates/includes/persontaxyear_lists/standard.html:6
+#: templates/includes/persontaxyear_speciallist.html:17
+#: templates/kas/persontaxyear_list.html:34
+#: templates/kas/persontaxyear_unfinished_list.html:23
+msgid "Personnummer"
+msgstr ""
+
+#: forms.py:17 models.py:72 models.py:73 models.py:917
+#: templates/includes/persontaxyear_lists/standard.html:7
+#: templates/includes/persontaxyear_speciallist.html:21
+#: templates/kas/persontaxyear_detail.html:33
+#: templates/kas/persontaxyear_list.html:38
+#: templates/kas/persontaxyear_unfinished_list.html:27
+msgid "Navn"
+msgstr ""
+
+#: forms.py:18 templates/kas/persontaxyear_detail.html:51
+msgid "Kommunekode"
+msgstr ""
+
+#: forms.py:19 templates/kas/persontaxyear_detail.html:55
+msgid "Kommunenavn"
+msgstr ""
+
+#: forms.py:20 models.py:80 models.py:81
+#: templates/includes/persontaxyear_lists/standard.html:8
+#: templates/includes/persontaxyear_speciallist.html:25
+#: templates/kas/persontaxyear_list.html:42
+#: templates/kas/persontaxyear_unfinished_list.html:31
+msgid "Adresse"
+msgstr ""
+
+#: forms.py:22
+msgid "Skattepligt"
+msgstr ""
+
+#: forms.py:24 templates/kas/persontaxyear_detail.html:68
+msgid "Ikke fuldt skattepligtig"
+msgstr ""
+
+#: forms.py:24 templates/kas/persontaxyear_detail.html:68
+msgid "Fuldt skattepligtig"
+msgstr ""
+
+#: forms.py:24 forms.py:30
+msgid "Alle"
+msgstr ""
+
+#: forms.py:28
+msgid "Noter om indbetaling i udlandet"
+msgstr ""
+
+#: forms.py:30
+msgid "Har ikke noter"
+msgstr ""
+
+#: forms.py:30
+msgid "Har noter"
+msgstr ""
+
+#: forms.py:50
+msgid "Ugyldigt cpr-nummer"
+msgstr ""
+
+#: forms.py:58 templates/includes/detail_tabs/policies_list.html:6
+#: templates/kas/policycompanysummary_list.html:38
+#: templates/kas/policytaxyear_create.html:22
+#: templates/kas/policytaxyear_detail.html:64
+#: templates/kas/policytaxyear_historical_list.html:16
+#: templates/kas/policytaxyear_unfinished_list.html:38
+msgid "Pensionsselskab"
+msgstr ""
+
+#: forms.py:59 templates/kas/policytaxyear_create.html:30
+#: templates/kas/policytaxyear_detail.html:36
+#: templates/kas/policytaxyear_unfinished_list.html:42
+msgid "Policenummer"
+msgstr ""
+
+#: forms.py:70 forms.py:104 forms.py:154
+msgid "Nyt notat"
+msgstr ""
+
+#: forms.py:73 forms.py:103 forms.py:165
+msgid "Fil-beskrivelse"
+msgstr ""
+
+#: forms.py:153 templates/includes/single_notes_and_attachment_form.html:15
+#: templates/kas/persontaxyear_historical_list.html:36
+#: templates/kas/policytaxyear_create.html:50
+#: templates/kas/policytaxyear_historical_list.html:40
+msgid "Notat"
+msgstr ""
+
+#: forms.py:175 forms.py:176 models.py:445
+#: templates/includes/detail_tabs/policies_list.html:12
+#: templates/kas/policytaxyear_create.html:38
+#: templates/kas/policytaxyear_detail.html:77
+#: templates/kas/policytaxyear_unfinished_list.html:54
+msgid "Selvangivet beløb"
+msgstr ""
+
+#: models.py:67
+msgid "pensionsselskab"
+msgstr ""
+
+#: models.py:68
+msgid "pensionsselskaber"
+msgstr ""
+
+#: models.py:87 models.py:88
+msgid "Email"
+msgstr ""
+
+#: models.py:94 models.py:95
+msgid "Telefon"
+msgstr ""
+
+#: models.py:101
+msgid ""
+"Identificerende nummer (reg.nr. for banker, se-nr for pensionsselskaber)"
+msgstr ""
+
+#: models.py:109
+msgid "Foreligger der en aftale med skattestyrelsen"
+msgstr ""
+
+#: models.py:117
+msgid "Selvangivelsesperiode"
+msgstr ""
+
+#: models.py:118
+msgid "Ligningsperiode"
+msgstr ""
+
+#: models.py:119
+msgid "Genoptagelsesperiode"
+msgstr ""
+
+#: models.py:130 models.py:131
+msgid "Skatteår"
+msgstr ""
+
+#: models.py:157 models.py:158
+msgid "CPR nummer"
+msgstr ""
+
+#: models.py:212
+msgid "Genereret"
+msgstr ""
+
+#: models.py:213
+msgid "Afsendt"
+msgstr ""
+
+#: models.py:214 models.py:264
+msgid "Afventer efterbehandling"
+msgstr ""
+
+#: models.py:215 models.py:266
+msgid "Afsendelse fejlet"
+msgstr ""
+
+#: models.py:220
+msgid "Afventer processering"
+msgstr ""
+
+#: models.py:221
+msgid "Fundet gyldig postadresse"
+msgstr ""
+
+#: models.py:222 models.py:262
+msgid "Ingen gyldig postadresse"
+msgstr ""
+
+#: models.py:223
+msgid "Overført til fjernprint"
+msgstr ""
+
+#: models.py:227
+msgid "Gyldig E-boks modtager"
+msgstr ""
+
+#: models.py:228
+msgid "Fritaget modtager"
+msgstr ""
+
+#: models.py:229
+msgid "Ugyldig E-boks modtager (sendes til efterbehandling)"
+msgstr ""
+
+#: models.py:230
+msgid "Afdød"
+msgstr ""
+
+#: models.py:231
+msgid "Mindreårig"
+msgstr ""
+
+#: models.py:251
+msgid "Afventer afsendelse"
+msgstr ""
+
+#: models.py:254
+msgid "E-boks"
+msgstr ""
+
+#: models.py:256
+msgid "Ikke afsendt (afdød)"
+msgstr ""
+
+#: models.py:260
+msgid "Fjernprint"
+msgstr ""
+
+#: models.py:439
+msgid "Beløb rapporteret fra pensionsselskab"
+msgstr ""
+
+#: models.py:459
+msgid "Beløb brugt til beregning"
+msgstr ""
+
+#: models.py:464
+msgid "Justeret R75 beløb"
+msgstr ""
+
+#: models.py:465 templates/includes/detail_tabs/beregnings_detaljer.html:34
+msgid "Ansat beløb"
+msgstr ""
+
+#: models.py:468
+msgid "Beløb justeret for dage i skatteår"
+msgstr ""
+
+#: models.py:476
+msgid "Standard"
+msgstr ""
+
+#: models.py:477
+msgid "Alternativ"
+msgstr ""
+
+#: models.py:480
+msgid "Beregningsmodel"
+msgstr ""
+
+#: models.py:486
+msgid "Foreløbigt betalt kapitalafkast"
+msgstr ""
+
+#: models.py:494
+msgid "Er kapitalafkastskatten hævet fra pensionsordning"
+msgstr ""
+
+#: models.py:498
+msgid "Selvangivet beløb for betalt kapitalafkastskat i udlandet"
+msgstr ""
+
+#: models.py:505
+msgid "Faktisk betalt kapitalafkastskat i udlandet"
+msgstr ""
+
+#: models.py:512
+msgid "Beregnet skat uden fradrag"
+msgstr ""
+
+#: models.py:518
+msgid "Beregnet resultat"
+msgstr ""
+
+#: models.py:524
+msgid "Tilgængeligt fradrag fra andre år (beregnet ud fra andre data)"
+msgstr ""
+
+#: models.py:533
+msgid "Modificeret af"
+msgstr ""
+
+#: models.py:538 models.py:539
+msgid "Låst"
+msgstr ""
+
+#: models.py:544 templates/kas/policytaxyear_detail.html:109
+msgid "Aktiv"
+msgstr ""
+
+#: models.py:548 templates/includes/detail_tabs/policies_list.html:8
+#: templates/kas/persontaxyear_detail.html:89
+#: templates/kas/policytaxyear_detail.html:97
+msgid "Slutlignet"
+msgstr ""
+
+#: models.py:549 templates/includes/detail_tabs/policies_list.html:9
+#: templates/kas/persontaxyear_detail.html:93
+#: templates/kas/policytaxyear_detail.html:103
+msgid "Kræver efterbehandling"
+msgstr ""
+
+#: models.py:554 templates/includes/detail_tabs/policies_list.html:10
+#: templates/includes/persontaxyear_speciallist.html:37
+#: templates/kas/persontaxyear_list.html:54
+#: templates/kas/persontaxyear_unfinished_list.html:47
+#: templates/kas/policytaxyear_detail.html:93
+#: templates/kas/policytaxyear_unfinished_list.html:46
+msgid "Næste behandlingsdato"
+msgstr ""
+
+#: models.py:887
+msgid "Overført negativt afkast"
+msgstr ""
+
+#: models.py:922 templates/includes/detail_tabs/attachments.html:6
+#: templates/kas/policytaxyear_create.html:15
+msgid "Beskrivelse"
+msgstr ""
+
+#: models.py:927 templates/kas/policycompanysummary_list.html:42
+msgid "Fil"
+msgstr ""
+
+#: models.py:952
+msgid "Fortrykt nettoafkast"
+msgstr ""
+
+#: models.py:966 models.py:967
+msgid "Skat betalt i tidligere år"
+msgstr ""
+
+#: models.py:975 models.py:976
+msgid "Antal dage"
+msgstr ""
+
+#: models.py:1010 templates/includes/notes.html:10
+msgid "Tekst"
+msgstr ""
+
+#: templates/includes/detail_tabs.html:5 templates/kas/statistics.html:26
+msgid "Policer"
+msgstr ""
+
+#: templates/includes/detail_tabs.html:10
+msgid " Beregningsdetaljer"
+msgstr ""
+
+#: templates/includes/detail_tabs.html:13
+msgid "Anvendt negativt afkast"
+msgstr ""
+
+#: templates/includes/detail_tabs.html:19
+msgid "Notater"
+msgstr ""
+
+#: templates/includes/detail_tabs.html:22
+#: templates/includes/single_notes_and_attachment_form.html:18
+#: templates/kas/persontaxyear_historical_list.html:38
+#: templates/kas/policytaxyear_create.html:53
+#: templates/kas/policytaxyear_historical_list.html:42
+msgid "Bilag"
+msgstr ""
+
+#: templates/includes/detail_tabs.html:26
+msgid "Notater om betaling i udlandet"
+msgstr ""
+
+#: templates/includes/detail_tabs.html:29
+msgid "Generelle notater fra borger"
+msgstr ""
+
+#: templates/includes/detail_tabs.html:32
+msgid "Slutopgørelser"
+msgstr ""
+
+#: templates/includes/detail_tabs.html:35
+msgid "Transaktioner"
+msgstr ""
+
+#: templates/includes/detail_tabs/anvendt_negativt_afkast.html:7
+msgid "Anvendt i år"
+msgstr ""
+
+#: templates/includes/detail_tabs/anvendt_negativt_afkast.html:12
+msgid "Negativt afkast"
+msgstr ""
+
+#: templates/includes/detail_tabs/anvendt_negativt_afkast.html:18
+msgid "Resterende"
+msgstr ""
+
+#: templates/includes/detail_tabs/anvendt_negativt_afkast.html:41
+msgid "Totalt anvendt"
+msgstr ""
+
+#: templates/includes/detail_tabs/attachments.html:5
+msgid "Uploaded af"
+msgstr ""
+
+#: templates/includes/detail_tabs/attachments.html:8
+#: templates/includes/notes.html:8
+#: templates/kas/persontaxyear_historical_list.html:34
+#: templates/kas/policytaxyear_historical_list.html:8
+#: templates/kas/policytaxyear_historical_list.html:38
+msgid "Police"
+msgstr ""
+
+#: templates/includes/detail_tabs/attachments.html:10
+#: templates/includes/notes.html:6
+msgid "Tidspunkt"
+msgstr ""
+
+#: templates/includes/detail_tabs/attachments.html:11
+msgid "File"
+msgstr ""
+
+#: templates/includes/detail_tabs/attachments.html:31
+msgid "Ingen bilag fundet"
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:9
+msgid "Udfyldes fra R75"
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:17
+msgid "Justeret beløb fra pensionsselskab"
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:18
+msgid ""
+"Justeret beløb fra pensionsselskab, ændret i forhold til de oprindelige R75 "
+"data"
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:26
+msgid "Selvangivet beløb fra borgeren"
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:35
+msgid "Beløb ansat undsagsbehandling eller autoligning"
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:41
+msgid "Kapitalafkast"
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:46
+#, python-format
+msgid ""
+"\n"
+"                Justeret for antal skattepligtsdage i året (%(taxable_days)s "
+"af %(total_days)s dage = %(factor)s)\n"
+"            "
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:49
+#, python-format
+msgid ""
+"\n"
+"                Beløb for hele året (%(amount)s) &times; skattepligtsdage "
+"(%(taxable_days)s) / dage i %(year)s (%(days)s)\n"
+"            "
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:61
+msgid "Negativt afkast til fremførsel"
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:62
+#, python-format
+msgid ""
+"\n"
+"            %(amount)s kr fremføres til modregning i fremtidige opgørelser\n"
+"            "
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:76
+#, python-format
+msgid "Modregning af tidligere negativt kapitalafkast (%(year)s)"
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:77
+#, python-format
+msgid ""
+"\n"
+"            Der er modregnes kr %(amount)s i negativt kapitalafkast fra "
+"%(year)s\n"
+"            "
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:88
+msgid "Modregning af tidligere negativt kapitalafkast"
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:89
+msgid ""
+"\n"
+"            Der er ikke noget tilgængeligt negativt kapitalafkast til "
+"modregning\n"
+"            "
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:101
+msgid "Beskatningsgrundlag (kapitalafkast efter modregning)"
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:102
+#, python-format
+msgid ""
+"\n"
+"                Beløb justeret for dage (%(amount)s) - anvendt negativt "
+"afkast (%(return)s)\n"
+"            "
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:112
+#, python-format
+msgid "Kapitalafkastskat (15,3%% af beskatningsgrundlag)"
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:113
+#, python-format
+msgid ""
+"\n"
+"                15,3%% af beskatningsgrundlag efter justering for negativt "
+"afkast (0,153 &times; %(amount)s)\n"
+"            "
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:122
+msgid "Nedslag for betalt skat i udlandet"
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:127
+msgid "Kapitalafkastskat"
+msgstr ""
+
+#: templates/includes/detail_tabs/beregnings_detaljer.html:128
+#, python-format
+msgid ""
+"\n"
+"                Skat før fraregning af skat betalt i udlandet (%(tax)s) - "
+"Skat betalt i udlandet (%(paid)s)\n"
+"            "
+msgstr ""
+
+#: templates/includes/detail_tabs/foreign_notes.html:3
+#: templates/includes/detail_tabs/general_notes.html:3
+msgid "Ingen noter"
+msgstr ""
+
+#: templates/includes/detail_tabs/policies_list.html:7
+msgid "Police nr."
+msgstr ""
+
+#: templates/includes/detail_tabs/policies_list.html:11
+#: templates/kas/policytaxyear_unfinished_list.html:50
+msgid "Fortrykt beløb"
+msgstr ""
+
+#: templates/includes/detail_tabs/policies_list.html:13
+#: templates/kas/policytaxyear_unfinished_list.html:58
+msgid "Forskel"
+msgstr ""
+
+#: templates/includes/detail_tabs/policies_list.html:22
+#: templates/includes/detail_tabs/policies_list.html:23
+#: templates/includes/processing_date_scripts.html:31
+#: templates/kas/persontaxyear_detail.html:78
+#: templates/kas/persontaxyear_detail.html:90
+#: templates/kas/persontaxyear_detail.html:94
+#: templates/kas/policytaxyear_detail.html:99
+#: templates/kas/policytaxyear_detail.html:105
+#: templates/kas/policytaxyear_detail.html:111
+msgid "Ja"
+msgstr ""
+
+#: templates/includes/detail_tabs/policies_list.html:22
+#: templates/includes/detail_tabs/policies_list.html:23
+#: templates/includes/processing_date_scripts.html:32
+#: templates/kas/persontaxyear_detail.html:82
+#: templates/kas/persontaxyear_detail.html:90
+#: templates/kas/persontaxyear_detail.html:94
+#: templates/kas/policytaxyear_detail.html:99
+#: templates/kas/policytaxyear_detail.html:105
+#: templates/kas/policytaxyear_detail.html:111
+msgid "Nej"
+msgstr ""
+
+#: templates/includes/detail_tabs/policies_list.html:31
+#: templates/kas/policytaxyear_unfinished_list.html:89
+msgid "Ingen policer fundet"
+msgstr ""
+
+#: templates/includes/detail_tabs/settlements.html:5
+#: templates/includes/detail_tabs/transactions.html:9
+#: templates/kas/persontaxyear_historical_list.html:47
+#: templates/kas/policytaxyear_historical_list.html:47
+msgid "Oprettet"
+msgstr ""
+
+#: templates/includes/detail_tabs/settlements.html:6
+msgid "Sendt"
+msgstr ""
+
+#: templates/includes/detail_tabs/settlements.html:7
+msgid "Title"
+msgstr ""
+
+#: templates/includes/detail_tabs/settlements.html:8
+#: templates/includes/detail_tabs/transactions.html:5
+msgid "Status"
+msgstr ""
+
+#: templates/includes/detail_tabs/settlements.html:9
+msgid "Afsendelses status"
+msgstr ""
+
+#: templates/includes/detail_tabs/settlements.html:10
+msgid "Vis slutopgørelse"
+msgstr ""
+
+#: templates/includes/detail_tabs/settlements.html:21
+#: templates/kas/policycompanysummary_list.html:52
+msgid "Download"
+msgstr ""
+
+#: templates/includes/detail_tabs/settlements.html:25
+msgid "Ingen slutopgørelser fundet"
+msgstr ""
+
+#: templates/includes/detail_tabs/transactions.html:6
+#: templates/kas/persontaxyear_historical_list.html:17
+#: templates/kas/policytaxyear_historical_list.html:25
+msgid "Type"
+msgstr ""
+
+#: templates/includes/detail_tabs/transactions.html:7
+msgid "Amount"
+msgstr ""
+
+#: templates/includes/detail_tabs/transactions.html:8
+#: templates/kas/policycompanysummary_list.html:40
+msgid "Oprettet af"
+msgstr ""
+
+#: templates/includes/detail_tabs/transactions.html:10
+msgid "Overført af"
+msgstr ""
+
+#: templates/includes/detail_tabs/transactions.html:11
+msgid "Overført"
+msgstr ""
+
+#: templates/includes/detail_tabs/transactions.html:27
+msgid "Ingen transaktioner fundet"
+msgstr ""
+
+#: templates/includes/notes.html:5
+msgid "Bruger"
+msgstr ""
+
+#: templates/includes/notes.html:33
+msgid "Ingen notater fundet"
+msgstr ""
+
+#: templates/includes/notes_and_documents_form.html:7
+#: templates/includes/single_notes_and_attachment_form.html:9
+msgid "Tilbage til police"
+msgstr ""
+
+#: templates/includes/notes_and_documents_form.html:9
+#: templates/includes/single_notes_and_attachment_form.html:7
+msgid "Tilbage til person"
+msgstr ""
+
+#: templates/includes/notes_and_documents_form.html:44
+#: templates/includes/single_notes_and_attachment_form.html:48
+msgid "Opdatér næste behandlingsdato"
+msgstr ""
+
+#: templates/includes/notes_and_documents_form.html:72
+msgid "Tilføj flere bilag"
+msgstr ""
+
+#: templates/includes/notes_and_documents_form.html:77
+msgid "Opret"
+msgstr ""
+
+#: templates/includes/notes_and_documents_form.html:77
+#: templates/includes/single_notes_and_attachment_form.html:58
+#: templates/kas/policytaxyear_create.html:76
+msgid "Gem"
+msgstr ""
+
+#: templates/includes/pager.html:6
+msgid "første"
+msgstr ""
+
+#: templates/includes/pager.html:7
+msgid "forrige"
+msgstr ""
+
+#: templates/includes/pager.html:11
+#, python-format
+msgid "Side %(page)s af %(total)s."
+msgstr ""
+
+#: templates/includes/pager.html:15
+msgid "næste"
+msgstr ""
+
+#: templates/includes/pager.html:16
+msgid "sidste"
+msgstr ""
+
+#: templates/includes/persontaxyear_lists/standard.html:9
+#: templates/includes/persontaxyear_speciallist.html:29
+#: templates/kas/persontaxyear_list.html:46
+#: templates/kas/persontaxyear_unfinished_list.html:35
+msgid "Kommune"
+msgstr ""
+
+#: templates/includes/persontaxyear_lists/standard.html:10
+#: templates/includes/persontaxyear_speciallist.html:33
+#: templates/kas/persontaxyear_list.html:50
+#: templates/kas/persontaxyear_unfinished_list.html:43
+msgid "Antal policer"
+msgstr ""
+
+#: templates/includes/persontaxyear_lists/standard.html:29
+#: templates/kas/persontaxyear_list.html:76
+#, python-format
+msgid "Ingen personer fundet for %(year)s med søgekriterierne"
+msgstr ""
+
+#: templates/includes/persontaxyear_lists/standard.html:32
+#: templates/kas/persontaxyear_list.html:79
+msgid "Udfyld mindst ét søgefelt"
+msgstr ""
+
+#: templates/includes/persontaxyear_speciallist.html:8
+#: templates/kas/persontaxyear_list.html:22
+#: templates/kas/persontaxyear_unfinished_list.html:12
+#: templates/kas/policytaxyear_unfinished_list.html:23
+msgid "Søg"
+msgstr ""
+
+#: templates/includes/persontaxyear_speciallist.html:59
+#: templates/kas/persontaxyear_unfinished_list.html:70
+msgid "Ingen personer fundet"
+msgstr ""
+
+#: templates/includes/processing_date_scripts.html:22
+msgid "Advarsel"
+msgstr ""
+
+#: templates/includes/processing_date_scripts.html:23
+#: templates/kas/policytaxyear_detail.html:166
+msgid "Luk"
+msgstr ""
+
+#: templates/includes/processing_date_scripts.html:28
+msgid ""
+"Næste behandlingsdato er endnu ikke nået. Er du sikker på at du vil "
+"slutligne?"
+msgstr ""
+
+#: templates/kas/layout.html:27
+msgid "Tilbage"
+msgstr ""
+
+#: templates/kas/layout.html:31
+msgid "Find person"
+msgstr ""
+
+#: templates/kas/layout.html:34
+msgid "Udtrækslister"
+msgstr ""
+
+#: templates/kas/layout.html:37
+#: templates/kas/persontaxyear_failsend_list.html:5
+msgid "Personer med fejlet afsendelse af selvangivelse"
+msgstr ""
+
+#: templates/kas/layout.html:38
+#: templates/kas/policytaxyear_unfinished_list.html:5
+msgid "Policer der kræver efterbehandling"
+msgstr ""
+
+#: templates/kas/layout.html:39
+#: templates/kas/persontaxyear_unfinished_list.html:5
+msgid "Personer med policer der kræver efterbehandling"
+msgstr ""
+
+#: templates/kas/layout.html:40
+#: templates/kas/persontaxyear_unhandled_list.html:5
+msgid "Personer med nye dokumenter eller notater"
+msgstr ""
+
+#: templates/kas/layout.html:44
+msgid "Jobadministration"
+msgstr ""
+
+#: templates/kas/layout.html:56
+msgid "Manual"
+msgstr ""
+
+#: templates/kas/layout.html:60
+#, python-format
+msgid "Du er logget ind som %(username)s"
+msgstr ""
+
+#: templates/kas/layout.html:61
+msgid "Log ud"
+msgstr ""
+
+#: templates/kas/layout.html:63
+msgid "Admin"
+msgstr ""
+
+#: templates/kas/layout.html:66
+msgid "Log ind"
+msgstr ""
+
+#: templates/kas/login.html:5
+msgid "KAS"
+msgstr ""
+
+#: templates/kas/login.html:22
+msgid "Username"
+msgstr ""
+
+#: templates/kas/login.html:28
+msgid "Password"
+msgstr ""
+
+#: templates/kas/login.html:34
+msgid "Login"
+msgstr ""
+
+#: templates/kas/person/add_notes_and_attachment_form.html:6
+#, python-format
+msgid "Tilføj notat og eller bilag til %(name)s"
+msgstr ""
+
+#: templates/kas/person/add_notes_and_attachment_form.html:8
+msgid ""
+"Her kan tilføjes notater og bilag til personen for dette skatteår. Det vil "
+"ikke blive tilknyttet nogen bestemt police.\n"
+"    Ønsker man at tilføje et notat for en specifik police bør man bruge "
+"knappen <b>Tilføj bilag/notater</b> på policens side.\n"
+"\n"
+"    Notaterne og bilagene findes kun i KAS-systemet og kan ikke ses af "
+"borgeren."
+msgstr ""
+
+#: templates/kas/person/add_notes_and_attachment_form.html:13
+#: templates/kas/policy/add_notes_and_attachment_form.html:11
+msgid ""
+"For at tilføje et nyt notat udfyldes feltet <b>Nyt notat</b>. Tryk derefter "
+"på knappen <b>Gem</b> for at gemme notatet for personen."
+msgstr ""
+
+#: templates/kas/person/add_notes_and_attachment_form.html:15
+msgid ""
+"For at tilføje et nyt bilag bruges <b>filfeltet</b> til højre.\n"
+"        Der er mulighed for at angive en beskrivelse af filen i feltet "
+"<b>Fil-beskrivelse</b>.\n"
+"        Efterfølgende klikkes på knappen <b>Gem</b> for at vedhæfte filen."
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:7
+#: templates/kas/policytaxyear_detail.html:6
+msgid "Tilbage til historik oversigt"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:9
+#: templates/kas/policytaxyear_detail.html:8
+#, python-format
+msgid "%(name)s i år %(year)s fra <b>%(history_date)s</b>"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:10
+#, python-format
+msgid ""
+" Denne side viser en tidligere version af personskatteåret fra <b>"
+"%(history_date)s</b> "
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:12
+#, python-format
+msgid "%(name)s i år %(year)s"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:14
+#: templates/kas/persontaxyear_historical_list.html:40
+msgid "Selvangivelse"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:15
+msgid "Hent selvangivelse PDF"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:17
+#: templates/kas/policytaxyear_detail.html:12
+msgid "Stamdata"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:18
+msgid ""
+"<b>År</b> Viste år for borger.\n"
+"\n"
+"            <b>Slutlignet</b> Er alle policer for borger i det givne år "
+"slutlignede.\n"
+"\n"
+"            <b>Kræver efterbehandling</b> Er en eller flere policer for "
+"borgeren i det givne år markeret til efterbehandling."
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:29
+msgid "Cpr-nummer"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:59
+msgid "Adrese"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:63
+msgid "Adresse på én linie"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:67
+msgid "Skatteomfang"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:71
+#, python-format
+msgid "Skattedage i %(year)s"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:75
+msgid "Alle bilag og notater behandlet"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:82
+msgid "Sæt alle bilag og notater som behandlet"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:101
+#: templates/kas/policytaxyear_detail.html:122
+msgid "Handlinger"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:102
+msgid "Opret ny police"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:103
+#: templates/kas/policytaxyear_detail.html:124
+#: templates/kas/policytaxyear_detail.html:132
+msgid "Tilføj bilag/notater"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:115
+#: templates/kas/policytaxyear_detail.html:144
+msgid "Vis historik"
+msgstr ""
+
+#: templates/kas/persontaxyear_detail.html:119
+msgid ""
+"<b>Policer</b> Borgerens police for det valgte år. Klik på <b>Police nr.</b> "
+"for at gå til police.\n"
+"\n"
+"            <b>Notater</b> Liste af notater tilknyttet borger eller police\n"
+"\n"
+"            <b>Bilag</b> Liste af uploadede bilag tilknyttet en borger eller "
+"police.\n"
+"\n"
+"            <b>Notat om betaling i udlandet</b> Borgerudfyldt tekst om "
+"betaling af kapitalafkastskat i udlandet.\n"
+"\n"
+"            <b>Slutopgørelse</b> Genererede og afsendte slutopgørelser.\n"
+"\n"
+"            <b>Transaktioner</b> Forudindbetalinger og opkrævninger."
+msgstr ""
+
+#: templates/kas/persontaxyear_historical_list.html:4
+#, python-format
+msgid " Historik for %(name)s i år %(year)s"
+msgstr ""
+
+#: templates/kas/persontaxyear_historical_list.html:8
+#: templates/kas/persontaxyear_historical_list.html:30
+#: templates/kas/policytaxyear_historical_list.html:12
+msgid "Personskatteår"
+msgstr ""
+
+#: templates/kas/persontaxyear_historical_list.html:9
+#, python-format
+msgid " %(cpr)s / %(name)s i %(year)s"
+msgstr ""
+
+#: templates/kas/persontaxyear_historical_list.html:16
+#: templates/kas/policytaxyear_historical_list.html:24
+msgid "Dato"
+msgstr ""
+
+#: templates/kas/persontaxyear_historical_list.html:18
+#: templates/kas/policytaxyear_historical_list.html:26
+msgid "Hændelse"
+msgstr ""
+
+#: templates/kas/persontaxyear_historical_list.html:19
+#: templates/kas/policytaxyear_historical_list.html:27
+msgid "Af"
+msgstr ""
+
+#: templates/kas/persontaxyear_historical_list.html:20
+#: templates/kas/policytaxyear_historical_list.html:28
+msgid "Årsag/indhold"
+msgstr ""
+
+#: templates/kas/persontaxyear_historical_list.html:21
+#: templates/kas/policytaxyear_historical_list.html:29
+msgid "Link"
+msgstr ""
+
+#: templates/kas/persontaxyear_historical_list.html:32
+#: templates/kas/policytaxyear_unfinished_list.html:34
+msgid "Person"
+msgstr ""
+
+#: templates/kas/persontaxyear_historical_list.html:49
+#: templates/kas/policytaxyear_historical_list.html:49
+msgid "Ændret"
+msgstr ""
+
+#: templates/kas/persontaxyear_historical_list.html:51
+#: templates/kas/policytaxyear_historical_list.html:51
+msgid "Slettet"
+msgstr ""
+
+#: templates/kas/persontaxyear_historical_list.html:59
+#: templates/kas/policytaxyear_historical_list.html:59
+msgid "Gå til version"
+msgstr ""
+
+#: templates/kas/persontaxyear_historical_list.html:61
+msgid "Gå til historik"
+msgstr ""
+
+#: templates/kas/persontaxyear_historical_list.html:63
+#: templates/kas/policytaxyear_historical_list.html:61
+msgid "Vis bilag"
+msgstr ""
+
+#: templates/kas/persontaxyear_list.html:5
+msgid "Søgning efter personer"
+msgstr ""
+
+#: templates/kas/persontaxyear_list.html:7
+msgid ""
+"Fremsøg borger ved at benytte nedenstående formular til at begrænse "
+"søgningen.\n"
+"\n"
+"    I feltet <b>CPR</b> kan der angives et fuldt CPR-nummer eller en del af "
+"CPR-nummer. Et fuldt CPR-nummer kan angives med eller uden bindestreg.\n"
+"\n"
+"    I feltet <b>Navn</b> kan der angives en del af navnet på en person eller "
+"det fulde navn på personen. Der skelnes ikke mellem store og små bogstaver.\n"
+"\n"
+"    Klik på en borger i listen for at få vist detaljer for borgeren og for "
+"at få vist borgerens policer for det valgte år."
+msgstr ""
+
+#: templates/kas/persontaxyear_unfinished_list.html:39
+msgid "Antal policer der kræver efterbehandling"
+msgstr ""
+
+#: templates/kas/policy/add_notes_and_attachment_form.html:6
+msgid ""
+"Her kan tilføjes notater og bilag til policen for dette skatteår. Det vil "
+"blive tilknyttet denne police, men kan også ses på listen på personen.\n"
+"\n"
+"    Notaterne og bilagene findes kun i KAS-systemet og kan ikke ses af "
+"borgeren."
+msgstr ""
+
+#: templates/kas/policy/add_notes_and_attachment_form.html:10
+#, python-format
+msgid ""
+"Tilføj notat og eller bilag til police nr. %(policy_number)s(for %(name)s)"
+msgstr ""
+
+#: templates/kas/policy/add_notes_and_attachment_form.html:13
+msgid ""
+"For at tilføje et nyt bilag bruges <b>filfeltet</b> til højre.\n"
+"    Der er mulighed for at angive en beskrivelse af filen i feltet <b>Fil-"
+"beskrivelse</b>.\n"
+"    Efterfølgende klikkes på knappen <b>Gem</b> for at vedhæfte filen."
+msgstr ""
+
+#: templates/kas/policycompanysummary_list.html:21
+#, python-format
+msgid "Liste over Policeopsummeringer i år %(year)s"
+msgstr ""
+
+#: templates/kas/policycompanysummary_list.html:29
+msgid "Generér og hent"
+msgstr ""
+
+#: templates/kas/policycompanysummary_list.html:41
+msgid "Oprettet tidspunkt"
+msgstr ""
+
+#: templates/kas/policycompanysummary_list.html:57
+msgid "Ingen filer"
+msgstr ""
+
+#: templates/kas/policytaxyear_create.html:6
+msgid "Tilbage til personskatteåret"
+msgstr ""
+
+#: templates/kas/policytaxyear_create.html:16
+msgid "Værdi / beløb"
+msgstr ""
+
+#: templates/kas/policytaxyear_create.html:17
+msgid "Enhed"
+msgstr ""
+
+#: templates/kas/policytaxyear_create.html:43
+#: templates/kas/policytaxyear_detail.html:87
+#: templates/kas/policytaxyear_detail.html:89
+msgid "kr"
+msgstr ""
+
+#: templates/kas/policytaxyear_create.html:55
+msgid ""
+"For at tilføje et bilag udfyldes felterne for beskrivelse og valg af\n"
+"    fil og der klikkes på 'Gem' knappen nederst på siden."
+msgstr ""
+
+#: templates/kas/policytaxyear_create.html:59
+msgid ""
+"Borgeren vil kunne se beskrivelser og filnavne på bilag som borgeren\n"
+"    selv har uploadet ved selvangivelse via web. Borgeren kan ikke se bilag "
+"vedhæftet\n"
+"    under sagsbehandlingen via nedenstående formular."
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:9
+#, python-format
+msgid ""
+" Denne side viser en tidligere version af policen fra <b>%(history_date)s</"
+"b> "
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:11
+#, python-format
+msgid "Police %(number)s ved %(company)s for '%(name)s' år %(year)s"
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:13
+msgid ""
+"<b>Cpr og navn</b> Klik for at gå til borger.\n"
+"\n"
+"          <b>År</b> Viste år for police.\n"
+"\n"
+"          <b>R75 beløb</b> Importeret beløb fra R75 data.\n"
+"\n"
+"          <b>Selvangivet beløb</b> Borgerens selvangivne beløb\n"
+"\n"
+"          <b>Lignet beløb</b> Fastsat beløb under ligning.\n"
+"\n"
+"          <b>Beregnet skat</b> Beregnet skat ud fra startbeløb, fradrag og "
+"skatteprocent.\n"
+"\n"
+"          <b>Slutlignet</b> Er policen slutlignet.\n"
+"\n"
+"          <b>Kræver efterbehandling</b> Er policen markeret til "
+"efterbehandling.\n"
+"\n"
+"          <b>Aktiv</b> Policen er aktiv og gældende."
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:40
+msgid "Cpr nr og navn"
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:68
+msgid "R75 beløb"
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:81
+msgid "Lignet beløb"
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:85
+msgid "Beregnet skat"
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:118
+msgid "Pensionsselskabet har aftale med Skattestyrelsen om automatisk betaling"
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:126
+#: templates/kas/policytaxyear_detail.html:134
+msgid "Ret selvangivet beløb"
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:128
+#: templates/kas/policytaxyear_detail.html:136
+msgid "Ret beløb"
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:130
+#: templates/kas/policytaxyear_detail.html:165
+#: templates/kas/policytaxyear_detail.html:176
+msgid "Afregistrer"
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:132
+#: templates/kas/policytaxyear_detail.html:134
+#: templates/kas/policytaxyear_detail.html:136
+msgid "Policen er afregistreret"
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:140
+msgid "Aktivér"
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:149
+msgid ""
+"<b>Beregningsdetaljer</b> Beregningsgrundlag for negativ afkast.\n"
+"\n"
+"            <b>Anvendt negativt afkast</b> Oversigt over anvendt negativt "
+"afkast fra tidligere år.\n"
+"\n"
+"            <b>Notat</b> Liste af notater tilknyttet police.\n"
+"\n"
+"            <b>Bilag</b> Liste af bilag tilknyttet police."
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:171
+msgid "Er du sikker på at du vil afregistrere policen for dette skatteår?"
+msgstr ""
+
+#: templates/kas/policytaxyear_detail.html:177
+msgid "Annullér"
+msgstr ""
+
+#: templates/kas/policytaxyear_historical_list.html:4
+#, python-format
+msgid " Historik for police %(policy_number)s for %(name)s i år %(year)s"
+msgstr ""
+
+#: templates/kas/policytaxyear_historical_list.html:9
+#, python-format
+msgid "%(policy_number)s i år %(year)s"
+msgstr ""
+
+#: templates/kas/policytaxyear_historical_list.html:13
+#, python-format
+msgid "%(cpr)s / %(name)s i år %(year)s"
+msgstr ""
+
+#: templates/kas/policytaxyear_unfinished_list.html:6
+msgid ""
+" En police bliver markeret til efterbehandling som en del af autoligning\n"
+"        hvis policen opfylder et eller flere af følgende kriterier:\n"
+"        <ul>\n"
+"            <li>Policen er blevet <b>oprettet af en borger</b> via "
+"selvbetjening.</li>\n"
+"            <li>Der er blevet <b>tilføjet notater eller bilag</b> såsom "
+"dokumentation til policen.</li>\n"
+"            <li>Det <b>fortrykte beløb</b> er forskelligt fra det "
+"<b>selvangivne beløb.</b></li>\n"
+"        </ul>\n"
+"        Fremsøg en enkelt police eller begræns søgningen til et angivet "
+"pensionsselskab ved at benytte nedenstående formular.\n"
+"\n"
+"        Indholdet af tabellen kan sorteres ved at klikke på de enkelte "
+"overskrifter."
+msgstr ""
+
+#: templates/kas/policytaxyear_unfinished_list.html:62
+msgid "Forskel i procent"
+msgstr ""
+
+#: templates/kas/statistics.html:5
+msgid "Personer og policer"
+msgstr ""
+
+#: templates/kas/statistics.html:6
+msgid ""
+"\n"
+"    Velkommen til KAS. Klik på årstallet for det skatteår du vil arbejde med "
+"i tabellen herunder.\n"
+msgstr ""
+
+#: templates/kas/statistics.html:20
+msgid "Personer"
+msgstr ""
+
+#: templates/kas/statistics.html:34
+msgid "Kildedata"
+msgstr ""
+
+#: templates/kas/statistics.html:36
+msgid ""
+"Data kopieret fra kildesystemer, der er klar til at blive konverteret til "
+"arbejdsdata"
+msgstr ""
+
+#: templates/kas/statistics.html:49 templates/kas/statistics.html:80
+msgid "Mandtal"
+msgstr ""
+
+#: templates/kas/statistics.html:55 templates/kas/statistics.html:86
+msgid "R75"
+msgstr ""
+
+#: templates/kas/statistics.html:65
+msgid "Mockup data"
+msgstr ""
+
+#: templates/kas/statistics.html:67
+msgid "Mockup data der er klar til at blive importeret"
 msgstr ""

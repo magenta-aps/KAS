@@ -44,6 +44,15 @@
         <a class="p-2 text-muted" href="{% url 'worker:job_list' %}">{% trans 'Jobadministration' %}</a>
         <a class="p-2 text-muted" href="{% url 'kas:policy_summary_list_latest' %}">{% trans 'Policeopsummering' %}</a>
         {% endif %}
+
+        {% get_current_language as language_code %}
+        {% if language_code == 'kl-GL' %}
+            {% static 'doc/kl/Manual til sagsbehandling på KAS-systemet.pdf' as manual_url %}
+        {% else %}
+            {% static 'doc/da/Manual til sagsbehandling på KAS-systemet.pdf' as manual_url %}
+        {% endif %}
+        <a class="p-2 text-muted" href="{{ manual_url }}" target="_blank">{% trans 'Manual' %}</a>
+
         <span class="ml-auto">
         {% if user.is_authenticated %}
             <span class="p-2">{% blocktrans with username=user.username %}Du er logget ind som {{username}}{% endblocktrans %}</span>
