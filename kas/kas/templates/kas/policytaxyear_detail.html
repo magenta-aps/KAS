@@ -90,6 +90,16 @@
                 {% endif %}
             </tr>
             <tr>
+                <th>{% trans 'Betales af' %}</th>
+                <td>
+                    {% if policy.pension_company_pays %}
+                        {% trans 'Pensionsselskab' %}
+                    {% else %}
+                        {% trans 'Borger' %}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
                 <th>{% trans 'Næste behandlingsdato' %}</th>
                 <td>{{ policy.next_processing_date|default_if_none:'' }}</td>
             </tr>
@@ -115,7 +125,13 @@
         {% endwith %}
     </table>
     {% if policy.pension_company.agreement_present %}
-        <p class="bg-secondary p-2">{% trans 'Pensionsselskabet har aftale med Skattestyrelsen om automatisk betaling' %}</p>
+        <p class="bg-secondary p-2">
+            {% if policy.citizen_pay_override %}
+                {% trans 'Pensionsselskabet har aftale med Skattestyrelsen om automatisk betaling, men borgeren skal selv betale' %}
+            {% else %}
+                {% trans 'Pensionsselskabet har aftale med Skattestyrelsen om automatisk betaling' %}
+            {% endif %}
+        </p>
     {% endif %}
     {% if not historical %}
         <fieldset class="border pl-4 pb-4 mb-4">
@@ -127,7 +143,10 @@
                 {% else %}
                     <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% trans 'Ret beløb' %}</a>
                 {% endif %}
-                <button type="button" class="btn btn-danger" id="deactivate" data-toggle="modal" data-target="#deactivateModal">{% trans 'Afregistrer' %}</button>
+                {% if policy.pension_company.agreement_present %}
+                    <a class="btn btn-warning" href="{% url 'kas:policy_payment_override' policy.pk %}">{% trans 'Ret borgerbetaling' %}</a>
+                {% endif %}
+            <button type="button" class="btn btn-danger" id="deactivate" data-toggle="modal" data-target="#deactivateModal">{% trans 'Afregistrer' %}</button>
             {% else %}
                 <button type="button" class="btn btn-info" disabled="disabled" aria-disabled="true" title="{% trans 'Policen er afregistreret' %}">{% trans 'Tilføj bilag/notater' %}</button>
                 {% if policy.person_tax_year.tax_year.year_part == 'selvangivelse' %}

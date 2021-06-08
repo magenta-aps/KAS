@@ -330,3 +330,80 @@ class PersonNotesAndAttachmentsViewTestCase(BaseTestCase):
         document = person_tax_year.policydocument_set.first()
         self.assertEqual(document.description, attachment_description)
         self.assertFalse(person_tax_year.all_documents_and_notes_handled)
+
+
+class PaymentOverrideTestCase(BaseTestCase):
+
+    def setUp(self) -> None:
+        super(PaymentOverrideTestCase, self).setUp()
+        self.client.login(username=self.username, password=self.password)
+        self.management_form_data = {
+            'notes-TOTAL_FORMS': 0,
+            'notes-INITIAL_FORMS': 0,
+            'uploads-TOTAL_FORMS': 0,
+            'uploads-INITIAL_FORMS': 0,
+        }
+
+    def test_not_logged_in(self):
+        self.client.logout()
+        r = self.client.get(reverse('kas:policy_payment_override', args=[self.policy_tax_year.pk]))
+        # should redirect to login page
+        self.assertEqual(r.status_code, 302)
+
+    def test_no_override(self):
+        self.pension_company.agreement_present = False
+        self.assertFalse(self.policy_tax_year.pension_company_pays)
+
+        self.pension_company.agreement_present = True
+        self.pension_company.save()
+        self.assertTrue(self.policy_tax_year.pension_company_pays)
+
+        self.client.post(
+            reverse('kas:policy_payment_override', args=[self.policy_tax_year.pk]),
+            follow=True,
+            data={
+                'citizen_pay_override': False,
+                **self.management_form_data
+            }
+        )
+        policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
+        self.assertTrue(policy_tax_year.pension_company_pays)
+        self.assertFalse(policy_tax_year.efterbehandling)
+
+    def test_override(self):
+
+        self.assertFalse(self.policy_tax_year.efterbehandling)
+        self.pension_company.agreement_present = True
+        self.assertTrue(self.policy_tax_year.pension_company_pays)
+
+        self.client.post(
+            reverse('kas:policy_payment_override', args=[self.policy_tax_year.pk]),
+            follow=False,
+            data={
+                'citizen_pay_override': True,
+                **self.management_form_data
+            }
+        )
+        policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
+        self.assertFalse(policy_tax_year.pension_company_pays)
+        self.assertTrue(policy_tax_year.efterbehandling)
+
+    def test_remove_override(self):
+
+        self.assertFalse(self.policy_tax_year.efterbehandling)
+        self.pension_company.agreement_present = True
+        self.pension_company.save()
+        self.policy_tax_year.citizen_pay_override = True
+        self.policy_tax_year.save()
+
+        self.client.post(
+            reverse('kas:policy_payment_override', args=[self.policy_tax_year.pk]),
+            follow=False,
+            data={
+                'citizen_pay_override': False,
+                **self.management_form_data
+            }
+        )
+        policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
+        self.assertTrue(policy_tax_year.pension_company_pays)
+        self.assertTrue(policy_tax_year.efterbehandling)

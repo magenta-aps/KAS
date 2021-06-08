@@ -189,6 +189,13 @@ class EditAmountsUpdateForm(forms.ModelForm, BootstrapForm):
         widgets = {'next_processing_date': DateInput()}
 
 
+class PaymentOverrideUpdateForm(forms.ModelForm, BootstrapForm):
+
+    class Meta:
+        model = PolicyTaxYear
+        fields = ('citizen_pay_override', )
+
+
 class PensionCompanySummaryFileForm(BootstrapForm):
     pension_company = PensionCompanyChoiceField(
         queryset=PensionCompany.objects.filter(agreement_present=True),

@@ -22,7 +22,7 @@ from kas.forms import PersonListFilterForm, SelfReportedAmountForm, \
     EditAmountsUpdateForm, PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, \
     PolicyTaxYearActivationForm
 from kas.forms import PolicyNotesAndAttachmentForm, PersonNotesAndAttachmentForm, \
-    PolicyListFilterForm
+    PolicyListFilterForm, PaymentOverrideUpdateForm
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
@@ -479,7 +479,7 @@ class PdfDownloadView(LoginRequiredMixin, SingleObjectMixin, View):
 
 class SelfReportedAmountUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
     form_class = SelfReportedAmountForm
-    template_name = 'kas/selfreportedamount_form.html'
+    template_name = 'kas/form_with_notes.html'
     allowed_year_parts = ['selvangivelse']
 
     def get_queryset(self):
@@ -488,7 +488,7 @@ class SelfReportedAmountUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNot
 
 class EditAmountsUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
     form_class = EditAmountsUpdateForm
-    template_name = 'kas/edit_amounts_form.html'
+    template_name = 'kas/form_with_notes.html'
 
     def get_queryset(self):
         return PolicyTaxYear.objects.filter(person_tax_year__tax_year__year_part__in=['ligning', 'genoptagelsesperiode'])
@@ -514,6 +514,19 @@ class EditAmountsUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDo
                 self.object.efterbehandling = True
                 # super handles saving of the object
         return super(EditAmountsUpdateView, self).form_valid(form)
+
+
+class PolicyPaymentOverrideView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
+    model = PolicyTaxYear
+    form_class = PaymentOverrideUpdateForm
+    template_name = 'kas/form_with_notes.html'
+
+    def form_valid(self, form):
+        if self.has_changes or form.changed_data:
+            self.object = form.save(False)
+            self.object.efterbehandling = True
+            # super handles saving of the object (form.instance == self.object)
+        return super(PolicyPaymentOverrideView, self).form_valid(form)
 
 
 class PensionCompanySummaryFileView(LoginRequiredMixin, HighestSingleObjectMixin, FormView):
