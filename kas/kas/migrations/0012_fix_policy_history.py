@@ -31,7 +31,7 @@ def unmark_policy_history(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0011_notes'),
+        ('kas', '0007_auto_20210427'),
     ]
 
     operations = [
