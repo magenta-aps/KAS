@@ -75,12 +75,10 @@
     {% else %}
       <p>{% blocktrans with year=view.year %}Ingen personer fundet for {{year}} med søgekriterierne{% endblocktrans %}</p>
     {% endif %}
+    <hr/>
+    {% include 'includes/pager.html' %}
   {% else %}
     <p>{% trans 'Udfyld mindst ét søgefelt' %}</p>
   {% endif %}
-
-  <hr/>
-
-  {% include 'includes/pager.html' %}
 
 {% endblock %}

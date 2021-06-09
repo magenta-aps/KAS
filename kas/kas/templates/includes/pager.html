@@ -1,6 +1,5 @@
 {% load i18n %}
 <div class="pagination">
-    {% if page_obj.count %}
     <span class="step-links">
         {% if page_obj.has_previous %}
             <a href="?page=1">&laquo; {% trans 'første' %}</a>
@@ -16,7 +15,4 @@
             <a href="?page={{ page_obj.paginator.num_pages }}">{% trans 'sidste' %} &raquo;</a>
         {% endif %}
     </span>
-    {% else %}
-    <!-- No items to paginate -->
-    {% endif %}
 </div>
