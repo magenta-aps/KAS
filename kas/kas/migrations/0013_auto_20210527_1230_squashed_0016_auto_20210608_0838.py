@@ -2,6 +2,7 @@
 
 from django.db import migrations, models
 
+
 def set_all_documents_and_notes_handled(apps, schema_editor):
     PersonTaxYear = apps.get_model('kas', 'PersonTaxYear')
     for person in PersonTaxYear.objects.all():
