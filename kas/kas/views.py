@@ -199,7 +199,12 @@ class PersonTaxYearUnhandledDocumentsAndNotes(PersonTaxYearSpecialListView):
     template_name = 'kas/persontaxyear_unhandled_list.html'
 
     def filter_queryset(self, qs):
-        return qs.filter(all_documents_and_notes_handled=False).annotate(next_processing_date=Min('policytaxyear__next_processing_date'))
+        return qs.filter(
+            all_documents_and_notes_handled=False
+        ).annotate(
+            next_processing_date=Min('policytaxyear__next_processing_date'),
+            policy_count=Count('policytaxyear')
+        )
 
 
 class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
