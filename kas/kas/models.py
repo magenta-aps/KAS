@@ -732,7 +732,6 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         self.calculated_full_tax = result["full_tax"]
         self.calculated_result = result["tax_with_deductions"]
         self.available_negative_return = result["available_negative_return"]
-        self.save()
 
     def sum_of_used_amount(self):
         # Deliver the amount of this years loss used in other years deduction

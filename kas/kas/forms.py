@@ -180,6 +180,17 @@ class SelfReportedAmountForm(forms.ModelForm, BootstrapForm):
         fields = ('self_reported_amount', 'next_processing_date')
         widgets = {'next_processing_date': DateInput()}
 
+    def save(self, commit=True):
+
+        # Recalculate amounts before saving
+        instance = super(SelfReportedAmountForm, self).save(commit=False)
+        instance.recalculate()
+
+        if commit:
+            instance.save()
+
+        return instance
+
 
 class EditAmountsUpdateForm(forms.ModelForm, BootstrapForm):
 
@@ -187,6 +198,17 @@ class EditAmountsUpdateForm(forms.ModelForm, BootstrapForm):
         model = PolicyTaxYear
         fields = ('adjusted_r75_amount', 'self_reported_amount', 'assessed_amount', 'slutlignet', 'next_processing_date')
         widgets = {'next_processing_date': DateInput()}
+
+    def save(self, commit=True):
+
+        # Recalculate amounts before saving
+        instance = super(EditAmountsUpdateForm, self).save(commit=False)
+        instance.recalculate()
+
+        if commit:
+            instance.save()
+
+        return instance
 
 
 class PaymentOverrideUpdateForm(forms.ModelForm, BootstrapForm):

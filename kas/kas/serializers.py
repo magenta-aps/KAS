@@ -87,6 +87,7 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
             validated_data['active_amount'] = PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED
         instance = super(PolicyTaxYearSerializer, self).create(validated_data)
         instance.recalculate()
+        instance.save()
         return instance
 
     def update(self, instance, validated_data):
@@ -94,4 +95,5 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
             validated_data['active_amount'] = PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED
         instance = super(PolicyTaxYearSerializer, self).update(instance, validated_data)
         instance.recalculate()
+        instance.save()
         return instance
