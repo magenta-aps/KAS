@@ -8,22 +8,40 @@ class Command(BaseCommand):
     help = 'Creates or updates a user with login admin and the specified password'
 
     def add_arguments(self, parser):
-        parser.add_argument('admin_password', type=str)
+        parser.add_argument('--type', type=str)
+        parser.add_argument('--login', type=str)
+        parser.add_argument('--password', type=str)
 
     def handle(self, *args, **options):
-        # Sanity check: We do not want a weak password in production
-        if settings.ENVIRONMENT == "production" and options["admin_password"] == "admin":
-            raise Exception("Will not create admin user with weak password in production")
 
-        User.objects.update_or_create(
-            defaults={
+        if options['type'] == 'admin':
+            username = options['login'] or 'admin'
+            defaults = {
                 "first_name": "Admin",
                 "last_name": "User",
                 "email": "",
-                "password": make_password(options["admin_password"]),
                 "is_active": True,
                 "is_staff": True,
                 "is_superuser": True,
-            },
-            username="admin"
+            }
+        elif options['type'] == 'staff':
+            username = options['login'] or 'staff'
+            defaults = {
+                "email": "",
+                "is_active": True,
+                "is_staff": True,
+                "is_superuser": False,
+            }
+        else:
+            raise Exception("type must be either 'admin' or 'staff'")
+
+        defaults["password"] = make_password(options["password"])
+
+        # Sanity check: We do not want a weak password in production
+        if settings.ENVIRONMENT == "production" and options["password"] in ("admin", "staff", username):
+            raise Exception("Will not create user with weak password in production")
+
+        User.objects.update_or_create(
+            defaults=defaults,
+            username=username
         )
