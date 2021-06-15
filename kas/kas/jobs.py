@@ -645,3 +645,24 @@ def dispatch_final_settlement(job):
         job.set_progress_pct(50)
         send_settlement.get_final_status(client)
     job.finish()
+
+
+@job_decorator
+def force_finalize_settlement(job):
+    """
+    Forces all outstanding policies to be finalized
+    :return:
+    """
+    policies = PolicyTaxYear.objects.filter(
+        slutlignet=False,
+        person_tax_year__tax_year__pk=job.arguments['year_pk']
+    )
+    count = policies.count()
+    for i, policy in enumerate(policies.iterator(), start=1):
+        policy.slutlignet = True
+        policy.efterbehandling = True
+        policy._change_reason = 'Forced finalization'
+        policy._history_user = job.created_by
+        policy.save()
+        job.set_progress(i, count)
+    job.finish()
