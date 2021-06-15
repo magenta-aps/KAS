@@ -37,13 +37,15 @@ class AutoligningTestCase(TestCase):
         # so execute it here and we can verify Updated by import get filtered
         self.policy_tax_year._change_reason = 'Updated by import'
         self.policy_tax_year.recalculate()
+        self.policy_tax_year.save()
         del self.policy_tax_year._change_reason
 
     @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
     def test_created_by_citizen(self, djang_rq):
         policy_tax_year = PolicyTaxYear(person_tax_year=self.person_tax_year,
                                         pension_company=self.pension_company,
-                                        policy_number='200')
+                                        policy_number='200',
+                                        prefilled_amount=0)
         policy_tax_year._history_user = self.rest_user  # fake creating through the res API
         policy_tax_year.save()
         Job.schedule_job(autoligning,

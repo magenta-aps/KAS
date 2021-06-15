@@ -167,21 +167,23 @@ def import_r75(job):
     )
     count = qs.count()
     # mock data for autoligning
-    changed_by_citizen = None
-    changed_by_clerk = None
-    general_note_set = None
-    with_documents = None
+    value = None if job.arguments['source_model'] == "mockup" else True
+    changed_by_citizen = value
+    changed_by_clerk = value
+    general_note_set = value
+    with_documents = value
     rest_user = get_user_model().objects.get(username='rest')
     clerk_user = get_user_model().objects.exclude(username='rest').first()
     til_efterbahndling = []
     person, _ = Person.objects.get_or_create(cpr='1212121212', defaults={'name': 'Til efterbehandling'})
-    person_tax_year, _ = PersonTaxYear.objects.get_or_create(person=person, tax_year=tax_year)
+    person_tax_year, _ = PersonTaxYear.objects.get_or_create(person=person, tax_year=tax_year, number_of_days=365)
     company, _ = PensionCompany.objects.get_or_create(name='test123')
     # Created by citizen
     try:
         policy_tax_year = PolicyTaxYear(person_tax_year=person_tax_year,
                                         pension_company=company,
-                                        policy_number=200)
+                                        policy_number=200,
+                                        prefilled_amount=10000)
         policy_tax_year._history_user = rest_user  # fake creating through the res API
         policy_tax_year.save()
     except IntegrityError:
@@ -214,6 +216,7 @@ def import_r75(job):
                 if status in (PersonTaxYear.CREATED, PersonTaxYear.UPDATED):
                     policy_tax_year._change_reason = 'Updated by import'  # needed for autoligning
                     policy_tax_year.recalculate()
+                    policy_tax_year.save()
                     policy_tax_year._change_reason = ''
                     if status == PersonTaxYear.CREATED:
                         policies_created += 1
@@ -223,11 +226,13 @@ def import_r75(job):
                 if changed_by_citizen is None:
                     policy_tax_year.self_reported_amount = 300
                     policy_tax_year._history_user = rest_user  # changed by citizen
+                    policy_tax_year.recalculate()
                     policy_tax_year.save()
                     changed_by_citizen = policy_tax_year
                 elif changed_by_clerk is None:
                     policy_tax_year.self_reported_amount = 600
                     policy_tax_year._history_user = clerk_user  # changed by clerk
+                    policy_tax_year.recalculate()
                     policy_tax_year.save()
                     changed_by_clerk = policy_tax_year
                 elif general_note_set is None:
@@ -529,6 +534,12 @@ def autoligning(job):
                 policy.efterbehandling = False
                 policy.slutlignet = True
                 autolignet += 1
+
+            # Make sure assessed_amount is stored in the database
+            policy.assessed_amount = policy.get_assessed_amount()
+
+            # Recalculate used negative amounts etc.
+            policy.recalculate()
 
             total += 1
             policy._change_reason = 'autoligning'

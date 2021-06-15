@@ -267,7 +267,9 @@ class TestCalculationMath(TestCase):
             foreign_paid_amount_actual=200,
         )
         older_policy_1.recalculate()
+        older_policy_1.save()
         older_policy_2.recalculate()
+        older_policy_2.save()
         calculation_results = policy.get_calculation()
         self.assertEquals(calculation_results['available_negative_return'], 6000)
         self.assertEquals(calculation_results['used_negative_return'], 6000)
@@ -276,6 +278,7 @@ class TestCalculationMath(TestCase):
         self.assertDictEqual(calculation_results['desired_deduction_data'], {2018: 2000, 2019: 4000})
 
         policy.recalculate()
+        policy.save()
         self.assertEquals(policy.calculated_full_tax, 612)
         self.assertEquals(policy.year_adjusted_amount, 10000)
         self.assertEquals(policy.calculated_result, 412)
@@ -300,6 +303,7 @@ class TestCalculationMath(TestCase):
         self.assertDictEqual(calculation_results['desired_deduction_data'], {})
 
         new_policy.recalculate()
+        new_policy.save()
         self.assertEquals(new_policy.calculated_full_tax, 2295)
         self.assertEquals(new_policy.year_adjusted_amount, 15000)
         self.assertEquals(new_policy.calculated_result, 2295)
@@ -315,6 +319,7 @@ class TestCalculationMath(TestCase):
         self.assertDictEqual(calculation_results['desired_deduction_data'], {2018: 2000})
 
         policy.recalculate()
+        policy.save()
         self.assertEquals(policy.calculated_full_tax, 1224)
         self.assertEquals(policy.year_adjusted_amount, 10000)
         self.assertEquals(policy.calculated_result, 1024)
