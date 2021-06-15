@@ -40,6 +40,11 @@ def get_job_types():
             'function': 'kas.jobs.import_r75',
             'test_only': False,
         },
+        'ForceFinalize': {
+            'label': _('Forcering af slutligning på alle udestående policer'),
+            'form_class': YearPkForm,
+            'function': 'kas.jobs.force_finalize_settlement'
+        },
         'GenerateReportsForYear': {
             'label': _('Generere KAS selvangivelser'),
             'form_class': YearAndTitleForm,
