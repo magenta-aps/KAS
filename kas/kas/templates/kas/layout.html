@@ -19,8 +19,8 @@
     <title>KAS</title>
 </head>
 <body>
+{% if user.is_authenticated %}
     <nav class="nav d-flex p-2">
-
         {% if back_url %}
         <a class="p-2 btn btn-secondary" href="{{ back_url }}">
             <span class="fas fa-chevron-left"></span>
@@ -54,21 +54,19 @@
         <a class="p-2 text-muted" href="{{ manual_url }}" target="_blank">{% trans 'Manual' %}</a>
 
         <span class="ml-auto">
-        {% if user.is_authenticated %}
             <span class="p-2">{% blocktrans with username=user.username %}Du er logget ind som {{username}}{% endblocktrans %}</span>
             <a class="btn btn-secondary" href="{% url 'logout' %}">{% trans 'Log ud' %}</a>
             {% if user.is_staff or user.is_superuser %}
                 <a class="btn btn-primary" href="{% url 'kasadmin:index' %}">{% trans 'Admin' %}</a>
             {% endif %}
-        {% else %}
-            <a class="btn btn-secondary" href="{% url 'login' %}">{% trans 'Log ind' %}</a>
-        {% endif %}
         </span>
     </nav>
     <hr class="p-0 m-0">
+{% endif %}
     <div class="p-4">
 {% block content %}
 {% endblock %}
+
     </div>
 <script>
     $(document).ready(function(){
