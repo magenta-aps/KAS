@@ -169,7 +169,7 @@ class PersonTaxYearSpecialListView(SpecialExcelMixin, PersonTaxYearListView):
                      'Næste behandlingsdato']
 
     values = ['person__cpr', 'person__name', 'person__full_address',
-              'person__municipality_name','policy_count', 'next_processing_date']
+              'person__municipality_name', 'policy_count', 'next_processing_date']
 
     def should_search(self, form):
         # Allow searching with an unbound form (just the default year)
