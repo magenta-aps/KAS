@@ -1,11 +1,13 @@
 from django.forms import formset_factory
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import formats
+from django.utils.formats import date_format
 from django.utils.translation import to_locale, get_language, gettext as _
 from django.views.generic.detail import SingleObjectMixin
-
+from openpyxl import Workbook
+from datetime import date
 from kas.forms import NoteForm, PolicyDocumentForm
 from kas.models import PersonTaxYear, PolicyTaxYear
 
@@ -133,3 +135,39 @@ class HighestSingleObjectMixin(SingleObjectMixin):
                 raise Http404(_("No %(verbose_name)s found matching the query") %
                               {'verbose_name': queryset.model._meta.verbose_name})
             return item
+
+
+class SpecialExcelMixin(object):
+    excel_headers = []
+    values = []
+    filename = 'spreadsheet.xlsx'
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super(SpecialExcelMixin, self).get_context_data(*args, **kwargs)
+        params = self.request.GET.copy()
+        params['format'] = 'excel'
+        ctx.update({
+            'excel_link': '?{}'.format(params.urlencode())
+        })
+        return ctx
+
+    def render_excel_file(self, queryset):
+        wb = Workbook(write_only=True)
+        ws = wb.create_sheet()
+        ws.append(self.excel_headers)
+        for row in queryset.values_list(*self.values):
+            row = list(row)
+            for i, value in enumerate(row):
+                if isinstance(value, date):
+                    row[i] = date_format(value, format='SHORT_DATE_FORMAT', use_l10n=True)
+            ws.append(row)
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename={}'.format(self.filename)
+        wb.save(response)
+        return response
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.GET.get('format') == 'excel':
+            return self.render_excel_file(self.get_queryset())
+        return super(SpecialExcelMixin, self).render_to_response(context, **response_kwargs)

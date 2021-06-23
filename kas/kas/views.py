@@ -26,8 +26,9 @@ from kas.forms import PolicyNotesAndAttachmentForm, PersonNotesAndAttachmentForm
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
-from prisme.models import Transaction
 from kas.view_mixins import HighestSingleObjectMixin
+from kas.view_mixins import SpecialExcelMixin
+from prisme.models import Transaction
 
 
 class StatisticsView(LoginRequiredMixin, TemplateView):
@@ -159,9 +160,16 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
         return qs
 
 
-class PersonTaxYearSpecialListView(PersonTaxYearListView):
+class PersonTaxYearSpecialListView(SpecialExcelMixin, PersonTaxYearListView):
 
     default_order_by = 'person__cpr'
+
+    excel_headers = ['Personnummer', 'Navn',
+                     'Adresse', 'Kommune', 'Antal policer',
+                     'Næste behandlingsdato']
+
+    values = ['person__cpr', 'person__name', 'person__full_address',
+              'person__municipality_name', 'policy_count', 'next_processing_date']
 
     def should_search(self, form):
         # Allow searching with an unbound form (just the default year)
@@ -172,6 +180,7 @@ class PersonTaxYearUnfinishedListView(PersonTaxYearSpecialListView):
 
     template_name = 'kas/persontaxyear_unfinished_list.html'
     default_order_by = '-efterbehandling_count'
+    filename = 'unfinished_person.xlsx'
 
     def filter_queryset(self, qs):
         return qs.annotate(
@@ -180,7 +189,8 @@ class PersonTaxYearUnfinishedListView(PersonTaxYearSpecialListView):
             efterbehandling_count=Count(
                 'policytaxyear',
                 filter=Q(policytaxyear__efterbehandling=True)
-            )
+            ),
+            next_processing_date=Min('policytaxyear__next_processing_date')
         ).filter(efterbehandling_count__gt=0)
 
 
@@ -188,15 +198,18 @@ class PersonTaxYearFailSendListView(PersonTaxYearSpecialListView):
 
     template_name = 'kas/persontaxyear_failsend_list.html'
     default_order_by = 'person__name'
+    filename = 'failed_eboks.xls'
 
     def filter_queryset(self, qs):
         return qs.annotate(
-            policy_count=Count('policytaxyear')
+            policy_count=Count('policytaxyear'),
+            next_processing_date=Min('policytaxyear__next_processing_date'),
         ).filter(tax_slip__status='failed')
 
 
 class PersonTaxYearUnhandledDocumentsAndNotes(PersonTaxYearSpecialListView):
     template_name = 'kas/persontaxyear_unhandled_list.html'
+    filename = 'unhandled_person.xls'
 
     def filter_queryset(self, qs):
         return qs.filter(
@@ -361,10 +374,17 @@ class PolicyTaxYearSpecialListView(PolicyTaxYearListView):
         return qs
 
 
-class PolicyTaxYearUnfinishedListView(PolicyTaxYearSpecialListView):
-
+class PolicyTaxYearUnfinishedListView(SpecialExcelMixin, PolicyTaxYearSpecialListView):
     template_name = 'kas/policytaxyear_unfinished_list.html'
     default_order_by = 'difference_pct_nulllast'
+    filename = 'efterbehandling_policer.xls'
+
+    excel_headers = ['Person', 'Pensionsselskab', 'Policenummer', 'Næste behandlingsdato',
+                     'Fortrykt beløb', 'Selvangivet beløb', 'Forskel', 'Forskel i procent']
+
+    values = ['person_tax_year__person__name', 'pension_company__name', 'policy_number',
+              'next_processing_date', 'prefilled_amount', 'self_reported_amount',
+              'difference', 'difference_pct']
 
     def filter_queryset(self, qs):
         return qs.filter(efterbehandling=True).annotate(
