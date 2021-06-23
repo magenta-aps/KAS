@@ -142,8 +142,8 @@ class SpecialExcelMixin(object):
     values = []
     filename = 'spreadsheet.xlsx'
 
-    def get_context_data(self, *args, object_list=None, **kwargs):
-        ctx = super(SpecialExcelMixin, self).get_context_data(*args, object_list=None, **kwargs)
+    def get_context_data(self, *args, **kwargs):
+        ctx = super(SpecialExcelMixin, self).get_context_data(*args, **kwargs)
         params = self.request.GET.copy()
         params['format'] = 'excel'
         ctx.update({
@@ -168,6 +168,6 @@ class SpecialExcelMixin(object):
         return response
 
     def render_to_response(self, context, **response_kwargs):
-        if self.request.GET.get('format', '') == 'excel':
+        if self.request.GET.get('format') == 'excel':
             return self.render_excel_file(self.get_queryset())
         return super(SpecialExcelMixin, self).render_to_response(context, **response_kwargs)

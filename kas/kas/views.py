@@ -180,7 +180,7 @@ class PersonTaxYearUnfinishedListView(PersonTaxYearSpecialListView):
 
     template_name = 'kas/persontaxyear_unfinished_list.html'
     default_order_by = '-efterbehandling_count'
-    filename = 'unfinished_person.xls'
+    filename = 'unfinished_person.xlsx'
 
     def filter_queryset(self, qs):
         return qs.annotate(
