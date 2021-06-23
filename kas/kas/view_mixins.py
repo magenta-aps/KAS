@@ -3,10 +3,11 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import formats
+from django.utils.formats import date_format
 from django.utils.translation import to_locale, get_language, gettext as _
 from django.views.generic.detail import SingleObjectMixin
 from openpyxl import Workbook
-
+from datetime import date
 from kas.forms import NoteForm, PolicyDocumentForm
 from kas.models import PersonTaxYear, PolicyTaxYear
 
@@ -155,7 +156,11 @@ class SpecialExcelMixin(object):
         ws = wb.create_sheet()
         ws.append(self.excel_headers)
         for row in queryset.values_list(*self.values):
-            ws.append(list(row))
+            row = list(row)
+            for i, value in enumerate(row):
+                if isinstance(value, date):
+                    row[i] = date_format(value, format='SHORT_DATE_FORMAT', use_l10n=True)
+            ws.append(row)
 
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename={}'.format(self.filename)
