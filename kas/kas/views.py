@@ -145,6 +145,8 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
                             qs = qs.exclude(empty)
                         else:
                             qs = qs.filter(empty)
+            elif 'year' in form.initial:
+                qs = qs.filter(tax_year__year=form.initial['year'])
             qs = qs.annotate(
                 policy_count=Count('policytaxyear'),
                 next_processing_date=Min('policytaxyear__next_processing_date')
@@ -319,6 +321,8 @@ class PolicyTaxYearListView(LoginRequiredMixin, ListView):
                         qs = qs.filter(pension_company__name__icontains=form.cleaned_data['pension_company'])
                     if form.cleaned_data['policy_number']:
                         qs = qs.filter(policy_number__icontains=form.cleaned_data['policy_number'])
+            elif 'year' in form.initial:
+                qs = qs.filter(person_tax_year__tax_year__year=form.initial['year'])
         else:
             # Don't find anything if form is invalid or empty
             qs = self.model.objects.none()
