@@ -118,16 +118,10 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
 
     def filter_queryset(self, qs):
         form = self.form
-        qs = qs.annotate(next_processing_date=Min('policytaxyear__next_processing_date'))
-
-        try:
-            self.year = form.cleaned_data['year']
-        except (AttributeError, KeyError):
-            self.year = form.initial['year']
-        qs = qs.filter(tax_year__year=self.year)
-
         if self.should_search(form):
+            # you always need to call is_valid before using cleaned_data
             if hasattr(form, 'cleaned_data'):
+                qs = qs.filter(tax_year__year=form.cleaned_data['year'])
                 # Check whether there are any fields filled out apart from 'year'
                 if len([
                     v for k, v in form.cleaned_data.items()
@@ -151,8 +145,11 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
                             qs = qs.exclude(empty)
                         else:
                             qs = qs.filter(empty)
+            elif 'year' in form.initial:
+                qs = qs.filter(tax_year__year=form.initial['year'])
             qs = qs.annotate(
-                policy_count=Count('policytaxyear')
+                policy_count=Count('policytaxyear'),
+                next_processing_date=Min('policytaxyear__next_processing_date')
             )
         else:
             # Don't find anything if form is invalid or empty
@@ -183,14 +180,12 @@ class PersonTaxYearUnfinishedListView(PersonTaxYearSpecialListView):
     filename = 'unfinished_person.xlsx'
 
     def filter_queryset(self, qs):
+        qs = super(PersonTaxYearUnfinishedListView, self).filter_queryset(qs)
         return qs.annotate(
-            policy_count=Count('policytaxyear')
-        ).annotate(
             efterbehandling_count=Count(
                 'policytaxyear',
                 filter=Q(policytaxyear__efterbehandling=True)
             ),
-            next_processing_date=Min('policytaxyear__next_processing_date')
         ).filter(efterbehandling_count__gt=0)
 
 
@@ -201,10 +196,7 @@ class PersonTaxYearFailSendListView(PersonTaxYearSpecialListView):
     filename = 'failed_eboks.xls'
 
     def filter_queryset(self, qs):
-        return qs.annotate(
-            policy_count=Count('policytaxyear'),
-            next_processing_date=Min('policytaxyear__next_processing_date'),
-        ).filter(tax_slip__status='failed')
+        return super(PersonTaxYearFailSendListView, self).filter_queryset(qs).filter(tax_slip__status='failed')
 
 
 class PersonTaxYearUnhandledDocumentsAndNotes(PersonTaxYearSpecialListView):
@@ -212,12 +204,8 @@ class PersonTaxYearUnhandledDocumentsAndNotes(PersonTaxYearSpecialListView):
     filename = 'unhandled_person.xls'
 
     def filter_queryset(self, qs):
-        return qs.filter(
-            all_documents_and_notes_handled=False
-        ).annotate(
-            next_processing_date=Min('policytaxyear__next_processing_date'),
-            policy_count=Count('policytaxyear')
-        )
+        return super(PersonTaxYearUnhandledDocumentsAndNotes, self).filter_queryset(qs).filter(
+            all_documents_and_notes_handled=False)
 
 
 class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
@@ -320,16 +308,10 @@ class PolicyTaxYearListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         form = self.get_form()
-
         qs = super().get_queryset()
-        try:
-            self.year = form.cleaned_data['year']
-        except (AttributeError, KeyError):
-            self.year = form.initial['year']
-        qs = qs.filter(person_tax_year__tax_year__year=self.year)
-
         if self.should_search(form):
             if hasattr(form, 'cleaned_data'):
+                qs = qs.filter(person_tax_year__tax_year__year=form.cleaned_data['year'])
                 # Check whether there are any fields filled out apart from 'year'
                 if len([
                     v for k, v in form.cleaned_data.items()
@@ -339,6 +321,8 @@ class PolicyTaxYearListView(LoginRequiredMixin, ListView):
                         qs = qs.filter(pension_company__name__icontains=form.cleaned_data['pension_company'])
                     if form.cleaned_data['policy_number']:
                         qs = qs.filter(policy_number__icontains=form.cleaned_data['policy_number'])
+            elif 'year' in form.initial:
+                qs = qs.filter(person_tax_year__tax_year__year=form.initial['year'])
         else:
             # Don't find anything if form is invalid or empty
             qs = self.model.objects.none()
@@ -387,6 +371,7 @@ class PolicyTaxYearUnfinishedListView(SpecialExcelMixin, PolicyTaxYearSpecialLis
               'difference', 'difference_pct']
 
     def filter_queryset(self, qs):
+        qs = super(PolicyTaxYearUnfinishedListView, self).filter_queryset(qs)
         return qs.filter(efterbehandling=True).annotate(
             difference=F('self_reported_amount') - F('prefilled_amount')
         ).annotate(
