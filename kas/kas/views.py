@@ -145,6 +145,19 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
                             qs = qs.exclude(empty)
                         else:
                             qs = qs.filter(empty)
+                    if form.cleaned_data['finalized']:
+                        finalized = form.cleaned_data['finalized']
+                        has = Q(policytaxyear__slutlignet=True)
+                        has_not = Q(policytaxyear__slutlignet=False)
+                        if finalized == 'har_slutlignede':
+                            qs = qs.filter(has)
+                        elif finalized == 'mangler_slutlignede':
+                            qs = qs.exclude(has)
+                        if finalized == 'har_ikkeslutlignede':
+                            qs = qs.filter(has_not)
+                        elif finalized in ('mangler_ikkeslutlignede'):
+                            qs = qs.exclude(has_not)
+
             elif 'year' in form.initial:
                 qs = qs.filter(tax_year__year=form.initial['year'])
             qs = qs.annotate(
@@ -321,6 +334,8 @@ class PolicyTaxYearListView(LoginRequiredMixin, ListView):
                         qs = qs.filter(pension_company__name__icontains=form.cleaned_data['pension_company'])
                     if form.cleaned_data['policy_number']:
                         qs = qs.filter(policy_number__icontains=form.cleaned_data['policy_number'])
+                    if form.cleaned_data['finalized'] is not None:
+                        qs = qs.filter(slutlignet=form.cleaned_data['finalized'])
             elif 'year' in form.initial:
                 qs = qs.filter(person_tax_year__tax_year__year=form.initial['year'])
         else:
