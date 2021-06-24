@@ -121,43 +121,38 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
         if self.should_search(form):
             # you always need to call is_valid before using cleaned_data
             if hasattr(form, 'cleaned_data'):
-                qs = qs.filter(tax_year__year=form.cleaned_data['year'])
+                qs = qs.filter(tax_year__year=form.cleaned_data['year'] or form.initial['year'])
                 # Check whether there are any fields filled out apart from 'year'
-                if len([
-                    v for k, v in form.cleaned_data.items()
-                    if v not in ('', None) and k not in ['year']
-                ]):
-                    if form.cleaned_data['cpr']:
-                        qs = qs.filter(person__cpr__icontains=form.cleaned_data['cpr'])
-                    if form.cleaned_data['name']:
-                        qs = qs.filter(person__name__icontains=form.cleaned_data['name'])
-                    if form.cleaned_data['municipality_code']:
-                        qs = qs.filter(person__municipality_code=form.cleaned_data['municipality_code'])
-                    if form.cleaned_data['municipality_name']:
-                        qs = qs.filter(person__municipality_name__icontains=form.cleaned_data['municipality_name'])
-                    if form.cleaned_data['address']:
-                        qs = qs.filter(person__full_address__icontains=form.cleaned_data['address'])
-                    if form.cleaned_data['tax_liability'] is not None:  # False is a valid value
-                        qs = qs.filter(fully_tax_liable=form.cleaned_data['tax_liability'])
-                    if form.cleaned_data['foreign_pension_notes'] is not None:
-                        empty = Q(foreign_pension_notes='') | Q(foreign_pension_notes__isnull=True)
-                        if form.cleaned_data['foreign_pension_notes'] is True:
-                            qs = qs.exclude(empty)
-                        else:
-                            qs = qs.filter(empty)
-                    if form.cleaned_data['finalized']:
-                        finalized = form.cleaned_data['finalized']
-                        has = Q(policytaxyear__slutlignet=True)
-                        has_not = Q(policytaxyear__slutlignet=False)
-                        if finalized == 'har_slutlignede':
-                            qs = qs.filter(has)
-                        elif finalized == 'mangler_slutlignede':
-                            qs = qs.exclude(has)
-                        if finalized == 'har_ikkeslutlignede':
-                            qs = qs.filter(has_not)
-                        elif finalized in ('mangler_ikkeslutlignede'):
-                            qs = qs.exclude(has_not)
-
+                if form.cleaned_data['cpr']:
+                    qs = qs.filter(person__cpr__icontains=form.cleaned_data['cpr'])
+                if form.cleaned_data['name']:
+                    qs = qs.filter(person__name__icontains=form.cleaned_data['name'])
+                if form.cleaned_data['municipality_code']:
+                    qs = qs.filter(person__municipality_code=form.cleaned_data['municipality_code'])
+                if form.cleaned_data['municipality_name']:
+                    qs = qs.filter(person__municipality_name__icontains=form.cleaned_data['municipality_name'])
+                if form.cleaned_data['address']:
+                    qs = qs.filter(person__full_address__icontains=form.cleaned_data['address'])
+                if form.cleaned_data['tax_liability'] is not None:  # False is a valid value
+                    qs = qs.filter(fully_tax_liable=form.cleaned_data['tax_liability'])
+                if form.cleaned_data['foreign_pension_notes'] is not None:
+                    empty = Q(foreign_pension_notes='') | Q(foreign_pension_notes__isnull=True)
+                    if form.cleaned_data['foreign_pension_notes'] is True:
+                        qs = qs.exclude(empty)
+                    else:
+                        qs = qs.filter(empty)
+                if form.cleaned_data['finalized']:
+                    finalized = form.cleaned_data['finalized']
+                    has = Q(policytaxyear__slutlignet=True)
+                    has_not = Q(policytaxyear__slutlignet=False)
+                    if finalized == 'har_slutlignede':
+                        qs = qs.filter(has)
+                    elif finalized == 'mangler_slutlignede':
+                        qs = qs.exclude(has)
+                    if finalized == 'har_ikkeslutlignede':
+                        qs = qs.filter(has_not)
+                    elif finalized == 'mangler_ikkeslutlignede':
+                        qs = qs.exclude(has_not)
             elif 'year' in form.initial:
                 qs = qs.filter(tax_year__year=form.initial['year'])
             qs = qs.annotate(
@@ -324,18 +319,14 @@ class PolicyTaxYearListView(LoginRequiredMixin, ListView):
         qs = super().get_queryset()
         if self.should_search(form):
             if hasattr(form, 'cleaned_data'):
-                qs = qs.filter(person_tax_year__tax_year__year=form.cleaned_data['year'])
+                qs = qs.filter(person_tax_year__tax_year__year=form.cleaned_data['year'] or form.initial['year'])
                 # Check whether there are any fields filled out apart from 'year'
-                if len([
-                    v for k, v in form.cleaned_data.items()
-                    if v not in ('', None) and k not in ['year']
-                ]):
-                    if form.cleaned_data['pension_company']:
-                        qs = qs.filter(pension_company__name__icontains=form.cleaned_data['pension_company'])
-                    if form.cleaned_data['policy_number']:
-                        qs = qs.filter(policy_number__icontains=form.cleaned_data['policy_number'])
-                    if form.cleaned_data['finalized'] is not None:
-                        qs = qs.filter(slutlignet=form.cleaned_data['finalized'])
+                if form.cleaned_data['pension_company']:
+                    qs = qs.filter(pension_company__name__icontains=form.cleaned_data['pension_company'])
+                if form.cleaned_data['policy_number']:
+                    qs = qs.filter(policy_number__icontains=form.cleaned_data['policy_number'])
+                if form.cleaned_data['finalized'] is not None:
+                    qs = qs.filter(slutlignet=form.cleaned_data['finalized'])
             elif 'year' in form.initial:
                 qs = qs.filter(person_tax_year__tax_year__year=form.initial['year'])
         else:
