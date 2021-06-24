@@ -30,6 +30,17 @@ class PersonListFilterForm(BootstrapForm):
             choices=[(False, _('Har ikke noter')), (True, _('Har noter')), (None, _('Alle'))],
         )
     )
+    finalized = forms.ChoiceField(
+        label=_('Slutlignede policer'),
+        choices=[
+            (None, _('Alle')),
+            ('mangler_ikkeslutlignede', _('Slutlignet')),
+            ('har_ikkeslutlignede', _('Ikke-slutlignet')),
+            # ('har_slutlignede', _('Har slutlignede policer')),
+            # ('mangler_slutlignede', _('Har ingen slutlignede policer')),
+        ],
+        required=False
+    )
 
     def __init__(self, *args, **kwargs):
         super(PersonListFilterForm, self).__init__(*args, **kwargs)
@@ -57,6 +68,12 @@ class PolicyListFilterForm(BootstrapForm):
     year = forms.IntegerField(label=_('År'), required=False, widget=forms.Select())
     pension_company = forms.CharField(label=_('Pensionsselskab'), required=False)
     policy_number = forms.CharField(label=_('Policenummer'), required=False)
+    finalized = forms.NullBooleanField(
+        label=_('Slutlignet'),
+        widget=forms.Select(  # NullBooleanSelect doesn't quite give us what we need
+            choices=[(True, _('Slutlignet')), (False, _('Ikke slutlignet')), (None, _('Alle'))],
+        )
+    )
 
     def __init__(self, *args, **kwargs):
         super(PolicyListFilterForm, self).__init__(*args, **kwargs)
