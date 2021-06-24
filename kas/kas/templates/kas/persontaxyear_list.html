@@ -59,7 +59,7 @@
       <tbody>
       {% for person_tax_year in personstaxyears %}
         {% with person_tax_year.person as person %}
-        {% url 'kas:person_in_year' view.year person.pk as person_url %}
+        {% url 'kas:person_in_year' person_tax_year.year person.pk as person_url %}
         <tr>
           <td><a href="{{ person_url }}">{{ person.cpr }}</a></td>
           <td><a href="{{ person_url }}">{{ person.name }}</a></td>
