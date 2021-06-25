@@ -2,6 +2,7 @@ import json
 
 from django.conf import settings
 from django.forms import formset_factory
+from django.http import FileResponse
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import redirect
 from django.template import Engine, Context
@@ -14,6 +15,7 @@ from django.views import View
 from django.views.decorators.cache import cache_control
 from django.views.generic import FormView, TemplateView
 from django.views.i18n import JavaScriptCatalog
+
 from selvbetjening.exceptions import PersonNotFoundException
 from selvbetjening.forms import PolicyForm, PersonTaxYearForm
 from selvbetjening.restclient import RestClient
@@ -256,3 +258,20 @@ class PolicyDetailView(HasUserMixin, TemplateView):
         }
 
         return context
+
+
+class ViewFinalSettlementView(View):
+
+    def get(self, *args, year, **kwargs):
+        try:
+            year = int(year)
+        except ValueError:
+            return HttpResponse(status=400)
+        cpr = self.request.session.get('user_info', {}).get('CPR', None)
+        if cpr:
+            client = RestClient()
+            r = client.get_final_settlement(year, cpr)
+            print(r.status_code)
+            if r.status_code == 200:
+                return FileResponse(r.iter_content(), content_type='application/pdf')
+        return HttpResponse(content=_('Ingen slutopgørelse for givet år'), status=404, content_type='text/html; charset=utf-8')

@@ -89,11 +89,11 @@ class R75ImportJobForm(YearAndSourceForm):
 
 
 class YearPkForm(BootstrapForm):
-    year_pk = forms.ChoiceField(choices=[], required=True)
+    year_pk = forms.ChoiceField(choices=[], required=True, label=_('År'))
 
     def __init__(self, *args, **kwargs):
         super(YearPkForm, self).__init__(*args, **kwargs)
-        self.fields['year_pk'].choices = ((year.pk, str(year)) for year in TaxYear.objects.all())
+        self.fields['year_pk'].choices = ((year.pk, str(year.year)) for year in TaxYear.objects.all())
 
 
 class AutoligningsYearForm(BootstrapForm):

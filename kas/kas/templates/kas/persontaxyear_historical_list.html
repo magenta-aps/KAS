@@ -38,6 +38,8 @@
                     {% trans 'Bilag' %}
                 {% elif  entry.klass == 'TaxSlipGenerated' %}
                     {% trans 'Selvangivelse' %}
+                {% elif  entry.klass == 'FinalSettlement' %}
+                    {% trans 'Slutopgørelse' %}
                 {% else %}
                     {{ entry }}
                 {% endif %}

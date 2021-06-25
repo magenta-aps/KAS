@@ -87,6 +87,8 @@ kasadmin.register(TaxYear, TaxYearAdmin)
 
 # ------------------/django-admin/-------------------------------#
 
+admin.site.register(TaxYear)
+
 
 class PersonAdmin(admin.ModelAdmin):
     pass

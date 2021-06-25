@@ -1,4 +1,5 @@
 from django.urls import path
+
 from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetailView, \
     PolicyTaxYearDetailView, PdfDownloadView, PolicyDocumentDownloadView, SelfReportedAmountUpdateView, \
     FinalSettlementDownloadView, \
@@ -7,8 +8,11 @@ from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetail
     PolicyTaxYearCreateView, ActivatePolicyTaxYearView, PersonTaxYearHistoryListView, PersonTaxYearHistoryDetailView, \
     PolicyTaxYearHistoryDetailView, PolicyTaxYearHistoryListView, PersonTaxYearUnfinishedListView, \
     PersonTaxYearFailSendListView, PolicyTaxYearUnfinishedListView, PersonTaxYearDocumentsAndNotesUpdateView, \
-    PersonTaxYearUnhandledDocumentsAndNotes, PolicyPaymentOverrideView
+    PolicyPaymentOverrideView, \
+    PersonTaxYearUnhandledDocumentsAndNotes, FinalSettlementGenerateView, MarkFinalSettlementAsInvalid, \
+    DispatchFinalSettlement
 
+from kas.viewsets import CurrentFinalSettlementDownloadView
 app_name = 'kas'
 
 urlpatterns = [
@@ -46,7 +50,13 @@ urlpatterns = [
     path('policytaxyear/<int:pk>/history/', PolicyTaxYearHistoryListView.as_view(),
          name='policy_history_list'),
     path('policytaxyear/history/<int:pk>', PolicyTaxYearHistoryDetailView.as_view(),
-         name='policy_history_detail')
+         name='policy_history_detail'),
+    path('final_settlement/generate/<int:pk>/', FinalSettlementGenerateView.as_view(), name='generate-final-settlement'),
+    path('final_settlement/invalid/<uuid:pk>/', MarkFinalSettlementAsInvalid.as_view(), name='invalid-final-settlement'),
+    path('final_settlement/dispatch/<uuid:pk>/', DispatchFinalSettlement.as_view(), name='dispatch-final-settlement'),
+    path('final_settlement/<int:year>/<int:cpr>/', CurrentFinalSettlementDownloadView.as_view(),
+         name='current-final-settlement'),
+
 
 
 ]

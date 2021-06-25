@@ -10,13 +10,13 @@ from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Sum, Max
 from django.db.models.signals import post_save
 from django.db.transaction import atomic
 from django.forms import model_to_dict
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from requests.exceptions import HTTPError
+from requests.exceptions import RequestException
 from simple_history.models import HistoricalRecords
 
 from eskat.models import ImportedR75PrivatePension
@@ -199,6 +199,16 @@ class Person(HistoryMixin, models.Model):
         null=True
     )
 
+    @property
+    def postal_address(self):
+        return "\n".join([x for x in (
+            self.address_line_1,
+            self.address_line_2,
+            self.address_line_3,
+            self.address_line_4,
+            self.address_line_5,
+        ) if x])
+
     def __str__(self):
         return f"{self.__class__.__name__}(cpr={self.cpr},municipality_code={self.municipality_code}," \
                f"municipality_name={self.municipality_name}," \
@@ -282,8 +292,16 @@ class EboksDispatch(models.Model):
                 # wait 10 seconds before getting another update
                 sleep(10)
 
+    @property
+    def allow_dispatch(self):
+        # a message is allowed to be dispatch if the status is either created or failed (re-trying)
+        if self.status in ('created', 'failed'):
+            return True
+        return False
+
     class Meta:
         abstract = True
+        ordering = ('-created_at', )
 
 
 class TaxSlipGenerated(EboksDispatch):
@@ -375,6 +393,11 @@ class PersonTaxYear(HistoryMixin, models.Model):
     @property
     def efterbehandling(self):
         return self.policytaxyear_set.filter(efterbehandling=True).exists()
+
+    @property
+    def latest_processing_date(self):
+        return self.policytaxyear_set.filter(next_processing_date__gte=timezone.now()).aggregate(
+            Max('next_processing_date'))['next_processing_date__max']
 
     def __str__(self):
         return f"{self.__class__.__name__}(cpr={self.person.cpr}, year={self.tax_year.year})"
@@ -1116,6 +1139,7 @@ class FinalSettlement(EboksDispatch):
     uuid = models.UUIDField(primary_key=True, default=uuid4)
     person_tax_year = models.ForeignKey(PersonTaxYear, null=False, db_index=True, on_delete=models.PROTECT)
     pdf = models.FileField(upload_to=final_settlement_file_path)
+    invalid = models.BooleanField(default=False, verbose_name=_('Slutopgørelse er ikke gyldig'))
 
     def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
         if self.status == 'send':
@@ -1126,9 +1150,9 @@ class FinalSettlement(EboksDispatch):
                                                                            number=self.person_tax_year.person.cpr,
                                                                            pdf_data=base64.b64encode(self.pdf.read())),
                                        message_id=client.get_message_id())
-        except HTTPError:
+        except RequestException:
             self.status = 'failed'
-            self.status.save(update_fields=['status'])
+            self.save(update_fields=['status'])
             raise
         else:
             self.message_id = resp.json()['message_id']  # message_id might have changed so get it from the response

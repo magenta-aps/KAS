@@ -5,18 +5,20 @@
     <form method="POST" class="form-inline needs-validation" enctype="multipart/form-data">
         {% csrf_token %}
         {% for field in form %}
-                <label class="mr-2">{{ field.label }}</label> {{ field }}
-                {% if field.errors %}
-                    <small class="invalid-feedback">
-                        {% for error in field.errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </small>
-                {% else %}
-                    {% if field.help_text %}
+            <div class="form-row">
+                <div class="col">
+                    <label class="mr-2">{{ field.label }}</label>{{ field }}
+                    {% if field.errors %}
+                        <small class="invalid-feedback">
+                            {% for error in field.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </small>
+                    {% else %}
                         <small class="form-text text-muted ml-2">{{ field.help_text }}.</small>
                     {% endif %}
-                {% endif %}
+                </div>
+            </div>
         {% endfor %}
         <input class="form-control btn btn-success" type="submit" value="{% trans 'Start job' %}">
         <a class="btn btn-primary btn-danger" href="{% url 'worker:job_list' %}" role="button">{% trans 'Annuller'%}</a>

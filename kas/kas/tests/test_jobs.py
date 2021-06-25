@@ -80,7 +80,7 @@ def get_recipient_status_mock(as_side_effect=False):
     return mock
 
 
-class JobsTest(TransactionTestCase):
+class TaxslipGeneratedJobsTest(TransactionTestCase):
     def setUp(self) -> None:
         self.tax_year = TaxYear.objects.create(year=2020)
 
