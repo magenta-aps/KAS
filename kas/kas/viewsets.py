@@ -1,9 +1,15 @@
+from django.db.models import Prefetch
+from django.http import FileResponse
+from django.shortcuts import Http404
 from django_filters import rest_framework as filters
-from kas.models import PensionCompany, Person, PersonTaxYear, PolicyDocument, PolicyTaxYear, TaxYear
-from kas.serializers import PensionCompanySerializer, PersonSerializer, PersonTaxYearSerializer, PolicyDocumentSerializer, PolicyTaxYearSerializer, TaxYearSerializer
 from rest_framework import routers, viewsets
 from rest_framework.parsers import MultiPartParser, FormParser
-from django.db.models import Prefetch
+from rest_framework.views import APIView
+
+from kas.models import PensionCompany, Person, PersonTaxYear, PolicyDocument, PolicyTaxYear, TaxYear, FinalSettlement
+from kas.serializers import PensionCompanySerializer, PersonSerializer, PersonTaxYearSerializer, \
+    PolicyDocumentSerializer, PolicyTaxYearSerializer, TaxYearSerializer
+from project.renders import ProxyRender
 
 
 class TaxYearFilter(filters.FilterSet):
@@ -94,3 +100,22 @@ router.register(r'person', PersonViewSet)
 router.register(r'person_tax_year', PersonTaxYearViewSet)
 router.register(r'policy_tax_year', PolicyTaxYearViewSet)
 router.register(r'policy_document', PolicyDocumentViewSet)
+
+
+class CurrentFinalSettlementDownloadView(APIView):
+    renderer_classes = [ProxyRender, ]
+
+    def get_object(self):
+        try:
+            return FinalSettlement.objects.filter(person_tax_year__person__cpr=self.kwargs['cpr'],
+                                                  person_tax_year__tax_year__year=self.kwargs['year'],
+                                                  status='send').order_by('-send_at')[0]
+        except IndexError:
+            raise Http404()
+
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        return FileResponse(instance.pdf, as_attachment=False,
+                            content_type='application/pdf',
+                            filename='{year}_{cpr}.pdf'.format(year=instance.person_tax_year.tax_year.year,
+                                                               cpr=instance.person_tax_year.person.cpr))

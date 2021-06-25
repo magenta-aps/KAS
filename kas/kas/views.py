@@ -12,6 +12,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views.generic import TemplateView, ListView, View, UpdateView, CreateView, FormView
 from django.views.generic.detail import DetailView
 from django.views.generic.detail import SingleObjectMixin, BaseDetailView
@@ -22,13 +23,17 @@ from kas.forms import PersonListFilterForm, SelfReportedAmountForm, \
     EditAmountsUpdateForm, PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, \
     PolicyTaxYearActivationForm
 from kas.forms import PolicyNotesAndAttachmentForm, PersonNotesAndAttachmentForm, \
-    PolicyListFilterForm, PaymentOverrideUpdateForm
+    PaymentOverrideUpdateForm, \
+    PolicyListFilterForm
+from kas.jobs import dispatch_final_settlement
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note
 from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement
+from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
 from kas.view_mixins import HighestSingleObjectMixin
 from kas.view_mixins import SpecialExcelMixin
 from prisme.models import Transaction
+from worker.models import Job
 
 
 class StatisticsView(LoginRequiredMixin, TemplateView):
@@ -639,25 +644,25 @@ class PersonTaxYearHistoryListView(LoginRequiredMixin, DetailView):
 
         qs = self.object.history.all().annotate(
             klass=models.Value('PersonTaxYear', output_field=models.CharField()),
-        ).values('history_id', 'history_date', 'history_user__username', 'history_change_reason', 'history_type', 'klass')
+        ).values('history_date', 'history_id', 'history_user__username', 'history_change_reason', 'history_type', 'klass')
 
         person_qs = self.object.person.history.all().annotate(
             klass=models.Value('Person', output_field=models.CharField()),
-        ).values('history_id', 'history_date', 'history_user__username', 'history_change_reason', 'history_type', 'klass')
+        ).values('history_date', 'history_id', 'history_user__username', 'history_change_reason', 'history_type', 'klass')
 
         policy_qs = PolicyTaxYear.history.filter(person_tax_year=self.object).annotate(
             klass=models.Value('Policy', output_field=models.CharField()),
-        ).values('id', 'history_date', 'history_user__username', 'history_change_reason', 'history_type', 'klass')
+        ).values('history_date', 'id', 'history_user__username', 'history_change_reason', 'history_type', 'klass')
 
         notes_qs = Note.objects.filter(person_tax_year=self.object).annotate(
             history_type=models.Value('+', output_field=models.CharField()),
             klass=models.Value('Note', output_field=models.CharField()),
-        ).values('id', 'date', 'author__username', 'content', 'history_type', 'klass')
+        ).values('date', 'id', 'author__username', 'content', 'history_type', 'klass')
 
         documents_qs = PolicyDocument.objects.filter(person_tax_year=self.object).annotate(
             history_type=models.Value('+', output_field=models.CharField()),
             klass=models.Value('PolicyDocument', output_field=models.CharField()),
-        ).values('id', 'uploaded_at', 'uploaded_by__username', 'description', 'history_type', 'klass')
+        ).values('uploaded_at', 'id', 'uploaded_by__username', 'description', 'history_type', 'klass')
 
         # generated tax slips
         tax_slip_generated_qs = TaxSlipGenerated.objects.filter(persontaxyear=self.object).annotate(
@@ -665,7 +670,7 @@ class PersonTaxYearHistoryListView(LoginRequiredMixin, DetailView):
             description=models.Value('Generated', output_field=models.CharField()),
             history_type=models.Value('+', output_field=models.CharField()),
             klass=models.Value('TaxSlipGenerated', output_field=models.CharField()),
-        ).values('id', 'created_at', 'created_by', 'description', 'history_type', 'klass')
+        ).values('created_at', 'id', 'created_by', 'description', 'history_type', 'klass')
 
         # send tax slips
         tax_slip_sendt_qs = TaxSlipGenerated.objects.filter(persontaxyear=self.object).exclude(send_at__isnull=True).annotate(
@@ -673,11 +678,28 @@ class PersonTaxYearHistoryListView(LoginRequiredMixin, DetailView):
             description=models.Value('Send', output_field=models.CharField()),
             history_type=models.Value('~', output_field=models.CharField()),
             klass=models.Value('TaxSlipGenerated', output_field=models.CharField()),
-        ).values('id', 'send_at', 'created_by', 'description', 'history_type', 'klass')
+        ).values('send_at', 'id', 'created_by', 'description', 'history_type', 'klass')
 
-        # TODO add final settlements
+        final_settlement_generated_qs = FinalSettlement.objects.filter(person_tax_year=self.object).annotate(
+            id=models.Value(0, output_field=models.IntegerField()),
+            created_by=models.Value('', output_field=models.CharField()),
+            description=models.Value('Generated', output_field=models.CharField()),
+            history_type=models.Value('+', output_field=models.CharField()),
+            klass=models.Value('FinalSettlement', output_field=models.CharField())
+        ).values('created_at', 'id', 'created_by', 'description', 'history_type', 'klass')
+
+        final_settlement_send_qs = FinalSettlement.objects.filter(person_tax_year=self.object).exclude(send_at__isnull=True).annotate(
+            id=models.Value(0, output_field=models.IntegerField()),
+            created_by=models.Value('', output_field=models.CharField()),
+            description=models.Value('Send', output_field=models.CharField()),
+            history_type=models.Value('~', output_field=models.CharField()),
+            klass=models.Value('FinalSettlement', output_field=models.CharField())
+        ).values('send_at', 'id', 'created_by', 'description', 'history_type', 'klass')
+
         ctx['objects'] = qs.union(policy_qs, person_qs, notes_qs, documents_qs,
-                                  tax_slip_generated_qs, tax_slip_sendt_qs, all=True).order_by('-history_date')
+                                  tax_slip_generated_qs, tax_slip_sendt_qs, final_settlement_generated_qs,
+                                  final_settlement_send_qs,
+                                  all=True).order_by('-history_date')
         return ctx
 
 
@@ -740,3 +762,54 @@ class FinalSettlementDownloadView(LoginRequiredMixin, SingleObjectMixin, View):
         response['Content-Disposition'] = "attachment; filename={year}_{cpr}.pdf".format(
             year=self.object.person_tax_year.tax_year.year, cpr=self.object.person_tax_year.person.cpr)
         return response
+
+
+class FinalSettlementGenerateView(LoginRequiredMixin, SingleObjectMixin, View):
+    model = PersonTaxYear
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not self.object.policytaxyear_set.exists():
+            return HttpResponse(status=400, content=_('Der skal mindst være én police for at generere en slutopgørelse'))
+        if self.object.tax_year.year_part != 'genoptagelsesperiode':
+            return HttpResponse(status=400, content=_('Der kan kun genereres nye slutupgørelser hvis året er i genoptagelsesperioden'))
+        TaxFinalStatementPDF.generate_pdf(person_tax_year=self.object)
+        return HttpResponseRedirect(reverse('kas:person_in_year', kwargs={'year': self.object.year,
+                                                                          'person_id': self.object.person.id}))
+
+
+class MarkFinalSettlementAsInvalid(LoginRequiredMixin, SingleObjectMixin, View):
+    model = FinalSettlement
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.status != 'created':
+            return HttpResponse(status=400, content=_('Du kan kun markere slutopgørelser der ikke er afsendt som ugyldige.'))
+        self.object.invalid = True
+        self.object.save(update_fields=['invalid'])
+        return HttpResponseRedirect(reverse('kas:person_in_year', kwargs={'year': self.object.person_tax_year.year,
+                                                                          'person_id': self.object.person_tax_year.person.id}))
+
+
+class DispatchFinalSettlement(LoginRequiredMixin, UpdateView):
+    """
+    used to create a job that dispatches a single final settlement
+    """
+
+    fields = ('title', )
+
+    def get_queryset(self):
+        return FinalSettlement.objects.exclude(invalid=True).filter(status__in=['created', 'failed'],
+                                                                    person_tax_year__tax_year__year_part='genoptagelsesperiode')
+
+    def form_valid(self, form):
+        r = super(DispatchFinalSettlement, self).form_valid(form)
+        Job.schedule_job(dispatch_final_settlement,
+                         job_type='DispatchFinalSettlement',
+                         created_by=self.request.user,
+                         job_kwargs={'uuid': str(self.object.uuid)})
+        return r
+
+    def get_success_url(self):
+        return reverse('kas:person_in_year', kwargs={'year': self.object.person_tax_year.year,
+                                                     'person_id': self.object.person_tax_year.person.id})

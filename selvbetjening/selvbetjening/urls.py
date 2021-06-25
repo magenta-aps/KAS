@@ -1,6 +1,8 @@
 from django.conf.urls import url
+from django.urls import path
 from django.views.generic import RedirectView, TemplateView
-from selvbetjening.views import CustomJavaScriptCatalog, SetLanguageView, PolicyFormView, PolicyDetailView
+from selvbetjening.views import CustomJavaScriptCatalog, SetLanguageView, PolicyFormView, PolicyDetailView, \
+    ViewFinalSettlementView
 
 app_name = 'selvbetjening'
 
@@ -17,4 +19,5 @@ urlpatterns = [
     ),
     url(r'^language', SetLanguageView.as_view(), name='set-language'),
     url(r'^policy/closed/', TemplateView.as_view(template_name='closed.html'), name='closed'),
+    path('final_settlement/<int:year>/', ViewFinalSettlementView.as_view(), name='final-settlement')
 ]

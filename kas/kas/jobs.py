@@ -5,7 +5,7 @@ from time import sleep
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import IntegerField, Sum, Q
+from django.db.models import IntegerField, Sum, Q, Count
 from django.db.models.functions import Cast
 from django.db.utils import IntegrityError
 from django.utils import timezone
@@ -20,6 +20,7 @@ from kas.management.commands.import_default_pension_companies import Command as 
 from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated, \
     PreviousYearNegativePayout, FinalSettlement, PolicyDocument
 from kas.models import PersonTaxYearCensus
+from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.reportgeneration.kas_report import TaxPDF
 from worker.job_registry import get_job_types, resolve_job_function
 from worker.models import job_decorator, Job
@@ -555,9 +556,21 @@ def autoligning(job):
         job.finish(result)
 
 
-def generate_final_settlements_for_year():
-    # TODO wait fo mmj to finish the layout for the final settlement.
-    pass
+@job_decorator
+def generate_final_settlements_for_year(job):
+    """
+    For each person tax year generate a final settlement if:
+    person_tax_year is fully tab liable and
+    there exists one or more active and slutlignet policies.
+    """
+    tax_year = TaxYear.objects.get(pk=job.arguments['year_pk'])
+    generated_final_settlements = 0
+    for person_tax_year in PersonTaxYear.objects.filter(tax_year=tax_year, fully_tax_liable=True
+                                                        ).annotate(
+            active_policies=Count('policytaxyear', filter=Q(policytaxyear__active=True, policytaxyear__slutlignet=True))).filter(active_policies__gt=0).iterator():
+        TaxFinalStatementPDF.generate_pdf(person_tax_year=person_tax_year)
+        generated_final_settlements += 1
+    job.finish({'status': 'Genererede slutopgørelser', 'message': generated_final_settlements})
 
 
 def dispatch_final_settlements_for_year():
@@ -567,9 +580,10 @@ def dispatch_final_settlements_for_year():
         job.status = rq_job.get_status()
         job.progress = 0
         job.started_at = timezone.now()
-        total = FinalSettlement.objects.filter(status='created'). \
-            filter(person_tax_year__tax_year__pk=job.arguments['year_pk']).count()
-        job.arguments['total_count'] = total
+        settlements = FinalSettlement.objects.exclude(invalid=True).filter(status='created'). \
+            filter(person_tax_year__tax_year__pk=job.arguments['year_pk'])
+        settlements.update(title=job.arguments['title'])
+        job.arguments['total_count'] = settlements.count()
         job.arguments['current_count'] = 0
         job.save(update_fields=['status', 'progress', 'started_at', 'arguments'])
 
@@ -586,8 +600,9 @@ def dispatch_final_settlements(job):
     generator = EboksDispatchGenerator.from_settings()
     client = EboksClient.from_settings()
     has_more = False
-    settlements = FinalSettlement.objects.filter(
+    settlements = FinalSettlement.objects.exclude(invalid=True).filter(
         status='created').filter(person_tax_year__tax_year__pk=job.parent.arguments['year_pk'])[:dispatch_page_size+1]
+
     pending_messages = {}
     current_number_of_items = 0
     for i, settlement in enumerate(settlements, start=1):
@@ -639,7 +654,7 @@ def dispatch_final_settlement(job):
     """
     client = EboksClient.from_settings()
     settlement = FinalSettlement.objects.get(uuid=job.arguments['uuid'])
-    generator = EboksDispatchGenerator.from_settings(title=settlement.title)
+    generator = EboksDispatchGenerator.from_settings()
     send_settlement = settlement.dispatch_to_eboks(client, generator)
     if send_settlement.status == 'post_processing':
         job.set_progress_pct(50)

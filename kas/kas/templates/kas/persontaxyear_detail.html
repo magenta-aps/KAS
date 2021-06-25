@@ -101,17 +101,12 @@
         <legend class="w-auto">{% trans 'Handlinger' %}</legend>
         <a class="btn btn-success" href="{% url 'kas:policy_create' view.year view.person_id %}">{% trans 'Opret ny police' %}</a>
         <a class="btn btn-info" href="{% url 'kas:person_add_notes_or_attachement' person_tax_year.pk %}" >{% trans 'Tilføj bilag/notater' %}</a>
-
-        {# {% if person_tax_year.tax_year.year_part == 'genoptagelsesperiode' %} #}
-        {#     <a href="" class="btn btn-warning">  #}{# TODO needs to be implemented. When implementing view, check the tax_year.year_part to make sure it's 'genoptagelsesperiode' #}
-        {#         {% trans 'Udsend ny slutopgørelse' %} #}
-        {#     </a> #}
-        {# {% else %} #}
-        {#     <button type="button" class="btn btn-warning" disabled="disabled" aria-disabled="true" title="{% trans 'Udsendelse af slutopgørelse er kun tilgængelig i genoptagelsesperioden' %}"> #}
-        {#         {% trans 'Udsend ny slutopgørelse' %} #}
-        {#     </button> #}
-        {# {% endif %} #}
-
+        {% if person_tax_year.tax_year.year_part == 'genoptagelsesperiode' and person_tax_year.policytaxyear_set.exists %}
+            <form style="display: inline" method="POST" action="{% url 'kas:generate-final-settlement' person_tax_year.pk %}">
+            {% csrf_token %}
+                <button class="btn btn-warning" type="submit">{% trans 'Generer ny slutopgørelse' %}</button>
+            </form>
+        {% endif %}
         <a href="{% url 'kas:person_history_list' person_tax_year.pk %}" class="btn btn-secondary">{% trans 'Vis historik' %}</a>
     </fieldset>
     <div class="mb-2">
