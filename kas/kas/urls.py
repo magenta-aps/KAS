@@ -7,7 +7,7 @@ from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetail
     PolicyTaxYearCreateView, ActivatePolicyTaxYearView, PersonTaxYearHistoryListView, PersonTaxYearHistoryDetailView, \
     PolicyTaxYearHistoryDetailView, PolicyTaxYearHistoryListView, PersonTaxYearUnfinishedListView, \
     PersonTaxYearFailSendListView, PolicyTaxYearUnfinishedListView, PersonTaxYearDocumentsAndNotesUpdateView, \
-    PersonTaxYearUnhandledDocumentsAndNotes, PolicyPaymentOverrideView
+    PersonTaxYearUnhandledDocumentsAndNotes, PolicyPaymentOverrideView, PersonTaxYearGeneralAndForeignNotesListView
 
 app_name = 'kas'
 
@@ -16,6 +16,8 @@ urlpatterns = [
     path('person/unfinished', PersonTaxYearUnfinishedListView.as_view(), name='person_search_unfinished'),
     path('person/failsend', PersonTaxYearFailSendListView.as_view(), name='person_search_failsend'),
     path('person/unhandled/', PersonTaxYearUnhandledDocumentsAndNotes.as_view(), name='person_search_unhandled'),
+    path('person/foreign/', PersonTaxYearGeneralAndForeignNotesListView.as_view(), name='person_search_foreign'),
+
 
     path('statistics', StatisticsView.as_view(), name='statistics'),
     path('tax_year/<int:year>/persons/<int:person_id>/', PersonTaxYearDetailView.as_view(), name='person_in_year'),
