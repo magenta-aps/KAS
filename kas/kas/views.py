@@ -135,12 +135,6 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
                     qs = qs.filter(person__full_address__icontains=form.cleaned_data['address'])
                 if form.cleaned_data['tax_liability'] is not None:  # False is a valid value
                     qs = qs.filter(fully_tax_liable=form.cleaned_data['tax_liability'])
-                if form.cleaned_data['foreign_pension_notes'] is not None:
-                    empty = Q(foreign_pension_notes='') | Q(foreign_pension_notes__isnull=True)
-                    if form.cleaned_data['foreign_pension_notes'] is True:
-                        qs = qs.exclude(empty)
-                    else:
-                        qs = qs.filter(empty)
                 if form.cleaned_data['finalized']:
                     finalized = form.cleaned_data['finalized']
                     has = Q(policytaxyear__slutlignet=True)
@@ -214,6 +208,18 @@ class PersonTaxYearUnhandledDocumentsAndNotes(PersonTaxYearSpecialListView):
     def filter_queryset(self, qs):
         return super(PersonTaxYearUnhandledDocumentsAndNotes, self).filter_queryset(qs).filter(
             all_documents_and_notes_handled=False)
+
+
+class PersonTaxYearGeneralAndForeignNotesListView(PersonTaxYearSpecialListView):
+    template_name = 'kas/persontaxyear_foreign.html'
+    filename = 'udenlandsk_pension.xls'
+
+    def filter_queryset(self, qs):
+        qs = super(PersonTaxYearGeneralAndForeignNotesListView, self).filter_queryset(qs)
+        qs = qs.exclude(Q(foreign_pension_notes__isnull=True) | Q(foreign_pension_notes__exact=''),
+                        Q(general_notes__isnull=True) | Q(general_notes__exact=''))
+        print(qs.query)
+        return qs
 
 
 class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):

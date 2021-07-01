@@ -24,12 +24,6 @@ class PersonListFilterForm(BootstrapForm):
             choices=[(False, _('Ikke fuldt skattepligtig')), (True, _('Fuldt skattepligtig')), (None, _('Alle'))],
         )
     )
-    foreign_pension_notes = forms.NullBooleanField(
-        label=_('Noter om indbetaling i udlandet'),
-        widget=forms.Select(  # NullBooleanSelect doesn't quite give us what we need
-            choices=[(False, _('Har ikke noter')), (True, _('Har noter')), (None, _('Alle'))],
-        )
-    )
     finalized = forms.ChoiceField(
         label=_('Slutlignede policer'),
         choices=[
@@ -53,7 +47,6 @@ class PersonListFilterForm(BootstrapForm):
             if current_year in years \
             else max([y for y in years if y < current_year])
         self.fields['tax_liability'].initial = None
-        self.fields['foreign_pension_notes'].initial = None
 
     def clean_cpr(self):
         cpr = self.cleaned_data['cpr']
