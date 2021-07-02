@@ -7,112 +7,13 @@
 |kas-web   | Container running the kas django project | 8000/tcp |
 |postgres  | Postgresql container, shared between kas and selvbetjening | 5432/tcp |
 |oneshot   | Container to generate and execute migrations, and unit tests |
-|selvbetjening | Container running the self-service django project. | 8080/tcp |
+|redis | Is qused as a Queue for the job system | 6379/tcp |
 
 All django containers are using gunicorn and is configured to serve static content in the development environment and
 log everything to stdout/stderr, so you can check the logs using docker logs <container_name>.
-Gunicorn is set to auto-realod on (python) code changes.
+Gunicorn is set to auto-realod on (python) code changes in docker-compose.yml.
 
-### Running the project
-```bash
-docker-compose up
-```
-
-If you add/change/remove a dependency from a requirements.txt you have to rebuild to image using:
-```bash
-docker-compose build
-```
-
-## settings
-All configurable settings needs to be injected using environment variables beucase we want to re-use the same
-dockerFiles for development and production, if a needed setting is not provided the container should Fail fast so any
-mistakes can be discovered as part of the deployment. All configurable django settings are located in
-dev-environment/kas.env and dev-environment/selvbetjening.env and can be overriden directly in docker-compose.yml
-using the environment block.
-
-#worker POC
-open: http://localhost:8000/worker/
-press a button, see stuff works
-
-# Working with the eSkat integration
-
-## eSkat development setup
-
-By default the eSkat setup will use local mockup tables as a data source for eSkat data. These tables will automatically
-be used instead of the ones in the eSkat database when importing data. The tables can be populated with mockup data
-by running the `perl manage.py import_eskat_mockup_data` command.
-
-## Connecting to the real eSkat database
-
-By default a development environment does not have the neccessary information to connect to the eSkat database.
-In order to connect an SSH tunnel must be created that allows accessing the database server and login and password
-credentials must be provided.
-
-The ssh tunnel can be created from the development host with the following command:
-
-```
-ssh -g -L16523:10.240.79.23:16523 -L16524:10.240.79.20:16523 10.240.76.76
-```
-
-This will have the real database listening on localhost port 16523 and the GPS database listening on port 16524.
-
-Once the SSH tunnel is created a login and password is needed. These should be set up in a `docker-compose.override.yml` dockerFiles
-like this:
-
-```yaml
-version: "3.4"
-services:
-  kas-web:
-    environment:
-      - ESKAT_USER=username
-      - ESKAT_PASSWORD=password
-      - ESKAT_PORT=16524
-      - ESKAT_DB=DBSERVICE_AKA_KAS_GPS
-  worker:
-    environment:
-      - ESKAT_USER=username
-      - ESKAT_PASSWORD=password
-      - ESKAT_PORT=16524
-      - ESKAT_DB=DBSERVICE_AKA_KAS_GPS
-```
-
-The username and password to use can be found in BitWarden under the key `KAS login til eSkat database (10.240.79.23)`.
-
-To connect to the GPS system use the servicename `DBSERVICE_AKA_KAS_GPS`. Username and password are the same as for the
-production database.
-
-This will allow using the `eskat.models.EskatModels.*` model classes to connect to and query the live eSkat database.
-
-If `settings.ENVIRONMENT` is set to `production`, the real eSkat database will be used by default.
-
-## Creating new job Types
-To create a new job type you have to add (or re-use) a form located in worker forms (use MandtalImportJobForm as an example).
-The form is going to allow the user to add input parameters and selecting the job type, e.g. the MandtalImportJobForm
-allows the user to input a tax year to import from eskat.
-
-Secondly we need to add the job to the job registry located in worker.job_registry.py.
-The job_registry holds the label and a reference to the newly created form.
-The key is used as an internal/systematic name for the job-type.
-
-Thirdly we need to import and add the job function to the StartJobView (worker/views.py)
-so the function can get passed to the schedule_job function.
-
-### Writing the job function
-When writing the job function you could use the job_decorator from worker/models.py to handle starting, fetching
-and finishing the job. If you use the decorator the job function will take a single argument: **job** which is the job
-instance stored in the database. If you need any input parameters for the job they are stored in the **arguments** field
-on the job as a dictionary.
-
-When you need to update the progress you simply set the **progress** field on the job (or use the method on the job class)
-and save the job to persist it in the database. All result data, like how many items are imported/changed, can be stored
-in the **result** field (JsonB) and then it is up to you to parse it and present it in the job_detail template that
-takes a simple job instance as context.
-
-
-If there are any exceptions raised while executing the job it will trigger the registered exception handler which logs
-the traceback in the traceback file on the job and set the job to status 'failed'.
-
-##Running the containers as you
+### Running the containers as you
 Because we specify a hardcoded user and group i the docker file this causes issues when you are trying to generate
 migrations and translations since the container is trying to write as an unknown user to the hosts filesystem.
 To overcome this we can ask the container to run as your user since your user should be the owner of the source code
@@ -135,69 +36,73 @@ services:
     user: "1000:1000"
 ```
 
-# Use of mockup data
 
-The following is a guide on how to completely reset a development environment and import mockup data.
 
-## Step 0: Remove old environment
 
-If you have an existing development environment it can be torn down with:
 
+### settings
+All configurable settings needs to be injected using environment variables beucase we want to re-use the same
+dockerFiles for development and production, if a needed setting is not provided the container should Fail fast so any
+mistakes can be discovered as part of the deployment. All configurable django settings are located in
+dev-environment/kas.env and dev-environment/selvbetjening.env and can be overriden directly in docker-compose.yml
+using the environment block.
+
+### Running the project
+```bash
+docker-compose up
 ```
-docker-compose down -v
-```
+#### container initialization
+When the kas-web containter starts it by default will create the database, 
+make migrations. execute migrations, create users, generate mock data and finally execute tests.  
 
-## Step 1: Start up base environment
+This behavior is controlled by the following environment flags you can change in docker-compose.yml 
+or add to a override if needed:
 
-To start a new environment from scratch do:
+| variable | description | default |
+|----------|--------------|------|
+|MAKE_MIGRATIONS | Create new migrations when models change| true| 
+|MIGRATE | execute all outstanding migrations| true|
+|DUMMYDATA | create mock/dummy data for eskat mandtal, r75 etc| true|
+|CREATE_USERS | create rest user so the selfservice container kan talk to the kas-web container| true|
+|CREATE_DUMMY_USERS| create admin user with admin as the password| true|
+|TEST | execute python test when starting kas-web container| true|
 
-```
-docker-compose up -d
-```
-
-You migh want to check that everything is running by issuing:
-
-```
-docker-compose logs -f
-```
-
-You can end the output by pressing `Ctrl-c`.
-
-## Step 2: Import data
-
-Exec into the running kas-container and run some manage commands to import data:
-
-```
-docker exec -it kas bash
-# Import pension companies
-python manage.py import_default_pension_companies
-# Import eSkat mockup data
-python manage.py import_eskat_mockup_data
-exit
+If you add/change/remove a dependency from a requirements.txt you have to rebuild to image using:
+```bash
+docker-compose build
 ```
 
-## Step 3: Create a superuser
-```
-docker exec -it kas bash
-# Import pension companies
-python manage.py createsuperuser
-# Fill out the questions asked
-exit
-```
+### Importing eskat mock data
+By default the eSkat setup will use local mockup tables as a data source for eSkat data. These tables will automatically
+be used instead of the ones in the eSkat database when importing data. The tables can be populated with mockup data
+by running the `python manage.py import_eskat_mockup_data` command (as done when the container starts when DUMMYDATA=true).
 
-## Step 4: Use webinterface to run jobs
+## Deployment
+Each kas system (test/prod) kan be deployed using saltstack. you can even trigger a deployment to test from the gitlab
+pipeline as a manual job after the image is release. This will clear the database and run through all migrations create 
+test users etc and mock data.
 
-Go to http://localhost:8000/django-admin/login to log in with the user you created.
+To bump the currently deployed version of kas in production. You need to change the following pillar data in
+the salt-automation repo `salt.pillar.customers.groenland.skat.kas.prod.sls` and create an MR:
+    
+    KAS_DOCKER_IMAGE: magentaaps/kas:1.3.1-kas
+    KAS_SELF_DOCKER_IMAGE: magentaaps/kas:1.3.1-self
 
-After logging in, navigate to http://localhost:8000/worker/jobs. Here you can start import jobs.
+The image versions should match without the suffix (-kas/-self).
+After the MR is merged the new pillar data is automatically distributed to the salt-masters and we should now be able 
+to run the orchestration.
 
-Run the following imports:
+For production you need to ssh into the salt master (saltmaster-prod(ctrl1)) and access the salt-master container
+and run the orchestrations. (currently kas is not using an idempotent highstate)
+    
+    docker exec -ti saltmaster_master_1 /bin/bash
+    salt-run state.orch kas.service-prod
 
-* Mandtal with year 2018 as input
-* Mandtal with year 2019 as input
-* Mandtal with year 2020 as input
-* R75 with with year 2018 as input
-* R75 with with year 2019 as input
-* R75 with with year 2020 as input
+Effectively the orchestration updates the docker-compose.yml (with the new image versions) located in `/opt/docker/kas/`
+and issues a docker pull to fetch the new image. When the new image is downloaded the orchestration stops the running containers
+and brings them all up using the new image. Everything related to static files and executing migrations is handled 
+by the docker-image 
 
-The environment should now be up and running and have PersonTaxYear and PolicyTaxYear objects that can be used for generating PDFs etc.
+## Specific documentation
+[Job system](docs/jobs.md)  
+[Connection to the eSkat database](docs/eskat_database.md)
