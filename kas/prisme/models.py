@@ -10,6 +10,7 @@ from django.utils.formats import date_format
 from django.utils.translation import gettext as _
 
 from kas.models import PersonTaxYear
+from prisme.10Q.writer import TransactionWriter
 
 transaction_status = (
     ('created', _('Oprettet')),
@@ -59,3 +60,92 @@ class PrePaymentFile(models.Model):
     def __str__(self):
         return 'Forudindbetalingsfil uploadet {date} af {by}'.format(date=date_format(self.uploaded_at, 'SHORT_DATETIME_FORMAT'),
                                                                      by=self.uploaded_by)
+
+
+class Prisme10QBatch(models.Model):
+    class Meta:
+        ordering = ['created']
+        verbose_name = _('prisme 10Q batch')
+        verbose_name_plural = _('prisme 10Q batches')
+
+
+    _cached_transaction_writer = None
+
+    # When was the batch created
+    created = models.DateTimeField(auto_now=True)
+    # When was the batch delivered
+    delivered = models.DateTimeField(blank=True, none=True)
+    # Any error encountered while trying to deliver the batch
+    delivery_error = models.TextField(blank=True, default='')
+
+    # Status for delivery
+    STATUS_CREATED = 1
+    STATUS_DELIVERY_FAILED = 1
+    STATUS_DELIVERED = 1
+
+    status_choices = (
+        (STATUS_CREATED, _('Oprettet')),
+        (STATUS_DELIVERY_FAILED, _('Afsendelse fejlet')),
+        (STATUS_DELIVERED, _('Afsendt'))
+    )
+
+    status = models.IntegerField(
+        choices=status_choices,
+        default=STATUS_CREATED
+    )
+
+    tax_year = models.IntegerField()
+
+    def add_entry(self, final_settlement, transaction_writer=None):
+        if final_settlement.person_tax_year.tax_year.year != self.tax_year:
+            raise ValueError(
+                "Cannot add final settlement to 10Q batch: Wrong tax year %s" % (
+                    final_settlement.person_tax_year.tax_year.year
+                )
+            )
+
+        new_entry = Prisme10QTransactionEntry(
+            final_settlement=final_settlement,
+            batch=self,
+            amount=final_settlement.get_transaction_amount(),
+            summary=final_settlement.get_transaction_summary(),
+        )
+        new_entry.update_content()
+        new_entry.save()
+
+
+    def get_transaction_writer(self):
+        if self._cached_transaction_writer is None:
+            self._cached_transaction_writer = TransactionWriter(
+                ref_timestamp=self.created,
+                tax_year=self.tax_year,
+            )
+
+        return self._cached_transaction_writer
+
+
+class Prisme10QTransactionEntry(models.Model):
+    class Meta:
+        ordering = ['pk']
+        verbose_name = _('prisme 10Q transaktion')
+        verbose_name_plural = _('prisme 10Q transaktioner')
+
+    # The final settlement this is the transaction for
+    final_settlement = models.ForeignKey('kas.FinalSettlement')
+    # The batch of Prisme 10Q transactions this belongs to
+    batch = models.ForeignKey(Prisme10QBatch)
+    # The amount needed to be paid / refunded
+    amount = models.IntegerField()
+    # A summary of how the amount was calculated, used for debug puposes
+    summary = models.TextField(blank=True, default='')
+    # The three 10Q transaction lines generated for this transaction
+    content = models.TextField(blank=True, default='')
+
+    def update_content(self):
+        transaction_writer = self.batch.get_transaction_writer()
+
+        self.content = transaction_writer.make_transaction(
+            cpr_nummer=self.final_settlement.person_tax_year.person.cpr,
+            rate_beloeb=self.amount,
+            afstem_noegle=self.final_settlement.uuid
+        )
