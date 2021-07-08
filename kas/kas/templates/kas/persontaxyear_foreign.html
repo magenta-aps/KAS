@@ -1,0 +1,7 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+
+{% block content %}
+    {% blocktrans asvar title %}Personer med udenlandsk pensions notat{% endblocktrans %}
+    {% include 'includes/persontaxyear_speciallist.html' with title=title %}
+{% endblock %}
