@@ -10,7 +10,7 @@ from django.utils.formats import date_format
 from django.utils.translation import gettext as _
 
 from kas.models import PersonTaxYear
-from prisme.10Q.writer import TransactionWriter
+from prisme.tenQ.writer import TransactionWriter
 
 transaction_status = (
     ('created', _('Oprettet')),
@@ -68,13 +68,12 @@ class Prisme10QBatch(models.Model):
         verbose_name = _('prisme 10Q batch')
         verbose_name_plural = _('prisme 10Q batches')
 
-
     _cached_transaction_writer = None
 
     # When was the batch created
     created = models.DateTimeField(auto_now=True)
     # When was the batch delivered
-    delivered = models.DateTimeField(blank=True, none=True)
+    delivered = models.DateTimeField(blank=True, null=True)
     # Any error encountered while trying to deliver the batch
     delivery_error = models.TextField(blank=True, default='')
 
@@ -113,7 +112,6 @@ class Prisme10QBatch(models.Model):
         new_entry.update_content()
         new_entry.save()
 
-
     def get_transaction_writer(self):
         if self._cached_transaction_writer is None:
             self._cached_transaction_writer = TransactionWriter(
@@ -131,9 +129,9 @@ class Prisme10QTransactionEntry(models.Model):
         verbose_name_plural = _('prisme 10Q transaktioner')
 
     # The final settlement this is the transaction for
-    final_settlement = models.ForeignKey('kas.FinalSettlement')
+    final_settlement = models.ForeignKey('kas.FinalSettlement', on_delete=models.CASCADE)
     # The batch of Prisme 10Q transactions this belongs to
-    batch = models.ForeignKey(Prisme10QBatch)
+    batch = models.ForeignKey(Prisme10QBatch, on_delete=models.CASCADE)
     # The amount needed to be paid / refunded
     amount = models.IntegerField()
     # A summary of how the amount was calculated, used for debug puposes

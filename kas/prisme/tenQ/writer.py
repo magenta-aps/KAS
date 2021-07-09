@@ -1,4 +1,3 @@
-from datetime import datetime
 
 
 class Transaction(object):
@@ -96,7 +95,7 @@ class Transaction(object):
 
 class FixWidthFieldLineTranactionType10(Transaction):
     fieldspec = Transaction.fieldspec + (
-        ('person_nummer', 10), # Comma is needed when only one value in tuple
+        ('person_nummer', 10),  # Comma is needed when only one value in tuple
     )
 
     person_nummer = None
@@ -221,4 +220,3 @@ class TransactionWriter(object):
 # # Construct the writer
 # transaction_creator = TransactionCreator(ref_timestamp=datetime.now(), tax_year=2020)
 # print(transaction_creator.make_transaction(cpr_nummer=cpr_nummer, rate_beloeb=tilbagebetaling, afstem_noegle=afstem_noegle))
-
