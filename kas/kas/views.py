@@ -137,8 +137,8 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
                     qs = qs.filter(fully_tax_liable=form.cleaned_data['tax_liability'])
                 if form.cleaned_data['finalized']:
                     finalized = form.cleaned_data['finalized']
-                    has = Q(policytaxyear__slutlignet=True)
-                    has_not = Q(policytaxyear__slutlignet=False)
+                    has = Q(policytaxyear__slutlignet=True, policytaxyear__active=True)
+                    has_not = Q(policytaxyear__slutlignet=False, policytaxyear__active=True)
                     if finalized == 'har_slutlignede':
                         qs = qs.filter(has)
                     elif finalized == 'mangler_slutlignede':
