@@ -22,6 +22,7 @@ from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCom
 from kas.models import PersonTaxYearCensus
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.reportgeneration.kas_report import TaxPDF
+from prisme.models import Prisme10QBatch
 from worker.job_registry import get_job_types, resolve_job_function
 from worker.models import job_decorator, Job
 
@@ -565,11 +566,21 @@ def generate_final_settlements_for_year(job):
     """
     tax_year = TaxYear.objects.get(pk=job.arguments['year_pk'])
     generated_final_settlements = 0
+
+    prisme10Q_batch = Prisme10QBatch(
+        created_by = job.created_by,
+        tax_year = tax_year,
+    )
+    prisme10Q_batch.save()
+
     for person_tax_year in PersonTaxYear.objects.filter(tax_year=tax_year, fully_tax_liable=True
                                                         ).annotate(
             active_policies=Count('policytaxyear', filter=Q(policytaxyear__active=True, policytaxyear__slutlignet=True))).filter(active_policies__gt=0).iterator():
-        TaxFinalStatementPDF.generate_pdf(person_tax_year=person_tax_year)
+        final_statement = TaxFinalStatementPDF.generate_pdf(person_tax_year=person_tax_year)
+        prisme10Q_batch.add_transaction(final_statement)
         generated_final_settlements += 1
+
+
     job.finish({'status': 'Genererede slutopgørelser', 'message': generated_final_settlements})
 
 

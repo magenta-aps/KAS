@@ -1,6 +1,7 @@
 import base64
 import calendar
 import math
+from prisme.models import Transaction
 from time import sleep
 from uuid import uuid4
 
@@ -1169,3 +1170,72 @@ class FinalSettlement(EboksDispatch):
         finally:
             self.pdf.close()
         return self
+
+    def get_payment_info(self):
+        result = []
+
+        for policy in self.person_tax_year.policytaxyear_set.all():
+            if policy.pension_company_pays:
+                result.append({
+                    'text': _('Afgift for police nr. %s ved %s (betalt af pensionsselskab)') % (
+                        policy.policy_number, policy.pension_company.name
+                    ),
+                    'amount': 0,
+                    'source_object': policy,
+                })
+            else:
+                result.append({
+                    'text': _('Afgift for police nr. %s ved %s') % (
+                        policy.policy_number, policy.pension_company.name
+                    ),
+                    'amount': policy.get_calculation()['tax_with_deductions'],
+                    'source_object': policy,
+                })
+
+        for transaction in Transaction.objects.filter(
+            person_tax_year=self.person_tax_year,
+            status='transferred',
+        ):
+            if transaction.type == 'prepayment':
+                result.append({
+                    'text': _('Forudindbetaling'),
+                    'amount': -transaction.amount,
+                    'source_object': transaction,
+                })
+            elif transaction.type == 'prisme10q':
+                result.append({
+                    'text': _('Justering fra årsopgørelse oprettet d. %s') % transaction.created_at,
+                    'amount': -transaction.amount,
+                    'source_object': transaction,
+                })
+
+        return result
+
+    def get_transaction_summary(self, excluding_transaction=None):
+        payment_info = self.get_payment_info()
+
+        summary = ''
+
+        for x in payment_info:
+            # Skip the specified transaction to be excluded
+            if excluding_transaction is not None and x['source_object'] == excluding_transaction:
+                continue
+            summary += x['text'] + ': ' + str(x['amount']) + '\n'
+
+        summary += '\n'
+        summary += _('I alt:') + ' ' + str(self.get_transaction_amount())
+
+        return summary
+
+    def get_transaction_amount(self, excluding_transaction=None):
+        payment_info = self.get_payment_info()
+
+        amount = 0
+
+        for x in payment_info:
+            # Skip the specified transaction to be excluded
+            if excluding_transaction is not None and x['source_object'] == excluding_transaction:
+                continue
+            amount += x['amount']
+
+        return amount

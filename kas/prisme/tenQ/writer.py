@@ -200,10 +200,10 @@ class TransactionWriter(object):
         self.transaction_24 = FixWidthFieldLineTranactionType24(**init_data)
         self.transaction_26 = FixWidthFieldLineTranactionType26(**init_data)
 
-    def make_transaction(self, cpr_nummer, rate_beloeb, afstem_noegle):
+    def make_transaction(self, cpr_nummer, amount_in_dkk, afstem_noegle):
         data = {
             "cpr_nummer": cpr_nummer,
-            "rate_beloeb": Transaction.format_amount(rate_beloeb),
+            "rate_beloeb": Transaction.format_amount(amount_in_dkk * 100),  # Amount is in øre, so multiply by 100
             'afstem_noegle': afstem_noegle,
         }
         return '\r\n'.join([
