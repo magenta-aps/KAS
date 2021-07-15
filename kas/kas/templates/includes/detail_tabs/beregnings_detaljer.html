@@ -10,7 +10,7 @@
             {% include 'includes/help_text/question_mark.html' with target_id='prefilled' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_prefilled target_id='prefilled' %}
         </td>
-        <td>{{ policy.prefilled_amount }}</td>
+        <td>{{ policy.prefilled_amount|default_if_none:'' }}</td>
     </tr>
     <tr>
         <td>

@@ -142,8 +142,8 @@ class PersonTaxYearListView(LoginRequiredMixin, ListView):
                     qs = qs.filter(fully_tax_liable=form.cleaned_data['tax_liability'])
                 if form.cleaned_data['finalized']:
                     finalized = form.cleaned_data['finalized']
-                    has = Q(policytaxyear__slutlignet=True)
-                    has_not = Q(policytaxyear__slutlignet=False)
+                    has = Q(policytaxyear__slutlignet=True, policytaxyear__active=True)
+                    has_not = Q(policytaxyear__slutlignet=False, policytaxyear__active=True)
                     if finalized == 'har_slutlignede':
                         qs = qs.filter(has)
                     elif finalized == 'mangler_slutlignede':
@@ -191,7 +191,7 @@ class PersonTaxYearUnfinishedListView(PersonTaxYearSpecialListView):
         return qs.annotate(
             efterbehandling_count=Count(
                 'policytaxyear',
-                filter=Q(policytaxyear__efterbehandling=True)
+                filter=Q(policytaxyear__efterbehandling=True, policytaxyear__active=True)
             ),
         ).filter(efterbehandling_count__gt=0)
 
@@ -328,6 +328,8 @@ class PolicyTaxYearListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         form = self.get_form()
         qs = super().get_queryset()
+        # Always exclude inactive PolicyTaxYears
+        qs = qs.exclude(active=False)
         if self.should_search(form):
             if hasattr(form, 'cleaned_data'):
                 qs = qs.filter(person_tax_year__tax_year__year=form.cleaned_data['year'] or form.initial['year'])

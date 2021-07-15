@@ -242,7 +242,13 @@ class CreatePolicyTaxYearForm(forms.ModelForm, BootstrapForm):
             'policy_number',
             'self_reported_amount',
         ]
+
     pension_company = PensionCompanyChoiceField(
         queryset=PensionCompany.objects.all(),
         widget=forms.widgets.Select()
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['self_reported_amount'].required = True

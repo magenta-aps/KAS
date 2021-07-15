@@ -388,7 +388,7 @@ class PersonTaxYear(HistoryMixin, models.Model):
 
     @property
     def slutlignet(self):
-        return not self.policytaxyear_set.filter(slutlignet=False).exists()
+        return not self.policytaxyear_set.filter(slutlignet=False, active=True).exists()
 
     @property
     def efterbehandling(self):
@@ -880,7 +880,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         amounts_list = [self.assessed_amount,
                         self.self_reported_amount,
                         self.adjusted_r75_amount,
-                        self.prefilled_amount]
+                        self.prefilled_amount,
+                        0]
         return next((item for item in amounts_list if item is not None), None)
 
     @property
