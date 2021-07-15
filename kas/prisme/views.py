@@ -86,6 +86,7 @@ class Prisme10QBatchView(LoginRequiredMixin, ListView):
 
         return super().get_context_data(**kwargs)
 
+
 class Prisme10QBatchDownloadView(LoginRequiredMixin, View):
 
     def get(self, *args, **kwargs):

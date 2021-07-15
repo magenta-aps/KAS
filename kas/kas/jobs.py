@@ -568,8 +568,8 @@ def generate_final_settlements_for_year(job):
     generated_final_settlements = 0
 
     prisme10Q_batch = Prisme10QBatch(
-        created_by = job.created_by,
-        tax_year = tax_year,
+        created_by=job.created_by,
+        tax_year=tax_year,
     )
     prisme10Q_batch.save()
 
@@ -579,7 +579,6 @@ def generate_final_settlements_for_year(job):
         final_statement = TaxFinalStatementPDF.generate_pdf(person_tax_year=person_tax_year)
         prisme10Q_batch.add_transaction(final_statement)
         generated_final_settlements += 1
-
 
     job.finish({'status': 'Genererede slutopgørelser', 'message': generated_final_settlements})
 

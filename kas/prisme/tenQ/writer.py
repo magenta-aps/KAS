@@ -17,8 +17,8 @@ class Transaction(object):
     # List of default values
     leverandoer_ident = "KAS"
     time_stamp = None
-    # TODO: This is not the correct value
-    bruger_nummer = 1234
+    # Brugernummer / myndighedskode. Hardcoded to "0900" according to spec
+    bruger_nummer = "0900"
     omraad_nummer = None
     betal_art = 209
     paalign_aar = None
@@ -59,8 +59,7 @@ class Transaction(object):
 
             fields.append(value.rjust(width))
 
-        # TODO: Change this to join on the empty string when development/debugging is done
-        return '|'.join(fields)
+        return ''.join(fields)
 
     def get_data(self):
         data = {}

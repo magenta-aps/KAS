@@ -7,7 +7,7 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.template.defaultfilters import date as _date
 from django.urls import reverse
-from django.utils import timezone, dateformat
+from django.utils import timezone
 from django.utils.formats import date_format
 from django.utils.translation import gettext as _
 
@@ -30,7 +30,6 @@ class Transaction(models.Model):
         ordering = ['created_at', 'uuid']
         verbose_name = _('transaktion')
         verbose_name_plural = _('transaktionr')
-
 
     uuid = models.UUIDField(primary_key=True, default=uuid4)
     person_tax_year = models.ForeignKey('kas.PersonTaxYear', null=False, db_index=True, on_delete=models.PROTECT)
@@ -183,7 +182,6 @@ class Prisme10QBatch(models.Model):
             )
 
         return self._cached_transaction_writer
-
 
     def __str__(self) -> str:
         return _('Prisme 10Q bunke %s (%s)') % (
