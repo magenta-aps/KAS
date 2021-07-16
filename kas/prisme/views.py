@@ -1,9 +1,14 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.views.generic import CreateView, UpdateView
+from django.utils import dateformat
+from django.views.generic import CreateView, UpdateView, ListView, View
 
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocuments
+
 from prisme.forms import TransActionForm
-from prisme.models import Transaction
+from prisme.models import Transaction, Prisme10QBatch
 
 
 class TransactionCreateView(CreateOrUpdateViewWithNotesAndDocuments, CreateView):
@@ -58,3 +63,38 @@ class TransactionUpdateView(CreateOrUpdateViewWithNotesAndDocuments, UpdateView)
             'back_url': self.back_url,
             **kwargs,
         })
+
+
+class Prisme10QBatchView(LoginRequiredMixin, ListView):
+    model = Transaction
+    template_name = 'prisme/batch_detail.html'
+    context_object_name = 'transactions'
+    paginate_by = 10
+
+    def get_object(self):
+
+        return get_object_or_404(Prisme10QBatch, pk=self.kwargs['pk'])
+
+    def get_queryset(self):
+
+        return self.get_object().active_transactions_qs
+
+    def get_context_data(self, **kwargs):
+
+        kwargs['batch'] = self.get_object()
+        kwargs['batch_class'] = Prisme10QBatch
+
+        return super().get_context_data(**kwargs)
+
+
+class Prisme10QBatchDownloadView(LoginRequiredMixin, View):
+
+    def get(self, *args, **kwargs):
+        batch = get_object_or_404(Prisme10QBatch, pk=kwargs['pk'])
+        response = HttpResponse(batch.get_content(), content_type='text/plain')
+        filename = 'KAS_10Q__%s__%s.txt' % (
+            batch.pk,
+            dateformat.format(batch.created, 'y-m-d_H_i_s')
+        )
+        response['Content-Disposition'] = "attachment; filename=%s" % filename
+        return response

@@ -4,11 +4,9 @@
     <tr>
         <th>{% trans 'Status' %}</th>
         <th>{% trans 'Type' %}</th>
-        <th>{% trans 'Amount' %}</th>
-        <th>{% trans 'Oprettet af' %}</th>
         <th>{% trans 'Oprettet' %}</th>
-        <th>{% trans 'Overført af' %}</th>
-        <th>{% trans 'Overført' %}</th>
+        <th>{% trans 'Prisme bunke' %}</th>
+        <th>{% trans 'Beløb' %}</th>
     </tr>
     </thead>
     <tbody>
@@ -16,11 +14,9 @@
         <tr>
             <td>{{ transaction.get_status_display }}</td>
             <td>{{ transaction.get_type_display }}</td>
-            <td>{{ transaction.amount }}</td>
-            <td>{{ transaction.source_object }}</td>
             <td>{{ transaction.created_at|date:"SHORT_DATETIME_FORMAT" }}</td>
-            <td>{{ transaction.transferred_by|default_if_none:'-' }}</td>
-            <td>{{ transaction.transferred_at|date:"SHORT_DATETIME_FORMAT" }}</td>
+            <td>{{ transaction.get_batch_link|safe}}</td>
+            <td>{{ transaction.amount }}</td>
         </tr>
     {% empty %}
         <tr>

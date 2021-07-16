@@ -137,7 +137,7 @@ class TaxFinalStatementPDF(FPDF):
                                           'available_reductions': available_deduction_data,
                                           'foreign_paid_amount_actual': policy.foreign_paid_amount_actual,
                                           'tax_after_foreign_paid_deduction': calculation_result.get('full_tax') - policy.foreign_paid_amount_actual,
-                                          'agreement_present': policy.pension_company.agreement_present
+                                          'agreement_present': policy.pension_company_pays
                                           })
 
     def header(self):
