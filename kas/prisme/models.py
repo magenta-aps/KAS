@@ -156,8 +156,8 @@ class Prisme10QBatch(models.Model):
     def add_transaction(self, final_settlement, transaction_writer=None):
         if final_settlement.person_tax_year.tax_year != self.tax_year:
             raise ValueError(
-                "Cannot add final settlement to 10Q batch: Wrong tax year %s" % (
-                    final_settlement.person_tax_year.tax_year.year
+                "Cannot add final settlement to 10Q batch: Wrong tax year {tax_year}".format(
+                    tax_year=final_settlement.person_tax_year.tax_year.year
                 )
             )
 
@@ -184,7 +184,7 @@ class Prisme10QBatch(models.Model):
         return self._cached_transaction_writer
 
     def __str__(self) -> str:
-        return _('Prisme 10Q bunke %s (%s)') % (
-            _date(self.created, "SHORT_DATETIME_FORMAT"),
-            self.get_status_display()
+        return _('Prisme 10Q bunke {tidsstempel} ({status})').format(
+            tidsstempel=_date(self.created, "SHORT_DATETIME_FORMAT"),
+            status=self.get_status_display()
         )

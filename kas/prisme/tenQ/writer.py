@@ -94,7 +94,7 @@ class Transaction(object):
 
 class FixWidthFieldLineTranactionType10(Transaction):
     fieldspec = Transaction.fieldspec + (
-        ('person_nummer', 10),  # Comma is needed when only one value in tuple
+        ('person_nummer', 10),  # Comma at the end is needed to make this a tuple with one element
     )
 
     person_nummer = None

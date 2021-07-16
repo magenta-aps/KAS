@@ -1177,16 +1177,16 @@ class FinalSettlement(EboksDispatch):
         for policy in self.person_tax_year.policytaxyear_set.all():
             if policy.pension_company_pays:
                 result.append({
-                    'text': _('Afgift for police nr. %s ved %s (betalt af pensionsselskab)') % (
-                        policy.policy_number, policy.pension_company.name
+                    'text': _('Afgift for police nr. {policenummer} ved {pensionsselskab} (betalt af pensionsselskab)').format(
+                        policenummer=policy.policy_number, pensionsselskab=policy.pension_company.name
                     ),
                     'amount': 0,
                     'source_object': policy,
                 })
             else:
                 result.append({
-                    'text': _('Afgift for police nr. %s ved %s') % (
-                        policy.policy_number, policy.pension_company.name
+                    'text': _('Afgift for police nr. {policenummer} ved {pensionsselskab}').format(
+                        policenummer=policy.policy_number, pensionsselskab=policy.pension_company.name
                     ),
                     'amount': policy.get_calculation()['tax_with_deductions'],
                     'source_object': policy,
@@ -1204,7 +1204,9 @@ class FinalSettlement(EboksDispatch):
                 })
             elif transaction.type == 'prisme10q':
                 result.append({
-                    'text': _('Justering fra årsopgørelse oprettet d. %s') % transaction.created_at,
+                    'text': _('Justering fra årsopgørelse oprettet d. {oprettelsesdato}').format(
+                        oprettelsesdato=transaction.created_at
+                    ),
                     'amount': -transaction.amount,
                     'source_object': transaction,
                 })
