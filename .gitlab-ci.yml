@@ -250,6 +250,7 @@ Deploy test:
   only:
     refs:
       - master
+      - development
   when: manual
   variables:
     DEPLOYMENT_NAMESPACE: kas.service-test
