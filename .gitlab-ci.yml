@@ -186,6 +186,7 @@ Release kas dev image:
   only:
     refs:
       - master
+      - development
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
@@ -198,6 +199,7 @@ Release selvbetjenings dev image:
   only:
     refs:
       - master
+      - development
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
