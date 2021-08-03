@@ -286,7 +286,7 @@ class EboksDispatch(models.Model):
                     recipient = message['recipients'][0]
                     if recipient['post_processing_status'] != 'pending':
                         self.status = 'send'
-                        self.recipient_status = recipient['post_processing_status']
+                        self.post_processing_status = recipient['post_processing_status']
                         self.save(update_fields=['status', 'post_processing_status'])
 
             if self.status == 'post_processing':
