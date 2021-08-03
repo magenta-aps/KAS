@@ -17,7 +17,6 @@ transaction_status = (
     ('created', _('Oprettet')),
     ('ready', _('Klar til overførsel')),
     ('transferred', _('Overført')),
-    ('cancelled', _('Annuleret')),
 )
 transaction_types = (
     ('prisme10q', _('Prisme opkrævning / tilbagebetaling')),
@@ -146,9 +145,7 @@ class Prisme10QBatch(models.Model):
 
     @property
     def active_transactions_qs(self):
-        return self.transaction_set.exclude(
-            status='cancelled'
-        )
+        return self.transaction_set.all()
 
     def get_content(self):
         return '\r\n'.join([

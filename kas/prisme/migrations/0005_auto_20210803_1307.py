@@ -15,4 +15,9 @@ class Migration(migrations.Migration):
             name='status',
             field=models.IntegerField(choices=[(1, 'Ikke afsendt'), (2, 'Afsendelse fejlet'), (3, 'Afsendt'), (5, 'Annulleret')], default=1),
         ),
+        migrations.AlterField(
+            model_name='transaction',
+            name='status',
+            field=models.TextField(blank=True, choices=[('created', 'Oprettet'), ('ready', 'Klar til overførsel'), ('transferred', 'Overført')], default='created'),
+        ),
     ]
