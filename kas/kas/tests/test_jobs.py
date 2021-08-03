@@ -10,9 +10,10 @@ from fakeredis import FakeStrictRedis
 from rq import Queue
 
 from kas.eboks import EboksClient
-from kas.jobs import dispatch_tax_year
-from kas.models import TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany, TaxSlipGenerated
+from kas.jobs import dispatch_tax_year, generate_final_settlements_for_year
+from kas.models import TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany, TaxSlipGenerated, FinalSettlement
 from worker.models import Job
+from prisme.models import Prisme10QBatch
 
 test_settings = dict(settings.EBOKS)
 test_settings['dispatch_bulk_size'] = 2
@@ -143,3 +144,87 @@ class TaxslipGeneratedJobsTest(TransactionTestCase):
                                       created_by=self.user)
         self.assertEqual(Job.objects.filter(parent=parent_job).count(), 4)  # 4 jobs should have been started
         self.assertEqual(TaxSlipGenerated.objects.filter(status='send').count(), 7)
+
+
+class FinalStatementJobsTest(TransactionTestCase):
+
+    def setUp(self) -> None:
+        tax_year = TaxYear.objects.create(year=2020)
+
+        person = Person.objects.create(
+            cpr='0102031234',
+            name='Test Testperson',
+            municipality_code=956,
+            municipality_name='Sermersooq',
+            address_line_2='Testvej 42',
+            address_line_4='1234  Testby'
+        )
+
+        person_tax_year = PersonTaxYear.objects.create(
+            person=person,
+            tax_year=tax_year,
+            number_of_days=300,
+            fully_tax_liable=True
+        )
+
+        pension_company = PensionCompany.objects.create(
+            res=12345673,
+            name='High Risk Invest & Pension'
+        )
+
+        self.policytaxyear = PolicyTaxYear.objects.create(
+            person_tax_year=person_tax_year,
+            pension_company=pension_company,
+            policy_number='123456',
+            prefilled_amount=10,
+            active_amount=PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED,
+            foreign_paid_amount_actual=0,
+            slutlignet=True
+        )
+
+        self.user = get_user_model().objects.create(username='test')
+
+        self.job_kwargs = {
+            'year_pk': tax_year.pk,
+            'title': 'test af final statement: {}'.format(str(tax_year.year))
+        }
+
+    @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
+    def test_zero_sum(self, django_rq):
+
+        self.policytaxyear.prefilled_amount = 0
+        self.policytaxyear.save()
+
+        Job.schedule_job(
+            generate_final_settlements_for_year,
+            job_type='generate_final_settlements_for_year',
+            job_kwargs=self.job_kwargs,
+            created_by=self.user
+        )
+
+        qs = Prisme10QBatch.objects.filter(tax_year__pk=self.job_kwargs['year_pk'])
+        self.assertEqual(qs.count(), 1)
+        batch = qs.first()
+        self.assertEqual(FinalSettlement.objects.count(), 1)
+        self.assertEqual(FinalSettlement.objects.first().get_transaction_amount(), 0)
+        self.assertEqual(batch.transaction_set.count(), 0)
+
+    @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
+    def test_nonzero_sum(self, django_rq):
+
+        self.policytaxyear.prefilled_amount = 10
+        self.policytaxyear.save()
+
+        Job.schedule_job(
+            generate_final_settlements_for_year,
+            job_type='generate_final_settlements_for_year',
+            job_kwargs=self.job_kwargs,
+            created_by=self.user
+        )
+
+        qs = Prisme10QBatch.objects.filter(tax_year__pk=self.job_kwargs['year_pk'])
+        self.assertEqual(qs.count(), 1)
+        batch = qs.first()
+        self.assertEqual(FinalSettlement.objects.count(), 1)
+        self.assertEqual(FinalSettlement.objects.first().get_transaction_amount(), 1)
+        self.assertEqual(batch.transaction_set.count(), 1)
