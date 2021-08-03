@@ -573,11 +573,16 @@ def generate_final_settlements_for_year(job):
     )
     prisme10Q_batch.save()
 
-    for person_tax_year in PersonTaxYear.objects.filter(tax_year=tax_year, fully_tax_liable=True
-                                                        ).annotate(
-            active_policies=Count('policytaxyear', filter=Q(policytaxyear__active=True, policytaxyear__slutlignet=True))).filter(active_policies__gt=0).iterator():
+    qs = PersonTaxYear.objects.filter(
+        tax_year=tax_year,
+        fully_tax_liable=True
+    ).annotate(
+        active_policies=Count('policytaxyear', filter=Q(policytaxyear__active=True, policytaxyear__slutlignet=True))
+    ).filter(active_policies__gt=0)
+    for person_tax_year in qs.iterator():
         final_statement = TaxFinalStatementPDF.generate_pdf(person_tax_year=person_tax_year)
-        prisme10Q_batch.add_transaction(final_statement)
+        if final_statement.get_transaction_amount() != 0:
+            prisme10Q_batch.add_transaction(final_statement)
         generated_final_settlements += 1
 
     job.finish({'status': 'Genererede slutopgørelser', 'message': generated_final_settlements})
