@@ -24,6 +24,8 @@ from eskat.models import ImportedR75PrivatePension
 from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.managers import PolicyTaxYearManager
 
+from prisme.models import Prisme10QBatch
+
 
 class HistoryMixin(object):
 
@@ -1235,3 +1237,15 @@ class FinalSettlement(EboksDispatch):
             amount += x['amount']
 
         return amount
+
+    def save(self, *args, **kwargs):
+        super(FinalSettlement, self).save(*args, **kwargs)
+        if self.invalid and self.person_tax_year.tax_year.year_part == 'genoptagelsesperiode':
+            for transaction in Transaction.objects.filter(
+                person_tax_year=self.person_tax_year
+            ).exclude(
+                status='transferred',
+            ):
+                batch = transaction.prisme10Q_batch
+                batch.status = Prisme10QBatch.STATUS_CANCELLED
+                batch.save(update_fields=['status'])

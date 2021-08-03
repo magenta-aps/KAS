@@ -128,11 +128,13 @@ class Prisme10QBatch(models.Model):
     STATUS_CREATED = 1
     STATUS_DELIVERY_FAILED = 2
     STATUS_DELIVERED = 3
+    STATUS_CANCELLED = 5
 
     status_choices = (
         (STATUS_CREATED, _('Ikke afsendt')),
         (STATUS_DELIVERY_FAILED, _('Afsendelse fejlet')),
-        (STATUS_DELIVERED, _('Afsendt'))
+        (STATUS_DELIVERED, _('Afsendt')),
+        (STATUS_CANCELLED, _('Annulleret'))
     )
 
     status = models.IntegerField(
