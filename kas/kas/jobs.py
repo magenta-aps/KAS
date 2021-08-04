@@ -492,7 +492,8 @@ def import_all_r75(job):
 
     dispatch_chained_jobs(jobs, job)
 
-def check_year_periode(year, job, periode):
+
+def check_year_period(year, job, periode):
     """
     Checks that the year is in the correct periode otherwise logs the error on the job
     :param year: the year to check
@@ -502,17 +503,18 @@ def check_year_periode(year, job, periode):
     if year.year_part != periode:
         job.status = 'failed'
         job.result = {'error': 'Kan kun {title} år som er i perioden {periode}'.format(title=job.pretty_title,
-                                                                                        periode=periode)}
+                                                                                       periode=periode)}
         job.end_at = timezone.now()
         job.save(update_fields=['status', 'result', 'end_at'])
         return False
     return True
 
+
 @job_decorator
 def autoligning(job):
     """Kør autoligning for et given år"""
     year = TaxYear.objects.get(pk=job.arguments['year_pk'])
-    if not check_year_periode(year, job, 'selvangivelse'):
+    if not check_year_period(year, job, 'selvangivelse'):
         return
 
     # if no user is found this will raise an exception which is what we want
@@ -576,7 +578,7 @@ def generate_final_settlements_for_year(job):
     there exists one or more active and slutlignet policies.
     """
     tax_year = TaxYear.objects.get(pk=job.arguments['year_pk'])
-    if not check_year_periode(tax_year, job, 'ligning'):
+    if not check_year_period(tax_year, job, 'ligning'):
         return
 
     generated_final_settlements = 0
@@ -593,10 +595,11 @@ def generate_final_settlements_for_year(job):
 
     job.finish({'status': 'Genererede slutopgørelser', 'message': generated_final_settlements})
 
+
 @job_decorator
 def generate_batch_and_transactions_for_year(job):
     tax_year = TaxYear.objects.get(pk=job.arguments['year_pk'])
-    if not check_year_periode(tax_year, job, 'ligning'):
+    if not check_year_period(tax_year, job, 'ligning'):
         return
     batch = Prisme10QBatch.objects.create(created_by=job.created_by,
                                           tax_year=tax_year)
@@ -611,7 +614,7 @@ def generate_batch_and_transactions_for_year(job):
 
     job.finish({'status': 'Genererede batch og transaktioner',
                 'message': 'Genererede {transactions} på baggrund af {settlements} slutopgørelser'.format(transactions=new_transactions,
-                                                                                               settlements=settlements_count)})
+                                                                                                          settlements=settlements_count)})
 
 
 def dispatch_final_settlements_for_year():

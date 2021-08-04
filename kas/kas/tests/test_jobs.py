@@ -10,10 +10,10 @@ from fakeredis import FakeStrictRedis
 from rq import Queue
 
 from kas.eboks import EboksClient
-from kas.jobs import dispatch_tax_year, generate_final_settlements_for_year, generate_batch_and_transactions_for_year
+from kas.jobs import dispatch_tax_year, generate_batch_and_transactions_for_year
 from kas.models import TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany, TaxSlipGenerated, FinalSettlement
-from worker.models import Job
 from prisme.models import Prisme10QBatch
+from worker.models import Job
 
 test_settings = dict(settings.EBOKS)
 test_settings['dispatch_bulk_size'] = 2
@@ -80,6 +80,7 @@ def get_recipient_status_mock(as_side_effect=False):
     mock.status_code = 200
     return mock
 
+
 class BaseTransactionTestCase(TransactionTestCase):
     def setUp(self) -> None:
         self.tax_year = TaxYear.objects.create(year=2020)
@@ -92,6 +93,7 @@ class BaseTransactionTestCase(TransactionTestCase):
             address_line_2='Testvej 42',
             address_line_4='1234  Testby'
         )
+
 
 class TaxslipGeneratedJobsTest(BaseTransactionTestCase):
     def setUp(self) -> None:

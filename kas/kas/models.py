@@ -1188,7 +1188,7 @@ class FinalSettlement(EboksDispatch):
                     'text': _('Afgift for police nr. {policenummer} ved {pensionsselskab}').format(
                         policenummer=policy.policy_number, pensionsselskab=policy.pension_company.name
                     ),
-                    'amount': policy.get_calculation()['tax_with_deductions'], #  skat der skal betales per police
+                    'amount': policy.get_calculation()['tax_with_deductions'],  # skat der skal betales per police
                     'source_object': policy,
                 })
         #modregn eksisterende transaktioner
