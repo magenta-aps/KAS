@@ -1191,7 +1191,7 @@ class FinalSettlement(EboksDispatch):
                     'amount': policy.get_calculation()['tax_with_deductions'],  # skat der skal betales per police
                     'source_object': policy,
                 })
-        #modregn eksisterende transaktioner
+        # modregn eksisterende transaktioner
         for transaction in Transaction.objects.filter(
             person_tax_year=self.person_tax_year,
             status='transferred',
