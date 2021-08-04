@@ -60,6 +60,12 @@ def get_job_types():
             'function': 'kas.jobs.generate_final_settlements_for_year',
             'result_template': 'worker/includes/status_only.html'
         },
+        'GenerateBatchAndTransactions': {
+            'label': _('Generering af Transaktioner og batch for et givent år'),
+            'form_class': YearPkForm,
+            'function': 'kas.jobs.generate_batch_and_transactions_for_year',
+            'result_template': 'worker/includes/status_only.html'
+        },
         'DispatchFinalSettlements': {
             'label': _('Afsendelse af KAS slutopgørelser for et givet år'),
             'form_class': YearAndTitleForm,
