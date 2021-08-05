@@ -32,7 +32,7 @@ from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
 from kas.view_mixins import HighestSingleObjectMixin
 from kas.view_mixins import SpecialExcelMixin
-from prisme.models import Transaction
+from prisme.models import Transaction, Prisme10QBatch
 from worker.models import Job
 
 
@@ -266,7 +266,11 @@ class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
             self.object.person.address_line_4,
             self.object.person.address_line_5,
         )])
-        context['transactions'] = Transaction.objects.filter(person_tax_year=self.object)
+        context['transactions'] = Transaction.objects.filter(
+            person_tax_year=self.object
+        ).exclude(
+            prisme10Q_batch__status=Prisme10QBatch.STATUS_CANCELLED
+        )
         context['person_tax_years'] = PersonTaxYear.objects.filter(person=self.object.person)
         return context
 
