@@ -603,7 +603,7 @@ def generate_batch_and_transactions_for_year(job):
         return
     batch = Prisme10QBatch.objects.create(created_by=job.created_by,
                                           tax_year=tax_year)
-    settlements = FinalSettlement.objects.filter(person_tax_year__tax_year=tax_year).exclude(invalid=True)
+    settlements = FinalSettlement.objects.filter(person_tax_year__tax_year=tax_year, invalid=False)
     settlements_count = 0
     new_transactions = 0
     for final_settlement in settlements:

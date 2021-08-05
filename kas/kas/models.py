@@ -1232,7 +1232,6 @@ class FinalSettlement(EboksDispatch):
         amount = 0
 
         for x in payment_info:
-            # Skip the specified transaction to be excluded
             amount += x['amount']
 
         return amount
