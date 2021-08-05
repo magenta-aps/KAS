@@ -1188,10 +1188,10 @@ class FinalSettlement(EboksDispatch):
                     'text': _('Afgift for police nr. {policenummer} ved {pensionsselskab}').format(
                         policenummer=policy.policy_number, pensionsselskab=policy.pension_company.name
                     ),
-                    'amount': policy.get_calculation()['tax_with_deductions'],
+                    'amount': policy.get_calculation()['tax_with_deductions'],  # skat der skal betales per police
                     'source_object': policy,
                 })
-
+        # modregn eksisterende transaktioner
         for transaction in Transaction.objects.filter(
             person_tax_year=self.person_tax_year,
             status='transferred',
@@ -1213,15 +1213,12 @@ class FinalSettlement(EboksDispatch):
 
         return result
 
-    def get_transaction_summary(self, excluding_transaction=None):
+    def get_transaction_summary(self):
         payment_info = self.get_payment_info()
 
         summary = ''
 
         for x in payment_info:
-            # Skip the specified transaction to be excluded
-            if excluding_transaction is not None and x['source_object'] == excluding_transaction:
-                continue
             summary += x['text'] + ': ' + str(x['amount']) + '\n'
 
         summary += '\n'
@@ -1229,15 +1226,12 @@ class FinalSettlement(EboksDispatch):
 
         return summary
 
-    def get_transaction_amount(self, excluding_transaction=None):
+    def get_transaction_amount(self):
         payment_info = self.get_payment_info()
 
         amount = 0
 
         for x in payment_info:
-            # Skip the specified transaction to be excluded
-            if excluding_transaction is not None and x['source_object'] == excluding_transaction:
-                continue
             amount += x['amount']
 
         return amount

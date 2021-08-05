@@ -153,7 +153,7 @@ class Prisme10QBatch(models.Model):
             x.prisme10Q_content for x in self.active_transactions_qs
         ])
 
-    def add_transaction(self, final_settlement, transaction_writer=None):
+    def add_transaction(self, final_settlement):
         if final_settlement.person_tax_year.tax_year != self.tax_year:
             raise ValueError(
                 "Cannot add final settlement to 10Q batch: Wrong tax year {tax_year}".format(
