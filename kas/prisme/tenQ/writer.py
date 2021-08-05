@@ -1,38 +1,35 @@
+from datetime import timedelta
+
+from django.utils import timezone
+from django.utils.datetime_safe import date
 
 
-class Transaction(object):
+# Temporary class for serializing transaction data in a writer
+# Uses KMD GE550010Q v 15
+class TenQTransaction(dict):
 
     fieldspec = (
-        ('leverandoer_ident', 4),
-        ('trans_type', 2),
-        ('time_stamp', 13),
-        ('bruger_nummer', 4),
-        ('omraad_nummer', 3),
-        ('betal_art', 3),
-        ('paalign_aar', 4),
-        ('debitor_nummer', 10),
-        ('sag_nummer', 2),
+        ('leverandoer_ident', 4, 'KAS'),
+        ('trans_type', 2, None),
+        ('time_stamp', 13, None),  # Timestamp is normally 12 chars, but here we have a prefixed 0
+        ('bruger_nummer', 4, '0900'),
+        ('omraad_nummer', 3, None),
+        ('betal_art', 3, 209),
+        ('paalign_aar', 4, None),
+        ('debitor_nummer', 10, None),
+        ('sag_nummer', 2, '00'),
     )
-
-    # List of default values
-    leverandoer_ident = "KAS"
-    time_stamp = None
-    # Brugernummer / myndighedskode. Hardcoded to "0900" according to spec
-    bruger_nummer = "0900"
-    omraad_nummer = None
-    betal_art = 209
-    paalign_aar = None
-    debitor_nummer = None
-    sag_nummer = '00'  # Hardcoded to 20 according to spec
+    trans_type = None
 
     def __init__(self, **kwargs):
-        for field_name, _ in self.fieldspec:
-            if field_name in kwargs:
-                setattr(self, field_name, str(kwargs[field_name]))
+        super(TenQTransaction, self).__init__()
+        for field_name, _, default in self.fieldspec:
+            self[field_name] = kwargs.get(field_name, default)
+        self['trans_type'] = self.trans_type
 
-    def make_transaction(self, **kwargs):
+    def serialize_transaction(self, **kwargs):
 
-        data = self.get_data()
+        data = {**self}
         data.update(kwargs)
 
         data['debitor_nummer'] = data['cpr_nummer']
@@ -40,7 +37,7 @@ class Transaction(object):
 
         fields = []
 
-        for field_name, width in self.fieldspec:
+        for field_name, width, _ in self.fieldspec:
             value = data[field_name]
 
             if value is None:
@@ -61,154 +58,116 @@ class Transaction(object):
 
         return ''.join(fields)
 
-    def get_data(self):
-        data = {}
-
-        for field_name, _ in self.fieldspec:
-            data[field_name] = getattr(self, field_name)
-
-        return data
-
-    @classmethod
-    def format_timestamp(cls, datetime):
+    @staticmethod
+    def format_timestamp(datetime):
         return '{:0%Y%m%d%H%M}'.format(datetime)
 
-    @classmethod
-    def format_date(cls, date):
+    @staticmethod
+    def format_date(date):
         return '{:%Y%m%d}'.format(date)
 
-    @classmethod
-    def format_omraade_nummer(cls, date):
+    @staticmethod
+    def format_omraade_nummer(date):
         return '{:%Y}'.format(date)[1:]
 
-    @classmethod
-    def format_amount(cls, amount):
-
+    @staticmethod
+    def format_amount(amount):
         sign = '-' if amount < 0 else '+'
-
         return str(abs(amount)).rjust(10, '0') + sign
 
     def __str__(self):
         return str(self.get_data())
 
 
-class FixWidthFieldLineTranactionType10(Transaction):
-    fieldspec = Transaction.fieldspec + (
-        ('person_nummer', 10),  # Comma at the end is needed to make this a tuple with one element
+class TenQFixWidthFieldLineTransactionType10(TenQTransaction):
+    fieldspec = TenQTransaction.fieldspec + tuple([
+        ('person_nummer', 10, None)
+    ])
+    trans_type = 10
+
+
+class TenQFixWidthFieldLineTransactionType24(TenQTransaction):
+    fieldspec = TenQTransaction.fieldspec + (
+        ('individ_type', 2, '20'),  # Hardcoded to 20 according to spec
+        ('rate_nummer', 3, '999'),  # Hardcoded to 999 according to spec
+        ('rate_beloeb', 11, None),
+        ('belob_type', 1, '1'),  # Hardcoded to 1 according to spec
+        ('rentefri_beloeb', 11, '0000000000+'),  # Hardcoded since the amount is in 'rate_beloeb'
+        ('opkraev_kode', 1, '1'),  # Hardcoded to nettoopkraevning
+        ('opkraev_dato', 8, None),
+        ('forfald_dato', 8, None),
+        ('betal_dato', 8, None),
+        ('rentefri_dato', 8, None),
+        ('tekst_nummer', 3, '000'),  # Hardcoded to 000 according to spec
+        ('rate_spec', 3, ''),  # Hardcoded to <empty> according to spec
+        ('slet_mark', 1, ''),  # Hardcoded to <empty> according to spec
+        ('faktura_no', 35, ''),  # Hardcoded to <empty> according to spec
+        ('stiftelse_dato', 8, None),
+        ('fra_periode', 8, None),
+        ('til_periode', 8, None),
+        ('aedring_aarsag_kode', 4, ''),  # Hardcoded to <empty> according to spec
+        ('aedring_aarsag_tekst', 100, ''),  # Hardcoded to <empty> according to spec
+        ('afstem_noegle', 35, None)
     )
-
-    person_nummer = None
-
-    trans_type = '10'
+    trans_type = 24  # Hardcoded to 24 according to spec
 
 
-class FixWidthFieldLineTranactionType24(Transaction):
-
-    fieldspec = Transaction.fieldspec + (
-        ('individ_type', 2),
-        ('rate_nummer', 3),
-        ('rate_beloeb', 11),
-        ('belob_type', 1),
-        ('rentefri_beloeb', 11),
-        ('opkraev_kode', 1),
-        ('opkraev_dato', 8),
-        ('forfald_dato', 8),
-        ('betal_dato', 8),
-        ('rentefri_dato', 8),
-        ('tekst_nummer', 3),
-        ('rate_spec', 3),
-        ('slet_mark', 1),
-        ('faktura_no', 35),
-        ('stiftelse_dato', 8),
-        ('fra_periode', 8),
-        ('til_periode', 8),
-        ('aedring_aarsag_kode', 4),
-        ('aedring_aarsag_tekst', 100),
-        ('afstem_noegle', 35)
+class TenQFixWidthFieldLineTransactionType26(TenQTransaction):
+    fieldspec = TenQTransaction.fieldspec + (
+        ('individ_type', 2, '20'),  # Hardcoded to 20 according to spec
+        ('rate_nummer', 3, '999'),  # Hardcoded to 999 according to spec
+        ('line_number', 3, 'nul'),  # Hardcoded to "nul" (yes, 3 charaters) according to spec
+        ('rate_text', 60, None),
     )
-
-    trans_type = '24'  # Hardcoded to 24 according to spec
-
-    individ_type = '20'  # Hardcoded to 20 according to spec
-    rate_nummer = '999'  # Hardcoded to 999 according to spec
-    rate_beloeb = None
-    belob_type = '1'  # Hardcoded to 1 according to spec
-    rentefri_beloeb = '0000000000+'  # Hardcoded since the amount is in 'rate_beloeb'
-    opkraev_kode = '1'  # Hardcoded to nettoopkraevning
-    opkraev_dato = None
-    forfald_dato = None
-    betal_dato = None
-    rentefri_dato = None
-    tekst_nummer = '000'  # Hardcoded to 000 according to spec
-    rate_spec = ''  # Hardcoded to <empty> according to spec
-    slet_mark = ''  # Hardcoded to <empty> according to spec
-    faktura_no = ''  # Hardcoded to <empty> according to spec
-    stiftelse_dato = None
-    fra_periode = None
-    til_periode = None
-    aedring_aarsag_kode = ''  # Hardcoded to <empty> according to spec
-    aedring_aarsag_tekst = ''  # Hardcoded to <empty> according to spec
-    afstem_noegle = None
-
-
-class FixWidthFieldLineTranactionType26(Transaction):
-    fieldspec = Transaction.fieldspec + (
-        ('individ_type', 2),
-        ('rate_nummer', 3),
-        ('line_number', 3),
-        ('rate_text', 60),
-    )
-
     trans_type = 26
 
-    individ_type = '20'  # Hardcoded to 20 according to spec
-    rate_nummer = '999'  # Hardcoded to 999 according to spec
-    line_number = "nul"  # Hardcoded to "nul" (yes, 3 charaters) according to spec
-    rate_text = None
 
-
-class TransactionWriter(object):
+class TenQTransactionWriter(object):
 
     transaction_10 = None
     transaction_24 = None
     transaction_26 = None
     transaction_list = ''
 
-    def __init__(self, ref_timestamp, tax_year):
+    def __init__(self, ref_timestamp, year):
 
-        time_stamp = Transaction.format_timestamp(ref_timestamp)
-        omraad_nummer = Transaction.format_omraade_nummer(ref_timestamp)
+        time_stamp = TenQTransaction.format_timestamp(timezone.now())
+        omraad_nummer = TenQTransaction.format_omraade_nummer(ref_timestamp)
+        opkraev_dato = ref_timestamp.date()
+        forfald_dato = opkraev_dato + timedelta(days=20)
+
+        # Next weekday
+        if forfald_dato.weekday() in (5, 6):
+            forfald_dato += timedelta(days=7-forfald_dato.weekday())
 
         init_data = {
             'time_stamp': time_stamp,
             'omraad_nummer': omraad_nummer,
-            'paalign_aar': tax_year,
-            'rate_text': 'KAS %s' % (tax_year),
-
-            # TODO: Fix all of these dates!
-            'opkraev_dato': Transaction.format_date(ref_timestamp),
-            'forfald_dato': Transaction.format_date(ref_timestamp),
-            'betal_dato': Transaction.format_date(ref_timestamp),
-            'rentefri_dato': Transaction.format_date(ref_timestamp),
-            'stiftelse_dato': Transaction.format_date(ref_timestamp),
-            'fra_periode': Transaction.format_date(ref_timestamp),
-            'til_periode': Transaction.format_date(ref_timestamp),
+            'paalign_aar': year,
+            'rate_text': 'KAS %s' % (str(year)),
+            'opkraev_dato': TenQTransaction.format_date(opkraev_dato),
+            'forfald_dato': TenQTransaction.format_date(forfald_dato),
+            'betal_dato': TenQTransaction.format_date(forfald_dato),
+            'rentefri_dato': TenQTransaction.format_date(forfald_dato),
+            'stiftelse_dato': TenQTransaction.format_date(date.today()),
+            'fra_periode': TenQTransaction.format_date(date(year=year, month=1, day=1)),
+            'til_periode': TenQTransaction.format_date(date(year=year, month=12, day=31)),
         }
 
-        self.transaction_10 = FixWidthFieldLineTranactionType10(**init_data)
-        self.transaction_24 = FixWidthFieldLineTranactionType24(**init_data)
-        self.transaction_26 = FixWidthFieldLineTranactionType26(**init_data)
+        self.transaction_10 = TenQFixWidthFieldLineTransactionType10(**init_data)
+        self.transaction_24 = TenQFixWidthFieldLineTransactionType24(**init_data)
+        self.transaction_26 = TenQFixWidthFieldLineTransactionType26(**init_data)
 
-    def make_transaction(self, cpr_nummer, amount_in_dkk, afstem_noegle):
+    def serialize_transaction(self, cpr_nummer, amount_in_dkk, afstem_noegle):
         data = {
             "cpr_nummer": cpr_nummer,
-            "rate_beloeb": Transaction.format_amount(amount_in_dkk * 100),  # Amount is in øre, so multiply by 100
+            "rate_beloeb": TenQTransaction.format_amount(amount_in_dkk * 100),  # Amount is in øre, so multiply by 100
             'afstem_noegle': afstem_noegle,
         }
         return '\r\n'.join([
-            self.transaction_10.make_transaction(**data),
-            self.transaction_24.make_transaction(**data),
-            self.transaction_26.make_transaction(**data),
+            self.transaction_10.serialize_transaction(**data),
+            self.transaction_24.serialize_transaction(**data),
+            self.transaction_26.serialize_transaction(**data),
         ])
 
 

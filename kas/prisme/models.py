@@ -1,3 +1,4 @@
+from functools import cached_property
 from uuid import uuid4
 
 from django.contrib.auth import get_user_model
@@ -11,7 +12,7 @@ from django.utils import timezone
 from django.utils.formats import date_format
 from django.utils.translation import gettext as _
 
-from prisme.tenQ.writer import TransactionWriter
+from prisme.tenQ.writer import TenQTransactionWriter
 
 transaction_status = (
     ('created', _('Oprettet')),
@@ -54,9 +55,9 @@ class Transaction(models.Model):
         if self.type != 'prisme10q':
             raise ValueError("Cannot update 10Q content for transaction that is not of type 'prisme10q'")
 
-        transaction_writer = self.prisme10Q_batch.get_transaction_writer()
+        transaction_writer = self.prisme10Q_batch.transaction_writer
 
-        self.prisme10Q_content = transaction_writer.make_transaction(
+        self.prisme10Q_content = transaction_writer.serialize_transaction(
             cpr_nummer=self.person_tax_year.person.cpr,
             amount_in_dkk=self.amount,
             afstem_noegle=str(self.uuid).replace('-', '')
@@ -174,14 +175,12 @@ class Prisme10QBatch(models.Model):
 
         new_entry.save()
 
-    def get_transaction_writer(self):
-        if self._cached_transaction_writer is None:
-            self._cached_transaction_writer = TransactionWriter(
-                ref_timestamp=self.created,
-                tax_year=self.tax_year.year,
-            )
-
-        return self._cached_transaction_writer
+    @cached_property
+    def transaction_writer(self):
+        return TenQTransactionWriter(
+            ref_timestamp=self.created,
+            year=self.tax_year.year,
+        )
 
     def __str__(self) -> str:
         return _('Prisme 10Q bunke {tidsstempel} ({status})').format(
