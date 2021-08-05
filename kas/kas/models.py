@@ -1,6 +1,8 @@
 import base64
 import calendar
 import math
+
+from django.dispatch import receiver
 from prisme.models import Transaction
 from time import sleep
 from uuid import uuid4
@@ -1238,14 +1240,16 @@ class FinalSettlement(EboksDispatch):
 
         return amount
 
-    def save(self, *args, **kwargs):
-        super(FinalSettlement, self).save(*args, **kwargs)
-        if self.invalid and self.person_tax_year.tax_year.year_part == 'genoptagelsesperiode':
-            for transaction in Transaction.objects.filter(
-                person_tax_year=self.person_tax_year
-            ).exclude(
-                status='transferred',
-            ):
-                batch = transaction.prisme10Q_batch
+
+@receiver(post_save, sender=FinalSettlement)
+def cancel_batch_on_save(sender, instance, **kwargs):
+    if instance.invalid and instance.person_tax_year.tax_year.year_part == 'genoptagelsesperiode':
+        for transaction in Transaction.objects.filter(
+            person_tax_year=instance.person_tax_year
+        ).exclude(
+            status='transferred',
+        ):
+            batch = transaction.prisme10Q_batch
+            if batch.status in (Prisme10QBatch.STATUS_CREATED, Prisme10QBatch.STATUS_DELIVERY_FAILED):
                 batch.status = Prisme10QBatch.STATUS_CANCELLED
                 batch.save(update_fields=['status'])
