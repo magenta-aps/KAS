@@ -118,8 +118,9 @@ class TaxFinalStatementPDF(FPDF):
         self._pretty_policies = []
         for policy in person_tax_year.policytaxyear_set.filter(active=True, slutlignet=True):
             available_deduction_data = policy.calculate_available_yearly_deduction()
+            assessed_amount = policy.get_assessed_amount()
 
-            calculation_result = policy.perform_calculation(initial_amount=policy.initial_amount or 0,
+            calculation_result = policy.perform_calculation(initial_amount=assessed_amount,
                                                             taxable_days_in_year=person_tax_year.number_of_days or 0,
                                                             days_in_year=self._person_tax_year.tax_year.days_in_year or 0,
                                                             available_deduction_data=available_deduction_data)
@@ -129,7 +130,7 @@ class TaxFinalStatementPDF(FPDF):
                                           'active_amount': policy.active_amount,
                                           'taxable_days_in_year': calculation_result.get('taxable_days_in_year'),
                                           'year_adjusted_amount': calculation_result.get('year_adjusted_amount'),
-                                          'initial_amount': policy.initial_amount or 0,
+                                          'assessed_amount': assessed_amount,
                                           'available_negative_return': policy.available_negative_return,
                                           'taxable_amount': calculation_result.get('taxable_amount'),
                                           'tax_with_deductions': calculation_result.get('tax_with_deductions'),
@@ -255,8 +256,8 @@ class TaxFinalStatementPDF(FPDF):
             self.set_xy(self.left_margin, self.yposition)
             self.multi_cell(h=self.tablerowheight, align='L', w=c1w, txt=self.policy_row_text_1[language], border=1)
             self.set_xy(self.left_margin+c1w, self.yposition)
-            initial_amount = policy.get('initial_amount')
-            self.multi_cell(h=self.tablerowheight, align='R', w=c2w, txt="{:,}".format(initial_amount).replace(",", "."), border=1)
+            assessed_amount = policy.get('assessed_amount')
+            self.multi_cell(h=self.tablerowheight, align='R', w=c2w, txt="{:,}".format(assessed_amount).replace(",", "."), border=1)
             self.yposition = self.get_y()
 
             self.set_xy(self.left_margin, self.yposition)
