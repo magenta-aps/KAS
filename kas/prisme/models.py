@@ -124,10 +124,10 @@ class Prisme10QBatch(models.Model):
     delivery_error = models.TextField(blank=True, default='')
 
     # Status for delivery
-    STATUS_CREATED = 1
-    STATUS_DELIVERY_FAILED = 2
-    STATUS_DELIVERED = 3
-    STATUS_CANCELLED = 5
+    STATUS_CREATED = 'created'
+    STATUS_DELIVERY_FAILED = 'failed'
+    STATUS_DELIVERED = 'delivered'
+    STATUS_CANCELLED = 'cancelled'
 
     status_choices = (
         (STATUS_CREATED, _('Ikke afsendt')),
@@ -136,9 +136,10 @@ class Prisme10QBatch(models.Model):
         (STATUS_CANCELLED, _('Annulleret'))
     )
 
-    status = models.IntegerField(
+    status = models.CharField(
         choices=status_choices,
-        default=STATUS_CREATED
+        default=STATUS_CREATED,
+        max_length=15
     )
 
     tax_year = models.ForeignKey('kas.TaxYear', on_delete=models.PROTECT)
