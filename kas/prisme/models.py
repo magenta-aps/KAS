@@ -124,6 +124,8 @@ class Prisme10QBatch(models.Model):
     # Any error encountered while trying to deliver the batch
     delivery_error = models.TextField(blank=True, default='')
 
+    collect_date = models.DateTimeField(null=True)
+
     # Status for delivery
     STATUS_CREATED = 'created'
     STATUS_DELIVERY_FAILED = 'failed'
@@ -178,7 +180,7 @@ class Prisme10QBatch(models.Model):
     @cached_property
     def transaction_writer(self):
         return TenQTransactionWriter(
-            ref_timestamp=self.created,
+            collect_date=self.collect_date or self.created,
             year=self.tax_year.year,
         )
 

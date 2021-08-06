@@ -129,11 +129,11 @@ class TenQTransactionWriter(object):
     transaction_26 = None
     transaction_list = ''
 
-    def __init__(self, ref_timestamp, year):
+    def __init__(self, collect_date, year):
 
         time_stamp = TenQTransaction.format_timestamp(timezone.now())
-        omraad_nummer = TenQTransaction.format_omraade_nummer(ref_timestamp)
-        opkraev_dato = ref_timestamp.date()
+        omraad_nummer = TenQTransaction.format_omraade_nummer(collect_date)
+        opkraev_dato = collect_date.date()
         forfald_dato = opkraev_dato + timedelta(days=20)
 
         # Next weekday
@@ -176,5 +176,5 @@ class TenQTransactionWriter(object):
 # tilbagebetaling = 200
 
 # # Construct the writer
-# transaction_creator = TransactionCreator(ref_timestamp=datetime.now(), tax_year=2020)
+# transaction_creator = TransactionCreator(collect_date=datetime.now(), tax_year=2020)
 # print(transaction_creator.make_transaction(cpr_nummer=cpr_nummer, rate_beloeb=tilbagebetaling, afstem_noegle=afstem_noegle))

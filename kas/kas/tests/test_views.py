@@ -8,6 +8,10 @@ from django.utils import timezone
 
 from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear
 
+from prisme.models import Prisme10QBatch
+
+from kas.models import FinalSettlement
+
 
 class BaseTestCase(TestCase):
     def setUp(self) -> None:
@@ -17,7 +21,7 @@ class BaseTestCase(TestCase):
         self.user.set_password(self.password)
         self.user.save()
         self.tax_year = TaxYear.objects.create(year=2021)
-        self.person = Person.objects.create(cpr='1234567890')
+        self.person = Person.objects.create(cpr='1234567890', name='TestPerson')
         self.person_tax_year = PersonTaxYear.objects.create(tax_year=self.tax_year,
                                                             person=self.person,
                                                             number_of_days=1)
@@ -407,3 +411,42 @@ class PaymentOverrideTestCase(BaseTestCase):
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
         self.assertTrue(policy_tax_year.pension_company_pays)
         self.assertTrue(policy_tax_year.efterbehandling)
+
+    def test_generate_final_taxslip(self):
+
+        self.policy_tax_year.self_reported_amount = 1000
+        self.policy_tax_year.active_amount = PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED
+        self.policy_tax_year.recalculate()
+        self.policy_tax_year.save()
+        # Tested function wants the tax_year to be in 'genoptagelsesperiode'
+        self.tax_year.year_part = 'genoptagelsesperiode'
+        self.tax_year.save()
+
+        self.assertTrue(self.client.login(username=self.username, password=self.password))
+        response = self.client.post(reverse('kas:generate-final-settlement', kwargs={'pk': self.person_tax_year.pk}))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Prisme10QBatch.objects.count(), 1)
+        batch = Prisme10QBatch.objects.first()
+        self.assertEqual(batch.created_by, self.user)
+        self.assertEqual(batch.tax_year, self.tax_year)
+        self.assertEqual(FinalSettlement.objects.count(), 1)
+        statement = FinalSettlement.objects.first()
+        self.assertEqual(statement.person_tax_year, self.person_tax_year)
+        self.assertFalse(statement.invalid)
+
+        # Cruder way of calculating the current date + 3 months + until next month
+        # because calculating the same way as the tested function proves nothing (if they were identical but wrong, we wouldn't catch it)
+        collect_date = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        collect_date = collect_date.replace(month=((collect_date.month+2) % 12) + 1)
+        month = collect_date.month
+        while month == collect_date.month:
+            collect_date += timedelta(days=1)
+
+        self.assertEqual(batch.collect_date, collect_date)
+        self.assertEqual(self.person_tax_year.transaction_set.count(), 1)
+        transaction = self.person_tax_year.transaction_set.first()
+        self.assertEqual(transaction.person_tax_year, self.person_tax_year)
+        self.assertEqual(transaction.amount, self.policy_tax_year.calculated_result)
+        self.assertEqual(transaction.type, 'prisme10q')
+        self.assertEqual(transaction.status, 'created')
+        self.assertEqual(transaction.prisme10Q_batch, batch)
