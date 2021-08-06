@@ -39,7 +39,7 @@ class ImportPrePaymentFile(TestCase):
                          created_by=self.user)
 
         new_transactions = Transaction.objects.filter(source_content_type=ContentType.objects.get_for_model(PrePaymentFile),
-                                                  object_id=self.prepayment.pk)
+                                                      object_id=self.prepayment.pk)
 
         self.assertEqual(2, new_transactions.count())
 

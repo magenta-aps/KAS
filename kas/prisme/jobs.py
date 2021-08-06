@@ -4,7 +4,6 @@ from csv import DictReader
 from kas.models import PersonTaxYear
 from prisme.models import PrePaymentFile, Transaction
 from worker.models import job_decorator
-from django.utils import timezone
 
 
 @job_decorator
