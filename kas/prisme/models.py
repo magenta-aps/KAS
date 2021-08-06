@@ -7,7 +7,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.template.defaultfilters import date as _date
-from django.urls import reverse
 from django.utils import timezone
 from django.utils.formats import date_format
 from django.utils.translation import gettext as _
@@ -18,6 +17,7 @@ transaction_status = (
     ('created', _('Oprettet')),
     ('ready', _('Klar til overførsel')),
     ('transferred', _('Overført')),
+    ('cancelled', _('Annulleret')),
 )
 transaction_types = (
     ('prisme10q', _('Prisme opkrævning / tilbagebetaling')),
@@ -62,14 +62,6 @@ class Transaction(models.Model):
             afstem_noegle=str(self.uuid).replace('-', '')
         )
 
-    def get_batch_link(self):
-        if self.type == 'prisme10q':
-            return '<a href="{link}">{batch}</a>'.format(
-                link=reverse('prisme:prisme-batch', kwargs={'pk': self.prisme10Q_batch.pk}),
-                batch=self.prisme10Q_batch
-            )
-        return None
-
     def __str__(self):
         return '{type} for {person} på {amount} i {year}'.format(type=self.get_type_display(),
                                                                  person=self.person_tax_year.person.name,
@@ -91,6 +83,12 @@ class PrePaymentFile(models.Model):
     def __str__(self):
         return 'Forudindbetalingsfil uploadet {date} af {by}'.format(date=date_format(self.uploaded_at, 'SHORT_DATETIME_FORMAT'),
                                                                      by=self.uploaded_by)
+
+
+batch_destinations = (
+    ('undervisning', _('Undervisningssystem')),
+    ('produktion', _('Produktionssystem'))
+)
 
 
 class Prisme10QBatch(models.Model):
@@ -128,12 +126,14 @@ class Prisme10QBatch(models.Model):
 
     # Status for delivery
     STATUS_CREATED = 'created'
+    STATUS_DELIVERING = 'delivering'
     STATUS_DELIVERY_FAILED = 'failed'
     STATUS_DELIVERED = 'delivered'
     STATUS_CANCELLED = 'cancelled'
 
     status_choices = (
         (STATUS_CREATED, _('Ikke afsendt')),
+        (STATUS_DELIVERING, _('Afsender')),
         (STATUS_DELIVERY_FAILED, _('Afsendelse fejlet')),
         (STATUS_DELIVERED, _('Afsendt')),
         (STATUS_CANCELLED, _('Annulleret'))
@@ -149,7 +149,9 @@ class Prisme10QBatch(models.Model):
 
     @property
     def active_transactions_qs(self):
-        return self.transaction_set.all()
+        return self.transaction_set.exclude(
+            status='cancelled'
+        )
 
     def get_content(self):
         return '\r\n'.join([

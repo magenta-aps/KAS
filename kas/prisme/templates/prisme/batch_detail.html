@@ -6,17 +6,40 @@
     <h1>{{ batch }}</h1>
 
     <dl class="row">
-    <dt class="col-sm-2">{% trans 'Oprettet' %}</dt>
-    <dd class="col-sm-10">{{ batch.created|date:"SHORT_DATETIME_FORMAT" }}</dd>
+        <dt class="col-sm-2">{% trans 'Oprettet' %}</dt>
+        <dd class="col-sm-10">{{ batch.created|date:"SHORT_DATETIME_FORMAT" }}</dd>
+        <dt class="col-sm-2">{% trans 'Oprettet af' %}</dt>
+        <dd class="col-sm-10">{{ batch.created_by }}</dd>
 
     <dt class="col-sm-2">{% trans 'Status' %}</dt>
     <dd class="col-sm-10">{{ batch.get_status_display }}</dd>
+
+    {% if batch.delivery_error %}
+        <dt class="col-sm-2">{% trans 'Afsendelsesfejl' %}</dt>
+        <dd class="col-sm-10">{{ batch.delivery_error }}</dd>
+    {% endif %}
+
+    {% if jobs %}
+        <dt class="col-sm-2">{% trans 'Fremskridt' %}</dt>
+        {% for job in jobs %}
+        <dd class="col-sm-10{% if not forloop.first %} offset-sm-2{% endif %}">
+            {% include 'worker/includes/progress_bar.html' with job=job %}
+        </dd>
+        {% endfor %}
+    {% endif %}
+
+    {% if batch.delivered %}
+        <dt class="col-sm-2">{% trans 'Sendt' %}</dt>
+        <dd class="col-sm-10">{{ batch.delivered|date:"SHORT_DATETIME_FORMAT" }}</dd>
+        <dt class="col-sm-2">{% trans 'Sendt af' %}</dt>
+        <dd class="col-sm-10">{{ batch.delivered_by }}</dd>
+    {% endif %}
     </dl>
 
     <div>
-        <a href="{% url 'prisme:prisme-batch-download' pk=batch.pk %}" role="button" class="btn btn-primary">{% trans 'Hent fil' %}</a>
-        {% if batch.status == batch_class.STATUS_CREATED %}
-        <a href="#" role="button" class="btn btn-primary">{% trans 'Send til Prisme' %}</a>
+        <a href="{% url 'prisme:batch-download' pk=batch.pk %}" role="button" class="btn btn-primary">{% trans 'Hent fil' %}</a>
+        {% if batch.status == batch_class.STATUS_CREATED or batch.status == batch_class.STATUS_DELIVERY_FAILED %}
+        <a href="{% url 'prisme:batch-send' pk=batch.pk %}" role="button" class="btn btn-primary">{% trans 'Send til Prisme' %}</a>
         {% endif %}
     </div>
 
@@ -32,7 +55,7 @@
             </tr>
             </thead>
             <tbody>
-            {% for transaction in transactions %}
+            {% for transaction in object_list %}
                 {% with final_settlement=transaction.source_object person_tax_year=transaction.source_object.person_tax_year %}
                 <tr>
                     <td><a href="{% url 'kas:person_in_year' person_tax_year.year person_tax_year.person.pk %}">{{ person_tax_year.person.name }}</a></td>
@@ -44,7 +67,7 @@
                 {% endwith %}
             {% empty %}
                 <tr>
-                    <td colspan="{% if policy_col %}4{% else %}3{% endif %}">{% trans 'Ingen transaktioner fundet' %}</td>
+                    <td colspan="5">{% trans 'Ingen transaktioner fundet' %}</td>
                 </tr>
             {% endfor %}
             </tbody>
