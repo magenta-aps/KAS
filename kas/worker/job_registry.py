@@ -109,6 +109,14 @@ def get_job_types():
             'test_only': True,
             'not_in_dropdown': True,
         },
+        'SendBatch': {
+            'label': _('Sender et Q10 batch'),
+            'form_class': ConfirmForm,
+            'result_template': 'worker/includes/status_only.html',
+            'function': 'prisme.jobs.send_batch',
+            'test_only': False,
+            'not_in_dropdown': True,
+        },
     }
 
 
