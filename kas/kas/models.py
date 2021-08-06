@@ -1,6 +1,8 @@
 import base64
 import calendar
 import math
+
+from django.dispatch import receiver
 from prisme.models import Transaction
 from time import sleep
 from uuid import uuid4
@@ -23,6 +25,8 @@ from simple_history.models import HistoricalRecords
 from eskat.models import ImportedR75PrivatePension
 from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.managers import PolicyTaxYearManager
+
+from prisme.models import Prisme10QBatch
 
 
 class HistoryMixin(object):
@@ -1235,3 +1239,17 @@ class FinalSettlement(EboksDispatch):
             amount += x['amount']
 
         return amount
+
+
+@receiver(post_save, sender=FinalSettlement)
+def cancel_batch_on_save(sender, instance, **kwargs):
+    if instance.invalid and instance.person_tax_year.tax_year.year_part == 'genoptagelsesperiode':
+        for transaction in Transaction.objects.filter(
+            person_tax_year=instance.person_tax_year
+        ).exclude(
+            status='transferred',
+        ):
+            batch = transaction.prisme10Q_batch
+            if batch.status in (Prisme10QBatch.STATUS_CREATED, Prisme10QBatch.STATUS_DELIVERY_FAILED):
+                batch.status = Prisme10QBatch.STATUS_CANCELLED
+                batch.save(update_fields=['status'])
