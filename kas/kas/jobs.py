@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import base64
+import traceback
 from time import sleep
 
 from django.conf import settings
@@ -659,7 +660,8 @@ def dispatch_final_settlements(job):
         except (ConnectionError, HTTPError) as e:
             job.status = 'failed'
             job.result = client.parse_exception(e)
-            job.save(update_fields=['status', 'result'])
+            job.traceback = repr(traceback.format_exception(type(e), e, e.__traceback__))
+            job.save(update_fields=['status', 'result', 'traceback'])
             mark_parent_job_as_failed(job)
             break
         else:
@@ -670,7 +672,7 @@ def dispatch_final_settlements(job):
     while pending_messages:
         update_status_for_pending_dispatches(client, pending_messages)
         pending_messages = {settlement.message_id: settlement for settlement in FinalSettlement.objects.filter(
-            status='post_processing', persontaxyear__tax_year__pk=job.parent.arguments['year_pk'])[:50]}
+            status='post_processing', person_tax_year__tax_year__pk=job.parent.arguments['year_pk'])[:50]}
         if pending_messages:
             sleep(10)
 
@@ -678,8 +680,14 @@ def dispatch_final_settlements(job):
         parent = Job.objects.filter(pk=job.parent.pk).select_for_update()[0]
         current_count = parent.arguments['current_count'] + min(current_number_of_items, dispatch_page_size)
         job.set_progress(current_count, parent.arguments['total_count'])
-        if has_more is False:
-            # if we are done mark the parent job as finished
+        if not has_more:
+            if job.status != 'failed':
+                # set the current year part to genoptagelse only if job didnt fail
+                year = TaxYear.objects.get(pk=parent.arguments['year_pk'])
+                year.year_part = 'genoptagelsesperiode'
+                year.save(update_fields=['year_part'])
+
+            # mark the parent job as finished
             parent.finish(result={'dispatched_items': current_count})
 
     if has_more:
