@@ -45,12 +45,12 @@ def get_job_types():
             'function': 'kas.jobs.force_finalize_settlement'
         },
         'GenerateReportsForYear': {
-            'label': _('Generere KAS selvangivelser'),
+            'label': _('Generering af KAS selvangivelser for et givet år'),
             'form_class': YearAndTitleForm,
             'function': 'kas.jobs.generate_reports_for_year'
         },
         'DispatchTaxYear': {
-            'label': _('Afsendelse af KAS selvangivelser for et givent år'),
+            'label': _('Afsendelse af KAS selvangivelser for et givet år'),
             'form_class': YearPkForm,
             'function': 'kas.jobs.dispatch_tax_year',
         },
