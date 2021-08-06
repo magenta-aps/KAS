@@ -18,7 +18,6 @@ transaction_status = (
     ('created', _('Oprettet')),
     ('ready', _('Klar til overførsel')),
     ('transferred', _('Overført')),
-    ('cancelled', _('Annuleret')),
 )
 transaction_types = (
     ('prisme10q', _('Prisme opkrævning / tilbagebetaling')),
@@ -126,28 +125,29 @@ class Prisme10QBatch(models.Model):
     delivery_error = models.TextField(blank=True, default='')
 
     # Status for delivery
-    STATUS_CREATED = 1
-    STATUS_DELIVERY_FAILED = 2
-    STATUS_DELIVERED = 3
+    STATUS_CREATED = 'created'
+    STATUS_DELIVERY_FAILED = 'failed'
+    STATUS_DELIVERED = 'delivered'
+    STATUS_CANCELLED = 'cancelled'
 
     status_choices = (
         (STATUS_CREATED, _('Ikke afsendt')),
         (STATUS_DELIVERY_FAILED, _('Afsendelse fejlet')),
-        (STATUS_DELIVERED, _('Afsendt'))
+        (STATUS_DELIVERED, _('Afsendt')),
+        (STATUS_CANCELLED, _('Annulleret'))
     )
 
-    status = models.IntegerField(
+    status = models.CharField(
         choices=status_choices,
-        default=STATUS_CREATED
+        default=STATUS_CREATED,
+        max_length=15
     )
 
     tax_year = models.ForeignKey('kas.TaxYear', on_delete=models.PROTECT)
 
     @property
     def active_transactions_qs(self):
-        return self.transaction_set.exclude(
-            status='cancelled'
-        )
+        return self.transaction_set.all()
 
     def get_content(self):
         return '\r\n'.join([
