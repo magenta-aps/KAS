@@ -189,3 +189,11 @@ EBOKS = {
     'host': os.environ['EBOKS_HOST'],
     'dispatch_bulk_size': int(os.environ['EBOKS_DISPATCH_BULK_SIZE'])
 }
+
+TENQ = {
+    'host': os.environ['TENQ_HOST'],
+    'port': os.environ.get('TENQ_PORT', 22),
+    'username': os.environ['TENQ_USER'],
+    'password': os.environ['TENQ_PASSWORD'],
+    'known_hosts': os.environ.get('TENQ_KNOWN_HOSTS') or None
+}

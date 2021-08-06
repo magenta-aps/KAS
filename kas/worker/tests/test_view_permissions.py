@@ -21,8 +21,10 @@ class PermissionTestCase(TestCase):
         self.staff.save()
 
     def test_job_list_not_logged_in(self):
-        r = self.client.get(reverse('worker:job_list'))
-        self.assertEqual(r.status_code, 403)
+        r = self.client.get(reverse('worker:job_list'), follow=True)
+        # results in a redirect to the login page
+        self.assertRedirects(r, reverse('login')+'?next=/worker/jobs/', 302)
+        self.assertEqual(r.status_code, 200)
 
     def test_job_list_none_staff_user(self):
         self.client.login(username=self.username, password=self.password)

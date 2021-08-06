@@ -124,6 +124,13 @@ KAS Unittest:
     ESKAT_DB: ""
     ESKAT_USER: ""
     ESKAT_PASSWORD: ""
+
+    # No fiddling with sftp server during testing
+    TENQ_HOST: ""
+    TENQ_PORT: 22
+    TENQ_USER: ""
+    TENQ_PASSWORD: ""
+    TENQ_KNOWN_HOSTS: ""
     # Simulate development environment while running tests so we use mockup data
     ENVIRONMENT: development
   script:
