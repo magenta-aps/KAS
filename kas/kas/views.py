@@ -266,11 +266,7 @@ class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
             self.object.person.address_line_4,
             self.object.person.address_line_5,
         )])
-        context['transactions'] = Transaction.objects.filter(
-            person_tax_year=self.object
-        ).exclude(
-            prisme10Q_batch__status=Prisme10QBatch.STATUS_CANCELLED
-        )
+        context['transactions'] = Transaction.objects.filter(person_tax_year=self.object)
         context['person_tax_years'] = PersonTaxYear.objects.filter(person=self.object.person)
         return context
 
@@ -784,7 +780,23 @@ class FinalSettlementGenerateView(LoginRequiredMixin, SingleObjectMixin, View):
             return HttpResponse(status=400, content=_('Der skal mindst være én police for at generere en slutopgørelse'))
         if self.object.tax_year.year_part != 'genoptagelsesperiode':
             return HttpResponse(status=400, content=_('Der kan kun genereres nye slutupgørelser hvis året er i genoptagelsesperioden'))
-        TaxFinalStatementPDF.generate_pdf(person_tax_year=self.object)
+        final_statement = TaxFinalStatementPDF.generate_pdf(person_tax_year=self.object)
+
+        if final_statement.get_transaction_amount() != 0:
+            # Set collect_date to today + 3 months + next 1st
+            # This is the same as today + 4 months - (prev 1st or today if it's already the 1st)
+            collect_date = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            if collect_date.month < 9:
+                collect_date = collect_date.replace(month=collect_date.month+4)
+            else:
+                collect_date = collect_date.replace(year=collect_date.year+1, month=collect_date.month-8)
+            prisme10Q_batch = Prisme10QBatch.objects.create(
+                created_by=request.user,
+                tax_year=self.object.tax_year,
+                collect_date=collect_date
+            )
+            prisme10Q_batch.add_transaction(final_statement)
+
         return HttpResponseRedirect(reverse('kas:person_in_year', kwargs={'year': self.object.year,
                                                                           'person_id': self.object.person.id}))
 

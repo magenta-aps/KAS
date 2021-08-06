@@ -3,6 +3,7 @@ import base64
 import traceback
 from time import sleep
 
+import pytz
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -10,6 +11,7 @@ from django.db.models import IntegerField, Sum, Q, Count
 from django.db.models.functions import Cast
 from django.db.utils import IntegrityError
 from django.utils import timezone
+from django.utils.datetime_safe import datetime
 from requests.exceptions import HTTPError, ConnectionError
 from rq import get_current_job
 
@@ -602,15 +604,22 @@ def generate_batch_and_transactions_for_year(job):
     tax_year = TaxYear.objects.get(pk=job.arguments['year_pk'])
     if not check_year_period(tax_year, job, 'ligning'):
         return
-    batch = Prisme10QBatch.objects.create(created_by=job.created_by,
-                                          tax_year=tax_year)
+
+    collect_date = datetime(year=tax_year.year, month=9, day=1, tzinfo=pytz.timezone(settings.TIME_ZONE))
+    prisme10Q_batch = Prisme10QBatch(
+        created_by=job.created_by,
+        tax_year=tax_year,
+        collect_date=collect_date
+    )
+    prisme10Q_batch.save()
+
     settlements = FinalSettlement.objects.filter(person_tax_year__tax_year=tax_year, invalid=False)
     settlements_count = 0
     new_transactions = 0
     for final_settlement in settlements:
         settlements_count += 1
         if final_settlement.get_transaction_amount() != 0:
-            batch.add_transaction(final_settlement)
+            prisme10Q_batch.add_transaction(final_settlement)
             new_transactions += 1
 
     job.finish({'status': 'Genererede batch og transaktioner',
