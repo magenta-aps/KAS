@@ -1,32 +1,23 @@
+from io import IOBase
 import pysftp
-import tempfile
+from typing import Callable
 
-from getpass import getpass
+from django.conf import settings
 
-# TODO: Rewrite this to be proper client module, this is just the basics
 
-hostname = 'localhost'
-port = 2222
+# To tunnel to the real ftp server:
+# ssh -L 172.17.0.1:2222:sftp.erp.gl:22 [your_username]@10.240.76.76
 
-hostkey = 'ecdsa-sha2-nistp521 AAAAE2VjZHNhLXNoYTItbmlzdHA1MjEAAAAIbmlzdHA1MjEAAACFBACoOVgH2Cl8R9WPCsGP9rpZuF4H7aZ0S1kocGeqyVz5f1Ri3aJkxATeCB5xr4AUVZbaNW43L+cdIDZJZMSbJXGvtgFTSZYxsG3pKAzNQjQFVTcsfOHEJnbe0riGK5FBnFrll07MMO8jmU2hq5umLPZMpxjEQibHq99LDkyjIZmk/rRKhA=='
+@staticmethod
+def put_file_in_prisme_folder(source_file_name_or_object, destination_folder: str, destination_filename: str = None, callback: Callable[[int, int], None] = None):
+    if isinstance(source_file_name_or_object, IOBase) and destination_filename is None:
+        raise Exception("Must provide a filename when writing file-like object")
+    remote_path = f"{destination_folder}/{destination_filename}" if destination_filename is not None else None
 
-password = getpass("Enter password: ")
-
-with tempfile.NamedTemporaryFile() as known_hosts_file:
-
-    known_hosts_file.write((hostname + ' ' + hostkey + '\n').encode())
-    known_hosts_file.flush()
-    connection_options = pysftp.CnOpts(knownhosts=known_hosts_file.name)
-
-    conn = pysftp.Connection(
-        hostname,
-        port=port,
-        username='ftp_kas_nanoq@erp.gl',
-        password=password,
-        cnopts=connection_options
-    )
-
-    print(conn.listdir())
-
-    # Close connection otherwise we get an Exception during teardown
-    conn = None
+    with pysftp.Connection(settings.TENQ['host'], username=settings.TENQ['username'], password=settings.TENQ['password'], port=settings.TENQ.get('port', 22), cnopts=pysftp.CnOpts(settings.TENQ['known_hosts'])) as client:
+        if type(source_file_name_or_object) == str:
+            client.put(source_file_name_or_object, remotepath=remote_path, callback=callback)
+        elif isinstance(source_file_name_or_object, IOBase):
+            client.putfo(source_file_name_or_object, remotepath=remote_path, callback=callback)
+        else:
+            raise TypeError(f"file_path_or_object (type={type(source_file_name_or_object)}) not recognized")
