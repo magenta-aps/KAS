@@ -8,7 +8,6 @@ from django.conf import settings
 # To tunnel to the real ftp server:
 # ssh -L 172.17.0.1:2222:sftp.erp.gl:22 [your_username]@10.240.76.76
 
-@staticmethod
 def put_file_in_prisme_folder(source_file_name_or_object, destination_folder: str, destination_filename: str = None, callback: Callable[[int, int], None] = None):
     if isinstance(source_file_name_or_object, IOBase) and destination_filename is None:
         raise Exception("Must provide a filename when writing file-like object")
