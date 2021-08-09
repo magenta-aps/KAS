@@ -1,6 +1,7 @@
 from functools import cached_property
 from uuid import uuid4
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -85,10 +86,17 @@ class PrePaymentFile(models.Model):
                                                                      by=self.uploaded_by)
 
 
-batch_destinations = (
-    ('undervisning', _('Undervisningssystem')),
-    ('produktion', _('Produktionssystem'))
+batch_destinations_all = (
+    ('10q_development', _('Undervisningssystem')),
+    ('10q_production', _('Produktionssystem')),
 )
+
+# Which destinations should be available for each of our environments
+batch_destinations_available = tuple([
+    tuple([destination_id, label])
+    for destination_id, label in batch_destinations_all
+    if destination_id in settings.TENQ['destinations'][settings.ENVIRONMENT]
+])
 
 
 class Prisme10QBatch(models.Model):
