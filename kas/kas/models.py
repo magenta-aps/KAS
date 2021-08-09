@@ -14,7 +14,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models import Sum, Max
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.db.transaction import atomic
 from django.forms import model_to_dict
 from django.utils import timezone
@@ -1239,6 +1239,15 @@ class FinalSettlement(EboksDispatch):
             amount += x['amount']
 
         return amount
+
+
+def delete_pdf(sender, instance, using, **kwargs):
+    if instance.pdf:
+        # delete the pdf file
+        instance.pdf.delete(save=False)
+
+
+post_delete.connect(delete_pdf, sender=FinalSettlement, dispatch_uid='delete_pdf')
 
 
 @receiver(post_save, sender=FinalSettlement)
