@@ -96,7 +96,7 @@ class ImportPrePaymentFile(TestCase):
         first_person_10q = first_person_transactions.filter(type='prisme10q')
         # one 10Q transaction to transfer
         self.assertEqual(first_person_10q.count(), 1)
-        # the citizen still ows 2.742 kr
+        # the citizen is owed 2.742kr
         self.assertEqual(first_person_10q.first().amount, -2742)
 
         second_person_transactions = Transaction.objects.filter(person_tax_year__person__cpr='0103897769')
@@ -108,5 +108,5 @@ class ImportPrePaymentFile(TestCase):
         second_person_10q = second_person_transactions.filter(type='prisme10q')
         # one 10Q transaction to transfer
         self.assertEqual(second_person_10q.count(), 1)
-        # the citizen is owed 23.516 kr
+        # the citizen needs to pay 23.516kr
         self.assertEqual(second_person_10q.first().amount, 23516)
