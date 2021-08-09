@@ -1,7 +1,6 @@
 import base64
 import calendar
 import math
-import os
 
 from django.dispatch import receiver
 from prisme.models import Transaction
