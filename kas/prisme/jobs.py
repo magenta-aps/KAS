@@ -34,7 +34,7 @@ def import_pre_payment_file(job):
                 else:
                     transaction = Transaction.objects.create(
                         person_tax_year=person_tax_year,
-                        amount=int(row['amount']),
+                        amount=-int(row['amount']),
                         type='prepayment',
                         source_object=pre_payment_file,
                         status='transferred',
