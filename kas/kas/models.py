@@ -1203,7 +1203,7 @@ class FinalSettlement(EboksDispatch):
             if transaction.type == 'prepayment':
                 result.append({
                     'text': _('Forudindbetaling'),
-                    'amount': -transaction.amount,
+                    'amount': transaction.amount,  # prepayment are stored as negative so add the amount
                     'source_object': transaction,
                 })
             elif transaction.type == 'prisme10q':

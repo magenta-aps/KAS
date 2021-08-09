@@ -38,8 +38,6 @@ def import_pre_payment_file(job):
                         type='prepayment',
                         source_object=pre_payment_file,
                         status='transferred',
-                        transferred_by=job.created_by,
-                        transferred_at=timezone.now(),
                     )
                     created_transactions.append({'transaction': str(transaction),
                                                  'person': transaction.person_tax_year.person.pk,
