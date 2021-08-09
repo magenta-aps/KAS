@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.utils.datetime_safe import datetime
 from kas.models import PersonTaxYear
 from prisme.models import PrePaymentFile, Transaction, Prisme10QBatch
+from prisme.models import batch_destinations_available
 from worker.models import job_decorator
 from prisme.tenQ.client import put_file_in_prisme_folder
 
@@ -51,16 +52,31 @@ def import_pre_payment_file(job):
 def send_batch(job):
     batch = Prisme10QBatch.objects.get(pk=job.arguments['pk'])
     destination = job.arguments['destination']
-    use_production = destination == 'produktion'
-    content = batch.get_content()
-    filename = "KAS_10Q_export_{}.10q".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
-    destination_folder = settings.TENQ['dirs']['production'] if use_production else settings.TENQ['dirs']['staging']
+    completion_statuses = {
+        '10q_production': Prisme10QBatch.STATUS_DELIVERED,
+        '10q_development': Prisme10QBatch.STATUS_CREATED
+    }
     try:
+
+        # Extra check for chosen destination
+        available = {destination_id for destination_id, _ in batch_destinations_available}
+        if destination not in available:
+            raise ValueError(
+                "Kan ikke sende batch til {destination}, det er kun {available} der er tilgængelig på dette system".format(
+                    destination=destination,
+                    available=', '.join(available)
+                )
+            )
+
+        destination_folder = settings.TENQ['dirs'][destination]
+        content = batch.get_content()
+        filename = "KAS_10Q_export_{}.10q".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
+
         with tempfile.NamedTemporaryFile(mode='w') as batchfile:
             batchfile.write(content)
             batchfile.flush()
             put_file_in_prisme_folder(batchfile.name, destination_folder, filename, job.set_progress)
-        batch.status = Prisme10QBatch.STATUS_DELIVERED if use_production else Prisme10QBatch.STATUS_CREATED
+        batch.status = completion_statuses[destination]
         batch.delivered_by = job.created_by
         batch.delivered = timezone.now()
     except Exception as e:

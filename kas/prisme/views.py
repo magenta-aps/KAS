@@ -119,11 +119,6 @@ class Prisme10QBatchSendView(IsStaffMixin, FormView):
     def get_object(self):
         return get_object_or_404(Prisme10QBatch, pk=self.kwargs['pk'])
 
-    def get_context_data(self, **kwargs):
-        kwargs['batch'] = self.get_object()
-        kwargs['batch_class'] = Prisme10QBatch
-        return super().get_context_data(**kwargs)
-
     def form_valid(self, form):
         # Start job
         batch = self.get_object()

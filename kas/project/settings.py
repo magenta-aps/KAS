@@ -197,7 +197,11 @@ TENQ = {
     'password': os.environ['TENQ_PASSWORD'],
     'known_hosts': os.environ.get('TENQ_KNOWN_HOSTS') or None,
     'dirs': {
-        'production': '/nanoq/prod/q',
-        'staging': '/nanoq/uddannelse/KAS'
+        '10q_production': '/nanoq/prod/q',
+        '10q_development': '/nanoq/uddannelse/KAS'
+    },
+    'destinations': {
+        'production': ['10q_production', '10q_development'],  # Our prod server can use both prod and dev on the 10q server
+        'development': ['10q_development']  # Our dev server can only use dev on the 10q server
     }
 }
