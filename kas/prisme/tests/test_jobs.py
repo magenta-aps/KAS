@@ -9,11 +9,11 @@ from django.test import TestCase
 from fakeredis import FakeStrictRedis
 from rq import Queue
 
-from kas.models import TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany, FinalSettlement
+from kas.jobs import generate_final_settlements_for_year, generate_batch_and_transactions_for_year
+from kas.models import TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany
 from prisme.jobs import import_pre_payment_file
 from prisme.models import PrePaymentFile, Transaction
 from worker.models import Job
-from kas.jobs import generate_final_settlements_for_year, generate_batch_and_transactions_for_year
 
 
 class ImportPrePaymentFile(TestCase):
@@ -31,11 +31,11 @@ class ImportPrePaymentFile(TestCase):
                                                            number_of_days=365,
                                                            tax_year=self.tax_year)
 
-            policy_tax_year = PolicyTaxYear.objects.create(person_tax_year=person_tax_year,
-                                                           prefilled_amount=100000*i,
-                                                           self_reported_amount=100000*i,
-                                                           slutlignet=True,
-                                                           pension_company=self.company)
+            PolicyTaxYear.objects.create(person_tax_year=person_tax_year,
+                                         prefilled_amount=100000*i,
+                                         self_reported_amount=100000*i,
+                                         slutlignet=True,
+                                         pension_company=self.company)
 
         with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                'data/PGF85_2021_897021_28-04-2021_080136.csv'), mode='rb') as test_data:
