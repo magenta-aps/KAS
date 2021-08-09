@@ -25,7 +25,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        content = options.get('content', "Dette er en test")
+        content = options.get('content') or "Dette er en test"
         destination_folder = settings.TENQ['dirs']['10q_development']
         filename = options.get('filename') or 'Test_{}.txt'.format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
         with tempfile.NamedTemporaryFile(mode='w') as batchfile:
