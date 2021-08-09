@@ -32,3 +32,13 @@ table.table tr td > a:only-child {
         appearance: none;
     }
 }
+/* table helpers */
+.w-20 {
+    width: 20% !important;
+}
+.w-10 {
+    width: 10% !important;
+}
+.w-5 {
+    width: 5% !important;
+}

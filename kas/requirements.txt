@@ -13,3 +13,4 @@ lxml==4.6.2
 fakeredis==1.4.5
 django-ipware>=3.0.2
 openpyxl==3.0.7
+pysftp==0.2.9

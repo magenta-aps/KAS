@@ -10,8 +10,9 @@ from fakeredis import FakeStrictRedis
 from rq import Queue
 
 from kas.eboks import EboksClient
-from kas.jobs import dispatch_tax_year
-from kas.models import TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany, TaxSlipGenerated
+from kas.jobs import dispatch_tax_year, generate_batch_and_transactions_for_year
+from kas.models import TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany, TaxSlipGenerated, FinalSettlement
+from prisme.models import Prisme10QBatch
 from worker.models import Job
 
 test_settings = dict(settings.EBOKS)
@@ -80,11 +81,23 @@ def get_recipient_status_mock(as_side_effect=False):
     return mock
 
 
-class JobsTest(TransactionTestCase):
+class BaseTransactionTestCase(TransactionTestCase):
     def setUp(self) -> None:
         self.tax_year = TaxYear.objects.create(year=2020)
-
         self.pension_company = PensionCompany.objects.create(name='test', res=2)
+        self.person = Person.objects.create(
+            cpr='0102031234',
+            name='Test Testperson',
+            municipality_code=956,
+            municipality_name='Sermersooq',
+            address_line_2='Testvej 42',
+            address_line_4='1234  Testby'
+        )
+
+
+class TaxslipGeneratedJobsTest(BaseTransactionTestCase):
+    def setUp(self) -> None:
+        super(TaxslipGeneratedJobsTest, self).setUp()
         report_file = ContentFile("test_report")
         for i in range(1, 8):
             person = Person.objects.create(cpr='111111111{}'.format(i))
@@ -143,3 +156,72 @@ class JobsTest(TransactionTestCase):
                                       created_by=self.user)
         self.assertEqual(Job.objects.filter(parent=parent_job).count(), 4)  # 4 jobs should have been started
         self.assertEqual(TaxSlipGenerated.objects.filter(status='send').count(), 7)
+
+
+class GenerateBatchAndTransactionsForYearJobsTest(BaseTransactionTestCase):
+
+    def setUp(self) -> None:
+        super(GenerateBatchAndTransactionsForYearJobsTest, self).setUp()
+        self.tax_year.year_part = 'ligning'
+        self.tax_year.save()
+        person_tax_year = PersonTaxYear.objects.create(
+            person=self.person,
+            tax_year=self.tax_year,
+            number_of_days=300,
+            fully_tax_liable=True
+        )
+
+        self.policytaxyear = PolicyTaxYear.objects.create(
+            person_tax_year=person_tax_year,
+            pension_company=self.pension_company,
+            policy_number='123456',
+            prefilled_amount=10,
+            active_amount=PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED,
+            foreign_paid_amount_actual=0,
+            slutlignet=True
+        )
+        self.settlement = FinalSettlement.objects.create(person_tax_year=person_tax_year)
+        self.user = get_user_model().objects.create(username='test')
+
+        self.job_kwargs = {
+            'year_pk': self.tax_year.pk,
+            'title': 'test af final statement: {}'.format(str(self.tax_year.year))
+        }
+
+    @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
+    def test_zero_sum(self, django_rq):
+        self.policytaxyear.prefilled_amount = 0
+        self.policytaxyear.save()
+
+        Job.schedule_job(
+            generate_batch_and_transactions_for_year,
+            job_type='generate_batch_and_transactions_for_year',
+            job_kwargs=self.job_kwargs,
+            created_by=self.user
+        )
+
+        qs = Prisme10QBatch.objects.filter(tax_year__pk=self.job_kwargs['year_pk'])
+        self.assertEqual(qs.count(), 1)
+        batch = qs.first()
+        self.assertEqual(FinalSettlement.objects.count(), 1)
+        self.assertEqual(FinalSettlement.objects.first().get_transaction_amount(), 0)
+        self.assertEqual(batch.transaction_set.count(), 0)
+
+    @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
+    def test_nonzero_sum(self, django_rq):
+        self.policytaxyear.prefilled_amount = 10
+        self.policytaxyear.save()
+
+        Job.schedule_job(
+            generate_batch_and_transactions_for_year,
+            job_type='generate_batch_and_transactions_for_year',
+            job_kwargs=self.job_kwargs,
+            created_by=self.user
+        )
+
+        qs = Prisme10QBatch.objects.filter(tax_year__pk=self.job_kwargs['year_pk'])
+        self.assertEqual(qs.count(), 1)
+        batch = qs.first()
+        self.assertEqual(FinalSettlement.objects.count(), 1)
+        self.assertEqual(FinalSettlement.objects.first().get_transaction_amount(), 1)
+        self.assertEqual(batch.transaction_set.count(), 1)

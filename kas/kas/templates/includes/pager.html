@@ -7,7 +7,7 @@
         {% endif %}
 
         <span class="current">
-            {% blocktrans with page=page_obj.number total=page_obj.paginator.num_pages %}Side {{ page }} af {{ total }}.{% endblocktrans %}
+            {% blocktrans with page=page_obj.number total=page_obj.paginator.num_pages total_hits=page_obj.paginator.count %}Side {{ page }} af {{ total }} af i alt {{total_hits}} resultater{% endblocktrans %}
         </span>
 
         {% if page_obj.has_next %}

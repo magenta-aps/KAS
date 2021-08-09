@@ -1,6 +1,9 @@
 import base64
 import calendar
 import math
+
+from django.dispatch import receiver
+from prisme.models import Transaction
 from time import sleep
 from uuid import uuid4
 
@@ -10,18 +13,20 @@ from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Sum, Max
 from django.db.models.signals import post_save
 from django.db.transaction import atomic
 from django.forms import model_to_dict
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from requests.exceptions import HTTPError
+from requests.exceptions import RequestException
 from simple_history.models import HistoricalRecords
 
 from eskat.models import ImportedR75PrivatePension
 from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.managers import PolicyTaxYearManager
+
+from prisme.models import Prisme10QBatch
 
 
 class HistoryMixin(object):
@@ -199,6 +204,16 @@ class Person(HistoryMixin, models.Model):
         null=True
     )
 
+    @property
+    def postal_address(self):
+        return "\n".join([x for x in (
+            self.address_line_1,
+            self.address_line_2,
+            self.address_line_3,
+            self.address_line_4,
+            self.address_line_5,
+        ) if x])
+
     def __str__(self):
         return f"{self.__class__.__name__}(cpr={self.cpr},municipality_code={self.municipality_code}," \
                f"municipality_name={self.municipality_name}," \
@@ -275,15 +290,23 @@ class EboksDispatch(models.Model):
                     recipient = message['recipients'][0]
                     if recipient['post_processing_status'] != 'pending':
                         self.status = 'send'
-                        self.recipient_status = recipient['post_processing_status']
+                        self.post_processing_status = recipient['post_processing_status']
                         self.save(update_fields=['status', 'post_processing_status'])
 
             if self.status == 'post_processing':
                 # wait 10 seconds before getting another update
                 sleep(10)
 
+    @property
+    def allow_dispatch(self):
+        # a message is allowed to be dispatch if the status is either created or failed (re-trying)
+        if self.status in ('created', 'failed'):
+            return True
+        return False
+
     class Meta:
         abstract = True
+        ordering = ('-created_at', )
 
 
 class TaxSlipGenerated(EboksDispatch):
@@ -375,6 +398,11 @@ class PersonTaxYear(HistoryMixin, models.Model):
     @property
     def efterbehandling(self):
         return self.policytaxyear_set.filter(efterbehandling=True).exists()
+
+    @property
+    def latest_processing_date(self):
+        return self.policytaxyear_set.filter(next_processing_date__gte=timezone.now()).aggregate(
+            Max('next_processing_date'))['next_processing_date__max']
 
     def __str__(self):
         return f"{self.__class__.__name__}(cpr={self.person.cpr}, year={self.tax_year.year})"
@@ -1117,6 +1145,7 @@ class FinalSettlement(EboksDispatch):
     uuid = models.UUIDField(primary_key=True, default=uuid4)
     person_tax_year = models.ForeignKey(PersonTaxYear, null=False, db_index=True, on_delete=models.PROTECT)
     pdf = models.FileField(upload_to=final_settlement_file_path)
+    invalid = models.BooleanField(default=False, verbose_name=_('Slutopgørelse er ikke gyldig'))
 
     def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
         if self.status == 'send':
@@ -1127,9 +1156,9 @@ class FinalSettlement(EboksDispatch):
                                                                            number=self.person_tax_year.person.cpr,
                                                                            pdf_data=base64.b64encode(self.pdf.read())),
                                        message_id=client.get_message_id())
-        except HTTPError:
+        except RequestException:
             self.status = 'failed'
-            self.status.save(update_fields=['status'])
+            self.save(update_fields=['status'])
             raise
         else:
             self.message_id = resp.json()['message_id']  # message_id might have changed so get it from the response
@@ -1145,3 +1174,82 @@ class FinalSettlement(EboksDispatch):
         finally:
             self.pdf.close()
         return self
+
+    def get_payment_info(self):
+        result = []
+
+        for policy in self.person_tax_year.policytaxyear_set.all():
+            if policy.pension_company_pays:
+                result.append({
+                    'text': _('Afgift for police nr. {policenummer} ved {pensionsselskab} (betalt af pensionsselskab)').format(
+                        policenummer=policy.policy_number, pensionsselskab=policy.pension_company.name
+                    ),
+                    'amount': 0,
+                    'source_object': policy,
+                })
+            else:
+                result.append({
+                    'text': _('Afgift for police nr. {policenummer} ved {pensionsselskab}').format(
+                        policenummer=policy.policy_number, pensionsselskab=policy.pension_company.name
+                    ),
+                    'amount': policy.get_calculation()['tax_with_deductions'],  # skat der skal betales per police
+                    'source_object': policy,
+                })
+        # modregn eksisterende transaktioner
+        for transaction in Transaction.objects.filter(
+            person_tax_year=self.person_tax_year,
+            status='transferred',
+        ):
+            if transaction.type == 'prepayment':
+                result.append({
+                    'text': _('Forudindbetaling'),
+                    'amount': transaction.amount,  # prepayment are stored as negative so add the amount
+                    'source_object': transaction,
+                })
+            elif transaction.type == 'prisme10q':
+                result.append({
+                    'text': _('Justering fra årsopgørelse oprettet d. {oprettelsesdato}').format(
+                        oprettelsesdato=transaction.created_at
+                    ),
+                    'amount': -transaction.amount,
+                    'source_object': transaction,
+                })
+
+        return result
+
+    def get_transaction_summary(self):
+        payment_info = self.get_payment_info()
+
+        summary = ''
+
+        for x in payment_info:
+            summary += x['text'] + ': ' + str(x['amount']) + '\n'
+
+        summary += '\n'
+        summary += _('I alt:') + ' ' + str(self.get_transaction_amount())
+
+        return summary
+
+    def get_transaction_amount(self):
+        payment_info = self.get_payment_info()
+
+        amount = 0
+
+        for x in payment_info:
+            amount += x['amount']
+
+        return amount
+
+
+@receiver(post_save, sender=FinalSettlement)
+def cancel_batch_on_save(sender, instance, **kwargs):
+    if instance.invalid and instance.person_tax_year.tax_year.year_part == 'genoptagelsesperiode':
+        for transaction in Transaction.objects.filter(
+            person_tax_year=instance.person_tax_year
+        ).exclude(
+            status='transferred',
+        ):
+            batch = transaction.prisme10Q_batch
+            if batch.status in (Prisme10QBatch.STATUS_CREATED, Prisme10QBatch.STATUS_DELIVERY_FAILED):
+                batch.status = Prisme10QBatch.STATUS_CANCELLED
+                batch.save(update_fields=['status'])

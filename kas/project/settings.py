@@ -189,3 +189,19 @@ EBOKS = {
     'host': os.environ['EBOKS_HOST'],
     'dispatch_bulk_size': int(os.environ['EBOKS_DISPATCH_BULK_SIZE'])
 }
+
+TENQ = {
+    'host': os.environ['TENQ_HOST'],
+    'port': int(os.environ.get('TENQ_PORT') or 22),
+    'username': os.environ['TENQ_USER'],
+    'password': os.environ['TENQ_PASSWORD'],
+    'known_hosts': os.environ.get('TENQ_KNOWN_HOSTS') or None,
+    'dirs': {
+        '10q_production': '/nanoq/prod/q',
+        '10q_development': '/nanoq/uddannelse/KAS'
+    },
+    'destinations': {
+        'production': ['10q_production', '10q_development'],  # Our prod server can use both prod and dev on the 10q server
+        'development': ['10q_development']  # Our dev server can only use dev on the 10q server
+    }
+}

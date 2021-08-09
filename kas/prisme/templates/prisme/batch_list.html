@@ -1,0 +1,35 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+{% block content %}
+
+<div class="container">
+    <h1>{% trans 'Batches' %}</h1>
+
+    <table class="table">
+    <thead>
+    <tr>
+        <th class="col-sm-2">{% trans 'Skatteår' %}</th>
+        <th class="col-sm-2">{% trans 'Oprettet' %}</th>
+        <th class="col-sm-2">{% trans 'Oprettet af' %}</th>
+        <th class="col-sm-2">{% trans 'Status' %}</th>
+        <th class="col-sm-2">{% trans 'Sendt' %}</th>
+        <th class="col-sm-2">{% trans 'Sendt af' %}</th>
+    </tr>
+    </thead>
+        <tbody>
+        {% for batch in batches %}
+        {% url 'prisme:batch' pk=batch.pk as batch_url %}
+        <tr>
+            <td><a href="{{batch_url}}">{{ batch.tax_year.year }}</a></td>
+            <td><a href="{{batch_url}}">{{ batch.created|date:"SHORT_DATETIME_FORMAT" }}</a></td>
+            <td><a href="{{batch_url}}">{{ batch.created_by }}</a></td>
+            <td><a href="{{batch_url}}">{{ batch.get_status_display }}</a></td>
+            <td><a href="{{batch_url}}">{{ batch.delivered|default_if_none:'' }}</a></td>
+            <td><a href="{{batch_url}}">{{ batch.delivered_by|default_if_none:'' }}</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

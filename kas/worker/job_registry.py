@@ -32,7 +32,6 @@ def get_job_types():
             'function': 'kas.jobs.import_mandtal',
             'test_only': False,
         },
-
         'ImportR75Job': {
             'label': _('Import af data fra R75'),  # translated label
             'form_class': R75ImportJobForm,  # form class used in the start job workflow
@@ -46,24 +45,32 @@ def get_job_types():
             'function': 'kas.jobs.force_finalize_settlement'
         },
         'GenerateReportsForYear': {
-            'label': _('Generere KAS selvangivelser'),
+            'label': _('Generering af KAS selvangivelser for et givet år'),
             'form_class': YearAndTitleForm,
             'function': 'kas.jobs.generate_reports_for_year'
         },
         'DispatchTaxYear': {
-            'label': _('Afsendelse af KAS selvangivelser for et givent år'),
+            'label': _('Afsendelse af KAS selvangivelser for et givet år'),
             'form_class': YearPkForm,
             'function': 'kas.jobs.dispatch_tax_year',
         },
         'GenerateFinalSettlements': {
-            'label': _('Generering af slutopgørelser for et given år'),
-            'form_class': YearAndTitleForm,
-            'function': 'kas.jobs.generate_final_settlements_for_year'
+            'label': _('Generering af KAS slutopgørelser for et givet år'),
+            'form_class': YearPkForm,
+            'function': 'kas.jobs.generate_final_settlements_for_year',
+            'result_template': 'worker/includes/status_only.html'
+        },
+        'GenerateBatchAndTransactions': {
+            'label': _('Generering af Transaktioner og batch for et givent år'),
+            'form_class': YearPkForm,
+            'function': 'kas.jobs.generate_batch_and_transactions_for_year',
+            'result_template': 'worker/includes/status_only.html'
         },
         'DispatchFinalSettlements': {
-            'label': _('Afsendelse af slutopgørelser for et given år'),
-            'form_class': YearPkForm,
-            'function': 'kas.jobs.dispatch_final_settlements_for_year'
+            'label': _('Afsendelse af KAS slutopgørelser for et givet år'),
+            'form_class': YearAndTitleForm,
+            'function': 'kas.jobs.dispatch_final_settlements_for_year',
+            'result_template': 'worker/includes/status_only.html'
         },
         'ImportEskatMockup': {
             'label': _('Import af mockup data for eSkat'),  # translated label
@@ -100,6 +107,14 @@ def get_job_types():
             'result_template': 'worker/includes/status_only.html',
             'function': 'kas.jobs.import_all_r75',
             'test_only': True,
+            'not_in_dropdown': True,
+        },
+        'SendBatch': {
+            'label': _('Sender et Q10 batch'),
+            'form_class': ConfirmForm,
+            'result_template': 'worker/includes/status_only.html',
+            'function': 'prisme.jobs.send_batch',
+            'test_only': False,
             'not_in_dropdown': True,
         },
     }

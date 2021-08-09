@@ -124,6 +124,13 @@ KAS Unittest:
     ESKAT_DB: ""
     ESKAT_USER: ""
     ESKAT_PASSWORD: ""
+
+    # No fiddling with sftp server during testing
+    TENQ_HOST: ""
+    TENQ_PORT: 22
+    TENQ_USER: ""
+    TENQ_PASSWORD: ""
+    TENQ_KNOWN_HOSTS: ""
     # Simulate development environment while running tests so we use mockup data
     ENVIRONMENT: development
   script:
@@ -186,6 +193,7 @@ Release kas dev image:
   only:
     refs:
       - master
+      - development
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
@@ -198,6 +206,7 @@ Release selvbetjenings dev image:
   only:
     refs:
       - master
+      - development
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
@@ -250,6 +259,7 @@ Deploy test:
   only:
     refs:
       - master
+      - development
   when: manual
   variables:
     DEPLOYMENT_NAMESPACE: kas.service-test

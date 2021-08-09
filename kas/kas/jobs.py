@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 import base64
+import traceback
 from time import sleep
 
+import pytz
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import IntegerField, Sum, Q
+from django.db.models import IntegerField, Sum, Q, Count
 from django.db.models.functions import Cast
 from django.db.utils import IntegrityError
 from django.utils import timezone
+from django.utils.datetime_safe import datetime
 from requests.exceptions import HTTPError, ConnectionError
 from rq import get_current_job
 
@@ -20,7 +23,9 @@ from kas.management.commands.import_default_pension_companies import Command as 
 from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated, \
     PreviousYearNegativePayout, FinalSettlement, PolicyDocument
 from kas.models import PersonTaxYearCensus
+from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.reportgeneration.kas_report import TaxPDF
+from prisme.models import Prisme10QBatch
 from worker.job_registry import get_job_types, resolve_job_function
 from worker.models import job_decorator, Job
 
@@ -491,15 +496,28 @@ def import_all_r75(job):
     dispatch_chained_jobs(jobs, job)
 
 
+def check_year_period(year, job, periode):
+    """
+    Checks that the year is in the correct periode otherwise logs the error on the job
+    :param year: the year to check
+    :param job: the executed job
+    :param periode: the periode to check
+    """
+    if year.year_part != periode:
+        job.status = 'failed'
+        job.result = {'error': 'Kan kun {title} år som er i perioden {periode}'.format(title=job.pretty_title,
+                                                                                       periode=periode)}
+        job.end_at = timezone.now()
+        job.save(update_fields=['status', 'result', 'end_at'])
+        return False
+    return True
+
+
 @job_decorator
 def autoligning(job):
     """Kør autoligning for et given år"""
     year = TaxYear.objects.get(pk=job.arguments['year_pk'])
-    if year.year_part != 'selvangivelse':
-        job.status = 'failed'
-        job.result = {'error': 'Kan kun autoligne år som er i perioden selvangivelse'}
-        job.end_at = timezone.now()
-        job.save(update_fields=['status', 'result', 'end_at'])
+    if not check_year_period(year, job, 'selvangivelse'):
         return
 
     # if no user is found this will raise an exception which is what we want
@@ -555,9 +573,58 @@ def autoligning(job):
         job.finish(result)
 
 
-def generate_final_settlements_for_year():
-    # TODO wait fo mmj to finish the layout for the final settlement.
-    pass
+@job_decorator
+def generate_final_settlements_for_year(job):
+    """
+    For each person tax year generate a final settlement if:
+    person_tax_year is fully tab liable and
+    there exists one or more active and slutlignet policies.
+    """
+    tax_year = TaxYear.objects.get(pk=job.arguments['year_pk'])
+    if not check_year_period(tax_year, job, 'ligning'):
+        return
+
+    generated_final_settlements = 0
+
+    qs = PersonTaxYear.objects.filter(
+        tax_year=tax_year,
+        fully_tax_liable=True
+    ).annotate(
+        active_policies=Count('policytaxyear', filter=Q(policytaxyear__active=True, policytaxyear__slutlignet=True))
+    ).filter(active_policies__gt=0)
+    for person_tax_year in qs.iterator():
+        TaxFinalStatementPDF.generate_pdf(person_tax_year=person_tax_year)
+        generated_final_settlements += 1
+
+    job.finish({'status': 'Genererede slutopgørelser', 'message': generated_final_settlements})
+
+
+@job_decorator
+def generate_batch_and_transactions_for_year(job):
+    tax_year = TaxYear.objects.get(pk=job.arguments['year_pk'])
+    if not check_year_period(tax_year, job, 'ligning'):
+        return
+
+    collect_date = datetime(year=tax_year.year, month=9, day=1, tzinfo=pytz.timezone(settings.TIME_ZONE))
+    prisme10Q_batch = Prisme10QBatch(
+        created_by=job.created_by,
+        tax_year=tax_year,
+        collect_date=collect_date
+    )
+    prisme10Q_batch.save()
+
+    settlements = FinalSettlement.objects.filter(person_tax_year__tax_year=tax_year, invalid=False)
+    settlements_count = 0
+    new_transactions = 0
+    for final_settlement in settlements:
+        settlements_count += 1
+        if final_settlement.get_transaction_amount() != 0:
+            prisme10Q_batch.add_transaction(final_settlement)
+            new_transactions += 1
+
+    job.finish({'status': 'Genererede batch og transaktioner',
+                'message': 'Genererede {transactions} på baggrund af {settlements} slutopgørelser'.format(transactions=new_transactions,
+                                                                                                          settlements=settlements_count)})
 
 
 def dispatch_final_settlements_for_year():
@@ -567,9 +634,10 @@ def dispatch_final_settlements_for_year():
         job.status = rq_job.get_status()
         job.progress = 0
         job.started_at = timezone.now()
-        total = FinalSettlement.objects.filter(status='created'). \
-            filter(person_tax_year__tax_year__pk=job.arguments['year_pk']).count()
-        job.arguments['total_count'] = total
+        settlements = FinalSettlement.objects.exclude(invalid=True).filter(status='created'). \
+            filter(person_tax_year__tax_year__pk=job.arguments['year_pk'])
+        settlements.update(title=job.arguments['title'])
+        job.arguments['total_count'] = settlements.count()
         job.arguments['current_count'] = 0
         job.save(update_fields=['status', 'progress', 'started_at', 'arguments'])
 
@@ -586,8 +654,9 @@ def dispatch_final_settlements(job):
     generator = EboksDispatchGenerator.from_settings()
     client = EboksClient.from_settings()
     has_more = False
-    settlements = FinalSettlement.objects.filter(
+    settlements = FinalSettlement.objects.exclude(invalid=True).filter(
         status='created').filter(person_tax_year__tax_year__pk=job.parent.arguments['year_pk'])[:dispatch_page_size+1]
+
     pending_messages = {}
     current_number_of_items = 0
     for i, settlement in enumerate(settlements, start=1):
@@ -600,7 +669,8 @@ def dispatch_final_settlements(job):
         except (ConnectionError, HTTPError) as e:
             job.status = 'failed'
             job.result = client.parse_exception(e)
-            job.save(update_fields=['status', 'result'])
+            job.traceback = repr(traceback.format_exception(type(e), e, e.__traceback__))
+            job.save(update_fields=['status', 'result', 'traceback'])
             mark_parent_job_as_failed(job)
             break
         else:
@@ -611,7 +681,7 @@ def dispatch_final_settlements(job):
     while pending_messages:
         update_status_for_pending_dispatches(client, pending_messages)
         pending_messages = {settlement.message_id: settlement for settlement in FinalSettlement.objects.filter(
-            status='post_processing', persontaxyear__tax_year__pk=job.parent.arguments['year_pk'])[:50]}
+            status='post_processing', person_tax_year__tax_year__pk=job.parent.arguments['year_pk'])[:50]}
         if pending_messages:
             sleep(10)
 
@@ -619,8 +689,14 @@ def dispatch_final_settlements(job):
         parent = Job.objects.filter(pk=job.parent.pk).select_for_update()[0]
         current_count = parent.arguments['current_count'] + min(current_number_of_items, dispatch_page_size)
         job.set_progress(current_count, parent.arguments['total_count'])
-        if has_more is False:
-            # if we are done mark the parent job as finished
+        if not has_more:
+            if job.status != 'failed':
+                # set the current year part to genoptagelse only if job didnt fail
+                year = TaxYear.objects.get(pk=parent.arguments['year_pk'])
+                year.year_part = 'genoptagelsesperiode'
+                year.save(update_fields=['year_part'])
+
+            # mark the parent job as finished
             parent.finish(result={'dispatched_items': current_count})
 
     if has_more:
@@ -639,7 +715,7 @@ def dispatch_final_settlement(job):
     """
     client = EboksClient.from_settings()
     settlement = FinalSettlement.objects.get(uuid=job.arguments['uuid'])
-    generator = EboksDispatchGenerator.from_settings(title=settlement.title)
+    generator = EboksDispatchGenerator.from_settings()
     send_settlement = settlement.dispatch_to_eboks(client, generator)
     if send_settlement.status == 'post_processing':
         job.set_progress_pct(50)
