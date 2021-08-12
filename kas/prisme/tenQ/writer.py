@@ -67,8 +67,8 @@ class TenQTransaction(dict):
         return '{:%Y%m%d}'.format(date)
 
     @staticmethod
-    def format_omraade_nummer(date):
-        return '{:%Y}'.format(date)[1:]
+    def format_omraade_nummer(year):
+        return str(year)[1:]
 
     @staticmethod
     def format_amount(amount):
@@ -116,10 +116,20 @@ class TenQFixWidthFieldLineTransactionType26(TenQTransaction):
     fieldspec = TenQTransaction.fieldspec + (
         ('individ_type', 2, '20'),  # Hardcoded to 20 according to spec
         ('rate_nummer', 3, '999'),  # Hardcoded to 999 according to spec
-        ('line_number', 3, 'nul'),  # Hardcoded to "nul" (yes, 3 charaters) according to spec
-        ('rate_text', 60, None),
+        ('line_number', 3, None),
     )
     trans_type = 26
+
+    # Special case for field 'rate_text': This field should be appended at the end and not
+    # right justified with max. 60 characters.
+
+    def serialize_transaction(self, **kwargs):
+        line = super(
+            TenQFixWidthFieldLineTransactionType26, self
+        ).serialize_transaction(**kwargs)
+        line += kwargs['rate_text'][:60]
+
+        return line
 
 
 class TenQTransactionWriter(object):
@@ -128,13 +138,15 @@ class TenQTransactionWriter(object):
     transaction_24 = None
     transaction_26 = None
     transaction_list = ''
+    rate_text1 = None
+    rate_text2 = None
 
     def __init__(self, collect_date, year):
 
         time_stamp = TenQTransaction.format_timestamp(timezone.now())
-        omraad_nummer = TenQTransaction.format_omraade_nummer(collect_date)
+        omraad_nummer = TenQTransaction.format_omraade_nummer(year)
         opkraev_dato = collect_date.date()
-        forfald_dato = opkraev_dato + timedelta(days=20)
+        forfald_dato = opkraev_dato + timedelta(days=19)
 
         # Next weekday
         if forfald_dato.weekday() in (5, 6):
@@ -144,7 +156,6 @@ class TenQTransactionWriter(object):
             'time_stamp': time_stamp,
             'omraad_nummer': omraad_nummer,
             'paalign_aar': year,
-            'rate_text': 'KAS %s' % (str(year)),
             'opkraev_dato': TenQTransaction.format_date(opkraev_dato),
             'forfald_dato': TenQTransaction.format_date(forfald_dato),
             'betal_dato': TenQTransaction.format_date(forfald_dato),
@@ -153,6 +164,9 @@ class TenQTransactionWriter(object):
             'fra_periode': TenQTransaction.format_date(date(year=year, month=1, day=1)),
             'til_periode': TenQTransaction.format_date(date(year=year, month=12, day=31)),
         }
+
+        self.rate_text1 = 'Pigisanit pissarsiat ilaasa akileraarutaat (KAS) {year} / '.format(year=str(year))
+        self.rate_text2 = 'Skat af visse kapitalafkast (KAS) {year}'.format(year=str(year))
 
         self.transaction_10 = TenQFixWidthFieldLineTransactionType10(**init_data)
         self.transaction_24 = TenQFixWidthFieldLineTransactionType24(**init_data)
@@ -167,7 +181,18 @@ class TenQTransactionWriter(object):
         return '\r\n'.join([
             self.transaction_10.serialize_transaction(**data),
             self.transaction_24.serialize_transaction(**data),
-            self.transaction_26.serialize_transaction(**data),
+            # First line of rate_text
+            self.transaction_26.serialize_transaction(
+                line_number='000',
+                rate_text=self.rate_text1,
+                **data
+            ),
+            # Second line of rate_text, containing the remaining characters after the first 60
+            self.transaction_26.serialize_transaction(
+                line_number='001',
+                rate_text=self.rate_text2,
+                **data
+            ),
         ])
 
 

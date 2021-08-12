@@ -69,7 +69,13 @@ def send_batch(job):
             )
 
         destination_folder = settings.TENQ['dirs'][destination]
-        content = batch.get_content()
+
+        # When sending to development environment, only send 100 entries
+        if destination == '10q_development':
+            content = batch.get_content(max_entries=100)
+        else:
+            content = batch.get_content()
+
         filename = "KAS_10Q_export_{}.10q".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
 
         with tempfile.NamedTemporaryFile(mode='w') as batchfile:

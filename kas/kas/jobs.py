@@ -3,7 +3,6 @@ import base64
 import traceback
 from time import sleep
 
-import pytz
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -605,7 +604,7 @@ def generate_batch_and_transactions_for_year(job):
     if not check_year_period(tax_year, job, 'ligning'):
         return
 
-    collect_date = datetime(year=tax_year.year, month=9, day=1, tzinfo=pytz.timezone(settings.TIME_ZONE))
+    collect_date = datetime(timezone.now().year, month=9, day=1, tzinfo=timezone.get_current_timezone())
     prisme10Q_batch = Prisme10QBatch(
         created_by=job.created_by,
         tax_year=tax_year,
