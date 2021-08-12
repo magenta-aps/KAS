@@ -161,9 +161,12 @@ class Prisme10QBatch(models.Model):
             status='cancelled'
         )
 
-    def get_content(self):
+    def get_content(self, max_entries=None):
+        qs = self.active_transactions_qs
+        if max_entries is not None:
+            qs = qs[:max_entries]
         return '\r\n'.join([
-            x.prisme10Q_content for x in self.active_transactions_qs
+            x.prisme10Q_content for x in qs
         ])
 
     def add_transaction(self, final_settlement):
