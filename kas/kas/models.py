@@ -141,6 +141,11 @@ class TaxYear(models.Model):
     )
     year_part = models.TextField(choices=tax_year_part_year_choices, default='selvangivelse')
 
+    rate_text_for_transactions = models.TextField(
+        verbose_name=_('Tekst brugt i opkrævninger sendt ud for skatteåret'),
+        default=''
+    )
+
     @property
     def is_leap_year(self):
         return calendar.isleap(self.year)
