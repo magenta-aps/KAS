@@ -159,6 +159,9 @@ class Prisme10QBatch(models.Model):
     def active_transactions_qs(self):
         return self.transaction_set.exclude(
             status='cancelled'
+        ).exclude(
+            amount__gt=-100,
+            amount__lt=100
         )
 
     def get_content(self, max_entries=None):

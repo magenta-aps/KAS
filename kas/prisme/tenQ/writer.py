@@ -138,10 +138,14 @@ class TenQTransactionWriter(object):
     transaction_24 = None
     transaction_26 = None
     transaction_list = ''
-    rate_text1 = None
-    rate_text2 = None
+    tax_year = None
 
     def __init__(self, collect_date, year):
+
+        # Late import of TaxYear to avoid circular imports
+        from kas.models import TaxYear  # noqa
+
+        self.tax_year = TaxYear.objects.get(year=year)
 
         time_stamp = TenQTransaction.format_timestamp(timezone.now())
         omraad_nummer = TenQTransaction.format_omraade_nummer(year)
@@ -158,15 +162,12 @@ class TenQTransactionWriter(object):
             'paalign_aar': year,
             'opkraev_dato': TenQTransaction.format_date(opkraev_dato),
             'forfald_dato': TenQTransaction.format_date(forfald_dato),
-            'betal_dato': TenQTransaction.format_date(forfald_dato),
+            'betal_dato': TenQTransaction.format_date(opkraev_dato),
             'rentefri_dato': TenQTransaction.format_date(forfald_dato),
-            'stiftelse_dato': TenQTransaction.format_date(date.today()),
+            'stiftelse_dato': TenQTransaction.format_date(opkraev_dato),
             'fra_periode': TenQTransaction.format_date(date(year=year, month=1, day=1)),
             'til_periode': TenQTransaction.format_date(date(year=year, month=12, day=31)),
         }
-
-        self.rate_text1 = 'Pigisanit pissarsiat ilaasa akileraarutaat (KAS) {year} / '.format(year=str(year))
-        self.rate_text2 = 'Skat af visse kapitalafkast (KAS) {year}'.format(year=str(year))
 
         self.transaction_10 = TenQFixWidthFieldLineTransactionType10(**init_data)
         self.transaction_24 = TenQFixWidthFieldLineTransactionType24(**init_data)
@@ -178,22 +179,22 @@ class TenQTransactionWriter(object):
             "rate_beloeb": TenQTransaction.format_amount(amount_in_dkk * 100),  # Amount is in øre, so multiply by 100
             'afstem_noegle': afstem_noegle,
         }
-        return '\r\n'.join([
+        # Initial two lines
+        result_lines = [
             self.transaction_10.serialize_transaction(**data),
             self.transaction_24.serialize_transaction(**data),
-            # First line of rate_text
-            self.transaction_26.serialize_transaction(
-                line_number='000',
-                rate_text=self.rate_text1,
-                **data
-            ),
-            # Second line of rate_text, containing the remaining characters after the first 60
-            self.transaction_26.serialize_transaction(
-                line_number='001',
-                rate_text=self.rate_text2,
-                **data
-            ),
-        ])
+        ]
+        # One type 26 line for each line in the rate text.
+        for line_nr, line in enumerate(self.tax_year.rate_text_for_transactions.splitlines()):
+            result_lines.append(
+                self.transaction_26.serialize_transaction(
+                    line_number=str(line_nr).rjust(3, '0'),
+                    rate_text=line,
+                    **data
+                ),
+            )
+
+        return '\r\n'.join(result_lines)
 
 
 # afstem_noegle = '44edf2b0-9e2d-40fa-8087-cb37cfbdb66'  # SET PROPERTY HERE Skal vaere unik pr. dataleverandoer identifikation og pr. G19-transaktiontype og pr. kommune (hordcoded based on random uuid)
