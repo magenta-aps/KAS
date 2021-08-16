@@ -149,22 +149,25 @@ class TenQTransactionWriter(object):
 
         time_stamp = TenQTransaction.format_timestamp(timezone.now())
         omraad_nummer = TenQTransaction.format_omraade_nummer(year)
-        opkraev_dato = collect_date.date()
-        forfald_dato = opkraev_dato + timedelta(days=19)
+        created_date = collect_date.date()
+        last_payment_date = created_date + timedelta(days=19)
 
         # Next weekday
-        if forfald_dato.weekday() in (5, 6):
-            forfald_dato += timedelta(days=7-forfald_dato.weekday())
+        if last_payment_date.weekday() in (5, 6):
+            last_payment_date += timedelta(days=7-last_payment_date.weekday())
 
         init_data = {
             'time_stamp': time_stamp,
             'omraad_nummer': omraad_nummer,
             'paalign_aar': year,
-            'opkraev_dato': TenQTransaction.format_date(opkraev_dato),
-            'forfald_dato': TenQTransaction.format_date(forfald_dato),
-            'betal_dato': TenQTransaction.format_date(opkraev_dato),
-            'rentefri_dato': TenQTransaction.format_date(forfald_dato),
-            'stiftelse_dato': TenQTransaction.format_date(opkraev_dato),
+            # Note that the names of the following two datefields have different
+            # meanings in Prisme and in the 10Q format. The way there are used
+            # here results in the correct data in Prisme.
+            'opkraev_dato': TenQTransaction.format_date(last_payment_date),
+            'forfald_dato': TenQTransaction.format_date(created_date),
+            'betal_dato': TenQTransaction.format_date(last_payment_date),
+            'rentefri_dato': TenQTransaction.format_date(last_payment_date),
+            'stiftelse_dato': TenQTransaction.format_date(created_date),
             'fra_periode': TenQTransaction.format_date(date(year=year, month=1, day=1)),
             'til_periode': TenQTransaction.format_date(date(year=year, month=12, day=31)),
         }
