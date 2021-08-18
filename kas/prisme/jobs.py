@@ -94,4 +94,4 @@ def send_batch(job):
 
         # If batch was delivered, mark all the related transactions as delivered
         if batch.status == Prisme10QBatch.STATUS_DELIVERED:
-            batch.active_transaction_qs.update(status=Transaction.STATUS_DELIVERED)
+            batch.active_transactions_qs.update(status='transferred')
