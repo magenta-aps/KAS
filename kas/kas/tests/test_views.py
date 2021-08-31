@@ -437,10 +437,11 @@ class PaymentOverrideTestCase(BaseTestCase):
         # Cruder way of calculating the current date + 3 months + until next month
         # because calculating the same way as the tested function proves nothing (if they were identical but wrong, we wouldn't catch it)
         collect_date = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        collect_date = collect_date.replace(month=((collect_date.month+2) % 12) + 1)
-        month = collect_date.month
-        while month == collect_date.month:
-            collect_date += timedelta(days=1)
+        collect_date = collect_date.replace(day=1, month=((collect_date.month+2) % 12) + 1)
+        if timezone.now().day > 1:
+            month = collect_date.month
+            while month == collect_date.month:
+                collect_date += timedelta(days=1)
 
         self.assertEqual(batch.collect_date, collect_date)
         self.assertEqual(self.person_tax_year.transaction_set.count(), 1)

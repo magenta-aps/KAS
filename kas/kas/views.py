@@ -786,10 +786,11 @@ class FinalSettlementGenerateView(LoginRequiredMixin, SingleObjectMixin, View):
             # Set collect_date to today + 3 months + next 1st
             # This is the same as today + 4 months - (prev 1st or today if it's already the 1st)
             collect_date = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-            if collect_date.month < 9:
-                collect_date = collect_date.replace(month=collect_date.month+4)
+            add_months = 4 if timezone.now().day > 1 else 3
+            if collect_date.month+add_months <= 12:
+                collect_date = collect_date.replace(month=collect_date.month+add_months)
             else:
-                collect_date = collect_date.replace(year=collect_date.year+1, month=collect_date.month-8)
+                collect_date = collect_date.replace(year=collect_date.year+1, month=collect_date.month+add_months-12)
             prisme10Q_batch = Prisme10QBatch.objects.create(
                 created_by=request.user,
                 tax_year=self.object.tax_year,
