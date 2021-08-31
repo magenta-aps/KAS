@@ -93,14 +93,14 @@ After the MR is merged the new pillar data is automatically distributed to the s
 to run the orchestration.
 
 For production you need to ssh into the salt master (saltmaster-prod(ctrl1)) and access the salt-master container
-and run the orchestrations. (currently kas is not using an idempotent highstate)
+and apply the highstate.
     
     docker exec -ti saltmaster_master_1 /bin/bash
+    salt 'kas.production.app.nokasprod01.skat.telepost' staet.apply
     salt-run state.orch kas.service-prod
 
-Effectively the orchestration updates the docker-compose.yml (with the new image versions) located in `/opt/docker/kas/`
-and issues a docker pull to fetch the new image. When the new image is downloaded the orchestration stops the running containers
-and brings them all up using the new image. Everything related to static files and executing migrations is handled 
+This should effectively download the new images and re-start the containers if the version (and the images) where changed.
+Everything related to static files and executing migrations is handled 
 by the docker-image 
 
 ## Specific documentation

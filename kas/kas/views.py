@@ -5,6 +5,7 @@ import uuid
 from io import StringIO
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.db.models import Count, F, Q, Min
@@ -14,24 +15,19 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView, ListView, View, UpdateView, CreateView, FormView
-from django.views.generic.detail import DetailView
-from django.views.generic.detail import SingleObjectMixin, BaseDetailView
+from django.views.generic.detail import DetailView, SingleObjectMixin, BaseDetailView
 from ipware import get_client_ip
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
-from kas.forms import PersonListFilterForm, SelfReportedAmountForm, \
-    EditAmountsUpdateForm, PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, \
-    PolicyTaxYearActivationForm
-from kas.forms import PolicyNotesAndAttachmentForm, PersonNotesAndAttachmentForm, \
-    PaymentOverrideUpdateForm, \
-    PolicyListFilterForm
+from kas.forms import PersonListFilterForm, SelfReportedAmountForm, EditAmountsUpdateForm, \
+    PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, PolicyTaxYearActivationForm, PolicyNotesAndAttachmentForm, \
+    PersonNotesAndAttachmentForm, PaymentOverrideUpdateForm, PolicyListFilterForm
 from kas.jobs import dispatch_final_settlement
-from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note
-from kas.models import TaxYear, PersonTaxYear, PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement
+from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note, TaxYear, PersonTaxYear, \
+    PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
-from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear
-from kas.view_mixins import HighestSingleObjectMixin
-from kas.view_mixins import SpecialExcelMixin
+from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, HighestSingleObjectMixin, \
+    SpecialExcelMixin
 from prisme.models import Transaction, Prisme10QBatch
 from worker.models import Job
 
@@ -797,6 +793,12 @@ class FinalSettlementGenerateView(LoginRequiredMixin, SingleObjectMixin, View):
                 collect_date=collect_date
             )
             prisme10Q_batch.add_transaction(final_statement)
+
+        messages.add_message(request,
+                             messages.INFO,
+                             _('Ny slutopgørelse genereret for %(person)s for %(år)s') %
+                             {'person': self.object.person.name,
+                              'år': str(self.object.tax_year.year)})
 
         return HttpResponseRedirect(reverse('kas:person_in_year', kwargs={'year': self.object.year,
                                                                           'person_id': self.object.person.id}))
