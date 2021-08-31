@@ -65,6 +65,17 @@
     </nav>
     <hr class="p-0 m-0">
 {% endif %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert text-center {% if message.level == 20 %}alert-info
+                          {% elif message.level == 25 %}alert-success
+                          {% elif message.level == 30 %}alert-warning
+                          {% elif message.level == 40 %}alert-danger
+                          {% endif %}" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
     <div class="p-4">
 {% block content %}
 {% endblock %}
