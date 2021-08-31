@@ -1245,6 +1245,12 @@ class FinalSettlement(EboksDispatch):
 
         return amount
 
+    def get_transaction(self):
+        return Transaction.objects.filter(
+            source_content_type=ContentType.objects.get_for_model(FinalSettlement),
+            object_id=self.pk
+        ).first()
+
 
 def delete_pdf(sender, instance, using, **kwargs):
     if instance.pdf:

@@ -262,8 +262,9 @@ class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
             self.object.person.address_line_4,
             self.object.person.address_line_5,
         )])
-        context['transactions'] = Transaction.objects.filter(person_tax_year=self.object)
+        context['transactions'] = Transaction.objects.filter(person_tax_year=self.object).order_by('-created_at')
         context['person_tax_years'] = PersonTaxYear.objects.filter(person=self.object.person)
+
         return context
 
 
