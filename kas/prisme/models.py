@@ -63,6 +63,15 @@ class Transaction(models.Model):
             afstem_noegle=str(self.uuid).replace('-', '')
         )
 
+    def get_10q_status_display(self):
+        # TODO: Have to use special case here since we do not send all transactions
+        # in a batch when sending the batch. Therefore we have to use individual
+        # status for the transactions when batch status is delivered.
+        if self.prisme10Q_batch.status == Prisme10QBatch.STATUS_DELIVERED:
+            return self.get_status_display()
+        else:
+            return self.prisme10Q_batch.get_status_display()
+
     def __str__(self):
         return '{type} for {person} på {amount} i {year}'.format(type=self.get_type_display(),
                                                                  person=self.person_tax_year.person.name,

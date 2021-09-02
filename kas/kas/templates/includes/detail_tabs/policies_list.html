@@ -9,8 +9,11 @@
         <th>{% trans 'Kræver efterbehandling' %}</th>
         <th>{% trans 'Næste behandlingsdato'%}</th>
         <th class="text-right">{% trans 'Fortrykt beløb'%}</th>
+        <th class="text-right">{% trans 'Justeret R75 beløb'%}</th>
         <th class="text-right">{% trans 'Selvangivet beløb'%}</th>
-        <th class="text-right">{% trans 'Forskel'%}</th>
+        <th class="text-right">{% trans 'Ansat beløb'%}</th>
+        <th class="text-right">{% trans 'Anvendt beløb'%}</th>
+        <th class="text-right">{% trans 'Selvangivet forskel'%}</th>
     </tr>
     </thead>
     <tbody>
@@ -23,7 +26,10 @@
             <td>{% if policy.efterbehandling %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}</td>
             <td>{{ policy.next_processing_date|date:'SHORT_DATE_FORMAT'|default_if_none:"" }}</td>
             <td class="text-right">{{ policy.prefilled_amount|default_if_none:"" }}</td>
+            <td class="text-right">{{ policy.adjusted_r75_amount|default_if_none:"" }}</td>
             <td class="text-right">{{ policy.self_reported_amount|default_if_none:"" }}</td>
+            <td class="text-right">{{ policy.assessed_amount|default_if_none:"" }}</td>
+            <td class="text-right"><strong>{{ policy.get_assessed_amount|default_if_none:"" }}</strong></td>
             <td class="text-right">{% if policy.reported_difference %}{{ policy.reported_difference }} ({{ policy.reported_difference_pct }} %){% endif %}</td>
         </tr>
     {% empty %}
