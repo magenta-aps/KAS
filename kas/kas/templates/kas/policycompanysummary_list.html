@@ -18,7 +18,16 @@
     {% endif %}
   {% endif %}
 
-  <h1>{% blocktrans with year=object.year %}Liste over Policeopsummeringer i år {{year}}{% endblocktrans %}</h1>
+  <h1>
+    {% blocktrans with year=object.year %}Liste over Policeopsummeringer i år {{year}}{% endblocktrans %}
+    {% include 'includes/help_text/question_mark.html' with target_id='help_text' %}
+  </h1>
+
+  {% blocktrans asvar summary_help_text %}På denne side kan der genereres opsummeringer pr. pensionsselskab, samt oplistes og hentes allerede genererede opsummeringer.
+  For at generere en ny opsummering for et selskab, vælg selskabet i boksen til højre, og tryk på "Generér og hent"
+  For at downloade en eksisterende opsummering, tryk på "Download"-linket i den relevante række i tabellen.{% endblocktrans %}
+
+  {% include 'includes/help_text/collapse.html' with help_text=summary_help_text target_id='help_text' %}
 
   <form method="post">
     {% csrf_token %}
