@@ -26,15 +26,21 @@
     {% with person=person_tax_year.person %}
     <tbody>
       <tr>
-        <th>{% trans 'Cpr-nummer' %}</th>
+        <th>{% trans 'Cpr-nummer' %}{% include 'includes/help_text/question_mark.html' with target_id='cpr_help' right=True %}</th>
         <td>{{ person.cpr }}</td>
       </tr>
-      <tr>
-        <th>{% trans 'Navn' %}</th>
-        <td>{{ person.name }}</td>
+      <tr id="cpr_help" class="collapse">
+          <td colspan="2">{% trans 'Personens CPR-nummer, informationen er importeret fra E-skat' %}</td>
       </tr>
       <tr>
-          <th>{% trans 'År' %}</th>
+        <th>{% trans 'Navn' %}{% include 'includes/help_text/question_mark.html' with target_id='name_help' right=True %}</th>
+        <td>{{ person.name }}</td>
+      </tr>
+      <tr id="name_help" class="collapse">
+          <td colspan="2">{% trans 'Personens navn, informationen er importeret fra E-skat' %}</td>
+      </tr>
+      <tr>
+          <th>{% trans 'År' %}{% include 'includes/help_text/question_mark.html' with target_id='year_select_help' right=True %}</th>
           <td>
               {% if historical %}
                   {{ person_tax_year.tax_year.year }}
@@ -47,32 +53,53 @@
               {% endif %}
           </td>
       </tr>
+      <tr id="year_select_help" class="collapse">
+          <td colspan="2">{% trans 'Skatteåret der vises informationer for' %}</td>
+      </tr>
       <tr>
-        <th>{% trans 'Kommunekode' %}</th>
+        <th>{% trans 'Kommunekode' %}{% include 'includes/help_text/question_mark.html' with target_id='municipality_code_help' right=True %}</th>
         <td>{{ person.municipality_code }}</td>
       </tr>
+      <tr id="municipality_code_help" class="collapse">
+          <td colspan="2">{% trans 'Kommunekode, informationen er importeret fra E-skat' %}</td>
+      </tr>
       <tr>
-        <th>{% trans 'Kommunenavn' %}</th>
+        <th>{% trans 'Kommunenavn' %}{% include 'includes/help_text/question_mark.html' with target_id='municipality_name_help' right=True %}</th>
         <td>{{ person.municipality_name }}</td>
       </tr>
+      <tr id="municipality_name_help" class="collapse">
+          <td colspan="2">{% trans 'Kommunekode, informationen er importeret fra E-skat' %}</td>
+      </tr>
       <tr>
-        <th>{% trans 'Adresse' %}</th>
+        <th>{% trans 'Adresse' %}{% include 'includes/help_text/question_mark.html' with target_id='joined_address_help' right=True %}</th>
         <td><pre>{{ joined_address }}</pre></td>
       </tr>
+      <tr id="joined_address_help" class="collapse">
+          <td colspan="2">{% trans 'Personens fulde postadresse, informationen er importeret fra E-skat' %}</td>
+      </tr>
       <tr>
-        <th>{% trans 'Adresse på én linie' %}</th>
+        <th>{% trans 'Adresse på én linie' %}{% include 'includes/help_text/question_mark.html' with target_id='full_address_help' right=True %}</th>
         <td>{{ person.full_address|default:"" }}</td>
       </tr>
+      <tr id="full_address_help" class="collapse">
+          <td colspan="2">{% trans 'Personens fulde postadresse på en linie, informationen er importeret fra E-skat' %}</td>
+      </tr>
       <tr>
-        <th>{% trans 'Skatteomfang' %}</th>
+        <th>{% trans 'Skatteomfang' %}{% include 'includes/help_text/question_mark.html' with target_id='fully_tax_liable_help' right=True %}</th>
         <td>{% if person_tax_year.fully_tax_liable %}{% trans 'Fuldt skattepligtig' %}{% else %}{% trans 'Ikke fuldt skattepligtig' %}{% endif%}</td>
       </tr>
-      <tr>
-        <th>{% blocktrans with year=view.year %}Skattedage i {{ year }}{% endblocktrans %}</th>
-        <td>{{ person_tax_year.number_of_days }}</td>
+      <tr id="fully_tax_liable_help" class="collapse">
+          <td colspan="2">{% trans 'Personens skattepligt, personen kan være "Fuldt skattepligtig" eller "Ikke fuldt skattepligtig"' %}</td>
       </tr>
       <tr>
-          <th>{% trans 'Alle bilag og notater behandlet' %}</th>
+        <th>{% blocktrans with year=view.year %}Skattedage i {{ year }}{% endblocktrans %}{% include 'includes/help_text/question_mark.html' with target_id='number_of_days_help' right=True %}</th>
+        <td>{{ person_tax_year.number_of_days }}</td>
+      </tr>
+      <tr id="number_of_days_help" class="collapse">
+          <td colspan="2">{% trans 'Personens antal af skattepligtige datge i skatteåret. Der kan være op til 366 dage, og skatteberegningen fastsættes ud fra forholdet mellem antallet af dage og samlede dage i dette skatteår' %}</td>
+      </tr>
+      <tr>
+          <th>{% trans 'Alle bilag og notater behandlet' %}{% include 'includes/help_text/question_mark.html' with target_id='all_documents_and_notes_handled_help' right=True %}</th>
           <td>
               {% if person_tax_year.all_documents_and_notes_handled %}
                   <span>{% trans 'Ja' %}</span>
@@ -85,13 +112,22 @@
               {% endif %}
           </td>
       </tr>
-      <tr>
-          <th>{% trans 'Slutlignet' %}</th>
-          <td>{% if person_tax_year.slutlignet %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}</td>
+      <tr id="all_documents_and_notes_handled_help" class="collapse">
+          <td colspan="2">{% trans 'Er der lavet skattemessig ligning på personen efter at alle bilag og noter er tilføjet personen' %}</td>
       </tr>
       <tr>
-          <th>{% trans 'Kræver efterbehandling' %}</th>
+          <th>{% trans 'Slutlignet' %}{% include 'includes/help_text/question_mark.html' with target_id='slutlignet_help' right=True %}</th>
+          <td>{% if person_tax_year.slutlignet %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}</td>
+      </tr>
+      <tr id="slutlignet_help" class="collapse">
+          <td colspan="2">{% trans 'Er der lavet slutligning på denne person' %}</td>
+      </tr>
+      <tr>
+          <th>{% trans 'Kræver efterbehandling' %}{% include 'includes/help_text/question_mark.html' with target_id='efterbehandling_help' right=True %}</th>
           <td>{% if person_tax_year.efterbehandling %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}</td>
+      </tr>
+      <tr id="efterbehandling_help" class="collapse">
+          <td colspan="2">{% trans 'Er der behov for at udføre efterbehandling på denne person' %}</td>
       </tr>
     </tbody>
     {% endwith %}
