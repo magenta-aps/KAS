@@ -161,6 +161,19 @@
                 </form>
             {% endif %}
             <a href="{% url 'kas:policy_history_list' policy.pk %}" class="btn btn-secondary">{% trans 'Vis historik' %}</a>
+            {% include 'includes/help_text/question_mark.html' with target_id='actions_help_texts' %}
+            {% blocktrans asvar actions_help_text %}<b>Tilføj bilag/notater</b> Vedhæfter en tekst og/eller en fil til denne police for skatteåret.
+
+            <b>Ret selvangivet beløb</b> Kun tilgængelig når skatteåret er i perioden "Selvangivelse". Her kan beløbet korrigeres, f.eks. ud fra henvendelse fra borger. I samme arbejdsgang kan der tilføjes notat og/eller bilag som dokumenterer korrektionen.
+
+            <b>Ret beløb</b> Tilgængelig når skatteåret ikke er i perioden "Selvangivelse". Her kan alle beløbene korrigeres (justeret R75-beløb, selvangivet beløb, ansat-beløb), og policen kan markeres som slutlignet.
+
+            <b>Ret borgerbetaling</b> Kun tilgængelig hvis der foreligger en aftale med pensionsselskabet. Her kan rettes det beløb som borgeren allerede har betalt.
+
+            <b>Afregistrer</b> Kun tilgængelig hvis policen ikke allerede er afregistreret. Deaktiverer policen, så den ikke indgår i beregningen af borgerens kapitalafkastskat
+
+            <b>Aktivér</b> Kun tilgængelig hvis policen er afregistreret. Aktiverer policen, så den indgår i beregningen af borgerens kapitalafkastskat{% endblocktrans %}
+            {% include 'includes/help_text/collapse.html' with help_text=actions_help_text target_id='actions_help_texts' %}
         </fieldset>
     {% endif %}
     <div class="mb-2">
