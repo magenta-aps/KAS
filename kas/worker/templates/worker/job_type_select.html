@@ -5,5 +5,13 @@
         {% csrf_token %}
         {{ form }}
         <input class="btn btn-success" type="submit" value="{% trans 'Vælg' %}">
+        {% include 'includes/help_text/question_mark.html' with target_id='help' %}
     </form>
+
+    {% blocktrans asvar help_text_jobs %}
+    På denne side kan der vælges hvilket type job der skal køres.
+    Når der er valgt en jobtype, skal der efterfølgende vælges parametre til jobbet, f.eks. hvilket skatteår der skal behandles data for.
+    {% endblocktrans %}
+    {% include 'includes/help_text/collapse.html' with target_id='help' help_text=help_text_jobs %}
+
 {% endblock %}

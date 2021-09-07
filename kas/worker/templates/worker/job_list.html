@@ -1,7 +1,22 @@
 {% extends 'kas/layout.html' %}
+{% load static %}
 {% load i18n %}
 {% block content %}
     <a class="btn btn-success" href="{% url 'worker:job_type_select' %}">{% trans 'Start Nyt job' %}</a>
+
+    {% get_current_language as language_code %}
+    {% if language_code == 'kl-GL' %}
+        {% static 'doc/kl/Manual til sagsbehandling på KAS-systemet.pdf' as manual_url %}
+    {% else %}
+        {% static 'doc/da/Manual til sagsbehandling på KAS-systemet.pdf' as manual_url %}
+    {% endif %}
+
+    {% blocktrans with link=manual_url asvar help_text_jobs %}På denne side oplistes kørende og kørte jobs, med relevant information om hvert job.
+        Med knappen "Start nyt job" kan der påbegyndes en ny jobkørsel, som foretager en længerevarende operation på de data der ligger i systemet, som f.eks. autoligning eller oprettelse af selvangivelser.
+        Yderligere information kan findes i <a href="{{link}}">Overbliksmanualen</a>{% endblocktrans %}
+    {% include 'includes/help_text/question_mark.html' with target_id='help' %}
+    {% include 'includes/help_text/collapse.html' with target_id='help' help_text=help_text_jobs %}
+
     <table id="table" data-url="{% url 'worker:job_ajax' %}" data-toggle="table" data-id-field="uuid" data-data-field="results"
            data-total-field="count" data-locale="{{ table_locale }}" data-pagination="true" data-side-pagination="server"
            data-page-size="10" data-toolbar="" data-query-params="queryParams" data-sort-order="desc" data-sort-name="created_at">
