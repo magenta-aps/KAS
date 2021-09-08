@@ -144,6 +144,15 @@
             </form>
         {% endif %}
         <a href="{% url 'kas:person_history_list' person_tax_year.pk %}" class="btn btn-secondary">{% trans 'Vis historik' %}</a>
+        {% include 'includes/help_text/question_mark.html' with target_id='actions_help_texts' %}
+        {% blocktrans asvar actions_help_text %}<b>Opret ny police</b> Opretter en ny police for personen for dette skatteår. Dette er praktisk hvis der eksisterer en police, men hverken borgeren eller R75-dataene har angivet policen
+
+        <b>Tilføj bilag/notater</b> Vedhæfter en tekst og/eller en fil til dette personskatteår
+
+        <b>Generer ny slutopgørelse</b> Kun tilgængelig når skatteåret er i Genoptagelsesperioden, og der foreligger mindst én police for skatteåret. Opretter en slutopgørelse som pdf-fil, der kan downloades til inspektion eller sendes.
+
+        <b>Vis historik</b> Viser tidligere udgaver af dette personskatteår, hvor gamle stamdata kan inspiceres.{% endblocktrans %}
+        {% include 'includes/help_text/collapse.html' with help_text=actions_help_text target_id='actions_help_texts' %}
     </fieldset>
     <div class="mb-2">
         {% include 'includes/help_text/question_mark.html' with target_id='js-nav-collapse' only %}
