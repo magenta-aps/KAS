@@ -409,6 +409,10 @@ class PersonTaxYear(HistoryMixin, models.Model):
         return self.policytaxyear_set.filter(next_processing_date__gte=timezone.now()).aggregate(
             Max('next_processing_date'))['next_processing_date__max']
 
+    @property
+    def active_policies_qs(self):
+        return self.policytaxyear_set.filter(active=True)
+
     def __str__(self):
         return f"{self.__class__.__name__}(cpr={self.person.cpr}, year={self.tax_year.year})"
 
@@ -1183,7 +1187,7 @@ class FinalSettlement(EboksDispatch):
     def get_payment_info(self):
         result = []
 
-        for policy in self.person_tax_year.policytaxyear_set.all():
+        for policy in self.person_tax_year.active_policies_qs:
             if policy.pension_company_pays:
                 result.append({
                     'text': _('Afgift for police nr. {policenummer} ved {pensionsselskab} (betalt af pensionsselskab)').format(
