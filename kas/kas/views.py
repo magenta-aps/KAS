@@ -16,6 +16,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView, ListView, View, UpdateView, CreateView, FormView
 from django.views.generic.detail import DetailView, SingleObjectMixin, BaseDetailView
+from django.views.generic.list import MultipleObjectMixin
 from ipware import get_client_ip
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
@@ -554,7 +555,7 @@ class PolicyPaymentOverrideView(LoginRequiredMixin, CreateOrUpdateViewWithNotesA
         return super(PolicyPaymentOverrideView, self).form_valid(form)
 
 
-class PensionCompanySummaryFileView(LoginRequiredMixin, HighestSingleObjectMixin, FormView):
+class PensionCompanySummaryFileView(LoginRequiredMixin, HighestSingleObjectMixin, MultipleObjectMixin, FormView):
     model = TaxYear
     form_class = PensionCompanySummaryFileForm
     template_name = "kas/policycompanysummary_list.html"
