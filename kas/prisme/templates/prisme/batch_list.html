@@ -2,20 +2,27 @@
 {% load i18n %}
 {% block content %}
 
-<div class="container">
-    <h1>{% trans 'Batches' %}</h1>
+    <h1>
+        {% trans 'Prisme-overførsler' %}
+        {% include 'includes/help_text/question_mark.html' with target_id='help_text' %}
+    </h1>
+
+    {% blocktrans asvar batch_help_text %}På denne side oplistes de transationsbatches der er oprettet til overførsel til Prisme.
+        En transaktionsbatch er en samling af transaktioner, formatteret til import i Prisme, der overføres samlet som en fil.
+        Ved klik på de enkelte rækker vises detaljer for det enkelte batch, hvor data også kan downloades, og der kan afsendes batches til prisme som ikke allerede er sendt.{% endblocktrans %}
+    {% include 'includes/help_text/collapse.html' with help_text=batch_help_text target_id='help_text' %}
 
     <table class="table">
-    <thead>
-    <tr>
-        <th class="col-sm-2">{% trans 'Skatteår' %}</th>
-        <th class="col-sm-2">{% trans 'Oprettet' %}</th>
-        <th class="col-sm-2">{% trans 'Oprettet af' %}</th>
-        <th class="col-sm-2">{% trans 'Status' %}</th>
-        <th class="col-sm-2">{% trans 'Sendt' %}</th>
-        <th class="col-sm-2">{% trans 'Sendt af' %}</th>
-    </tr>
-    </thead>
+        <thead>
+        <tr>
+            <th class="col-sm-2">{% trans 'Skatteår' %}</th>
+            <th class="col-sm-2">{% trans 'Oprettet' %}</th>
+            <th class="col-sm-2">{% trans 'Oprettet af' %}</th>
+            <th class="col-sm-2">{% trans 'Status' %}</th>
+            <th class="col-sm-2">{% trans 'Sendt' %}</th>
+            <th class="col-sm-2">{% trans 'Sendt af' %}</th>
+        </tr>
+        </thead>
         <tbody>
         {% for batch in batches %}
         {% url 'prisme:batch' pk=batch.pk as batch_url %}
@@ -30,6 +37,5 @@
         {% endfor %}
         </tbody>
     </table>
-</div>
 
 {% endblock %}
