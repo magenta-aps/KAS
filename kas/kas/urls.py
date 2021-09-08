@@ -56,7 +56,7 @@ urlpatterns = [
     path('final_settlement/generate/<int:pk>/', FinalSettlementGenerateView.as_view(), name='generate-final-settlement'),
     path('final_settlement/invalid/<uuid:pk>/', MarkFinalSettlementAsInvalid.as_view(), name='invalid-final-settlement'),
     path('final_settlement/dispatch/<uuid:pk>/', DispatchFinalSettlement.as_view(), name='dispatch-final-settlement'),
-    path('final_settlement/<int:year>/<int:cpr>/', CurrentFinalSettlementDownloadView.as_view(),
+    path('final_settlement/<int:year>/<str:cpr>/', CurrentFinalSettlementDownloadView.as_view(),
          name='current-final-settlement'),
 
 

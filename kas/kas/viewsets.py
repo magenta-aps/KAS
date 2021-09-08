@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from kas.models import PensionCompany, Person, PersonTaxYear, PolicyDocument, PolicyTaxYear, TaxYear, FinalSettlement
 from kas.serializers import PensionCompanySerializer, PersonSerializer, PersonTaxYearSerializer, \
     PolicyDocumentSerializer, PolicyTaxYearSerializer, TaxYearSerializer
-from project.renders import ProxyRender
+from project.renders import PdfProxyRender
 
 
 class TaxYearFilter(filters.FilterSet):
@@ -103,7 +103,7 @@ router.register(r'policy_document', PolicyDocumentViewSet)
 
 
 class CurrentFinalSettlementDownloadView(APIView):
-    renderer_classes = [ProxyRender, ]
+    renderer_classes = [PdfProxyRender, ]
 
     def get_object(self):
         try:

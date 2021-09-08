@@ -260,18 +260,14 @@ class PolicyDetailView(HasUserMixin, TemplateView):
         return context
 
 
-class ViewFinalSettlementView(View):
+class ViewFinalSettlementView(HasUserMixin, View):
 
     def get(self, *args, year, **kwargs):
         try:
             year = int(year)
         except ValueError:
             return HttpResponse(status=400)
-        cpr = self.request.session.get('user_info', {}).get('CPR', None)
-        if cpr:
-            client = RestClient()
-            r = client.get_final_settlement(year, cpr)
-            print(r.status_code)
-            if r.status_code == 200:
-                return FileResponse(r.iter_content(), content_type='application/pdf')
+        r = RestClient().get_final_settlement(year, self.cpr)
+        if r.status_code == 200:
+            return FileResponse(r.iter_content(), content_type='application/pdf')
         return HttpResponse(content=_('Ingen slutopgørelse for givet år'), status=404, content_type='text/html; charset=utf-8')

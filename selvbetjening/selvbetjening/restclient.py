@@ -1,5 +1,3 @@
-import urllib.parse
-
 import requests
 
 from django.conf import settings
@@ -177,5 +175,9 @@ class RestClient(object):
         return policy_response
 
     def get_final_settlement(self, year, cpr):
-        return requests.get(urllib.parse.urljoin(settings.REST_HOST, f'final_settlement/{year}/{cpr}/'),
-                            headers=self.headers, stream=True)
+        return requests.get(
+            f'{settings.REST_HOST}/final_settlement/{year}/{cpr}/',
+            headers=self.headers,
+            stream=True,
+            verify=False,  # settings.REST_CA_CERT,
+        )
