@@ -97,7 +97,7 @@ class YearPkForm(BootstrapForm):
 
 
 class AutoligningsYearForm(BootstrapForm):
-    year_pk = forms.ChoiceField(choices=[], required=True)
+    year_pk = forms.ChoiceField(choices=[], required=True, label=_('År'))
 
     def __init__(self, *args, **kwargs):
         super(AutoligningsYearForm, self).__init__(*args, **kwargs)
