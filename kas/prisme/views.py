@@ -111,7 +111,7 @@ class Prisme10QBatchDownloadView(LoginRequiredMixin, View):
         return response
 
 
-class Prisme10QBatchSendView(IsStaffMixin, FormView):
+class Prisme10QBatchSendView(LoginRequiredMixin, FormView):
 
     form_class = BatchSendForm
     template_name = 'prisme/batch_send.html'
