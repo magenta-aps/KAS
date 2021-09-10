@@ -230,7 +230,7 @@ class PaymentOverrideUpdateForm(forms.ModelForm, BootstrapForm):
 
 class PensionCompanySummaryFileForm(BootstrapForm):
     pension_company = PensionCompanyChoiceField(
-        queryset=PensionCompany.objects.filter(agreement_present=True),
+        queryset=PensionCompany.objects.all(),
     )
 
 
