@@ -7,7 +7,7 @@
 <div class="container">
 
     <p>{% blocktrans %}Digital indberetning af selvangivelse for 2020 er ikke længere tilgængelig. Kontakt venligst Skattestyrelsen.{% endblocktrans %}</p>
-    <a href="{% url 'selvbetjening:final-settlement' year=year %}">{% trans 'Vis sluptgørelse' %}</a>
+    <a href="{% url 'selvbetjening:final-settlement' year=year %}">{% trans 'Vis slutopgørelse' %}</a>
     <div class="accordion" id="policies">
 
         {% for policy in items %}

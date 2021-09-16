@@ -78,11 +78,11 @@
           <td colspan="2">{% trans 'Personadresse importeret fra mandtal' %}</td>
       </tr>
       <tr>
-        <th>{% trans 'Adresse på én linie' %}{% include 'includes/help_text/question_mark.html' with target_id='full_address_help' right=True %}</th>
+        <th>{% trans 'Adresse på én linje' %}{% include 'includes/help_text/question_mark.html' with target_id='full_address_help' right=True %}</th>
         <td>{{ person.full_address|default:"" }}</td>
       </tr>
       <tr id="full_address_help" class="collapse">
-          <td colspan="2">{% trans 'Personadresse (i en linie) importeret fra mandtal' %}</td>
+          <td colspan="2">{% trans 'Personadresse (i én linje) importeret fra mandtal' %}</td>
       </tr>
       <tr>
         <th>{% trans 'Skatteomfang' %}{% include 'includes/help_text/question_mark.html' with target_id='fully_tax_liable_help' right=True %}</th>

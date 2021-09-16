@@ -2,7 +2,7 @@
 {% load static %}
 {% load i18n %}
 {% block content %}
-    <a class="btn btn-success" href="{% url 'worker:job_type_select' %}">{% trans 'Start Nyt job' %}</a>
+    <a class="btn btn-success" href="{% url 'worker:job_type_select' %}">{% trans 'Start nyt job' %}</a>
 
     {% get_current_language as language_code %}
     {% if language_code == 'kl-GL' %}

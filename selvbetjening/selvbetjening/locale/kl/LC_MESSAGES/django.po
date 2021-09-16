@@ -295,7 +295,7 @@ msgid "Opsummering"
 msgstr "Eqikkaaneq"
 
 #: templates/view_single_year.html:10
-msgid "Vis sluptgørelse"
+msgid "Vis slutopgørelse"
 msgstr ""
 
 #: templates/view_single_year.html:61

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-16 10:43+0000\n"
+"POT-Creation-Date: 2021-09-16 12:35+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -47,7 +47,7 @@ msgid "Titel"
 msgstr ""
 
 #: forms.py:109
-msgid "Vil blive brugt som title feltet i e-boks"
+msgid "Vil blive brugt som titelfeltet i e-boks"
 msgstr ""
 
 #: job_registry.py:16
@@ -103,11 +103,11 @@ msgid "Nulstil til KUN mockup data"
 msgstr ""
 
 #: job_registry.py:97
-msgid "Imporer alle mockup mandtal"
+msgid "Importer alle mockup mandtal"
 msgstr ""
 
 #: job_registry.py:105
-msgid "Imporer alle mockup r75"
+msgid "Importer alle mockup r75"
 msgstr ""
 
 #: job_registry.py:113
@@ -154,24 +154,12 @@ msgstr ""
 msgid "Besked"
 msgstr ""
 
-#: templates/worker/job.html.py:8
-msgid "Start slow job"
-msgstr ""
-
-#: templates/worker/job.html.py:14
-msgid "Start job with childen"
-msgstr ""
-
-#: templates/worker/job.html.py:20
-msgid "Failing job"
-msgstr ""
-
 #: templates/worker/job_create_form.html:23
 msgid "Start job"
 msgstr ""
 
 #: templates/worker/job_create_form.html:24
-msgid "Annuller"
+msgid "Annullér"
 msgstr ""
 
 #: templates/worker/job_detail.html:7
@@ -203,7 +191,7 @@ msgid "Fremskridt"
 msgstr ""
 
 #: templates/worker/job_list.html:5
-msgid "Start Nyt job"
+msgid "Start nyt job"
 msgstr ""
 
 #: templates/worker/job_list.html:14

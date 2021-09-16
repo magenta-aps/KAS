@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-16 10:40+0000\n"
+"POT-Creation-Date: 2021-09-16 12:35+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -364,7 +364,8 @@ msgstr ""
 msgid "Beskrivelse"
 msgstr ""
 
-#: models.py:974 templates/kas/policycompanysummary_list.html:65
+#: models.py:974 templates/includes/detail_tabs/attachments.html:11
+#: templates/kas/policycompanysummary_list.html:65
 msgid "Fil"
 msgstr ""
 
@@ -486,10 +487,6 @@ msgstr ""
 msgid "Tidspunkt"
 msgstr ""
 
-#: templates/includes/detail_tabs/attachments.html:11
-msgid "File"
-msgstr ""
-
 #: templates/includes/detail_tabs/attachments.html:31
 msgid "Ingen bilag fundet"
 msgstr ""
@@ -513,7 +510,7 @@ msgid "Selvangivet beløb fra borgeren"
 msgstr ""
 
 #: templates/includes/detail_tabs/beregnings_detaljer.html:35
-msgid "Beløb ansat undsagsbehandling eller autoligning"
+msgid "Beløb angivet af ansat under sagsbehandling eller autoligning"
 msgstr ""
 
 #: templates/includes/detail_tabs/beregnings_detaljer.html:41
@@ -951,7 +948,7 @@ msgid "KAS"
 msgstr ""
 
 #: templates/kas/login.html:22
-msgid "Username"
+msgid "Brugernavn"
 msgstr ""
 
 #: templates/kas/login.html:28
@@ -1059,11 +1056,11 @@ msgid "Personadresse importeret fra mandtal"
 msgstr ""
 
 #: templates/kas/persontaxyear_detail.html:81
-msgid "Adresse på én linie"
+msgid "Adresse på én linje"
 msgstr ""
 
 #: templates/kas/persontaxyear_detail.html:85
-msgid "Personadresse (i en linie) importeret fra mandtal"
+msgid "Personadresse (i én linje) importeret fra mandtal"
 msgstr ""
 
 #: templates/kas/persontaxyear_detail.html:88
@@ -1585,7 +1582,7 @@ msgstr ""
 
 #: views.py:780
 msgid ""
-"Der kan kun genereres nye slutupgørelser hvis året er i genoptagelsesperioden"
+"Der kan kun genereres nye slutopgørelser hvis året er i genoptagelsesperioden"
 msgstr ""
 
 #: views.py:801
