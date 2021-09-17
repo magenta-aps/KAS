@@ -49,9 +49,9 @@
 
         {% get_current_language as language_code %}
         {% if language_code == 'kl-GL' %}
-            {% static 'doc/kl/Manual til sagsbehandling på KAS-systemet.pdf' as manual_url %}
+            {% static 'doc/kl/Manual for system til skat af visse kapitalafkast (KAS).pdf' as manual_url %}
         {% else %}
-            {% static 'doc/da/Manual til sagsbehandling på KAS-systemet.pdf' as manual_url %}
+            {% static 'doc/da/Manual for system til skat af visse kapitalafkast (KAS).pdf' as manual_url %}
         {% endif %}
         <a class="p-2 text-muted" href="{{ manual_url }}" target="_blank">{% trans 'Manual' %}</a>
 
