@@ -106,7 +106,7 @@ class AutoligningsYearForm(BootstrapForm):
 
 
 class YearAndTitleForm(YearPkForm):
-    title = forms.CharField(label=_('Titel'), help_text=_('Vil blive brugt som title feltet i e-boks'))
+    title = forms.CharField(label=_('Titel'), help_text=_('Vil blive brugt som titelfeltet i e-boks'))
 
 
 # A simple form with just confirm or cancel submit buttons

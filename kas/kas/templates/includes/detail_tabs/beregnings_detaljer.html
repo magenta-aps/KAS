@@ -32,7 +32,7 @@
     <tr>
         <td>
             {% trans  'Ansat beløb' %}
-            {% trans 'Beløb ansat undsagsbehandling eller autoligning' as help_text_assessed %}
+            {% trans 'Beløb angivet af ansat under sagsbehandling eller autoligning' as help_text_assessed %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_assessed target_id='assessed_amount' %}
         </td>
         <td>{{ policy.assessed_amount|default_if_none:'' }}</td>

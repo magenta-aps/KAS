@@ -94,7 +94,7 @@ def get_job_types():
             'test_only': True,
         },
         'ImportAllMockupMandtal': {
-            'label': _('Imporer alle mockup mandtal'),
+            'label': _('Importer alle mockup mandtal'),
             'form_class': ConfirmForm,
             'result_template': 'worker/includes/status_only.html',
             'function': 'kas.jobs.import_all_mandtal',
@@ -102,7 +102,7 @@ def get_job_types():
             'not_in_dropdown': True,
         },
         'ImportAllMockupR75': {
-            'label': _('Imporer alle mockup r75'),
+            'label': _('Importer alle mockup r75'),
             'form_class': ConfirmForm,
             'result_template': 'worker/includes/status_only.html',
             'function': 'kas.jobs.import_all_r75',

@@ -777,7 +777,7 @@ class FinalSettlementGenerateView(LoginRequiredMixin, SingleObjectMixin, View):
         if not self.object.policytaxyear_set.exists():
             return HttpResponse(status=400, content=_('Der skal mindst være én police for at generere en slutopgørelse'))
         if self.object.tax_year.year_part != 'genoptagelsesperiode':
-            return HttpResponse(status=400, content=_('Der kan kun genereres nye slutupgørelser hvis året er i genoptagelsesperioden'))
+            return HttpResponse(status=400, content=_('Der kan kun genereres nye slutopgørelser hvis året er i genoptagelsesperioden'))
         final_statement = TaxFinalStatementPDF.generate_pdf(person_tax_year=self.object)
 
         if final_statement.get_transaction_amount() != 0:

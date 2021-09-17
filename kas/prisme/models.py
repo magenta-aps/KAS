@@ -30,7 +30,7 @@ class Transaction(models.Model):
     class Meta:
         ordering = ['created_at', 'uuid']
         verbose_name = _('transaktion')
-        verbose_name_plural = _('transaktionr')
+        verbose_name_plural = _('transaktioner')
 
     uuid = models.UUIDField(primary_key=True, default=uuid4)
     person_tax_year = models.ForeignKey('kas.PersonTaxYear', null=False, db_index=True, on_delete=models.PROTECT)

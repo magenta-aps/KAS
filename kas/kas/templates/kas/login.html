@@ -19,7 +19,7 @@
             <input type="hidden" name="next" value="{% url 'worker:job_list' %}">
             <div class="form-row">
                 <div class="col-md-4 mb-3">
-                    <input class="form-control{% if form.username.errors %} is-invalid{% endif %}" type="text" name="username" placeholder="{% trans 'Username' %}" required>
+                    <input class="form-control{% if form.username.errors %} is-invalid{% endif %}" type="text" name="username" placeholder="{% trans 'Brugernavn' %}" required>
                     {% if form.username.errors %}
                         <div class="invalid-feedback">{{ form.username.errors }}</div>
                     {% endif %}

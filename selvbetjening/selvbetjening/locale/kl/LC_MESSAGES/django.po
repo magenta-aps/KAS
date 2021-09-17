@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-06 14:47+0000\n"
+"POT-Creation-Date: 2021-09-16 10:44+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -79,13 +79,13 @@ msgid "Beregning"
 msgstr "Naatsorsuineq"
 
 #: templates/calculation.html:7 templates/form.html:42 templates/view.html:47
-#: templates/view.html:114 templates/view_single_year.html:23
-#: templates/view_single_year.html:95
+#: templates/view.html:114 templates/view_single_year.html:25
+#: templates/view_single_year.html:97
 msgid "Feltnavn"
 msgstr "Immersugassap aqqa"
 
 #: templates/calculation.html:9 templates/view.html:48 templates/view.html:115
-#: templates/view_single_year.html:24 templates/view_single_year.html:96
+#: templates/view_single_year.html:26 templates/view_single_year.html:98
 msgid "Værdi"
 msgstr ""
 
@@ -123,7 +123,7 @@ msgstr ""
 msgid "Skattepligtigt beløb / skattegrundlag"
 msgstr "Ukiumi akileraarfiusumi ullut akileraartussaaffiit"
 
-#: templates/closed.html:7
+#: templates/closed.html:7 templates/view_single_year.html:9
 msgid ""
 "Digital indberetning af selvangivelse for 2020 er ikke længere tilgængelig. "
 "Kontakt venligst Skattestyrelsen."
@@ -159,7 +159,7 @@ msgid "Policenummer"
 msgstr "Policenormu"
 
 #: templates/form.html:67 templates/view.html:54 templates/view.html:121
-#: templates/view_single_year.html:30 templates/view_single_year.html:102
+#: templates/view_single_year.html:32 templates/view_single_year.html:104
 msgid "Kapitalafkast PBL (DK) § 53 A"
 msgstr "Pigisanit pissarsiat PBL (DK) § 53 A"
 
@@ -260,14 +260,14 @@ msgid "Udtræk for %(year)s"
 msgstr ""
 
 #: templates/view.html:49 templates/view.html:116
-#: templates/view_single_year.html:25 templates/view_single_year.html:97
+#: templates/view_single_year.html:27 templates/view_single_year.html:99
 #, fuzzy
 #| msgid "Felt"
 msgid "Felt nr."
 msgstr "Immersugassaq"
 
 #: templates/view.html:59 templates/view.html:126
-#: templates/view_single_year.html:107
+#: templates/view_single_year.html:109
 msgid "Forudbetalt kapitalafkastskat"
 msgstr "Pigisanit pissarsianit akileraarut akilerallagaq"
 
@@ -286,23 +286,27 @@ msgstr ""
 "siusinnerusuneersut"
 
 #: templates/view.html:83 templates/view.html:89
-#: templates/view_single_year.html:38 templates/view_single_year.html:44
+#: templates/view_single_year.html:40 templates/view_single_year.html:46
 msgid "Dokumentation"
 msgstr "Uppernarsaat"
 
-#: templates/view.html:106 templates/view_single_year.html:87
+#: templates/view.html:106 templates/view_single_year.html:89
 msgid "Opsummering"
 msgstr "Eqikkaaneq"
 
-#: templates/view_single_year.html:59
+#: templates/view_single_year.html:10
+msgid "Vis slutopgørelse"
+msgstr ""
+
+#: templates/view_single_year.html:61
 msgid "Yderligere information til selvangivelsen."
 msgstr "Nammineerluni nalunaarsuinermi nalunaagassat allat."
 
-#: templates/view_single_year.html:64 templates/view_single_year.html:78
+#: templates/view_single_year.html:66 templates/view_single_year.html:80
 msgid "Ingen noter"
 msgstr "Nalunaagaqanngilaq"
 
-#: templates/view_single_year.html:73
+#: templates/view_single_year.html:75
 msgid ""
 "Indbetaling til private pensionsordninger i andre lande. Angiv beløb samt "
 "land."
@@ -310,9 +314,13 @@ msgstr ""
 "Soraarnerussutisiaqarnissamut aaqqissuussinernut nunani allaniittunut, "
 "nammineq pilersissimasanut akiliutit. Amerlassusiat aamma nuna nalunaakkit."
 
-#: views.py:138
+#: views.py:140
 msgid "--- angiv navn ---"
 msgstr "--- aqqa nalunaaruk ---"
+
+#: views.py:273
+msgid "Ingen slutopgørelse for givet år"
+msgstr ""
 
 #~ msgid "Fremført negativt afkast fra tidligere år"
 #~ msgstr ""
