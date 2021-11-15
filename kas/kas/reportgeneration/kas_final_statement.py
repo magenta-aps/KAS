@@ -440,7 +440,8 @@ class TaxFinalStatementPDF(FPDF):
             self.set_xy(self.left_margin, self.yposition)
             self.multi_cell(h=self.tablerowheight, align='L', w=c1w, txt=self.summary_table2_summary[language], border=1)
             self.set_xy(self.left_margin+c1w, self.yposition)
-            self.multi_cell(h=self.tablerowheight, align='R', w=c2w, txt="{:,}".format(self.remainder_calculation['total_tax'] - self.remainder_calculation['prepayment']).replace(",", "."), border=1)
+            # Prepayment er et negativt tal
+            self.multi_cell(h=self.tablerowheight, align='R', w=c2w, txt="{:,}".format(self.remainder_calculation['total_tax'] + self.remainder_calculation['prepayment']).replace(",", "."), border=1)
             self.yposition = self.get_y()
             self.yposition += self.std_text_space
             self.set_font(self.std_font_name, '', self.std_table_font_size)
