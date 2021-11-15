@@ -423,7 +423,10 @@ class PaymentOverrideTestCase(BaseTestCase):
         self.tax_year.save()
 
         self.assertTrue(self.client.login(username=self.username, password=self.password))
-        response = self.client.post(reverse('kas:generate-final-settlement', kwargs={'pk': self.person_tax_year.pk}))
+        response = self.client.post(
+            reverse('kas:generate-final-settlement', kwargs={'pk': self.person_tax_year.pk}),
+            {'interest_on_remainder': '0.0', 'extra_payment_for_previous_missing': '0'}
+        )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Prisme10QBatch.objects.count(), 1)
         batch = Prisme10QBatch.objects.first()

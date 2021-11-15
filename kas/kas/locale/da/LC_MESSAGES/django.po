@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-16 12:35+0000\n"
+"POT-Creation-Date: 2021-11-15 14:53+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -123,22 +123,22 @@ msgstr ""
 msgid "Ikke slutlignet"
 msgstr ""
 
-#: forms.py:80 forms.py:114 forms.py:164
+#: forms.py:80 forms.py:114 forms.py:170
 msgid "Nyt notat"
 msgstr ""
 
-#: forms.py:83 forms.py:113 forms.py:175
+#: forms.py:83 forms.py:113 forms.py:181
 msgid "Fil-beskrivelse"
 msgstr ""
 
-#: forms.py:163 templates/includes/single_notes_and_attachment_form.html:14
+#: forms.py:169 templates/includes/single_notes_and_attachment_form.html:14
 #: templates/kas/persontaxyear_historical_list.html:36
 #: templates/kas/policytaxyear_create.html:50
 #: templates/kas/policytaxyear_historical_list.html:40
 msgid "Notat"
 msgstr ""
 
-#: forms.py:185 forms.py:186 models.py:482
+#: forms.py:191 forms.py:192 models.py:482
 #: templates/includes/detail_tabs/policies_list.html:13
 #: templates/kas/policytaxyear_create.html:38
 #: templates/kas/policytaxyear_detail.html:77
@@ -389,28 +389,44 @@ msgstr ""
 msgid "Slutopgørelse er ikke gyldig"
 msgstr ""
 
-#: models.py:1193
+#: models.py:1163
+msgid ""
+"Procentsats for hvor mange renter der skal lægges til for meget / for lidt "
+"opkrævet"
+msgstr ""
+
+#: models.py:1171 models.py:1316
+msgid ""
+"Ekstra beløb til betaling der dækker en delmængde af en tidligere ikke-"
+"betalt regning"
+msgstr ""
+
+#: models.py:1263
 #, python-brace-format
 msgid ""
 "Afgift for police nr. {policenummer} ved {pensionsselskab} (betalt af "
 "pensionsselskab)"
 msgstr ""
 
-#: models.py:1201
+#: models.py:1272
 #, python-brace-format
 msgid "Afgift for police nr. {policenummer} ved {pensionsselskab}"
 msgstr ""
 
-#: models.py:1214
+#: models.py:1285
 msgid "Forudindbetaling"
 msgstr ""
 
-#: models.py:1220
+#: models.py:1291
 #, python-brace-format
 msgid "Justering fra årsopgørelse oprettet d. {oprettelsesdato}"
 msgstr ""
 
-#: models.py:1238
+#: models.py:1303
+msgid "Rente af udeståender ({rente}% af {beløb})"
+msgstr ""
+
+#: models.py:1332
 msgid "I alt:"
 msgstr ""
 
@@ -795,6 +811,7 @@ msgid "Tilføj flere bilag"
 msgstr ""
 
 #: templates/includes/notes_and_documents_form.html:83
+#: templates/kas/finalstatement_generate.html:24
 msgid "Opret"
 msgstr ""
 
@@ -1115,16 +1132,16 @@ msgstr ""
 msgid "Tilføj bilag/notater"
 msgstr ""
 
-#: templates/kas/persontaxyear_detail.html:143
+#: templates/kas/persontaxyear_detail.html:141
 msgid "Generer ny slutopgørelse"
 msgstr ""
 
-#: templates/kas/persontaxyear_detail.html:146
+#: templates/kas/persontaxyear_detail.html:143
 #: templates/kas/policytaxyear_detail.html:163
 msgid "Vis historik"
 msgstr ""
 
-#: templates/kas/persontaxyear_detail.html:148
+#: templates/kas/persontaxyear_detail.html:145
 msgid ""
 "<b>Opret ny police</b> Opretter en ny police for personen for dette "
 "skatteår. Dette er praktisk hvis der eksisterer en police, men hverken "
@@ -1142,7 +1159,7 @@ msgid ""
 "hvor gamle stamdata kan inspiceres."
 msgstr ""
 
-#: templates/kas/persontaxyear_detail.html:159
+#: templates/kas/persontaxyear_detail.html:156
 msgid ""
 "<b>Policer</b> Borgerens police for det valgte år. Klik på <b>Police nr.</b> "
 "for at gå til police.\n"
@@ -1576,20 +1593,20 @@ msgstr ""
 msgid "No %(verbose_name)s found matching the query"
 msgstr ""
 
-#: views.py:778
+#: views.py:787
 msgid "Der skal mindst være én police for at generere en slutopgørelse"
 msgstr ""
 
-#: views.py:780
+#: views.py:789
 msgid ""
 "Der kan kun genereres nye slutopgørelser hvis året er i genoptagelsesperioden"
 msgstr ""
 
-#: views.py:801
+#: views.py:815
 #, python-format
 msgid "Ny slutopgørelse genereret for %(person)s for %(år)s"
 msgstr ""
 
-#: views.py:815
+#: views.py:829
 msgid "Du kan kun markere slutopgørelser der ikke er afsendt som ugyldige."
 msgstr ""
