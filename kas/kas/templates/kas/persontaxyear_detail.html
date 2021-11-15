@@ -138,10 +138,7 @@
         <a class="btn btn-success" href="{% url 'kas:policy_create' view.year view.person_id %}">{% trans 'Opret ny police' %}</a>
         <a class="btn btn-info" href="{% url 'kas:person_add_notes_or_attachement' person_tax_year.pk %}" >{% trans 'Tilføj bilag/notater' %}</a>
         {% if person_tax_year.tax_year.year_part == 'genoptagelsesperiode' and person_tax_year.policytaxyear_set.exists %}
-            <form style="display: inline" method="POST" action="{% url 'kas:generate-final-settlement' person_tax_year.pk %}">
-            {% csrf_token %}
-                <button class="btn btn-warning" type="submit">{% trans 'Generer ny slutopgørelse' %}</button>
-            </form>
+        <a class="btn btn-warning" href="{% url 'kas:generate-final-settlement' person_tax_year.pk %}">{% trans 'Generer ny slutopgørelse' %}</a>
         {% endif %}
         <a href="{% url 'kas:person_history_list' person_tax_year.pk %}" class="btn btn-secondary">{% trans 'Vis historik' %}</a>
         {% include 'includes/help_text/question_mark.html' with target_id='actions_help_texts' %}

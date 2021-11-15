@@ -2,7 +2,8 @@ import math
 
 from django.conf import settings
 from django.test import TestCase
-from kas.models import PolicyTaxYear, PersonTaxYear, TaxYear, Person, PensionCompany
+from kas.models import PolicyTaxYear, PersonTaxYear, TaxYear, Person, PensionCompany, FinalSettlement
+from prisme.models import Transaction, Prisme10QBatch
 
 
 class TestCalculationMath(TestCase):
@@ -323,3 +324,168 @@ class TestCalculationMath(TestCase):
         self.assertEquals(policy.calculated_full_tax, 1224)
         self.assertEquals(policy.year_adjusted_amount, 10000)
         self.assertEquals(policy.calculated_result, 1024)
+
+    def test_interest_calculation(self):
+        person = Person.objects.create(cpr='0101010101')
+        pension_company = PensionCompany.objects.create(res=12345678)
+        person_tax_year = PersonTaxYear.objects.create(
+            person=person,
+            tax_year=TaxYear.objects.create(year=2020),
+            number_of_days=366,
+        )
+        policy = PolicyTaxYear.objects.create(
+            person_tax_year=person_tax_year,
+            pension_company=pension_company,
+            policy_number='1234',
+            prefilled_amount=10000,
+            active_amount=PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED,
+            foreign_paid_amount_actual=0,
+        )
+        policy.recalculate()
+        policy.save()
+
+        policy_calculation = policy.get_calculation()
+
+        self.assertEquals(policy_calculation['tax_with_deductions'], 1530)
+
+        Transaction.objects.create(
+            person_tax_year=person_tax_year,
+            status='transferred',
+            type='prepayment',
+            source_content_type_id=1,
+            amount=-100
+        )
+
+        final_statement = FinalSettlement(
+            person_tax_year=person_tax_year,
+            interest_on_remainder=10,
+            extra_payment_for_previous_missing=500
+        )
+        final_statement.save()
+
+        calculation = final_statement.get_calculation_amounts()
+        # No previous transactions, and 500 as extra payments, tax of 10.000
+        self.assertDictEqual(calculation, {
+            'applicable_previous_statements_exist': False,
+            'previous_transactions_sum': 0,
+            'total_tax': 1530,
+            'prepayment': -100,
+            'remainder': 1430,
+            'interest_percent': 10,
+            'interest_factor': 0.1,
+            'interest_amount_on_remainder': 0,
+            'remainder_with_interest': 1430,
+            'extra_payment_for_previous_missing': 500,
+            'total_payment': 1930
+        })
+
+        # Put result in a transaction
+        prisme10Q_batch = Prisme10QBatch.objects.create(tax_year=person_tax_year.tax_year)
+        prisme10Q_batch.add_transaction(final_statement)
+        transaction = Transaction.objects.get(prisme10Q_batch=prisme10Q_batch)
+        transaction.status = 'transferred'
+        transaction.save()
+
+        # Now create a new statement that should consider the previous statement and transaction in its calculations
+        final_statement = FinalSettlement(
+            person_tax_year=person_tax_year,
+            interest_on_remainder=20,
+            extra_payment_for_previous_missing=200
+        )
+        final_statement.save()
+
+        calculation = final_statement.get_calculation_amounts()
+        self.assertDictEqual(calculation, {
+            'applicable_previous_statements_exist': True,
+            'previous_transactions_sum': 1930,  # What the previous statement ended up with
+            'total_tax': 1530,  # Tax based on current statement
+            'prepayment': -100,
+            'remainder': -500,  # difference
+            'interest_percent': 20,
+            'interest_factor': 0.2,
+            'interest_amount_on_remainder': -100,
+            'remainder_with_interest': -600,
+            'extra_payment_for_previous_missing': 200,
+            'total_payment': -400
+        })
+
+    def test_prior_transactions(self):
+        person = Person.objects.create(cpr='0101010101')
+        pension_company = PensionCompany.objects.create(res=12345678)
+        person_tax_year = PersonTaxYear.objects.create(
+            person=person,
+            tax_year=TaxYear.objects.create(year=2020),
+            number_of_days=366,
+        )
+        policy = PolicyTaxYear.objects.create(
+            person_tax_year=person_tax_year,
+            pension_company=pension_company,
+            policy_number='1234',
+            prefilled_amount=10000,
+            active_amount=PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED,
+            foreign_paid_amount_actual=0,
+        )
+        policy.recalculate()
+        policy.save()
+
+        policy_calculation = policy.get_calculation()
+        self.assertEquals(policy_calculation['tax_with_deductions'], 1530)
+
+        final_statement = FinalSettlement(
+            person_tax_year=person_tax_year,
+            interest_on_remainder=10,
+            extra_payment_for_previous_missing=500
+        )
+        final_statement.save()
+        final_statement = FinalSettlement(
+            person_tax_year=person_tax_year,
+            interest_on_remainder=20,
+            extra_payment_for_previous_missing=200
+        )
+        final_statement.save()
+
+        Transaction.objects.create(
+            person_tax_year=person_tax_year,
+            status='transferred',
+            type='prisme10q',
+            source_content_type_id=1,
+            amount=1000
+        )
+        calculation = final_statement.get_calculation_amounts()
+        # previous transactions of 1000, and 200 as extra payments, tax of 10.000
+        self.assertDictEqual(calculation, {
+            'applicable_previous_statements_exist': True,
+            'previous_transactions_sum': 1000,
+            'total_tax': 1530,
+            'remainder': 530,
+            'prepayment': 0,
+            'interest_percent': 20,
+            'interest_factor': 0.2,
+            'interest_amount_on_remainder': 106,
+            'remainder_with_interest': 636,
+            'extra_payment_for_previous_missing': 200,
+            'total_payment': 836
+        })
+
+        Transaction.objects.create(
+            person_tax_year=person_tax_year,
+            status='transferred',
+            type='prisme10q',
+            source_content_type_id=1,
+            amount=1000
+        )
+        calculation = final_statement.get_calculation_amounts()
+        # previous transactions of 2000, and 200 as extra payments, tax of 1000, resulting in negative payment
+        self.assertDictEqual(calculation, {
+            'applicable_previous_statements_exist': True,
+            'previous_transactions_sum': 2000,
+            'prepayment': 0,
+            'total_tax': 1530,
+            'remainder': -470,
+            'interest_percent': 20,
+            'interest_factor': 0.2,
+            'interest_amount_on_remainder': -94,
+            'remainder_with_interest': -564,
+            'extra_payment_for_previous_missing': 200,
+            'total_payment': -364
+        })

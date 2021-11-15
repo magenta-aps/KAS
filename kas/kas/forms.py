@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 
 from kas.fields import PensionCompanyChoiceField, DateInput
 from kas.forms_mixin import BootstrapForm
-from kas.models import PersonTaxYear, PolicyTaxYear, Note, PolicyDocument, PensionCompany, TaxYear
+from kas.models import PersonTaxYear, PolicyTaxYear, Note, PolicyDocument, PensionCompany, TaxYear, FinalSettlement
 
 
 class PersonListFilterForm(BootstrapForm):
@@ -156,6 +156,12 @@ class PolicyTaxYearActivationForm(forms.ModelForm):
     class Meta:
         model = PolicyTaxYear
         fields = ['active']
+
+
+class FinalStatementForm(forms.ModelForm, BootstrapForm):
+    class Meta:
+        model = FinalSettlement
+        fields = ['interest_on_remainder', 'extra_payment_for_previous_missing']
 
 
 class NoteForm(forms.ModelForm, BootstrapForm):

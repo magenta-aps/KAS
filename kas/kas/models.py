@@ -1156,6 +1156,23 @@ class FinalSettlement(EboksDispatch):
     pdf = models.FileField(upload_to=final_settlement_file_path)
     invalid = models.BooleanField(default=False, verbose_name=_('Slutopgørelse er ikke gyldig'))
 
+    interest_on_remainder = models.DecimalField(
+        default='0.0',
+        max_digits=5,
+        decimal_places=2,
+        verbose_name=_('Procentsats for hvor mange renter der skal lægges til for meget / for lidt opkrævet'),
+        blank=False,
+        null=False
+    )
+
+    extra_payment_for_previous_missing = models.IntegerField(
+        default=0,
+        validators=(MinValueValidator(limit_value=0),),
+        verbose_name=_('Ekstra beløb til betaling der dækker en delmængde af en tidligere ikke-betalt regning'),
+        blank=False,
+        null=False
+    )
+
     def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
         if self.status == 'send':
             raise RuntimeError('This final settlement has already been dispatched!')
@@ -1184,6 +1201,59 @@ class FinalSettlement(EboksDispatch):
             self.pdf.close()
         return self
 
+    def get_calculation_amounts(self):
+
+        # Prepayment is zero or a negative number
+        prepayment = self.person_tax_year.transaction_set.filter(type='prepayment').aggregate(amount=Sum('amount'))['amount'] or 0
+
+        total_tax = sum([
+            policy.get_calculation()['tax_with_deductions']
+            for policy in self.person_tax_year.active_policies_qs
+            if not policy.pension_company_pays
+        ])
+
+        previous_transactions_sum = sum([
+            transaction.amount
+            for transaction in Transaction.objects.filter(
+                person_tax_year=self.person_tax_year,
+                status='transferred',
+                type='prisme10q'
+            )
+        ])
+
+        remainder = total_tax - previous_transactions_sum - (-prepayment)  # Prepayment is negative
+
+        qs = self.get_other_statements().filter(invalid=False)
+        if self.created_at:
+            qs = qs.filter(created_at__lt=self.created_at)
+        applicable_previous_statements_exist = qs.exists()
+        interest_factor = 0.01 * float(self.interest_on_remainder)
+        interest_amount_on_remainder = int(interest_factor * remainder) if applicable_previous_statements_exist else 0
+
+        remainder_with_interest = remainder + interest_amount_on_remainder
+
+        total_payment = remainder_with_interest + self.extra_payment_for_previous_missing
+
+        return {
+            'prepayment': prepayment,
+            'applicable_previous_statements_exist': applicable_previous_statements_exist,
+            'total_tax': total_tax,  # Positive when paying tax
+            'previous_transactions_sum': previous_transactions_sum,  # Positive for paid (or billed) tax
+            'remainder': remainder,  # Difference; positive when paying tax, negative when refunding
+            'interest_percent': self.interest_on_remainder,
+            'interest_factor': interest_factor,
+            'interest_amount_on_remainder': interest_amount_on_remainder,  # Interest; positive when paying tax, negative when refunding. None if no previous transactions
+            'remainder_with_interest': remainder_with_interest,
+            'extra_payment_for_previous_missing': self.extra_payment_for_previous_missing,  # Employee-specified amount; positive when paying tax
+            'total_payment': total_payment
+        }
+
+    def get_other_statements(self):
+        qs = self.person_tax_year.finalsettlement_set
+        if self.uuid is not None:
+            qs = qs.exclude(uuid=self.uuid)
+        return qs
+
     def get_payment_info(self):
         result = []
 
@@ -1197,11 +1267,12 @@ class FinalSettlement(EboksDispatch):
                     'source_object': policy,
                 })
             else:
+                amount = policy.get_calculation()['tax_with_deductions']  # skat der skal betales per police
                 result.append({
                     'text': _('Afgift for police nr. {policenummer} ved {pensionsselskab}').format(
                         policenummer=policy.policy_number, pensionsselskab=policy.pension_company.name
                     ),
-                    'amount': policy.get_calculation()['tax_with_deductions'],  # skat der skal betales per police
+                    'amount': amount,
                     'source_object': policy,
                 })
         # modregn eksisterende transaktioner
@@ -1218,11 +1289,34 @@ class FinalSettlement(EboksDispatch):
             elif transaction.type == 'prisme10q':
                 result.append({
                     'text': _('Justering fra årsopgørelse oprettet d. {oprettelsesdato}').format(
-                        oprettelsesdato=transaction.created_at
+                        oprettelsesdato=transaction.created_at,
                     ),
                     'amount': -transaction.amount,
                     'source_object': transaction,
                 })
+
+        remainder_calculation = self.get_calculation_amounts()
+
+        # Beregn rente af udeståender hvis der er andre slutopgørelser
+        if remainder_calculation['applicable_previous_statements_exist']:
+            result.append({
+                'text': _('Rente af udeståender ({rente}% af {beløb})').format(
+                    **{
+                        'rente': self.interest_on_remainder,
+                        'beløb': remainder_calculation['remainder'],
+                    }
+                ),
+                'amount': remainder_calculation['interest_amount_on_remainder'],
+                'source_object': None,
+            })
+
+        # Fudge
+        if remainder_calculation['extra_payment_for_previous_missing']:
+            result.append({
+                'text': _('Ekstra beløb til betaling der dækker en delmængde af en tidligere ikke-betalt regning'),
+                'amount': remainder_calculation['extra_payment_for_previous_missing'],
+                'source_object': None,
+            })
 
         return result
 

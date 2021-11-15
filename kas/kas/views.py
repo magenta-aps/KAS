@@ -22,7 +22,7 @@ from ipware import get_client_ip
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from kas.forms import PersonListFilterForm, SelfReportedAmountForm, EditAmountsUpdateForm, \
     PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, PolicyTaxYearActivationForm, PolicyNotesAndAttachmentForm, \
-    PersonNotesAndAttachmentForm, PaymentOverrideUpdateForm, PolicyListFilterForm
+    PersonNotesAndAttachmentForm, PaymentOverrideUpdateForm, PolicyListFilterForm, FinalStatementForm
 from kas.jobs import dispatch_final_settlement
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note, TaxYear, PersonTaxYear, \
     PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement
@@ -769,16 +769,30 @@ class FinalSettlementDownloadView(LoginRequiredMixin, SingleObjectMixin, View):
         return response
 
 
-class FinalSettlementGenerateView(LoginRequiredMixin, SingleObjectMixin, View):
+class FinalSettlementGenerateView(LoginRequiredMixin, SingleObjectMixin, FormView):
     model = PersonTaxYear
+    template_name = 'kas/finalstatement_generate.html'
+    form_class = FinalStatementForm
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super(FinalSettlementGenerateView, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
+        return super(FinalSettlementGenerateView, self).post(request, *args, **kwargs)
+
+    def form_valid(self, form):
         if not self.object.policytaxyear_set.exists():
             return HttpResponse(status=400, content=_('Der skal mindst være én police for at generere en slutopgørelse'))
         if self.object.tax_year.year_part != 'genoptagelsesperiode':
             return HttpResponse(status=400, content=_('Der kan kun genereres nye slutopgørelser hvis året er i genoptagelsesperioden'))
-        final_statement = TaxFinalStatementPDF.generate_pdf(person_tax_year=self.object)
+
+        final_statement = TaxFinalStatementPDF.generate_pdf(
+            person_tax_year=self.object,
+            interest_on_remainder=form.cleaned_data['interest_on_remainder'],
+            extra_payment_for_previous_missing=form.cleaned_data['extra_payment_for_previous_missing']
+        )
 
         if final_statement.get_transaction_amount() != 0:
             # Set collect_date to today + 3 months + next 1st
@@ -790,13 +804,13 @@ class FinalSettlementGenerateView(LoginRequiredMixin, SingleObjectMixin, View):
             else:
                 collect_date = collect_date.replace(year=collect_date.year+1, month=collect_date.month+add_months-12)
             prisme10Q_batch = Prisme10QBatch.objects.create(
-                created_by=request.user,
+                created_by=self.request.user,
                 tax_year=self.object.tax_year,
                 collect_date=collect_date
             )
             prisme10Q_batch.add_transaction(final_statement)
 
-        messages.add_message(request,
+        messages.add_message(self.request,
                              messages.INFO,
                              _('Ny slutopgørelse genereret for %(person)s for %(år)s') %
                              {'person': self.object.person.name,
