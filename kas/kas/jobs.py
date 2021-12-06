@@ -10,7 +10,6 @@ from django.db.models import IntegerField, Sum, Q, Count
 from django.db.models.functions import Cast
 from django.db.utils import IntegrityError
 from django.utils import timezone
-from django.utils.datetime_safe import datetime
 from requests.exceptions import HTTPError, ConnectionError
 from rq import get_current_job
 
@@ -604,7 +603,7 @@ def generate_batch_and_transactions_for_year(job):
     if not check_year_period(tax_year, job, 'ligning'):
         return
 
-    collect_date = datetime(timezone.now().year, month=9, day=1, tzinfo=timezone.get_current_timezone())
+    collect_date = timezone.now().replace(month=9, day=1)
     prisme10Q_batch = Prisme10QBatch(
         created_by=job.created_by,
         tax_year=tax_year,
