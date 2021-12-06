@@ -1,7 +1,6 @@
-from datetime import timedelta
-
 from django.utils import timezone
 from django.utils.datetime_safe import date
+from prisme.tenQ.dates import get_last_payment_date
 
 
 # Temporary class for serializing transaction data in a writer
@@ -141,6 +140,8 @@ class TenQTransactionWriter(object):
     tax_year = None
 
     def __init__(self, collect_date, year):
+        # Make sure collect_date is on local time
+        collect_date = timezone.localtime(collect_date)
 
         # Late import of TaxYear to avoid circular imports
         from kas.models import TaxYear  # noqa
@@ -149,12 +150,8 @@ class TenQTransactionWriter(object):
 
         time_stamp = TenQTransaction.format_timestamp(timezone.now())
         omraad_nummer = TenQTransaction.format_omraade_nummer(year)
-        created_date = collect_date.date()
-        last_payment_date = created_date + timedelta(days=19)
-
-        # Next weekday
-        if last_payment_date.weekday() in (5, 6):
-            last_payment_date += timedelta(days=7-last_payment_date.weekday())
+        due_date = collect_date.date()
+        last_payment_date = get_last_payment_date(collect_date)
 
         init_data = {
             'time_stamp': time_stamp,
@@ -164,10 +161,10 @@ class TenQTransactionWriter(object):
             # meanings in Prisme and in the 10Q format. The way there are used
             # here results in the correct data in Prisme.
             'opkraev_dato': TenQTransaction.format_date(last_payment_date),
-            'forfald_dato': TenQTransaction.format_date(created_date),
+            'forfald_dato': TenQTransaction.format_date(due_date),
             'betal_dato': TenQTransaction.format_date(last_payment_date),
             'rentefri_dato': TenQTransaction.format_date(last_payment_date),
-            'stiftelse_dato': TenQTransaction.format_date(created_date),
+            'stiftelse_dato': TenQTransaction.format_date(due_date),
             'fra_periode': TenQTransaction.format_date(date(year=year, month=1, day=1)),
             'til_periode': TenQTransaction.format_date(date(year=year, month=12, day=31)),
         }
