@@ -97,9 +97,9 @@ class TaxFinalStatementPDF(FPDF):
                                    'dk': 'Tillæg af for lidt opkrævet kapitalafkastskat ({0}% af {1} kr.):'}
     summary_table2_correction5 = {'gl': 'Pigisanik pissarsiat akileraarutit sippuutaat ajunngitsorsiat ilanngullugit:',
                                   'dk': 'For meget opkrævet kapitalafkastskat med renter:'}
-    summary_table2_correction5a = {'gl': 'Pigisanit pissarsianit akileraarutit annikippallaamik akiligassanngortinneqarsimasut tapiliussaq ilanngullugu:',
-                                   'dk': 'For lidt opkrævet kapitalafkastskat med tillæg:'}
-    summary_table2_correction6 = {'gl': 'Pigisanik pissarsiat akileraarutaat akiligassat akilerneqanngisut:',
+    summary_table2_correction5a = {'gl': 'Siusinnerusukkut akileraarutit annikippallaamik akiligassanngortinneqarsimasut tapiliussaq\nilanngullugu:',
+                                   'dk': 'For lidt opkrævet kapitalafkastskat med tillæg:\n '}
+    summary_table2_correction6 = {'gl': 'Pigisanik pissarsiat akileraarutaat akiligassat akilerneqanngitsut:',
                                   'dk': 'Ikke betalt kapitalafkastskat ifølge tidligere meddelelse:'}
     summary_table2_correction7 = {'gl': 'Tunniunneqartussat katillugit:',
                                   'dk': 'Til udbetaling i alt:'}
@@ -492,7 +492,7 @@ class TaxFinalStatementPDF(FPDF):
             message = self.summary_table2_correction5a if remainder_positive else self.summary_table2_correction5
             self.set_font(self.std_font_name, '', self.std_table_font_size)
             self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(h=self.tablerowheight, align='L', w=c1w, txt=message[language], border=1)
+            self.multi_cell(h=self.tablerowheight/2, align='L', w=c1w, txt=message[language], border=1)
             self.set_xy(self.left_margin+c1w, self.yposition)
             self.multi_cell(h=self.tablerowheight, align='R', w=c2w, txt=self.format_amount(
                 self.remainder_calculation['remainder_with_interest']
