@@ -10,7 +10,7 @@ from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetail
     PersonTaxYearFailSendListView, PolicyTaxYearUnfinishedListView, PersonTaxYearDocumentsAndNotesUpdateView, \
     PolicyPaymentOverrideView, \
     PersonTaxYearUnhandledDocumentsAndNotes, FinalSettlementGenerateView, MarkFinalSettlementAsInvalid, \
-    DispatchFinalSettlement, PersonTaxYearGeneralAndForeignNotesListView
+    DispatchFinalSettlement, PersonTaxYearGeneralAndForeignNotesListView, UpdateSingleMandtal, WaitForSingleMandtal
 
 from kas.viewsets import CurrentFinalSettlementDownloadView
 app_name = 'kas'
@@ -58,7 +58,7 @@ urlpatterns = [
     path('final_settlement/dispatch/<uuid:pk>/', DispatchFinalSettlement.as_view(), name='dispatch-final-settlement'),
     path('final_settlement/<int:year>/<str:cpr>/', CurrentFinalSettlementDownloadView.as_view(),
          name='current-final-settlement'),
-
-
+    path('persontaxyear/<int:pk>//update_mandtal/', UpdateSingleMandtal.as_view(), name='update_persontaxyear_mandtal'),
+    path('wait_for_mandtal_update/<uuid:pk>/', WaitForSingleMandtal.as_view(), name='wait_for_mandtal_update'),
 
 ]

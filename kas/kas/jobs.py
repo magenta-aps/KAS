@@ -31,8 +31,13 @@ from worker.models import job_decorator, Job
 @job_decorator
 def import_mandtal(job):
     year = job.arguments['year']
+    cpr_limit = job.arguments.get('cpr')
 
     job.pretty_title = '%s - %s' % (job.pretty_job_type, year)
+
+    if cpr_limit:
+        job.pretty_title += ' for cpr nr %s' % (cpr_limit)
+
     job.save()
 
     tax_year = TaxYear.objects.get(year=year)
@@ -48,10 +53,15 @@ def import_mandtal(job):
 
     mandtal_created, mandtal_updated = ImportedKasMandtal.import_year(
         year, job, progress_factor, 0,
-        source_model=source_model
+        source_model=source_model,
+        cpr_limit=cpr_limit
     )
 
     qs = ImportedKasMandtal.objects.filter(skatteaar=year)
+
+    if cpr_limit is not None:
+        qs = qs.filter(cpr=cpr_limit)
+
     count = qs.count()
     progress_start = 50
     (persons_created, persons_updated) = (0, 0)
