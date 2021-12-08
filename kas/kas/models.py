@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models import Sum, Max
@@ -125,6 +126,15 @@ tax_year_part_year_choices = (
 )
 
 
+def max_sixty_characters_per_line_validator(value):
+    MAX_CHARACTERS_PER_LINE = 60
+    for x in value.splitlines():
+        if len(x) > MAX_CHARACTERS_PER_LINE:
+            raise ValidationError(
+                _('Ratetekst må ikke indeholde linjer med mere end 60 tegn')
+            )
+
+
 class TaxYear(models.Model):
 
     class Meta:
@@ -143,7 +153,8 @@ class TaxYear(models.Model):
 
     rate_text_for_transactions = models.TextField(
         verbose_name=_('Tekst brugt i opkrævninger sendt ud for skatteåret'),
-        default=''
+        default='',
+        validators=[max_sixty_characters_per_line_validator],
     )
 
     @property
