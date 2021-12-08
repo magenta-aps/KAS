@@ -23,7 +23,7 @@ from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockMode
 from kas.forms import PersonListFilterForm, SelfReportedAmountForm, EditAmountsUpdateForm, \
     PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, PolicyTaxYearActivationForm, PolicyNotesAndAttachmentForm, \
     PersonNotesAndAttachmentForm, PaymentOverrideUpdateForm, PolicyListFilterForm, FinalStatementForm
-from kas.jobs import dispatch_final_settlement
+from kas.jobs import dispatch_final_settlement, import_mandtal
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note, TaxYear, PersonTaxYear, \
     PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
@@ -52,7 +52,7 @@ class StatisticsView(LoginRequiredMixin, TemplateView):
         for x in ImportedKasMandtal.objects.values("skatteaar").annotate(number_per_year=Count('skatteaar')):
             by_year_data['imported_mandtal'][x['skatteaar']] = x['number_per_year']
 
-        for x in ImportedR75PrivatePension.objects.values("tax_year").annotate(number_per_year=Count('tax_year')):
+        for x in ImportedR75PrivatePension.s.values("tax_year").annotate(number_per_year=Count('tax_year')):
             by_year_data['imported_r75'][x['tax_year']] = x['number_per_year']
 
         for x in PersonTaxYear.objects.values("tax_year__year").order_by("tax_year__year").annotate(number_per_year=Count('pk')):
@@ -850,3 +850,76 @@ class DispatchFinalSettlement(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse('kas:person_in_year', kwargs={'year': self.object.person_tax_year.year,
                                                      'person_id': self.object.person_tax_year.person.id})
+
+
+class UpdateSingleMandtal(LoginRequiredMixin, SingleObjectMixin, View):
+    model = PersonTaxYear
+    job = None
+
+    def post(self, request, *args, **kwargs):
+
+        obj = self.get_object()
+        job = None
+
+        try:
+            job = Job.schedule_job(
+                import_mandtal,
+                job_type='ImportMandtalJob',
+                created_by=self.request.user,
+                job_kwargs={
+                    'year': obj.year,
+                    'cpr': obj.person.cpr,
+                    'source_model': 'eskat' if settings.ENVIRONMENT == "production" else 'mockup'
+                }
+            )
+        except Exception as e:
+            print(e)
+            raise e
+            messages.add_message(
+                request,
+                messages.ERROR,
+                _('Kunne ikke job for import af mandtal for enkelt person')
+            )
+            return HttpResponseRedirect(
+                reverse('kas:person_in_year', kwargs={'year': obj.year, 'person_id': obj.person.id})
+            )
+
+        return HttpResponseRedirect(
+            reverse('kas:wait_for_mandtal_update', kwargs={'pk': job.pk})
+        )
+
+
+class WaitForSingleMandtal(LoginRequiredMixin, SingleObjectMixin, TemplateView):
+    model = Job
+    template_name = 'kas/wait_for_single_mandtal.html'
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.person_tax_year = PersonTaxYear.objects.filter(
+            tax_year__year=self.object.arguments['year'],
+            person__cpr=self.object.arguments['cpr'],
+        ).first()
+
+        if self.object.status == 'finished':
+            messages.add_message(
+                request,
+                messages.INFO,
+                _('Mandtal opdateret')
+            )
+            return HttpResponseRedirect(
+                reverse('kas:person_in_year', kwargs={
+                    'year': self.person_tax_year.year,
+                    'person_id': self.person_tax_year.person.id
+                })
+            )
+
+        return super(WaitForSingleMandtal, self).get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        result = super().get_context_data(**kwargs)
+
+        result['person_tax_year'] = self.person_tax_year
+        result['elapsed'] = (timezone.now() - self.object.created_at).total_seconds()
+        result['timed_out'] = result['elapsed'] > 60
+
+        return result

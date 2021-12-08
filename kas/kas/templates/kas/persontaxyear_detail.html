@@ -93,7 +93,13 @@
       </tr>
       <tr>
         <th>{% blocktrans with year=view.year %}Skattedage i {{ year }}{% endblocktrans %}{% include 'includes/help_text/question_mark.html' with target_id='number_of_days_help' right=True %}</th>
-        <td>{{ person_tax_year.number_of_days }}</td>
+        <td>
+            <form action="{% url 'kas:update_persontaxyear_mandtal' person_tax_year.pk %}" method="POST">
+                {% csrf_token %}
+                {{ person_tax_year.number_of_days }}
+                <input type="submit" class="btn btn-sm btn-info" role="button" value="{% trans 'Opdater data fra mandtal' %}" />
+            </form>
+        </td>
       </tr>
       <tr id="number_of_days_help" class="collapse">
           <td colspan="2">{% trans 'Personens antal af skattepligtige dage i skatteåret importeret fra mandtal. Der kan være op til 366 dage, og skatteberegningen fastsættes ud fra forholdet mellem antallet af dage og samlede dage i dette skatteår' %}</td>

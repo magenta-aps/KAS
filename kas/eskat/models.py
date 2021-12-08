@@ -238,12 +238,15 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
     history = HistoricalRecords()
 
     @classmethod
-    def import_year(cls, year, job=None, progress_factor=1, progress_start=0, source_model=None):
+    def import_year(cls, year, job=None, progress_factor=1, progress_start=0, source_model=None, cpr_limit=None):
         if source_model is None:
             source_model = get_kas_mandtal_model()
 
         with transaction.atomic():
             qs = source_model.objects.filter(skatteaar=year)
+
+            if cpr_limit is not None:
+                qs = qs.filter(cpr=cpr_limit)
 
             # In case we share progress with another function, we want to only fill part of the progress, e.g. up to 50%
             count = qs.count()
