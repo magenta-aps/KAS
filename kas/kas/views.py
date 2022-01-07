@@ -789,11 +789,7 @@ class FinalSettlementGenerateView(LoginRequiredMixin, SingleObjectMixin, FormVie
         if self.object.tax_year.year_part != 'genoptagelsesperiode':
             return HttpResponse(status=400, content=_('Der kan kun genereres nye slutopgørelser hvis året er i genoptagelsesperioden'))
 
-        final_statement = TaxFinalStatementPDF.generate_pdf(
-            person_tax_year=self.object,
-            interest_on_remainder=form.cleaned_data['interest_on_remainder'],
-            extra_payment_for_previous_missing=form.cleaned_data['extra_payment_for_previous_missing']
-        )
+        final_statement = TaxFinalStatementPDF.generate_pdf(person_tax_year=self.object, **form.cleaned_data)
 
         if final_statement.get_transaction_amount() != 0:
             collect_date = get_due_date(timezone.now())

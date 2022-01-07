@@ -1184,6 +1184,28 @@ class FinalSettlement(EboksDispatch):
         null=False
     )
 
+    PAYMENT_TEXT_BULK = 1
+    PAYMENT_TEXT_DUE_ON_DATE = 2
+    PAYMENT_TEXT_DUE = 3
+    PAYMENT_TEXT_PREV_AMOUNT_DUE = 4
+    PAYMENT_TEXT_REFUND = 5
+
+    text_used_for_payment_choices = (
+        (PAYMENT_TEXT_BULK, _('Standardtekst for automatisk slutopgørelse')),
+        (PAYMENT_TEXT_DUE_ON_DATE, _('Beløbet forfalder på dato X')),
+        (PAYMENT_TEXT_DUE, _('Beløbet er forfaldent')),
+        (PAYMENT_TEXT_PREV_AMOUNT_DUE, _('Tidligere beløb er forfaldent, nyt beløb forfalder på dato X')),
+        (PAYMENT_TEXT_REFUND, _('Tilbagebetaling')),
+    )
+
+    text_used_for_payment = models.IntegerField(
+        verbose_name=_('Tekst om beløb til betaling'),
+        choices=text_used_for_payment_choices,
+        blank=False,
+        null=False,
+        default=PAYMENT_TEXT_BULK
+    )
+
     def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
         if self.status == 'send':
             raise RuntimeError('This final settlement has already been dispatched!')

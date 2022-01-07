@@ -21,9 +21,10 @@ RUN unzip /tmp/oracle_driver.zip -d /usr/local/lib && \
     ldconfig
 USER kas
 COPY ./docker/kas_entrypoint.sh /entrypoint.sh
-COPY ./kas /app
+COPY --chown=kas:kas ./kas /app
 EXPOSE 8000
 VOLUME  /srv/media
 ENTRYPOINT ["/entrypoint.sh"]
 WORKDIR /app
+RUN django-admin compilemessages
 CMD ["gunicorn","-b","0.0.0.0:8000","project.wsgi:application","-w 4","--timeout 120", "--error-logfile", "-","--capture-output"]

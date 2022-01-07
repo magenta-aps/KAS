@@ -1,4 +1,5 @@
 *.pyc
+*.mo
 env/
 .idea/
 docker-compose.override.yml

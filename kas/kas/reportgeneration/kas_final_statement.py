@@ -4,9 +4,14 @@ from datetime import date
 from operator import abs
 
 from django.core.files.base import ContentFile
+from django.utils import timezone, translation
+from django.utils.translation import gettext as _
+from prisme.tenQ.dates import get_due_date, get_last_payment_date
 from fpdf import FPDF
 
 from kas.models import PersonTaxYear, FinalSettlement
+
+import datetime
 
 
 class TaxFinalStatementPDF(FPDF):
@@ -116,8 +121,33 @@ class TaxFinalStatementPDF(FPDF):
                       'dk': 'De skal selv indbetale det beløb, som fremgår af boksen med teksten "Indbetales af Dem". '}
     text_tailing_2 = {'gl': 'Aningaasat takussutissami allaqqasut 0-iuppata minusiuppataluunniit (-) qanoq iliuuseqassanngilatit.',
                       'dk': 'Er beløbet i boksen 0 eller negativt (-) skal De ikke foretage Dem yderligere.'}
-    text_tailing_3 = {'gl': 'Kingusinnerpaamik 20. september {0} akiliiffigineqassaaq Akileraartarnermut Aqutsisoqarfiup aningaaserivimmi kontua 6471 - 1508196, illit inuttut normut/KAS/Ukioq akileraarfik nalunaarlugit. Soorlu ima 1234567890KAS2020.',
-                      'dk': 'Indbetaling skal ske til Skattestyrelsens bankkonto 6471 - 1508196 med angivelse af Deres Cpr-nummer/KAS/Skatteår senest den 20. september {0}. Eksempelvis 1234567890KAS2020'}
+    # The following text is added to `text_tailing_3` in cases where money has to be paid and the account number is not already mentioned
+    text_how_to_pay_info = {
+        'gl': 'Akileraartarnermut Aqutsisoqarfiup aningaaserivimmi kontoa 6471 - 1508196 atorlugu akiliisoqassaaq, illit inuttut normut/KAS/Ukioq akileraarfik nalunaarlugit soorlu imatut: 1234567890/KAS/{skatteaar}',
+        'dk': 'Indbetaling skal ske til Skattestyrelsens bankkonto 6471 - 1508196 med angivelse af Deres Cpr.nr./KAS/Skatteår. Eksempel: 1234567890/KAS/{skatteaar}.'
+    }
+    text_tailing_3 = {
+        FinalSettlement.PAYMENT_TEXT_BULK: {
+            'gl': 'Kingusinnerpaamik 20. september {betalingsaar} akiliiffigineqassaaq Akileraartarnermut Aqutsisoqarfiup aningaaserivimmi kontua 6471 - 1508196, illit inuttut normut/KAS/Ukioq akileraarfik nalunaarlugit. Soorlu ima 1234567890KAS2020.',
+            'dk': 'Indbetaling skal ske til Skattestyrelsens bankkonto 6471 - 1508196 med angivelse af Deres Cpr-nummer/KAS/Skatteår senest den 20. september {betalingsaar}. Eksempelvis 1234567890KAS2020.'
+        },
+        FinalSettlement.PAYMENT_TEXT_DUE: {
+            'gl': 'Akiligassaq akiligassanngoreerpoq. ' + text_how_to_pay_info['gl'],
+            'dk': 'Beløbet er forfaldent til betaling. ' + text_how_to_pay_info['dk'],
+        },
+        FinalSettlement.PAYMENT_TEXT_DUE_ON_DATE: {
+            'gl': 'Akiligassaq akilerneqassaaq ulloq {forfaldsdato} kingusinnerpaamillu akilerneqassalluni ulloq {sidste_betalingsdato}. ' + text_how_to_pay_info['gl'],
+            'dk': 'Beløbet forfalder til betaling den {forfaldsdato} med sidste rettidige betalingsdag den {sidste_betalingsdato}. ' + text_how_to_pay_info['dk'],
+        },
+        FinalSettlement.PAYMENT_TEXT_PREV_AMOUNT_DUE: {
+            'gl': 'Akiligassaq {ikke_betalt_fra_tidligere} kr. akiligassanngoreerpoq kiisalu akiligassaq {for_lidt_opkraevet_med_tillaeg} kr. akilerneqassaaq ulloq {forfaldsdato} kingusinnerpaamillu akilerneqassalluni ulloq {sidste_betalingsdato}. ' + text_how_to_pay_info['gl'],
+            'dk': 'Beløbet {ikke_betalt_fra_tidligere} kr. er forfaldent til betaling og {for_lidt_opkraevet_med_tillaeg} kr. forfalder til betaling den {forfaldsdato} med sidste rettidige betalingsdag den {sidste_betalingsdato}. ' + text_how_to_pay_info['dk'],
+        },
+        FinalSettlement.PAYMENT_TEXT_REFUND: {
+            'gl': 'Akilleraarutit sippuutaat ullut 14-it ingerlaneranni akilerneqarnissaat naatsorsuutigineqassaaq. Akiliisitsiniartarnermi Oqartussat akiligassanut ilanngaassissagaluarpata, pisinnaatitaaffimmik tigusinikkut akiliisitsissagaluarpata imaluunniit pigisanik qularnaveeqqutitut sillimmasiussissaga-luarpata tamakku pillugit Akiliisitsiniartarnermi Oqartussat immikkut nalunaarummik nassiussaqarumaarput.',
+            'dk': 'Overskydende skat påregnes udbetalt i løbet af 14 dage. Såfremt Inddrivelsesmyndigheden foretager modregning, indtræden eller udlæg i den overskydende skat, bliver der fremsendt særskilt meddelelse herom fra Inddrivelsesmyndigheden.',
+        }
+    }
     text_tailing_4 = {'gl': 'Akiliiffissatut killiliussaq qaangerneqarpat akileraartarneq akiliisitsiniartarnerlu pillugit inatsisini maleruagassat malillugit ernialersuisoqassaaq.',
                       'dk': 'Overskrides sidste frist for indbetaling, vil der blive tilskrevet renter efter reglerne i skatte- og inddrivelseslovgivningen.'}
     text_tailing_5 = {'gl': 'Pigisanit pissarsiat akileraarutaannik akiliivallaarsimaguit aningaasat akiliivallaarutaasut ilinnut tunniunneqassapput. Illit soraarnerussutisiaqarnissamut sillimmasiisarfiit pigisanit pissarsiat akileraarutaannik akiliivallaarsimappat aningaasat akiliivallaarutaasut soraarnerussutisiaqarnissamut aaqqissuussannut ikineqassapput. ',
@@ -174,6 +204,8 @@ class TaxFinalStatementPDF(FPDF):
         ])
 
         self.remainder_calculation = final_settlement.get_calculation_amounts()
+        self._reference_datetime = timezone.now()
+        self._final_settlement = final_settlement
 
     def header(self):
         self.yposition = 40
@@ -193,6 +225,49 @@ class TaxFinalStatementPDF(FPDF):
         if amount is None:
             return ''
         return "{:,}".format(amount).replace(",", ".")
+
+    # This method format dates according to the specified langauge.
+    # It is not possible to use the date formatting implemented in Django,
+    # since greenlandic formats and translations have not been implemented.
+    @staticmethod
+    def format_date(date_or_datetime, language):
+        if type(date_or_datetime) == datetime.datetime:
+            date = date_or_datetime.date()
+        else:
+            date = date_or_datetime
+
+        # Map language name to the one used in django translations
+        language = {'gl': 'kl'}.get(language, language)
+
+        # Switch to selected langauge
+        translation.activate(language)
+
+        translated_month_name = {
+            # Need to use english keys here, since we are using the global
+            # Django translation system, which only provides the correct
+            # danish translations if given english keys.
+            1: _('January'),
+            2: _('February'),
+            3: _('March'),
+            4: _('April'),
+            5: _('May'),
+            6: _('June'),
+            7: _('July'),
+            8: _('August'),
+            9: _('September'),
+            10: _('October'),
+            11: _('November'),
+            12: _('December'),
+        }.get(date.month)
+
+        # Switch back to original language
+        translation.deactivate()
+
+        return '{day}. {month} {year}'.format(
+            day=date.day,
+            month=translated_month_name,
+            year=date.year
+        )
 
     def print_tax_slip(self, language):
         """
@@ -447,7 +522,7 @@ class TaxFinalStatementPDF(FPDF):
             self.set_font(self.std_font_name, '', self.std_table_font_size)
             self.yposition = self.get_y()
 
-        if self.remainder_calculation['applicable_previous_statements_exist'] and self.remainder_calculation['previous_transactions_sum'] != self.remainder_calculation['total_tax']:
+        if self.remainder_calculation['applicable_previous_statements_exist']:
 
             self.set_font(self.std_font_name, '', self.std_table_font_size)
             self.set_xy(self.left_margin, self.yposition)
@@ -490,9 +565,10 @@ class TaxFinalStatementPDF(FPDF):
             self.yposition = self.get_y()
 
             message = self.summary_table2_correction5a if remainder_positive else self.summary_table2_correction5
+            font_divisor = 2 if remainder_positive else 1
             self.set_font(self.std_font_name, '', self.std_table_font_size)
             self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(h=self.tablerowheight/2, align='L', w=c1w, txt=message[language], border=1)
+            self.multi_cell(h=self.tablerowheight/font_divisor, align='L', w=c1w, txt=message[language], border=1)
             self.set_xy(self.left_margin+c1w, self.yposition)
             self.multi_cell(h=self.tablerowheight, align='R', w=c2w, txt=self.format_amount(
                 self.remainder_calculation['remainder_with_interest']
@@ -513,10 +589,10 @@ class TaxFinalStatementPDF(FPDF):
             self.set_font(self.std_font_name, '', self.std_table_font_size)
             self.yposition = self.get_y()
 
-        if self.remainder_calculation['total_payment']:
+        if 'total_payment' in self.remainder_calculation:
             # Til udbetaling/opkrævning i alt
             message = self.summary_table2_correction7 if self.remainder_calculation['total_payment'] < 0 else self.summary_table2_correction7a
-            self.set_font(self.std_font_name, '', self.std_table_font_size)
+            self.set_font(self.std_font_name, 'B', self.std_table_font_size)
             self.set_xy(self.left_margin, self.yposition)
             self.multi_cell(h=self.tablerowheight, align='L', w=c1w, txt=message[language], border=1)
             self.set_xy(self.left_margin+c1w, self.yposition)
@@ -541,9 +617,22 @@ class TaxFinalStatementPDF(FPDF):
         self.yposition = self.get_y()
         self.yposition += self.std_text_space
 
-        self.set_font(self.std_font_name, 'B', self.std_table_font_size)
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, align='L', txt=self.text_tailing_3[language].format(self._person_tax_year.tax_year.year+1), border=0)
+        if self.remainder_calculation['total_payment'] != 0:
+            self.set_font(self.std_font_name, 'B', self.std_table_font_size)
+            self.set_xy(self.left_margin, self.yposition)
+
+            # Tax about due payments depends on what was selected in the `text_used_for_payment` dropdown
+            due_text = self.text_tailing_3[self._final_settlement.text_used_for_payment][language].format(
+                skatteaar=self._person_tax_year.tax_year.year,
+                betalingsaar=self._person_tax_year.tax_year.year + 1,
+                forfaldsdato=self.format_date(get_due_date(self._reference_datetime), language),
+                sidste_betalingsdato=self.format_date(get_last_payment_date(self._reference_datetime), language),
+                ikke_betalt_fra_tidligere=self.format_amount(self.remainder_calculation['extra_payment_for_previous_missing']),
+                for_lidt_opkraevet_med_tillaeg=self.format_amount(self.remainder_calculation['total_payment']),
+            )
+
+            self.multi_cell(self.std_document_width, 5, align='L', txt=due_text, border=0)
+
         self.yposition = self.get_y()
         self.yposition += self.std_text_space
 
@@ -569,11 +658,10 @@ class TaxFinalStatementPDF(FPDF):
         self.yposition += self.std_text_space
 
     @classmethod
-    def generate_pdf(cls, person_tax_year: PersonTaxYear, interest_on_remainder=0, extra_payment_for_previous_missing=0):
+    def generate_pdf(cls, person_tax_year: PersonTaxYear, **modelform_fields):
         final_settlement = FinalSettlement(
             person_tax_year=person_tax_year,
-            interest_on_remainder=interest_on_remainder,
-            extra_payment_for_previous_missing=extra_payment_for_previous_missing
+            **modelform_fields
         )
         pdf_generator = cls(
             person_tax_year=person_tax_year,
