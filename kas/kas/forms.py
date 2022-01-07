@@ -161,7 +161,20 @@ class PolicyTaxYearActivationForm(forms.ModelForm):
 class FinalStatementForm(forms.ModelForm, BootstrapForm):
     class Meta:
         model = FinalSettlement
-        fields = ['interest_on_remainder', 'extra_payment_for_previous_missing']
+        fields = [
+            'interest_on_remainder',
+            'extra_payment_for_previous_missing',
+            'text_used_for_payment',
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Remove the default choice used for bulk settlements
+        self.fields['text_used_for_payment'].choices = [
+            x for x in self.fields['text_used_for_payment'].choices
+            if x[0] != FinalSettlement.PAYMENT_TEXT_BULK
+        ]
 
 
 class NoteForm(forms.ModelForm, BootstrapForm):
