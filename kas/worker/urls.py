@@ -6,7 +6,7 @@ from worker.views import JobListTemplateView, JobTypeSelectFormView, \
 urlpatterns = [
     path('jobs/', JobListTemplateView.as_view(), name='job_list'),
     path('job/<uuid:uuid>/', JobDetailView.as_view(), name='job_detail'),
-    #htmx views
+    # htmx views
     path('joblist/', JobListHtmxView.as_view(), name='joblist_htmx'),
     path('joblist/<uuid:last_uuid>/', JobListHtmxView.as_view(), name='joblist_htmx'),
 
