@@ -1,0 +1,8 @@
+<tr
+    {% if last is True %} hx-get="{% url 'worker:joblist_htmx' last_uuid=job.uuid %}" hx-trigger="revealed" hx-swap="afterend"{% endif %}>
+    <td><a href="{% url 'worker:job_detail' uuid=job.uuid %}">{{ job.pretty_job_title }}</a></td>
+    <td>{{ job.created_by.username }}</td>
+    <td>{{ job.created_at|date:'SHORT_DATETIME_FORMAT' }}</td>
+    <td>{% include 'worker/includes/progress_bar.html' with job=job only%}</td>
+    <td>{{ job.status }}</td>
+</tr>
