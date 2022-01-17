@@ -26,7 +26,7 @@ RUN unzip /tmp/oracle_driver.zip -d /usr/local/lib && \
     printf "# Oracle client libraries\n/usr/local/lib/instantclient_19_10\n" > /etc/ld.so.conf.d/oracle_client_libraries.conf && \
     ldconfig
 USER kas
-COPY --chown=kas:kas docker/crontab /crontab
+COPY --chown=kas:kas docker/crontab.kas /crontab
 COPY ./docker/kas_entrypoint.sh /entrypoint.sh
 COPY --chown=kas:kas ./kas /app
 EXPOSE 8000
