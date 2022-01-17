@@ -1,0 +1,16 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+{% block content %}
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-row">
+        <div class="col-2">
+            <a href="{% url 'kas:pensioncompany-listview' %}">{% trans 'Tilbage til liste med pensionsselskaber' %}</a>
+        </div>
+    </div>
+    <table class="mt-4">
+        {{ form.as_table }}
+    </table>
+    <input type="submit" value="{% trans 'Opdater' %}" class="btn btn-success" />
+</form>
+{% endblock %}

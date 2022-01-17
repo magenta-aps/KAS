@@ -117,6 +117,11 @@ def get_job_types():
             'test_only': False,
             'not_in_dropdown': True,
         },
+        'MergeCompanies': {
+            'label': _('Flet pensionsselskaber'),
+            'not_in_dropdown': True,
+            'result_template': 'worker/includes/status_only.html',
+        }
     }
 
 

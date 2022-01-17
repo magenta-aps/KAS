@@ -10,7 +10,7 @@ from fakeredis import FakeStrictRedis
 from rq import Queue
 
 from kas.eboks import EboksClient
-from kas.jobs import dispatch_tax_year, generate_batch_and_transactions_for_year
+from kas.jobs import dispatch_tax_year, generate_batch_and_transactions_for_year, merge_pension_companies
 from kas.models import TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany, TaxSlipGenerated, FinalSettlement
 from prisme.models import Prisme10QBatch
 from worker.models import Job
@@ -225,3 +225,33 @@ class GenerateBatchAndTransactionsForYearJobsTest(BaseTransactionTestCase):
         self.assertEqual(FinalSettlement.objects.count(), 1)
         self.assertEqual(FinalSettlement.objects.first().get_transaction_amount(), 1)
         self.assertEqual(batch.transaction_set.count(), 1)
+
+
+class MergeCompanyJobsTest(BaseTransactionTestCase):
+    def setUp(self) -> None:
+        super(MergeCompanyJobsTest, self).setUp()
+        self.user = get_user_model().objects.create(username='test')
+        self.to_be_merged = [PensionCompany.objects.create(name='to_be_merged 1', res=3).pk,
+                             PensionCompany.objects.create(name='to_be_merged 2', res=4).pk]
+        self.person_tax_year = PersonTaxYear.objects.create(person=self.person, tax_year=self.tax_year)
+        # one person one, policy for each company
+        for i, company_id in enumerate(self.to_be_merged):
+            PolicyTaxYear.objects.create(person_tax_year=self.person_tax_year,
+                                         pension_company_id=company_id,
+                                         policy_number=str(i))
+
+    @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
+    def test_merge_same_person(self, django_rq):
+        """
+        Same person, two policies for two different companies.
+        The end result should be one person, one company, two policies.
+        """
+        Job.schedule_job(merge_pension_companies,
+                         job_type='MergeCompanies',
+                         job_kwargs={'target': self.pension_company.pk,
+                                     'to_be_merged': self.to_be_merged},
+                         created_by=self.user)
+        # All policies should now have been moved to the target company
+        policies = PolicyTaxYear.objects.filter(pension_company=self.pension_company,
+                                                person_tax_year=self.person_tax_year)
+        self.assertEqual(policies.count(), 2)

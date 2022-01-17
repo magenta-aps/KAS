@@ -66,6 +66,10 @@ class HistoryMixin(object):
         return item, status
 
 
+def pension_company_agreement_file_path(instance, filename):
+    return 'agreements/{id}/{filename}'.format(id=instance.id, filename=filename)
+
+
 class PensionCompany(models.Model):
 
     class Meta:
@@ -76,7 +80,7 @@ class PensionCompany(models.Model):
     name = models.TextField(
         db_index=True,
         verbose_name=_('Navn'),
-        help_text=_('Navn'),
+        help_text=_('Pensionselskabets navn'),
         max_length=255,
         blank=True,
         null=True,
@@ -84,7 +88,6 @@ class PensionCompany(models.Model):
 
     address = models.TextField(
         verbose_name=_('Adresse'),
-        help_text=_('Adresse'),
         blank=True,
         null=True,
     )
@@ -104,7 +107,8 @@ class PensionCompany(models.Model):
     )
 
     res = models.IntegerField(
-        verbose_name=_('Identificerende nummer (reg.nr. for banker, se-nr for pensionsselskaber)'),
+        verbose_name=_('Registrerings nr.'),
+        help_text=_('Identificerende nummer (reg.nr. for banker, se-nr for pensionsselskaber)'),
         unique=True,
         null=True,  # This will be null when created as a self-reported company
         validators=(MinValueValidator(limit_value=1),),
@@ -114,6 +118,9 @@ class PensionCompany(models.Model):
         default=False,
         verbose_name=_("Foreligger der en aftale med skattestyrelsen")
     )
+
+    agreement = models.FileField(upload_to=pension_company_agreement_file_path, default='',
+                                 blank=True)
 
     def __str__(self):
         return f"{self.__class__.__name__}(name={self.name}, res={self.res})"
