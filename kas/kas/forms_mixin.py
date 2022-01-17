@@ -20,7 +20,7 @@ class BootstrapForm(Form):
             normal_row='<tr%(html_class_attr)s><th>%(label)s</th><td>%(field)s%(help_text)s</td><td>%(errors)s</td></tr>',
             error_row='<tr><td colspan="3">%s</td></tr>',
             row_ender='</td></tr>',
-            help_text_html='<br /><span class="helptext">%s</span>',
+            help_text_html='<small class="form-text text-muted mb-2 ml-1">%s</small>',
             errors_on_separate_row=False
         )
 
@@ -28,7 +28,8 @@ class BootstrapForm(Form):
         classes = self.split_class(field.widget.attrs.get('class'))
         classes.append('mr-2')
         if isinstance(field.widget, (CheckboxInput, RadioSelect)):
-            classes.append('form-check-input')
+            if 'not-form-check-input' not in classes:
+                classes.append('form-check-input')
         else:
             if not isinstance(field.widget, FileInput):
                 classes.append('form-control')

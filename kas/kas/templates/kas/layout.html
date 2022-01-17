@@ -6,14 +6,15 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{% static 'bootstrap/bootstrap.min.css' %}" >
     <link rel="stylesheet" href="{% static 'font-awesome/css/all.min.css' %}" >
+    <link rel="stylesheet" href="{% static "css/select2.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/select2-bootstrap4.min.css" %}">
     <link rel="stylesheet" href="{% static 'css/kas.css' %}" >
     <script src="{% static 'js/jquery-3.5.1.min.js' %}"></script>
     <script src="{% static 'js/htmx.min.js' %}"></script>
     <script src="{% static 'bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static "js/select2.full.min.js"%}"></script>
     <title>KAS</title>
 </head>
 <body>
@@ -40,7 +41,16 @@
         </ul>
 
         {% if user.is_staff %}
-        <a class="p-2 text-muted" href="{% url 'worker:job_list' %}">{% trans 'Jobadministration' %}</a>
+            <div class="p-2">
+                <a class="p-2 text-muted dropdown-toggle" href="#" role="button" id="adminMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {% trans 'Administration' %}
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="adminMenuLink">
+                    <li><a class="dropdown-item" href="{% url 'kas:pensioncompany-listview' %}">{% trans 'Pensionsselskaber' %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'worker:job_list' %}">{% trans 'Jobadministration' %}</a></li>
+                </ul>
+
+            </div>
         <a class="p-2 text-muted" href="{% url 'kas:policy_summary_list_latest' %}">{% trans 'Policeopsummering' %}</a>
         <a class="p-2 text-muted" href="{% url 'prisme:batch-list' %}">{% trans '10Q Batches' %}</a>
         {% endif %}

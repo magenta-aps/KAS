@@ -3,8 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
 
-from kas.models import FinalSettlement
-from kas.models import PensionCompany, TaxYear, Person, PersonTaxYear, PolicyTaxYear, PolicyDocument, TaxSlipGenerated
+from kas.models import FinalSettlement, TaxYear, Person, PersonTaxYear, PolicyTaxYear, PolicyDocument, TaxSlipGenerated
 from project.admin import kasadmin  # used by is_staff users
 
 
@@ -60,15 +59,6 @@ class KasUserAdmin(UserAdmin, IsStaffPermission):
 
 
 kasadmin.register(User, KasUserAdmin)
-
-
-class PensionCompanyAdmin(IsStaffPermission, admin.ModelAdmin):
-    list_display = ('name', 'res', 'email', 'phone', 'agreement_present')
-    list_filter = ('agreement_present', )
-    search_fields = ('name', 'res', 'email')
-
-
-kasadmin.register(PensionCompany, PensionCompanyAdmin)
 
 
 class TaxYearAdmin(IsStaffPermission, admin.ModelAdmin):

@@ -1,0 +1,16 @@
+<tr {% if last is True %}
+    hx-get="{% url 'kas:pensioncompany-htmxview' last_id=company.pk %}"
+    hx-trigger="revealed" hx-swap="afterend" hx-include="div#js-filters"
+    {% endif %}>
+    <td><input type="checkbox" name="to_be_merged" value="{{ company.pk }}"></td>
+    <td><a href="{% url 'kas:pensioncompany-updateview' pk=company.pk %}">{{ company.res }}</a></td>
+    <td>{{ company.name }}</td>
+    <td class="text-center">
+        {% if company.agreement %}
+            <a href="{% url 'kas:pensioncompany-agreementdownload' company.id %}"><span class="fa fa-file"/></a>
+        {% elif company.agreement_present %}
+            <span style="color:green" class="fa fa-check"></span>
+        {% endif %}
+    </td>
+    <td>{{ company.policies_count }}</td>
+</tr>
