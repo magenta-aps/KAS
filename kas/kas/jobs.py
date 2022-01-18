@@ -607,7 +607,6 @@ def generate_final_settlements_for_year(job):
     job.result = {'status': 'Genererede slutopgørelser', 'message': generated_final_settlements}
 
 
-
 @job_decorator
 def generate_batch_and_transactions_for_year(job):
     tax_year = TaxYear.objects.get(pk=job.arguments['year_pk'])

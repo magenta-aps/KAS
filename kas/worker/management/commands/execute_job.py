@@ -12,7 +12,6 @@ class Command(BaseCommand):
         parser.add_argument('job_type', type=str)
 
     def handle(self, *args, **options):
-        print(options['job_type'])
         try:
             job_type = get_job_types()[options['job_type']]
         except KeyError:
@@ -24,7 +23,7 @@ class Command(BaseCommand):
             # set current year as job argument
             job_kwargs.update({'year': timezone.now().year})
 
-        job = Job.schedule_job(resolve_job_function(job_type['function']),
-                               job_type=options['job_type'],
-                               created_by=user,
-                               job_kwargs=job_kwargs)
+        Job.schedule_job(resolve_job_function(job_type['function']),
+                         job_type=options['job_type'],
+                         created_by=user,
+                         job_kwargs=job_kwargs)
