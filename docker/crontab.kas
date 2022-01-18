@@ -1,0 +1,11 @@
+# ┌───────── minute (0 - 59)
+# │ ┌─────── hour (0 - 23)
+# │ │ ┌───── day of the month (1 - 31)
+# │ │ │ ┌─── month (1 - 12)
+# │ │ │ │ ┌─ day of the week (0 - 6) (Sunday to Saturday)
+# │ │ │ │ │
+# * * * * * command to execute
+#clear sessions monthly
+27 22 3 * * python manage.py clearsessions
+#import mandtal for current year every month.
+13 20 5 * * python manage.py execute_job ImportMandtalJob

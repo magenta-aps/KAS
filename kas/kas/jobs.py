@@ -407,7 +407,8 @@ def dispatch_eboks_tax_slips(job):
         job.set_progress(current_count, parent.arguments['total_count'])
         if has_more is False:
             # if we are done mark the parent job as finished
-            parent.finish(result={'dispatched_items': current_count})
+            parent.result = {'dispatched_items': current_count}
+            parent.finish()
 
     if has_more:
         Job.schedule_job(dispatch_eboks_tax_slips, 'dispatch_tax_year_child', job.parent.created_by, parent=job.parent)
@@ -575,10 +576,9 @@ def autoligning(job):
         year.year_part = 'ligning'
         year.save()
 
-        result = {'autolignet': autolignet,
-                  'post_processing': post_processing,
-                  'total': total}
-        job.finish(result)
+        job.result = {'autolignet': autolignet,
+                      'post_processing': post_processing,
+                      'total': total}
 
 
 @job_decorator
@@ -604,7 +604,7 @@ def generate_final_settlements_for_year(job):
         TaxFinalStatementPDF.generate_pdf(person_tax_year=person_tax_year)
         generated_final_settlements += 1
 
-    job.finish({'status': 'Genererede slutopgørelser', 'message': generated_final_settlements})
+    job.result = {'status': 'Genererede slutopgørelser', 'message': generated_final_settlements}
 
 
 @job_decorator
@@ -630,9 +630,9 @@ def generate_batch_and_transactions_for_year(job):
             prisme10Q_batch.add_transaction(final_settlement)
             new_transactions += 1
 
-    job.finish({'status': 'Genererede batch og transaktioner',
-                'message': 'Genererede {transactions} på baggrund af {settlements} slutopgørelser'.format(transactions=new_transactions,
-                                                                                                          settlements=settlements_count)})
+    job.result = {'status': 'Genererede batch og transaktioner',
+                  'message': 'Genererede {transactions} på baggrund af {settlements} slutopgørelser'.format(transactions=new_transactions,
+                                                                                                            settlements=settlements_count)}
 
 
 def dispatch_final_settlements_for_year():
@@ -705,7 +705,8 @@ def dispatch_final_settlements(job):
                 year.save(update_fields=['year_part'])
 
             # mark the parent job as finished
-            parent.finish(result={'dispatched_items': current_count})
+            parent.result = {'dispatched_items': current_count}
+            parent.finish()
 
     if has_more:
         # start a new child job to handle the next hundred
@@ -728,7 +729,6 @@ def dispatch_final_settlement(job):
     if send_settlement.status == 'post_processing':
         job.set_progress_pct(50)
         send_settlement.get_final_status(client)
-    job.finish()
 
 
 @job_decorator
@@ -749,7 +749,6 @@ def force_finalize_settlement(job):
         policy._history_user = job.created_by
         policy.save()
         job.set_progress(i, count)
-    job.finish()
 
 
 @job_decorator
@@ -764,7 +763,7 @@ def merge_pension_companies(job):
             moved_policies = PolicyTaxYear.objects.filter(pension_company__in=job.arguments['to_be_merged']).update(pension_company=target)
             # This is safe and will fail, because pension_company is protected on policytaxyear.
             deleted_count, _ = PensionCompany.objects.filter(id__in=job.arguments['to_be_merged']).delete()
-        job.finish(result={'status': 'Færdig',
-                           'message': '''Flyttede %(policer)s policer
-                           og flettede %(companies)s pensionsselskaber.''' % {'policer': moved_policies,
-                                                                              'companies': deleted_count}})
+        job.result = {'status': 'Færdig',
+                      'message': '''Flyttede %(policer)s policer
+                      og flettede %(companies)s pensionsselskaber.''' % {'policer': moved_policies,
+                                                                         'companies': deleted_count}}

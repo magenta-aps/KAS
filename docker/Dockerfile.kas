@@ -1,18 +1,25 @@
 FROM python:3.8
+ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.1.12/supercronic-linux-amd64 \
+    SUPERCRONIC=supercronic-linux-amd64 \
+    SUPERCRONIC_SHA1SUM=048b95b48b708983effb2e5c935a1ef8483d9e3e\
+    PYTHONUNBUFFERED=1
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN mkdir /app && mkdir -p /srv/media && \
 #gid/uid from salt
 groupadd -g 75050 -r kas && \
 useradd -u 75050 --no-log-init -r -g kas kas && chown kas:kas /srv/media
 COPY kas/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
-ENV PYTHONUNBUFFERED=1
 # hadolint ignore=DL3008
-RUN apt-get update && apt-get install -y --no-install-recommends \
-gettext \
-python3-distutils \
-libaio1 \
-libaio-dev \
-&& apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gettext python3-distutils libaio1 libaio-dev  && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && curl -fsSLO "$SUPERCRONIC_URL" \
+    && echo "${SUPERCRONIC_SHA1SUM}  ${SUPERCRONIC}" | sha1sum -c - \
+    && chmod +x "$SUPERCRONIC" \
+    && mv "$SUPERCRONIC" "/usr/local/bin/${SUPERCRONIC}" \
+    && ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic
+
 # Oracle DB driver client libraries
 ADD https://download.oracle.com/otn_software/linux/instantclient/191000/instantclient-basiclite-linux.x64-19.10.0.0.0dbru.zip /tmp/oracle_driver.zip
 RUN unzip /tmp/oracle_driver.zip -d /usr/local/lib && \
@@ -20,6 +27,7 @@ RUN unzip /tmp/oracle_driver.zip -d /usr/local/lib && \
     printf "# Oracle client libraries\n/usr/local/lib/instantclient_19_10\n" > /etc/ld.so.conf.d/oracle_client_libraries.conf && \
     ldconfig
 USER kas
+COPY --chown=kas:kas docker/crontab.kas /crontab
 COPY ./docker/kas_entrypoint.sh /entrypoint.sh
 COPY --chown=kas:kas ./kas /app
 EXPOSE 8000

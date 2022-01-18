@@ -25,6 +25,21 @@ services:
       - TEST=true
     command: gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output # reload on code changes
 
+  kas-cron:
+    container_name: kas-cron
+    image: kas:latest
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ./dev-environment/kas.env
+    volumes:
+      - ./kas/:/app
+      - ./data/kas:/srv/media
+      - ./dev-environment/crontab:/crontab
+    entrypoint: [ ]
+    command: [ "supercronic", "/crontab" ]
+
   worker:
     #add more containers like this to add more workers
     container_name: worker-one
