@@ -7,3 +7,5 @@
 # * * * * * command to execute
 #clear sessions monthly
 27 22 3 * * python manage.py clearsessions
+#import mandtal for current year every month.
+13 20 5 * * python manage.py execute_job ImportMandtalJob

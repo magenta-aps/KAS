@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from worker.job_registry import get_job_types
 from django.utils.translation import gettext as _
+from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 redis_cursor = redis.StrictRedis(host=settings.REDIS['HOST'], db=settings.REDIS['DB'])
 
 status_choices = (
@@ -135,21 +136,33 @@ class Job(models.Model):
 
         return job
 
-    def finish(self, result=None):
+    def finish(self):
         """
-        Mark a job as done/successfully completed.
+        Mark a job as successfully completed.
+        No reason to call this explicit when using the job_decorator.
         """
         if self.status == 'failed':
             # if the job is marked as failed just return instead of overwriting the the status
             return
-        fields = ['status', 'progress', 'end_at']
         self.status = 'finished'
         self.progress = 100
         self.end_at = timezone.now()
-        if result is not None:
-            self.result = result
-            fields.append('result')
-        self.save(update_fields=fields)
+        self.save(update_fields=['status', 'progress', 'end_at', 'result'])
+        self.push_metrics()
+
+    def push_metrics(self):
+        """
+        push a timestamp everytime a job is successfully executed
+        """
+        if settings.DEBUG is False:
+            # send metric to push gateway
+            registry = CollectorRegistry()
+            documentation = 'Last successful execution time for: %s' % self.get_job_type_display()
+            g = Gauge(self.job_type,
+                      documentation,
+                      registry=registry)
+            g.set_to_current_time()
+            push_to_gateway('localhost:9091', job='kas_job_metrics', registry=registry)
 
     def __str__(self):
         if self.parent:
