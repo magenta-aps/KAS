@@ -1,21 +1,29 @@
 from django.http import HttpResponseRedirect, Http404
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.views.generic import TemplateView, DetailView
+from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import FormView
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.filters import OrderingFilter
-from rest_framework.generics import ListAPIView
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAdminUser
-from worker.job_registry import get_job_types, resolve_job_function
-from kas.view_mixins import BootstrapTableMixin
-from worker.forms import JobTypeSelectForm
-from worker.models import Job
-from worker.serializers import JobSerializer
+
 from project.view_mixin import IsStaffMixin
+from worker.forms import JobTypeSelectForm
+from worker.job_registry import get_job_types, resolve_job_function
+from worker.models import Job
 
 
-class JobListTemplateView(IsStaffMixin, BootstrapTableMixin, TemplateView):
+class JobListHtmxView(IsStaffMixin, ListView):
+    template_name = 'worker/htmx/jobs.html'
+
+    def get_queryset(self):
+        last_uuid = self.kwargs.get('last_uuid')
+        qs = Job.objects.filter(parent__isnull=True)
+        if last_uuid:
+            # if you provide a none existing uuid you get a 404
+            last_object = get_object_or_404(Job, uuid=last_uuid)
+            qs = qs.filter(created_at__lt=last_object.created_at)
+        return qs.order_by('-created_at')[:10]
+
+
+class JobListTemplateView(IsStaffMixin, TemplateView):
     template_name = 'worker/job_list.html'
 
 
@@ -23,20 +31,6 @@ class JobDetailView(IsStaffMixin, DetailView):
     slug_field = 'uuid'
     slug_url_kwarg = 'uuid'
     model = Job
-
-
-class JobListAPIView(ListAPIView):
-    authentication_classes = [SessionAuthentication]
-    serializer_class = JobSerializer
-    pagination_class = LimitOffsetPagination
-    filter_backends = [OrderingFilter]
-    ordering_fields = ['created_at', 'status', 'progress']
-    ordering = ['-created_at']
-
-    permission_classes = [IsAdminUser, ]
-
-    def get_queryset(self):
-        return Job.objects.filter(parent__isnull=True).select_related('created_by')
 
 
 class JobTypeSelectFormView(IsStaffMixin, FormView):

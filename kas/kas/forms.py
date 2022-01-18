@@ -271,3 +271,35 @@ class CreatePolicyTaxYearForm(forms.ModelForm, BootstrapForm):
         super().__init__(*args, **kwargs)
 
         self.fields['self_reported_amount'].required = True
+
+
+class PensionCompanyModelForm(forms.ModelForm, BootstrapForm):
+    name = forms.CharField(widget=forms.TextInput(attrs={'autocomplete': 'off'}),
+                           label=_('Navn'),
+                           help_text=_('Pensionselskabets navn'))
+    email = forms.CharField(required=False,
+                            widget=forms.TextInput(attrs={'autocomplete': 'off'}))
+    phone = forms.CharField(required=False,
+                            label=_('Tlf nr'),
+                            widget=forms.TextInput(attrs={'autocomplete': 'off'}))
+    agreement_present = forms.BooleanField(required=False,
+                                           widget=forms.CheckboxInput(attrs={'class': 'not-form-check-input'}),
+                                           label=_('Aftale'))
+    agreement = forms.FileField(required=False,
+                                widget=forms.FileInput())
+
+    class Meta:
+        model = PensionCompany
+        fields = ('res', 'name', 'address', 'email', 'phone', 'agreement_present', 'agreement')
+
+
+class PensionCompanyMergeForm(BootstrapForm):
+    target = PensionCompanyChoiceField(queryset=PensionCompany.objects.all(),
+                                       label=('Flet selskaber'))
+    to_be_merged = forms.ModelMultipleChoiceField(queryset=PensionCompany.objects.all())
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if 'target' in cleaned_data and 'to_be_merged' in cleaned_data:
+            if cleaned_data['target'] in cleaned_data['to_be_merged']:
+                raise ValidationError(_('Du kan ikke flette %s ind i sig selv.' % cleaned_data['target'].name))

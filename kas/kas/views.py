@@ -13,19 +13,23 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView, ListView, View, UpdateView, CreateView, FormView
 from django.views.generic.detail import DetailView, SingleObjectMixin, BaseDetailView
 from django.views.generic.list import MultipleObjectMixin
+from django_filters.views import FilterView
 from ipware import get_client_ip
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
+from kas.filters import PensionCompanyFilterSet
 from kas.forms import PersonListFilterForm, SelfReportedAmountForm, EditAmountsUpdateForm, \
     PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, PolicyTaxYearActivationForm, PolicyNotesAndAttachmentForm, \
-    PersonNotesAndAttachmentForm, PaymentOverrideUpdateForm, PolicyListFilterForm, FinalStatementForm
-from kas.jobs import dispatch_final_settlement, import_mandtal
+    PersonNotesAndAttachmentForm, PaymentOverrideUpdateForm, PolicyListFilterForm, FinalStatementForm, \
+    PensionCompanyModelForm, PensionCompanyMergeForm
+from kas.jobs import dispatch_final_settlement, import_mandtal, merge_pension_companies
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note, TaxYear, PersonTaxYear, \
-    PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement
+    PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement, PensionCompany
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, HighestSingleObjectMixin, \
     SpecialExcelMixin
@@ -919,3 +923,80 @@ class WaitForSingleMandtal(LoginRequiredMixin, SingleObjectMixin, TemplateView):
         result['timed_out'] = result['elapsed'] > 60
 
         return result
+
+
+class PensionCompanyFormView(LoginRequiredMixin, FormView):
+    """
+    Renders the pensioncompany list template and
+    handles the start merge job form post.
+    """
+    template_name = 'kas/pensioncompany_list.html'
+    form_class = PensionCompanyMergeForm
+
+    def form_valid(self, form):
+        redirect_response = super(PensionCompanyFormView, self).form_valid(form)
+        target = form.cleaned_data['target'].pk
+        to_be_merged = list(form.cleaned_data['to_be_merged'].values_list('pk', flat=True))
+        job = Job.schedule_job(merge_pension_companies,
+                               'MergeCompanies',
+                               created_by=self.request.user,
+                               job_kwargs={'target': target,
+                                           'to_be_merged': to_be_merged})
+        messages.add_message(self.request,
+                             messages.INFO,
+                             mark_safe('<a href="%s">Flette job started</a>' %
+                                       (reverse('worker:job_detail', kwargs={'uuid': job.uuid}))))
+        return redirect_response
+
+    def form_invalid(self, form):
+        # raise None field errors as messages
+        messages.add_message(self.request,
+                             messages.ERROR,
+                             form.non_field_errors())
+        return super(PensionCompanyFormView, self).form_invalid(form)
+
+    def get_success_url(self):
+        return reverse('kas:pensioncompany-listview')
+
+
+class PensionCompanyHtmxView(LoginRequiredMixin, FilterView):
+    """
+    returns a  list of pension selskaber.
+    """
+    template_name = 'kas/htmx/pensioncompany_list.html'
+    filterset_class = PensionCompanyFilterSet
+
+    def get_queryset(self):
+        last_id = self.kwargs.get('last_id')
+        q = PensionCompany.objects.prefetch_related('policytaxyear_set')
+        if last_id:
+            last_object = get_object_or_404(PensionCompany, pk=last_id)
+            q = q.filter(name__gt=last_object.name)
+        return q.order_by('name').annotate(policies_count=Count('policytaxyear'))
+
+    def get_context_data(self, object_list=None, **kwargs):
+        return super(PensionCompanyHtmxView, self).get_context_data(object_list=object_list[:20], kwargs=kwargs)
+
+
+class PensionCompanyUpdateView(LoginRequiredMixin, UpdateView):
+    form_class = PensionCompanyModelForm
+    model = PensionCompany
+
+    def get_success_url(self):
+        messages.add_message(self.request,
+                             messages.INFO,
+                             _('Pensionsselskabet %(company)s blev opdateret.') %
+                             {'company': self.object.name})
+        return reverse('kas:pensioncompany-listview')
+
+
+class AgreementDownloadView(LoginRequiredMixin, View):
+
+    def get(self, *args, **kwargs):
+        company = get_object_or_404(PensionCompany, pk=kwargs['pk'])
+        if company.agreement is None:
+            raise Http404('No such document')
+        mime_type, _ = mimetypes.guess_type(company.agreement.name)
+        response = HttpResponse(company.agreement.read(), content_type=mime_type)
+        response['Content-Disposition'] = "attachment; filename=%s" % company.agreement.name
+        return response

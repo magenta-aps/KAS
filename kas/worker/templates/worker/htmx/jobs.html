@@ -1,0 +1,3 @@
+{% for job in object_list %}
+    {% include 'worker/htmx/job.html' with job=job last=forloop.last only%}
+{% endfor %}

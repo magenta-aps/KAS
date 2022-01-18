@@ -1,0 +1,61 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+{% block content %}
+    <h1>{% trans 'Pensionsselskaber' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="form-col">
+                {{ form.target }}
+                {% if form.target.errors %}
+                    <small class="form-text text-muted mb-2 ml-1">{{ form.target.errors }}</small>
+                {% endif %}
+            </div>
+            <div class="form-col">
+                <input type="submit" value="{% trans 'Flet' %}" class="btn btn-success" />
+                {% include 'includes/help_text/question_mark.html' with target_id='js-flet-help-text' only%}
+            </div>
+        </div>
+        <div class="form-row mb-2">
+            {% blocktrans asvar flet_help_text %}På denne side kan et eller flere pensionsselskaber flettes.
+                Dette gøres ved at markere et eller flere pensionsselskaber i nedenstående liste.
+                Derefter Benyttes rullegardinet ovenfor for at udvælge hvilket pensionsselskab eksisterende policer skal flyttes til.
+                Det vil sige alle policer for de markerede pensionsselskaber vil blive flyttet over på det udvalgte pensionsselskab.
+            {% endblocktrans %}
+            {% include 'includes/help_text/collapse.html' with help_text=flet_help_text target_id='js-flet-help-text' %}
+        </div>
+        <div id="js-filters" class="form-row">
+            <div class="form-col ml-auto mr-2">
+                <label class="col-form-label">{% trans 'Filtrering: ' %}</label>
+            </div>
+            <div class="form-col">
+                <input id="js-search" class="form-control" type="text" placeholder="{% trans 'Søg reg.nr/navn' %}" name="search"/>
+            </div>
+            <div class="form-col">
+                <select class="form-control" name="agreement">
+                    <option value="">{% trans 'Med og uden aftale' %}</option>
+                    <option value="agreement">{% trans 'Har aftale' %}</option>
+                    <option value="no_agreement">{% trans 'Har ikke aftale' %}</option>
+                </select>
+            </div>
+        </div>
+
+        <table class="table table-striped mt-2">
+            <thead>
+            <tr>
+                <th>{% trans 'Markér' %}</th>
+                <th title="{% trans 'Identificerende nummer (reg.nr. for banker, se-nr for pensionsselskaber)' %}" data-toggle="top">{% trans 'Reg.nr' %}</th>
+                <th>{% trans 'Navn' %}</th>
+                <th class="text-center" title="{% trans 'Foreligger der en aftale med skattestyrelsen' %}" data-toggle="top">{% trans 'Aftale' %}</th>
+                <th>{% trans 'Policer' %}</th>
+            </tr>
+            </thead>
+            <tbody hx-get="{% url 'kas:pensioncompany-htmxview' %}" hx-trigger="load, keyup from:input#js-search, change from:div#js-filters" hx-include="div#js-filters"/>
+        </table>
+    </form>
+    <script>
+    $('select#id_target').select2({
+        theme: 'bootstrap4'
+    })
+    </script>
+{% endblock %}

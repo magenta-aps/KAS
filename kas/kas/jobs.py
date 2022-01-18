@@ -750,3 +750,21 @@ def force_finalize_settlement(job):
         policy.save()
         job.set_progress(i, count)
     job.finish()
+
+
+@job_decorator
+def merge_pension_companies(job):
+    try:
+        target = PensionCompany.objects.get(pk=job.arguments['target'])
+    except PensionCompany.DoesNotExist:
+        pass
+    else:
+        job.set_progress_pct(50)
+        with transaction.atomic():
+            moved_policies = PolicyTaxYear.objects.filter(pension_company__in=job.arguments['to_be_merged']).update(pension_company=target)
+            # This is safe and will fail, because pension_company is protected on policytaxyear.
+            deleted_count, _ = PensionCompany.objects.filter(id__in=job.arguments['to_be_merged']).delete()
+        job.finish(result={'status': 'Færdig',
+                           'message': '''Flyttede %(policer)s policer
+                           og flettede %(companies)s pensionsselskaber.''' % {'policer': moved_policies,
+                                                                              'companies': deleted_count}})

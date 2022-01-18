@@ -10,9 +10,10 @@ from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetail
     PersonTaxYearFailSendListView, PolicyTaxYearUnfinishedListView, PersonTaxYearDocumentsAndNotesUpdateView, \
     PolicyPaymentOverrideView, \
     PersonTaxYearUnhandledDocumentsAndNotes, FinalSettlementGenerateView, MarkFinalSettlementAsInvalid, \
-    DispatchFinalSettlement, PersonTaxYearGeneralAndForeignNotesListView, UpdateSingleMandtal, WaitForSingleMandtal
-
+    DispatchFinalSettlement, PersonTaxYearGeneralAndForeignNotesListView, UpdateSingleMandtal, WaitForSingleMandtal, \
+    PensionCompanyFormView, PensionCompanyHtmxView, PensionCompanyUpdateView, AgreementDownloadView
 from kas.viewsets import CurrentFinalSettlementDownloadView
+
 app_name = 'kas'
 
 urlpatterns = [
@@ -60,5 +61,11 @@ urlpatterns = [
          name='current-final-settlement'),
     path('persontaxyear/<int:pk>//update_mandtal/', UpdateSingleMandtal.as_view(), name='update_persontaxyear_mandtal'),
     path('wait_for_mandtal_update/<uuid:pk>/', WaitForSingleMandtal.as_view(), name='wait_for_mandtal_update'),
+
+    path('pensioncompany/', PensionCompanyFormView.as_view(), name='pensioncompany-listview'),
+    path('pensioncompanyhtmx/', PensionCompanyHtmxView.as_view(), name='pensioncompany-htmxview'),
+    path('pensioncompanyhtmx/<int:last_id>/', PensionCompanyHtmxView.as_view(), name='pensioncompany-htmxview'),
+    path('pensioncompany/<int:pk>/edit/', PensionCompanyUpdateView.as_view(), name='pensioncompany-updateview'),
+    path('pensioncompany/<int:pk>/agreement/', AgreementDownloadView.as_view(), name='pensioncompany-agreementdownload'),
 
 ]

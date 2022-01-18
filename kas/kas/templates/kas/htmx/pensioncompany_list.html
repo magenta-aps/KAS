@@ -1,0 +1,3 @@
+{% for company in object_list %}
+    {% include 'kas/htmx/pensioncompany.html' with company=company last=forloop.last only%}
+{% endfor %}
