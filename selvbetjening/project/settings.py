@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'selvbetjening',
     'sullissivik.login',
+    'watchman',
 ]
 
 MIDDLEWARE = [
@@ -163,3 +164,5 @@ CLOSE_AT = {
     'month': int(os.environ['CLOSE_AT_MONTH']),
     'date': int(os.environ['CLOSE_AT_DATE']),
 }
+# Skip health_check for cache layer and storage since we are not using it
+WATCHMAN_CHECKS = ('watchman.checks.databases', )
