@@ -163,7 +163,7 @@ class Job(models.Model):
             # send metric to push gateway
             registry = CollectorRegistry()
             documentation = 'Last successful execution time for: %s' % self.get_job_type_display()
-            g = Gauge(self.job_type,
+            g = Gauge('kas_%s' % self.job_type,
                       documentation,
                       registry=registry)
             g.set_to_current_time()

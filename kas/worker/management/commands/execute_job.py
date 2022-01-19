@@ -6,7 +6,7 @@ from django.utils import timezone
 
 
 class Command(BaseCommand):
-    help = ''
+    help = 'Run a job periodically with pre-defined arguments'
 
     def add_arguments(self, parser):
         parser.add_argument('job_type', type=str)
