@@ -1,17 +1,22 @@
-import django_rq
-from django.contrib.auth import get_user_model
-from django.db import transaction, models
-from django.utils.datetime_safe import datetime
-from rq import get_current_job
 from functools import wraps, cached_property
-import redis
+from logging import getLogger
 from uuid import uuid4
-from django.utils import timezone
+
+import django_rq
+import redis
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import JSONField
-from worker.job_registry import get_job_types
+from django.db import transaction, models
+from django.utils import timezone
+from django.utils.datetime_safe import datetime
 from django.utils.translation import gettext as _
 from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
+from rq import get_current_job
+
+from worker.job_registry import get_job_types
+
+logger = getLogger(__name__)
 redis_cursor = redis.StrictRedis(host=settings.REDIS['HOST'], db=settings.REDIS['DB'])
 
 status_choices = (
@@ -162,7 +167,11 @@ class Job(models.Model):
                       documentation,
                       registry=registry)
             g.set_to_current_time()
-            push_to_gateway('localhost:9091', job='kas_job_metrics', registry=registry)
+            try:
+                push_to_gateway('pushgateway:9091', job='kas_job_metrics', registry=registry)
+            except Exception as e:
+                # if pushing of metrics fail log it but dont mark the job as failed.
+                logger.exception(e)
 
     def __str__(self):
         if self.parent:
