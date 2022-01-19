@@ -205,3 +205,7 @@ TENQ = {
         'development': ['10q_development']  # Our dev server can only use dev on the 10q server
     }
 }
+METRICS = {
+    # used to disable metrics in the pipeline
+    'disable': bool(strtobool(os.environ.get('DISABLE_METRICS', 'False'))),
+}
