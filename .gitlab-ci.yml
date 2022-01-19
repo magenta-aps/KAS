@@ -133,6 +133,7 @@ KAS Unittest:
     TENQ_KNOWN_HOSTS: ""
     # Simulate development environment while running tests so we use mockup data
     ENVIRONMENT: development
+    DISABLE_METRICS: 'True'
   script:
     - cd /app && python manage.py test
 

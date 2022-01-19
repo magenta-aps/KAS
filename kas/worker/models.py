@@ -159,7 +159,7 @@ class Job(models.Model):
         """
         push a timestamp everytime a job is successfully executed
         """
-        if settings.DEBUG is False:
+        if settings.DEBUG is False and settings.METRICS['disable'] is False:
             # send metric to push gateway
             registry = CollectorRegistry()
             documentation = 'Last successful execution time for: %s' % self.get_job_type_display()
