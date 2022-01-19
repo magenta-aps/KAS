@@ -163,12 +163,12 @@ class Job(models.Model):
             # send metric to push gateway
             registry = CollectorRegistry()
             documentation = 'Last successful execution time for: %s' % self.get_job_type_display()
-            g = Gauge('kas_%s' % self.job_type,
+            g = Gauge('kas_job',
                       documentation,
                       registry=registry)
             g.set_to_current_time()
             try:
-                push_to_gateway('pushgateway:9091', job='kas_job_metrics', registry=registry)
+                push_to_gateway('pushgateway:9091', job=self.job_type, registry=registry)
             except Exception as e:
                 # if pushing of metrics fail log it but dont mark the job as failed.
                 logger.exception(e)
