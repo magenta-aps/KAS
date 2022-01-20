@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
     'simple_history',
+    'watchman',
 ]
 
 MIDDLEWARE = [
@@ -205,6 +206,12 @@ TENQ = {
         'development': ['10q_development']  # Our dev server can only use dev on the 10q server
     }
 }
+
+# Skip health_check for cache layer since we are not using it
+WATCHMAN_CHECKS = ('watchman.checks.databases', 'watchman.checks.storage')
+# skip checking of oracle database
+WATCHMAN_DATABASES = ['default']
+
 METRICS = {
     # used to disable metrics in the pipeline
     'disable': bool(strtobool(os.environ.get('DISABLE_METRICS', 'False'))),
