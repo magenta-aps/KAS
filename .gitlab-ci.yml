@@ -270,7 +270,7 @@ Deploy test:
     - pepper --client runner --fail-any state.orchestrate ${DEPLOYMENT_NAMESPACE}
   environment:
     name: test
-    url: ""
+    url: "https://test.kas.aka.nanoq.gl"
 
 Deploy prod:
   # Automatic deployment of branch master to test
@@ -291,4 +291,4 @@ Deploy prod:
     - pepper --client runner --fail-any state.orchestrate ${DEPLOYMENT_NAMESPACE}
   environment:
     name: production
-    url: ""
+    url: "https://kas.aka.nanoq.gl/"
