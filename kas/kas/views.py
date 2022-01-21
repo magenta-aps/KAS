@@ -26,6 +26,7 @@ from kas.filters import PensionCompanyFilterSet
 from kas.forms import PersonListFilterForm, SelfReportedAmountForm, EditAmountsUpdateForm, \
     PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, PolicyTaxYearActivationForm, PolicyNotesAndAttachmentForm, \
     PersonNotesAndAttachmentForm, PaymentOverrideUpdateForm, PolicyListFilterForm, FinalStatementForm, \
+    PolicyTaxYearCompanyForm, \
     PensionCompanyModelForm, PensionCompanyMergeForm
 from kas.jobs import dispatch_final_settlement, import_mandtal, merge_pension_companies
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note, TaxYear, PersonTaxYear, \
@@ -558,6 +559,17 @@ class PolicyPaymentOverrideView(LoginRequiredMixin, CreateOrUpdateViewWithNotesA
             self.object.efterbehandling = True
             # super handles saving of the object (form.instance == self.object)
         return super(PolicyPaymentOverrideView, self).form_valid(form)
+
+
+class PolicyTaxYearCompanyUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
+    model = PolicyTaxYear
+    form_class = PolicyTaxYearCompanyForm
+    template_name = 'kas/form_with_notes.html'
+
+    def form_valid(self, form):
+        if self.has_changes or form.changed_data:
+            self.object = form.save(False)
+        return super().form_valid(form)
 
 
 class PensionCompanySummaryFileView(LoginRequiredMixin, HighestSingleObjectMixin, MultipleObjectMixin, FormView):
