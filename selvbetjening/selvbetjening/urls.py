@@ -20,5 +20,5 @@ urlpatterns = [
     url(r'^language', SetLanguageView.as_view(), name='set-language'),
     url(r'^policy/closed/', TemplateView.as_view(template_name='closed.html'), name='closed'),
     path('final_settlement/<int:year>/', ViewFinalSettlementView.as_view(), name='final-settlement'),
-    path('_ht/', include('watchman.urls')),
+    path('_ht/', include('watchman.urls'), name='health-check'),
 ]
