@@ -158,6 +158,12 @@ class PolicyTaxYearActivationForm(forms.ModelForm):
         fields = ['active']
 
 
+class PolicyTaxYearCompanyForm(forms.ModelForm, BootstrapForm):
+    class Meta:
+        model = PolicyTaxYear
+        fields = ('pension_company',)
+
+
 class FinalStatementForm(forms.ModelForm, BootstrapForm):
     class Meta:
         model = FinalSettlement

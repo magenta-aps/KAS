@@ -483,6 +483,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         on_delete=models.PROTECT,
         null=False,
         blank=True,
+        verbose_name=_('Pensionsselskab'),
     )
 
     policy_number = models.CharField(
