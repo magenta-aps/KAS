@@ -19,7 +19,8 @@ class LoginManager:
 
     @property
     def white_listed_urls(self):
-        return OpenId.whitelist + settings.LOGIN_REQUIREMENT_WHITELIST + [reverse('sullissivik:openid:login')]
+        return OpenId.whitelist + settings.LOGIN_REQUIREMENT_WHITELIST + [reverse('sullissivik:openid:login'),
+                                                                          reverse('selvbetjening:health-check')]
 
     def __call__(self, request):
         if self.enabled:
