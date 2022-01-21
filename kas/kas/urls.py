@@ -11,6 +11,7 @@ from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetail
     PolicyPaymentOverrideView, \
     PersonTaxYearUnhandledDocumentsAndNotes, FinalSettlementGenerateView, MarkFinalSettlementAsInvalid, \
     DispatchFinalSettlement, PersonTaxYearGeneralAndForeignNotesListView, UpdateSingleMandtal, WaitForSingleMandtal, \
+    PolicyTaxYearCompanyUpdateView, \
     PensionCompanyFormView, PensionCompanyHtmxView, PensionCompanyUpdateView, AgreementDownloadView
 from kas.viewsets import CurrentFinalSettlementDownloadView
 
@@ -31,6 +32,7 @@ urlpatterns = [
     path('person_tax_year/<int:pk>/handled/', PersonTaxYearDocumentsAndNotesUpdateView.as_view(), name='person_in_year_handled'),
     path('policy/<int:pk>/', PolicyTaxYearDetailView.as_view(), name='policy_detail'),
     path('policy/<int:pk>/activate/', ActivatePolicyTaxYearView.as_view(), name='policy_activate'),
+    path('policy/<int:pk>/company/', PolicyTaxYearCompanyUpdateView.as_view(), name='policy_company'),
     path('policy/unfinished', PolicyTaxYearUnfinishedListView.as_view(), name='policy_search_unfinished'),
     path('policy/<int:pk>/paymentoverride/', PolicyPaymentOverrideView.as_view(), name='policy_payment_override'),
     path('policy_document/<int:pk>/', PolicyDocumentDownloadView.as_view(), name='policy_document_download'),
