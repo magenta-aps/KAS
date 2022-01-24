@@ -35,7 +35,9 @@ class ImportPrePaymentFile(TestCase):
                                          prefilled_amount=100000*i,
                                          self_reported_amount=100000*i,
                                          slutlignet=True,
-                                         pension_company=self.company)
+                                         pension_company=self.company,
+                                         policy_number='1234',
+                                         )
 
         with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                'data/PGF85_2021_897021_28-04-2021_080136.csv'), mode='rb') as test_data:

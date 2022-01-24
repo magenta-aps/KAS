@@ -102,7 +102,7 @@ class TaxslipGeneratedJobsTest(BaseTransactionTestCase):
         for i in range(1, 8):
             person = Person.objects.create(cpr='111111111{}'.format(i))
             person_tax_year = PersonTaxYear.objects.create(tax_year=self.tax_year, person=person)
-            person_tax_year.tax_slip = TaxSlipGenerated.objects.create()
+            person_tax_year.tax_slip = TaxSlipGenerated.objects.create(persontaxyear=person_tax_year)
             person_tax_year.tax_slip.file.save('test', report_file)
             person_tax_year.save()
 

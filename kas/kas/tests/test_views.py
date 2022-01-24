@@ -28,7 +28,9 @@ class BaseTestCase(TestCase):
         self.pension_company = PensionCompany.objects.create()
         self.policy_tax_year = PolicyTaxYear.objects.create(person_tax_year=self.person_tax_year,
                                                             pension_company=self.pension_company,
-                                                            prefilled_amount=35)
+                                                            prefilled_amount=35,
+                                                            policy_number='1234',
+                                                            )
 
 
 class SelfReportedAmountUpdateViewTestCase(BaseTestCase):
