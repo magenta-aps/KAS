@@ -162,7 +162,7 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('send_at', models.DateTimeField(blank=True, null=True)),
                 ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('pdf', models.FileField(upload_to=kas.models.final_settlement_file_path)),
+                ('pdf', models.FileField(upload_to=kas.models.filefield_path)),
                 ('person_tax_year', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='kas.PersonTaxYear')),
             ],
             options={

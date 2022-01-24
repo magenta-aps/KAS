@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('uploaded_at', models.DateTimeField(auto_now_add=True)),
-                ('file', models.FileField(upload_to=prisme.models.payment_file_by_year, validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['csv'])])),
+                ('file', models.FileField(upload_to=prisme.models.filefield_path, validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['csv'])])),
                 ('uploaded_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
             ],
         ),

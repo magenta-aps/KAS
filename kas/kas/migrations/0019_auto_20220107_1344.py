@@ -16,4 +16,9 @@ class Migration(migrations.Migration):
             name='rate_text_for_transactions',
             field=models.TextField(default='', validators=[kas.models.max_sixty_characters_per_line_validator], verbose_name='Tekst brugt i opkrævninger sendt ud for skatteåret'),
         ),
+        migrations.AlterField(
+            model_name='finalsettlement',
+            name='pdf',
+            field=models.FileField(upload_to=kas.models.filefield_path),
+        ),
     ]

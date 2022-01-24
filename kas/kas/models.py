@@ -1,9 +1,8 @@
 import base64
 import calendar
 import math
-
-from django.dispatch import receiver
-from prisme.models import Transaction
+import csv
+from io import StringIO
 from time import sleep
 from uuid import uuid4
 
@@ -17,6 +16,7 @@ from django.db import models
 from django.db.models import Sum, Max
 from django.db.models.signals import post_save, post_delete
 from django.db.transaction import atomic
+from django.dispatch import receiver
 from django.forms import model_to_dict
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -28,6 +28,11 @@ from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.managers import PolicyTaxYearManager
 
 from prisme.models import Prisme10QBatch
+from prisme.models import Transaction
+
+
+def filefield_path(instance, filename):
+    return instance.file_path(filename)
 
 
 class HistoryMixin(object):
@@ -237,6 +242,10 @@ class Person(HistoryMixin, models.Model):
             self.address_line_5,
         ) if x])
 
+    @property
+    def cpr_formatted(self):
+        return f"{self.cpr[0:6]}-{self.cpr[6:10]}"
+
     def __str__(self):
         return f"{self.__class__.__name__}(cpr={self.cpr},municipality_code={self.municipality_code}," \
                f"municipality_name={self.municipality_name}," \
@@ -333,7 +342,11 @@ class EboksDispatch(models.Model):
 
 
 class TaxSlipGenerated(EboksDispatch):
-    file = models.FileField(upload_to=taxslip_path_by_year, null=True)
+
+    file = models.FileField(upload_to=filefield_path, null=True)
+
+    def file_path(self, filename):
+        return f"reports/{self.persontaxyear.year}/{self.persontaxyear.person.cpr_formatted}/{filename}"
 
 
 class PersonTaxYear(HistoryMixin, models.Model):
@@ -991,8 +1004,18 @@ class PolicyDocument(models.Model):
 
     file = models.FileField(
         verbose_name=_('Fil'),
-        blank=False
+        blank=False,
+        upload_to=filefield_path,
     )
+
+    def file_path(self, filename):
+        path = ['policydocuments', str(self.person_tax_year.year), self.person_tax_year.person.cpr_formatted]
+        if self.policy_tax_year:
+            path.append(f"policy_{self.policy_tax_year.policy_number}")
+        else:
+            path.append("person")
+        path.append(filename)
+        return '/'.join(path)
 
 
 def set_all_documents_and_notes_handled(sender, instance, created, raw, using, update_fields, **kwargs):
@@ -1122,7 +1145,7 @@ class PensionCompanySummaryFile(models.Model):
     )
 
     file = models.FileField(
-        upload_to=pensioncompanysummaryfile_path,
+        upload_to=filefield_path,
         null=False,
     )
 
@@ -1136,6 +1159,41 @@ class PensionCompanySummaryFile(models.Model):
         auto_now_add=True,
         null=False,
     )
+
+    @staticmethod
+    def create(pension_company, tax_year, creator):
+        # Generate a PensionCompanySummaryFile entry and populate a file for it
+        qs = PolicyTaxYear.objects.filter(
+            pension_company=pension_company,
+            person_tax_year__tax_year=tax_year
+        ).prefetch_related('person_tax_year', 'person_tax_year__person')
+        file_entry = PensionCompanySummaryFile(company=pension_company, tax_year=tax_year, creator=creator)
+
+        csvfile = StringIO()
+        writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for policy_tax_year in qs.iterator():
+            calculation = policy_tax_year.get_calculation()
+            line = [
+                policy_tax_year.tax_year.year,  # TaxYear (Integer, 4 digits, positive. XXXX eg. 2013)
+                pension_company.res,  # Reg_se_nr (Integer, positive)
+                policy_tax_year.cpr,  # Cpr: The CPR on the person
+                policy_tax_year.policy_number,  # Police_no (Integer, positive)
+                calculation['initial_amount'],  # Tax base 1 per police (Return)(Integer)
+                calculation['used_negative_return'],  # The previous year's negative return (Integer)
+                calculation['taxable_amount'],  # Tax base 2 (Tax base 1 minus the previous year's negative return)(Integer, 10 digits)
+                policy_tax_year.preliminary_paid_amount or 0,  # Provisional tax paid (Integer, 10 digits, positive)
+                calculation['tax_with_deductions'],  # Wanted cash tax (Integer)
+                None,  # Actual settlement pension company (Empty column)
+            ]
+            writer.writerow(line)
+
+        file_entry.file.save(f"{timezone.now().strftime('%Y-%m-%d %H.%M.%S UTC')}.csv", csvfile, save=True)
+        file_entry.save()
+        csvfile.close()
+        return file_entry
+
+    def file_path(self, filename):
+        return f"pensioncompany_summary/{self.tax_year.year}/{self.company.res}/{filename}"
 
 
 class PensionCompanySummaryFileDownload(models.Model):
@@ -1162,17 +1220,13 @@ class PensionCompanySummaryFileDownload(models.Model):
     )
 
 
-def final_settlement_file_path(instance, filename):
-    return 'settlements/{year}/{uuid}.pdf'.format(year=instance.person_tax_year.tax_year.year, uuid=instance.uuid.hex)
-
-
 class FinalSettlement(EboksDispatch):
     """
     Slutopgørelse
     """
     uuid = models.UUIDField(primary_key=True, default=uuid4)
     person_tax_year = models.ForeignKey(PersonTaxYear, null=False, db_index=True, on_delete=models.PROTECT)
-    pdf = models.FileField(upload_to=final_settlement_file_path)
+    pdf = models.FileField(upload_to=filefield_path)
     invalid = models.BooleanField(default=False, verbose_name=_('Slutopgørelse er ikke gyldig'))
 
     interest_on_remainder = models.DecimalField(
@@ -1213,6 +1267,9 @@ class FinalSettlement(EboksDispatch):
         null=False,
         default=PAYMENT_TEXT_BULK
     )
+
+    def file_path(self, filename):
+        return f"settlements/{self.person_tax_year.year}/{self.person_tax_year.person.cpr}/{self.uuid.hex}.pdf"
 
     def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
         if self.status == 'send':

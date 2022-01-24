@@ -1,8 +1,5 @@
-import csv
 import mimetypes
 import os
-import uuid
-from io import StringIO
 
 from django.conf import settings
 from django.contrib import messages
@@ -593,36 +590,7 @@ class PensionCompanySummaryFileView(LoginRequiredMixin, HighestSingleObjectMixin
 
     def form_valid(self, form):
         self.object = self.get_object()
-        # Generate a PensionCompanySummaryFile entry and populate a file for it
-        pension_company = form.cleaned_data['pension_company']
-        qs = PolicyTaxYear.objects.filter(
-            pension_company=pension_company,
-            person_tax_year__tax_year=self.object
-        ).prefetch_related('person_tax_year', 'person_tax_year__person')
-        file_entry = PensionCompanySummaryFile(company=pension_company, tax_year=self.object, creator=self.request.user)
-
-        csvfile = StringIO()
-        writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        for policy_tax_year in qs.iterator():
-            calculation = policy_tax_year.get_calculation()
-            line = [
-                policy_tax_year.tax_year.year,  # TaxYear (Integer, 4 digits, positive. XXXX eg. 2013)
-                pension_company.res,  # Reg_se_nr (Integer, positive)
-                policy_tax_year.cpr,  # Cpr: The CPR on the person
-                policy_tax_year.policy_number,  # Police_no (Integer, positive)
-                calculation['initial_amount'],  # Tax base 1 per police (Return)(Integer)
-                calculation['used_negative_return'],  # The previous year's negative return (Integer)
-                calculation['taxable_amount'],  # Tax base 2 (Tax base 1 minus the previous year's negative return)(Integer, 10 digits)
-                policy_tax_year.preliminary_paid_amount or 0,  # Provisional tax paid (Integer, 10 digits, positive)
-                calculation['tax_with_deductions'],  # Wanted cash tax (Integer)
-                None,  # Actual settlement pension company (Empty column)
-            ]
-            writer.writerow(line)
-
-        file_entry.file.save(uuid.uuid4(), csvfile, save=True)
-        file_entry.save()
-        csvfile.close()
-
+        file_entry = PensionCompanySummaryFile.create(form.cleaned_data['pension_company'], self.object, self.request.user)
         # Instruct the client to download the file after refreshing the page
         return HttpResponseRedirect(self.get_success_url() + f'?download={file_entry.id}')
 
