@@ -3,10 +3,16 @@ import math
 from django.conf import settings
 from django.test import TestCase
 from kas.models import PolicyTaxYear, PersonTaxYear, TaxYear, Person, PensionCompany, FinalSettlement
+from kas.tests.test_mixin import create_admin_user
 from prisme.models import Transaction, Prisme10QBatch
 
 
 class TestCalculationMath(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        create_admin_user()
 
     def test_with_no_adjustments(self):
         amount = 1000

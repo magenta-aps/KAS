@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 from worker.job_registry import get_job_types, resolve_job_function
 from worker.models import Job
 
+from kas.management.commands.create_initial_years import Command as InitialYearsCommand
 from kas.models import Person, PensionCompany, TaxYear, PersonTaxYear
 from kas.models import PolicyTaxYear, Transaction, PensionCompanySummaryFile
 from kas.models import PolicyDocument, TaxSlipGenerated
@@ -22,6 +23,9 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        # Create initial years
+        InitialYearsCommand().handle()
+
         job_data = get_job_types()['ResetToMockupOnly']
         job_function = resolve_job_function(job_data['function'])
 
@@ -52,7 +56,7 @@ class Command(BaseCommand):
             address_line_4='1234  Testby'
         )
 
-        tax_year, _ = TaxYear.objects.get_or_create(year=2020)
+        tax_year = TaxYear.objects.get(year=2020)
         person_tax_year, _ = PersonTaxYear.objects.get_or_create(
             person=person,
             tax_year=tax_year,
@@ -72,7 +76,7 @@ class Command(BaseCommand):
         older_policy_1 = PolicyTaxYear.objects.create(
             person_tax_year=PersonTaxYear.objects.create(
                 person=person,
-                tax_year=TaxYear.objects.create(year=2018),
+                tax_year=TaxYear.objects.get(year=2018),
                 number_of_days=365,
                 fully_tax_liable=False,
             ),
@@ -84,7 +88,7 @@ class Command(BaseCommand):
         older_policy_2 = PolicyTaxYear.objects.create(
             person_tax_year=PersonTaxYear.objects.create(
                 person=person,
-                tax_year=TaxYear.objects.create(year=2019),
+                tax_year=TaxYear.objects.get(year=2019),
                 number_of_days=365,
             ),
             pension_company=pension_company1,
