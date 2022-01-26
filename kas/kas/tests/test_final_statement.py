@@ -2,10 +2,16 @@ from django.test import TestCase
 
 from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear, FinalSettlement
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
+from kas.tests.test_mixin import create_admin_user
 from prisme.models import Transaction
 
 
 class DeductionTest(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        create_admin_user()
 
     def test_generate_final_taxslip(self):
         # Set up two older policies with losses, and one new policy that will deduct those losses
