@@ -56,6 +56,6 @@ class DatafordelerClient(object):
     def _get(self, number, service_header):
         url = urljoin(self._url, number)
         r = self.session.get(url, cert=self.cert, verify=self.root_ca, timeout=self.timeout,
-                              headers={'Uxp-Service': service_header})
+                             headers={'Uxp-Service': service_header})
         r.raise_for_status()
         return r.json()
