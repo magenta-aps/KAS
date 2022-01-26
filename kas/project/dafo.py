@@ -10,6 +10,7 @@ class DatafordelerClient(object):
                  service_header_cpr=None, uxp_service_owned_by=None,
                  certificate=None, private_key=None, url=None, root_ca=True, timeout=60):
 
+        self.mock_data = None
         self.mock = mock
         self.client_header = client_header
         self.service_header_cpr = service_header_cpr
@@ -30,26 +31,15 @@ class DatafordelerClient(object):
     def from_settings(cls):
         return cls(**settings.DAFO)
 
+    def set_mock_data(self, mock_data):
+        self.mock_data = mock_data
+
     def get_person_information(self, cpr):
         """
         Lookup address information for cpr
         """
         if self.mock:
-            return {"1111111111": {
-                    "cprNummer": "1111111111",
-                    "fornavn": "Anders",
-                    "efternavn": "And",
-                    "adresse": "Imaneq 32A, 3.",
-                    "postnummer": 3900,
-                    "bynavn": "Nuuk"},
-                    "1111111112": {
-                    "cprNummer": "1111111112",
-                    "fornavn": "Andersine",
-                    "efternavn": "And",
-                    "adresse": "Imaneq 32A, 3.",
-                    "postnummer": 3900,
-                    "bynavn": "Nuuk"}}
-
+            return self.mock_data
         else:
             return self._get(cpr, self._service_header_cpr)
 
