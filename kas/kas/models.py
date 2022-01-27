@@ -134,7 +134,7 @@ class PensionCompany(models.Model):
                                  blank=True)
 
     def __str__(self):
-        return f"{self.__class__.__name__}(name={self.name}, res={self.res})"
+        return f"{self.name} ({self.res})"
 
 
 tax_year_part_year_choices = (
