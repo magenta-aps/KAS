@@ -7,7 +7,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN mkdir /app && mkdir -p /srv/media && \
 #gid/uid from salt
 groupadd -g 75050 -r kas && \
-useradd -u 75050 --no-log-init -r -g kas kas && chown kas:kas /srv/media
+groupadd -g 75100 -r certificate_exporter && \
+useradd -u 75050 --no-log-init -r -g kas -G certificate_exporter kas && chown kas:kas /srv/media
 COPY kas/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 # hadolint ignore=DL3008
