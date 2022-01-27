@@ -73,52 +73,70 @@ class Command(BaseCommand):
             source_object=person_tax_year
         )
 
-        older_policy_1 = PolicyTaxYear.objects.create(
-            person_tax_year=PersonTaxYear.objects.create(
-                person=person,
-                tax_year=TaxYear.objects.get(year=2018),
-                number_of_days=365,
-                fully_tax_liable=False,
-            ),
+        person_tax_year1, _ = PersonTaxYear.objects.get_or_create(
+            person=person,
+            tax_year=TaxYear.objects.get(year=2018),
+            defaults={
+                'number_of_days': 365,
+                'fully_tax_liable': False,
+            }
+        )
+
+        person_tax_year2, _ = PersonTaxYear.objects.get_or_create(
+            person=person,
+            tax_year=TaxYear.objects.get(year=2019),
+            defaults={
+                'number_of_days': 365,
+            }
+        )
+
+        older_policy_1, _ = PolicyTaxYear.objects.get_or_create(
+            person_tax_year=person_tax_year1,
             pension_company=pension_company1,
             policy_number='123456',
-            prefilled_amount=-500,
-            active_amount=PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED
+            defaults={
+                'prefilled_amount': -500,
+                'active_amount': PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED,
+            }
         )
-        older_policy_2 = PolicyTaxYear.objects.create(
-            person_tax_year=PersonTaxYear.objects.create(
-                person=person,
-                tax_year=TaxYear.objects.get(year=2019),
-                number_of_days=365,
-            ),
+        older_policy_2, _ = PolicyTaxYear.objects.get_or_create(
+            person_tax_year=person_tax_year2,
             pension_company=pension_company1,
             policy_number='123456',
-            prefilled_amount=-500,
-            active_amount=PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED,
+            defaults={
+                'prefilled_amount': -500,
+                'active_amount': PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED,
+            }
         )
-        PolicyTaxYear.objects.create(
+        PolicyTaxYear.objects.get_or_create(
             person_tax_year=person_tax_year,
             pension_company=pension_company1,
             policy_number='123456',
             prefilled_amount=10000,
-            active_amount=PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED,
-            foreign_paid_amount_actual=300,
+            defaults={
+                'active_amount': PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED,
+                'foreign_paid_amount_actual': 300,
+            }
         )
-        PolicyTaxYear.objects.create(
+        PolicyTaxYear.objects.get_or_create(
             person_tax_year=person_tax_year,
             pension_company=pension_company2,
             policy_number='314159265',
             prefilled_amount=3000,
-            active_amount=PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED,
-            foreign_paid_amount_actual=0,
+            defaults={
+                'active_amount': PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED,
+                'foreign_paid_amount_actual': 0,
+            }
         )
-        PolicyTaxYear.objects.create(
+        PolicyTaxYear.objects.get_or_create(
             person_tax_year=person_tax_year,
             pension_company=pension_company3,
             policy_number='1337',
             prefilled_amount=-2000,
-            active_amount=PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED,
-            foreign_paid_amount_actual=0,
+            defaults={
+                'active_amount': PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED,
+                'foreign_paid_amount_actual': 0,
+            }
         )
 
         older_policy_1.recalculate()
