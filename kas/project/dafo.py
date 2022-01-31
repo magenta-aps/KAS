@@ -1,4 +1,3 @@
-from urllib.parse import urljoin
 from requests import Session
 from django.conf import settings
 
@@ -6,7 +5,7 @@ from django.conf import settings
 class DatafordelerClient(object):
     combined_service_page_size = 400
 
-    def __init__(self, mock=None, client_header=None, service_header_cvr=None,
+    def __init__(self, mock=None, client_header=None,
                  service_header_cpr=None, uxp_service_owned_by=None,
                  certificate=None, private_key=None, url=None, root_ca=True, timeout=60):
 
@@ -41,11 +40,10 @@ class DatafordelerClient(object):
         if self.mock:
             return self.mock_data
         else:
-            return self._get(cpr, self._service_header_cpr)
+            return self._get(cpr, self.service_header_cpr)
 
-    def _get(self, number, service_header):
-        url = urljoin(self._url, number)
-        r = self.session.get(url, cert=self.cert, verify=self.root_ca, timeout=self.timeout,
+    def _get(self, params, service_header):
+        r = self.session.get(self.url, params=params, cert=self.cert, verify=self.root_ca, timeout=self.timeout,
                              headers={'Uxp-Service': service_header})
         r.raise_for_status()
         return r.json()
