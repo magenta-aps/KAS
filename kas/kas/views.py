@@ -980,3 +980,7 @@ class AgreementDownloadView(LoginRequiredMixin, View):
         response = HttpResponse(company.agreement.read(), content_type=mime_type)
         response['Content-Disposition'] = "attachment; filename=%s" % company.agreement.name
         return response
+
+
+class FeatureFlagView(LoginRequiredMixin, TemplateView):
+    template_name = 'kas/feature_flag_list.html'

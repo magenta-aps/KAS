@@ -1,0 +1,9 @@
+{% extends 'kas/layout.html' %}
+
+{% block content %}
+<strong>Feature flags</strong>
+<pre>{{ feature_flags }}</pre>
+
+<strong>Test feature flag er sat til</strong>: {% if feature_flags.test_feature_flag %}Sandt{% else %}Falsk{% endif %}.
+
+{% endblock %}
