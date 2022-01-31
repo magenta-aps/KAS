@@ -135,6 +135,13 @@
       <tr id="efterbehandling_help" class="collapse">
           <td colspan="2">{% trans 'Er der behov for at udføre efterbehandling på denne person' %}</td>
       </tr>
+      <tr>
+          <th>{% trans 'Opdateret fra grunddata' %}{% include 'includes/help_text/question_mark.html' with target_id='updated_from_dafo_help' right=True %}</th>
+          <td><span>{% if person_tax_year.updated_from_dafo %}{% trans 'Ja' %}{% else %}{% trans 'Nej' %}{% endif %}</span></td>
+      </tr>
+      <tr id="updated_from_dafo_help" class="collapse">
+          <td colspan="2">{% trans 'Er data blevet opdateret fra Grunddata (datafordeleren)' %}</td>
+      </tr>
     </tbody>
     {% endwith %}
   </table>

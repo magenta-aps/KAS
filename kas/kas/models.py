@@ -398,6 +398,11 @@ class PersonTaxYear(HistoryMixin, models.Model):
         null=True
     )
 
+    updated_from_dafo = models.BooleanField(
+        verbose_name='Opdateret fra datafordeleren',
+        default=False
+    )
+
     @property
     def year(self):
         return self.tax_year.year
