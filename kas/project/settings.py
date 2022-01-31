@@ -58,6 +58,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'project.context_processors.feature_flag_processor',
             ],
         },
     },
@@ -226,3 +227,16 @@ METRICS = {
     # used to disable metrics in the pipeline
     'disable': bool(strtobool(os.environ.get('DISABLE_METRICS', 'False'))),
 }
+
+# Feature flags and their defaults can be specified here. Once specified
+# a feature flag can be overriden using the environment by specifying
+# the environment variable FEATURE_FLAG_<name_of_flag_uppercased>.
+FEATURE_FLAGS = {
+    'enable_feature_flag_list': False,
+    'test_feature_flag': False,
+}
+for x in FEATURE_FLAGS:
+    env_key = 'FEATURE_FLAG_' + x.upper()
+    if env_key in os.environ:
+        value = os.environ[env_key]
+        FEATURE_FLAGS[x] = bool(strtobool(value))

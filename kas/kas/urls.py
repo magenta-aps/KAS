@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.urls import path
 
 from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetailView, \
@@ -12,7 +13,8 @@ from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetail
     PersonTaxYearUnhandledDocumentsAndNotes, FinalSettlementGenerateView, MarkFinalSettlementAsInvalid, \
     DispatchFinalSettlement, PersonTaxYearGeneralAndForeignNotesListView, UpdateSingleMandtal, WaitForSingleMandtal, \
     PolicyTaxYearCompanyUpdateView, \
-    PensionCompanyFormView, PensionCompanyHtmxView, PensionCompanyUpdateView, AgreementDownloadView
+    PensionCompanyFormView, PensionCompanyHtmxView, PensionCompanyUpdateView, AgreementDownloadView, \
+    FeatureFlagView
 from kas.viewsets import CurrentFinalSettlementDownloadView
 
 app_name = 'kas'
@@ -69,5 +71,9 @@ urlpatterns = [
     path('pensioncompanyhtmx/<int:last_id>/', PensionCompanyHtmxView.as_view(), name='pensioncompany-htmxview'),
     path('pensioncompany/<int:pk>/edit/', PensionCompanyUpdateView.as_view(), name='pensioncompany-updateview'),
     path('pensioncompany/<int:pk>/agreement/', AgreementDownloadView.as_view(), name='pensioncompany-agreementdownload'),
-
 ]
+
+if settings.FEATURE_FLAGS.get('enable_feature_flag_list'):
+    urlpatterns.append(
+        path('feature_flags/', FeatureFlagView.as_view(), name='feature_flags')
+    )

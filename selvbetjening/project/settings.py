@@ -48,6 +48,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+                'project.context_processors.feature_flag_processor',
             ],
         },
     },
@@ -166,3 +167,15 @@ CLOSE_AT = {
 }
 # Skip health_check for cache layer and storage since we are not using it
 WATCHMAN_CHECKS = ('watchman.checks.databases', )
+
+# Feature flags and their defaults can be specified here. Once specified
+# a feature flag can be overriden using the environment by specifying
+# the environment variable FEATURE_FLAG_<name_of_flag_uppercased>.
+FEATURE_FLAGS = {
+    'test_feature_flag': False,
+}
+for x in FEATURE_FLAGS:
+    env_key = 'FEATURE_FLAG_' + x.upper()
+    if env_key in os.environ:
+        value = os.environ[env_key]
+        FEATURE_FLAGS[x] = bool(strtobool(value))
