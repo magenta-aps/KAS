@@ -19,7 +19,7 @@
             {% if policy_col  %}
                 <td>
                     {% if attachment.policy_tax_year %}
-                        <a href="{% url 'kas:policy_detail' attachment.policy_tax_year.pk %}">{{ attachment.policy_tax_year.policy_number }}</a>
+                    <a href="{% url 'kas:policy_detail' attachment.policy_tax_year.pk %}?tab=bilag">{{ attachment.policy_tax_year.policy_number }}</a>
                     {% endif %}
                 </td>
             {% endif %}

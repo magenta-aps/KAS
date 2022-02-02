@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.urls import path
 
-from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetailView, \
+from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetailView, PolicyTaxYearTabView, \
     PolicyTaxYearDetailView, PdfDownloadView, PolicyDocumentDownloadView, SelfReportedAmountUpdateView, \
     FinalSettlementDownloadView, \
     PersonNotesAndAttachmentsView, PolicyNotesAndAttachmentsView, \
@@ -31,6 +31,7 @@ urlpatterns = [
     path('tax_year/<int:year>/persons/<int:person_id>/', PersonTaxYearDetailView.as_view(), name='person_in_year'),
     path('tax_year/<int:year>/persons/<int:person_id>/pdf/', PdfDownloadView.as_view(), name='get_pdf'),
     path('tax_year/<int:year>/persons/<int:person_id>/policy/', PolicyTaxYearCreateView.as_view(), name='policy_create'),
+    path('tax_year/<int:year>/persons/<int:person_id>/policies/', PolicyTaxYearTabView.as_view(), name='policy_tabs'),
     path('person_tax_year/<int:pk>/handled/', PersonTaxYearDocumentsAndNotesUpdateView.as_view(), name='person_in_year_handled'),
     path('policy/<int:pk>/', PolicyTaxYearDetailView.as_view(), name='policy_detail'),
     path('policy/<int:pk>/activate/', ActivatePolicyTaxYearView.as_view(), name='policy_activate'),

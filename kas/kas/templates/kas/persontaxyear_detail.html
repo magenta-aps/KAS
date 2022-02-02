@@ -179,7 +179,7 @@
             <b>Transaktioner</b> Forudindbetalinger og opkrævninger.{% endblocktrans %}
         {% include 'includes/help_text/collapse.html' with help_text=help_text_nav target_id="js-nav-collapse" %}
     </div>
-    {% include 'includes/detail_tabs.html' with policy_col=True policies=person_tax_year.policytaxyear_set.all notes=person_tax_year.notes.all attachments=person_tax_year.policydocument_set.all transactions=transactions settlements=person_tax_year.finalsettlement_set.all %}
+    {% include 'includes/detail_tabs.html' with policy_col=True policies=person_tax_year.policytaxyear_set.all notes=person_tax_year.notes.all attachments=person_tax_year.policydocument_set.all transactions=transactions settlements=person_tax_year.finalsettlement_set.all person_tax_year=person_tax_year %}
     <script type="application/javascript">
         $( document ).ready(function() {
             $('select#js-year-select').on('change', function(){
