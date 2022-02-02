@@ -27,7 +27,8 @@ class TestDafoConnection(TestCase):
             "bynavn": "Nuuk"}}
         )
 
-        result = dafo_client.get_person_information('1111111111,1111111112')
+        params = {'cpr': '1111111111,1111111112'}
+        result = dafo_client.get_person_information(params)
         self.assertEqual({"1111111111": {
             "cprNummer": "1111111111",
             "fornavn": "Anders",
