@@ -771,6 +771,10 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
         return diff / self.prefilled_amount * 100
 
+    @property
+    def used_from(self):
+        return self.payouts_used.order_by('used_from__person_tax_year__tax_year__year')
+
     def previous_years_qs(self, years=10):
 
         # Finds posts for the last ten years with the same

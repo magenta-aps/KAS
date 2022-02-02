@@ -2,74 +2,74 @@
 <ul class="nav nav-tabs border-0" role="tablist">
     {% if policy_col %}
     <li class="nav-item">
-        <a class="nav-link active border border-secondary border-bottom-0" id="policer-tab" data-toggle="tab" href="#policer" role="tab" aria-selected="true">{% trans 'Policer' %}</a>
+        <a class="nav-link active border border-secondary border-bottom-0" id="{{prefix}}policer-tab" data-toggle="tab" href="#{{prefix}}policer" role="tab" aria-selected="true">{% trans 'Policer' %}</a>
     </li>
     {% else %}
     {% if not historical %}
     <li class="nav-item">
-        <a class="nav-link active border border-secondary border-bottom-0" id="beregnings-tab" data-toggle="tab" href="#beregning" role="tab" aria-selected="true">{% trans ' Beregningsdetaljer' %}</a>
+        <a class="nav-link active border border-secondary border-bottom-0" id="{{prefix}}beregnings-tab" data-toggle="tab" href="#{{prefix}}beregning" role="tab" aria-selected="true">{% trans ' Beregningsdetaljer' %}</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link border border-secondary border-bottom-0" id="negativ-tab" data-toggle="tab" href="#negativ" role="tab" aria-selected="true">{% trans 'Anvendt negativt afkast' %}</a>
+        <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}negativ-tab" data-toggle="tab" href="#{{prefix}}negativ" role="tab" aria-selected="true">{% trans 'Anvendt negativt afkast' %}</a>
     </li>
     {% endif %}
     {% endif %}
     {% if not historical %}
         <li class="nav-item">
-            <a class="nav-link border border-secondary border-bottom-0" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-selected="true">{% trans 'Notater' %}</a>
+            <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}notes-tab" data-toggle="tab" href="#{{prefix}}notes" role="tab" aria-selected="true">{% trans 'Notater' %}</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link border border-secondary border-bottom-0" id="bilag-tab" data-toggle="tab" href="#bilag" role="tab" aria-selected="false">{% trans 'Bilag' %}</a>
+            <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}bilag-tab" data-toggle="tab" href="#{{prefix}}bilag" role="tab" aria-selected="false">{% trans 'Bilag' %}</a>
         </li>
         {% if policy_col %}
             <li class="nav-item">
-                <a class="nav-link border border-secondary border-bottom-0" id="udlandsnoter-tab" data-toggle="tab" href="#udlandsnoter" role="tab" aria-selected="false">{% trans 'Notater om betaling i udlandet' %}</a>
+                <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}udlandsnoter-tab" data-toggle="tab" href="#{{prefix}}udlandsnoter" role="tab" aria-selected="false">{% trans 'Notater om betaling i udlandet' %}</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link border border-secondary border-bottom-0" id="generellenoter-tab" data-toggle="tab" href="#generellenoter" role="tab" aria-selected="false">{% trans 'Generelle notater fra borger' %}</a>
+                <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}generellenoter-tab" data-toggle="tab" href="#{{prefix}}generellenoter" role="tab" aria-selected="false">{% trans 'Generelle notater fra borger' %}</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link border border-secondary border-bottom-0" id="settlement-tab" data-toggle="tab" href="#settlement" role="tab" aria-selected="false">{% trans 'Slutopgørelser' %}</a>
+                <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}settlement-tab" data-toggle="tab" href="#{{prefix}}settlement" role="tab" aria-selected="false">{% trans 'Slutopgørelser' %}</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link border border-secondary border-bottom-0" id="transaction-tab" data-toggle="tab" href="#transaction" role="tab" aria-selected="false">{% trans 'Transaktioner' %}</a>
+                <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}transaction-tab" data-toggle="tab" href="#{{prefix}}transaction" role="tab" aria-selected="false">{% trans 'Transaktioner' %}</a>
             </li>
         {% endif %}
     {% endif %}
 </ul>
 <div class="tab-content">
     {% if policy_col %}
-        <div id="policer" class="p-3 tab-pane active border border-secondary" role="tabpanel" aria-labelledby="policer-tab">
-            {% include 'includes/detail_tabs/policies_list.html' with policies=policies only %}
+        <div id="{{prefix}}policer" class="p-3 tab-pane active border border-secondary" role="tabpanel" aria-labelledby="policer-tab">
+            {% include 'includes/detail_tabs/policies_list.html' with policies=policies person_tax_year=person_tax_year only %}
         </div>
     {% else %}
         {% if not historical %}
-            <div id="beregning" class="p-3 tab-pane active border border-secondary" role="tabpanel" aria-labelledby="beregning-tab">
+            <div id="{{prefix}}beregning" class="p-3 tab-pane active border border-secondary" role="tabpanel" aria-labelledby="beregning-tab">
                 {% include 'includes/detail_tabs/beregnings_detaljer.html' %}
             </div>
-            <div id="negativ" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="negativ-tab">
+            <div id="{{prefix}}negativ" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="negativ-tab">
                 {% include 'includes/detail_tabs/anvendt_negativt_afkast.html' %}
             </div>
         {% endif %}
     {% endif %}
     {% if not historical %}
-    <div id="notes" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="notes-tab">
+    <div id="{{prefix}}notes" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="notes-tab">
         {% include 'includes/notes.html' with notes=notes policy_col=policy_col only %}
     </div>
-    <div id="bilag" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="bilag-tab">
+    <div id="{{prefix}}bilag" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="bilag-tab">
         {% include 'includes/detail_tabs/attachments.html' with attachments=attachments policy_col=policy_col only %}
     </div>
     {% if policy_col %}
-        <div id="udlandsnoter" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="udlandsnoter-tab">
+        <div id="{{prefix}}udlandsnoter" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="udlandsnoter-tab">
             {% include 'includes/detail_tabs/foreign_notes.html' %}
         </div>
-        <div id="generellenoter" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="generellenoter-tab">
+        <div id="{{prefix}}generellenoter" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="generellenoter-tab">
             {% include 'includes/detail_tabs/general_notes.html' %}
         </div>
-        <div id="settlement" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="settlement-tab">
+        <div id="{{prefix}}settlement" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="settlement-tab">
             {% include 'includes/detail_tabs/settlements.html' with settlements=settlements csrf_token=csrf_token person_tax_year=person_tax_year only %}
         </div>
-        <div id="transaction" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="trans-tab">
+        <div id="{{prefix}}transaction" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="trans-tab">
             {% include 'includes/detail_tabs/transactions.html' with transactions=transactions only %}
         </div>
     {% endif %}

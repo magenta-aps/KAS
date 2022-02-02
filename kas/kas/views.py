@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
-from django.views.generic import TemplateView, ListView, View, UpdateView, CreateView, FormView
+from django.views.generic import TemplateView, ListView, View, UpdateView, CreateView, FormView, RedirectView
 from django.views.generic.detail import DetailView, SingleObjectMixin, BaseDetailView
 from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
@@ -398,25 +398,37 @@ class PolicyTaxYearUnfinishedListView(SpecialExcelMixin, PolicyTaxYearSpecialLis
         )
 
 
-class PolicyTaxYearDetailView(LoginRequiredMixin, DetailView):
-    template_name = 'kas/policytaxyear_detail.html'
+class PolicyTaxYearTabView(LoginRequiredMixin, ListView):
+    template_name = 'kas/policytaxyear_tabs.html'
     model = PolicyTaxYear
-    context_object_name = 'policy'
+
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            person_tax_year__person__id=self.kwargs['person_id'],
+            person_tax_year__tax_year__year=self.kwargs['year']
+        )
 
     def get_context_data(self, *args, **kwargs):
-        result = super().get_context_data(*args, **kwargs)
-
-        result['calculation'] = self.object.get_calculation()
-
+        context = super().get_context_data(*args, **kwargs)
         amount_choices_by_value = {x[0]: x[1] for x in PolicyTaxYear.active_amount_options}
+        context['pension_company_amount_label'] = amount_choices_by_value[PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED]
+        context['self_reported_amount_label'] = amount_choices_by_value[PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED]
+        return context
 
-        result['pension_company_amount_label'] = amount_choices_by_value[PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED]
-        result['self_reported_amount_label'] = amount_choices_by_value[PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED]
 
-        result['used_negativ_table'] = self.object.previous_year_deduction_table_data
+class PolicyTaxYearDetailView(LoginRequiredMixin, SingleObjectMixin, RedirectView):
+    model = PolicyTaxYear
 
-        result['used_from'] = self.object.payouts_used.order_by('used_from__person_tax_year__tax_year__year')
-        return result
+    def get_redirect_url(self, *args, **kwargs):
+        # This is so we don't need to implement the logic in several templates
+        self.object = self.get_object()
+        fragment = f"#policy_{self.object.pk}"
+        if 'tab' in self.request.GET:
+            fragment += f"__{self.request.GET['tab']}"
+        return reverse(
+            'kas:policy_tabs',
+            kwargs={'year': self.object.year, 'person_id': self.object.person_tax_year.person_id}
+        ) + fragment
 
 
 class PolicyTaxYearCreateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, CreateView):

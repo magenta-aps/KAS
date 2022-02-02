@@ -70,7 +70,7 @@
     {% else %}
 
 
-    {% for deduction in used_from %}
+    {% for deduction in policy.used_from %}
     <tr>
         <td>
             {% blocktrans with year=deduction.from_year %}Modregning af tidligere negativt kapitalafkast ({{year}}){% endblocktrans %}

@@ -1,0 +1,51 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+{% block content %}
+
+<ul id="tabs" class="nav nav-tabs" role="tablist">
+    {% for policy in object_list %}
+    <li class="nav-item" role="presentation">
+        <a
+                class="nav-link {% if forloop.first %}active{% endif %}"
+                id="policy_{{policy.id}}_tab"
+                data-toggle="tab"
+                href="#policy_{{policy.id}}"
+                role="tab"
+                aria-controls="policy_{{policy.id}}"
+                {% if forloop.first %}aria-selected="true"{% endif %}
+                data-tab-history="true"
+                data-tab-history-changer="push"
+                data-tab-history-update-url="true"
+        >{{policy.pension_company.name}}</a>
+    </li>
+    {% endfor %}
+</ul>
+
+<div class="tab-content" id="myTabContent">
+    {% for policy in object_list %}
+    <div
+            class="tab-pane {% if forloop.first %}show active{% endif %}"
+            id="policy_{{policy.id}}"
+            role="tabpanel"
+            aria-labelledby="policy_{{policy.id}}_tab"
+    >
+        {% include 'kas/policytaxyear_detail_tabbed.html' with policy=policy %}
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    $(function (){
+        {# When a fragment like "policy_3__notes" comes in, first open tab "#policy_3", then "#policy_3__notes" #}
+        const activeTabs = window.location.hash.substr(1).split('__');
+        let activeTab;
+        for (let i=0; i<activeTabs.length; i++) {
+            activeTab = activeTabs.slice(0, i+1).join('__');
+            $('a[href="#'+activeTab+'"]').tab('show');
+        }
+        if (activeTab) {
+            document.getElementById(activeTab).scrollIntoView();
+        }
+    });
+</script>
+{% endblock %}

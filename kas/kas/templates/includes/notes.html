@@ -21,7 +21,7 @@
         <td>
             {% if note.policy_tax_year %}
             {% with policy_tax_year=note.policy_tax_year %}
-            <a href="{% url 'kas:policy_detail' pk=policy_tax_year.id %}#notes">{{ policy_tax_year.policy_number }}</a>
+            <a href="{% url 'kas:policy_detail' pk=policy_tax_year.id %}?tab=notes">{{ policy_tax_year.policy_number }}</a>
             {% endwith %}
             {% endif %}
         </td>
