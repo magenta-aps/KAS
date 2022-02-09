@@ -14,16 +14,25 @@
     <h2 id="Note">{% trans 'Notat' %} {% include 'includes/help_text/question_mark.html' with target_id='js-note-collapse' only %}</h2>
     {% include 'includes/help_text/collapse.html' with help_text=notes_helptext target_id='js-note-collapse' only %}
     {{ form.note }}
+    {% if form.attachment %}
     <h2 id="Bilag">{% trans 'Bilag' %} {% include 'includes/help_text/question_mark.html' with target_id='js-billag-collapse' only %}</h2>
     {% include 'includes/help_text/collapse.html' with help_text=bilag_helptext target_id='js-billag-collapse' %}
     <div class="form-row form-group">
         <div class="col">
             {{ form.attachment_description }}
         </div>
-        <div class="col">
+        <div class="col custom-file">
             {{ form.attachment }}
+            <label class="custom-file-label" for="{{ form.attachment.id_for_label }}">{% trans 'Vælg en fil' %}</label>
         </div>
     </div>
+    <script>
+        $(".custom-file-input").on("change", function() {
+            var fileName = $(this).val().split("\\").pop();
+            $(this).siblings(".custom-file-label").addClass("selected").text(fileName);
+        });
+    </script>
+    {% endif %}
     {% if form.slutlignet or form.efterbehandling %}
         <div class="form-row">
             {% if form.slutlignet %}
@@ -58,5 +67,8 @@
         </div>
     </div>
 </form>
+<style>
+    .custom-file-label::after { content: "{% trans 'Gennemse...' %}"; }
+</style>
 
 {% include 'includes/processing_date_scripts.html' with modal_id='processingWarningModal' checkbox_id=form.slutlignet.id_for_label %}

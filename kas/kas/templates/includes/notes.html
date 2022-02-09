@@ -2,21 +2,33 @@
 <table class="table table-bordered table-sm">
     <thead>
     <tr>
-        <th>{% trans 'Bruger' %}</th>
+        <th>{% trans 'Oprettet af' %}</th>
+        <th>{% trans 'Tidspunkt' %}</th>
+        <th>{% trans 'Redigeret af' %}</th>
         <th>{% trans 'Tidspunkt' %}</th>
         {% if policy_col %}
         <th>{% trans 'Police' %}</th>
         {% endif %}
-        <th class="w-75">{% trans 'Tekst' %}</th>
+        <th class="w-50">{% trans 'Tekst' %}</th>
+        <th></th>
     </tr>
     </thead>
     <tbody>
     {% for note in notes %}
     <tr>
+        {# note.history.last is the oldest entry, note.history.first is the newest entry #}
+        {% with firstversion=note.history.last %}
+        {% with author=firstversion.author %}
+        <td>{{ author.get_full_name }} ({{ author.username }})</td>
+        {% endwith %}
+        <td>{{ firstversion.date }}</td>
+        {% endwith %}
+
         {% with author=note.author %}
         <td>{{ author.get_full_name }} ({{ author.username }})</td>
         {% endwith %}
         <td>{{ note.date }}</td>
+
         {% if policy_col %}
         <td>
             {% if note.policy_tax_year %}
@@ -27,10 +39,11 @@
         </td>
         {% endif %}
         <td><pre class="p-0 m-0">{{ note.content.strip }}</pre></td>
+        <td><a class="btn btn-sm btn-info" href="{% url 'kas:note-update' pk=note.pk %}">{% trans 'Redigér' %}</a></td>
     </tr>
     {% empty %}
     <tr>
-        <td colspan="{% if policy_col %}4{% else %}3{% endif %}">{% trans 'Ingen notater fundet' %}</td>
+        <td colspan="{% if policy_col %}7{% else %}6{% endif %}">{% trans 'Ingen notater fundet' %}</td>
     </tr>
     {% endfor %}
     </tbody>

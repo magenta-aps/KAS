@@ -112,7 +112,7 @@
               {% else %}
                   <form method="POST" action="{% url 'kas:person_in_year_handled' person_tax_year.pk %}">
                   {% csrf_token %}
-                  <span>{% trans 'Nej' %} </span><button class="btn btn-success" type="submit">{% trans 'Sæt alle bilag og notater som behandlet' %}</button>
+                  <span>{% trans 'Nej' %} </span><button class="btn btn-sm btn-success" type="submit">{% trans 'Sæt alle bilag og notater som behandlet' %}</button>
                   </form>
 
               {% endif %}
