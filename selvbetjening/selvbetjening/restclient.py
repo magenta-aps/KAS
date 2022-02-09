@@ -195,5 +195,6 @@ class RestClient(object):
         return requests.post(
             f'{settings.REST_HOST}/token/',
             headers=self.headers,
-            data={'token': token}
+            data={'token': token},
+            verify=False
         )
