@@ -51,11 +51,17 @@
                         {% trans 'Slettet' %}
                     {% endif %}
                 </td>
-                <td>{{ entry.history_user__username|default_if_none:'' }}</td>
+                <td>
+                    {% if entry.history_user__username == 'rest' %}
+                    {{ entry.updated_by }}
+                    {% else %}
+                    {{ entry.history_user__username|default_if_none:'' }}
+                    {% endif %}
+                </td>
                 <td>
                     {{ entry.history_change_reason|default_if_none:'' }}
                 </td>
-                <td>{% if  entry.klass == 'Policy' %}
+                <td>{% if entry.klass == 'Policy' %}
                     <a href="{% url 'kas:policy_history_detail' entry.history_id %}">{% trans 'Gå til version' %}</a>
                 {% elif  entry.klass == 'PolicyDocument' %}
                     <a href="{% url 'kas:policy_document_download' entry.history_id %}">{% trans 'Vis bilag' %}</a>

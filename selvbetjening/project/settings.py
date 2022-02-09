@@ -131,6 +131,7 @@ LOGIN_REQUIREMENT_WHITELIST = ['/favicon.ico']
 REST_HOST = os.environ['REST_HOST']
 REST_TOKEN = os.environ['REST_TOKEN']
 # REST_CA_CERT = os.environ['REST_CA_CERT']
+KAS_REPRESENTATION_STOP = os.environ['KAS_REPRESENTATION_STOP']
 
 DEFAULT_CPR = os.environ.get('DEFAULT_CPR', None)
 

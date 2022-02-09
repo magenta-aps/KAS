@@ -26,7 +26,7 @@ from kas.forms import PersonListFilterForm, SelfReportedAmountForm, EditAmountsU
     PolicyTaxYearCompanyForm, PensionCompanyModelForm, PensionCompanyMergeForm, NoteUpdateForm
 from kas.jobs import dispatch_final_settlement, import_mandtal, merge_pension_companies
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note, TaxYear, PersonTaxYear, \
-    PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement, PensionCompany
+    PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement, PensionCompany, RepresentationToken, Person
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, HighestSingleObjectMixin, \
     SpecialExcelMixin
@@ -267,6 +267,7 @@ class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
         )])
         context['transactions'] = Transaction.objects.filter(person_tax_year=self.object).order_by('-created_at')
         context['person_tax_years'] = PersonTaxYear.objects.filter(person=self.object.person)
+        context['representing'] = RepresentationToken.objects.filter(user=self.request.user, consumed=True).first()
 
         return context
 
@@ -326,6 +327,40 @@ class PersonNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):
             'person_tax_year': self.object
         })
         return ctx
+
+
+class PersonRepresentStartView(LoginRequiredMixin, TemplateView):
+
+    template_name = 'kas/person/represent.html'
+
+    def get_context_data(self, **kwargs):
+        token = RepresentationToken.objects.create(
+            token=RepresentationToken.generate_token(),
+            person=Person.objects.get(id=self.kwargs['id']),
+            user=self.request.user,
+        )
+        ctx = super().get_context_data(**kwargs)
+        ctx['form_action'] = settings.SELVBETJENING_REPRESENTATION_START
+        ctx['form_data'] = {'token': token.token}
+        return ctx
+
+
+class PersonRepresentStopView(LoginRequiredMixin, RedirectView):
+    def get_redirect_url(self):
+        # There really should be only one, but don't die if there are more
+        tokens = RepresentationToken.objects.filter(user=self.request.user)
+        token = tokens.first()
+        person = None
+        if token:
+            person = token.person
+        tokens.delete()
+        if person:
+            return reverse('kas:person_in_year', kwargs={
+                'year': TaxYear.objects.order_by('-year').values('year').first()['year'],
+                'person_id': person.id
+            })
+        else:
+            return reverse('kas:person_search')
 
 
 class PolicyTaxYearListView(LoginRequiredMixin, ListView):
@@ -670,25 +705,27 @@ class PersonTaxYearHistoryListView(LoginRequiredMixin, DetailView):
 
         qs = self.object.history.all().annotate(
             klass=models.Value('PersonTaxYear', output_field=models.CharField()),
-        ).values('history_date', 'history_id', 'history_user__username', 'history_change_reason', 'history_type', 'klass')
+        ).values_list('history_date', 'history_id', 'history_user__username', 'history_change_reason', 'history_type', 'updated_by', 'klass')
 
         person_qs = self.object.person.history.all().annotate(
             klass=models.Value('Person', output_field=models.CharField()),
-        ).values('history_date', 'history_id', 'history_user__username', 'history_change_reason', 'history_type', 'klass')
+            updated_by=models.Value(None, output_field=models.CharField()),
+        ).values_list('history_date', 'history_id', 'history_user__username', 'history_change_reason', 'history_type', 'updated_by', 'klass')
 
         policy_qs = PolicyTaxYear.history.filter(person_tax_year=self.object).annotate(
             klass=models.Value('Policy', output_field=models.CharField()),
-        ).values('history_date', 'id', 'history_user__username', 'history_change_reason', 'history_type', 'klass')
+        ).values_list('history_date', 'id', 'history_user__username', 'history_change_reason', 'history_type', 'updated_by', 'klass')
 
         notes_qs = Note.objects.filter(person_tax_year=self.object).annotate(
             history_type=models.Value('+', output_field=models.CharField()),
             klass=models.Value('Note', output_field=models.CharField()),
-        ).values('date', 'id', 'author__username', 'content', 'history_type', 'klass')
+            updated_by=models.Value(None, output_field=models.CharField()),
+        ).values_list('date', 'id', 'author__username', 'content', 'history_type', 'updated_by', 'klass')
 
         documents_qs = PolicyDocument.objects.filter(person_tax_year=self.object).annotate(
             history_type=models.Value('+', output_field=models.CharField()),
             klass=models.Value('PolicyDocument', output_field=models.CharField()),
-        ).values('uploaded_at', 'id', 'uploaded_by__username', 'description', 'history_type', 'klass')
+        ).values_list('uploaded_at', 'id', 'uploaded_by__username', 'description', 'history_type', 'uploaded_by__username', 'klass')
 
         # generated tax slips
         tax_slip_generated_qs = TaxSlipGenerated.objects.filter(persontaxyear=self.object).annotate(
@@ -696,7 +733,8 @@ class PersonTaxYearHistoryListView(LoginRequiredMixin, DetailView):
             description=models.Value('Generated', output_field=models.CharField()),
             history_type=models.Value('+', output_field=models.CharField()),
             klass=models.Value('TaxSlipGenerated', output_field=models.CharField()),
-        ).values('created_at', 'id', 'created_by', 'description', 'history_type', 'klass')
+            updated_by=models.Value(None, output_field=models.CharField()),
+        ).values_list('created_at', 'id', 'created_by', 'description', 'history_type', 'updated_by', 'klass')
 
         # send tax slips
         tax_slip_sendt_qs = TaxSlipGenerated.objects.filter(persontaxyear=self.object).exclude(send_at__isnull=True).annotate(
@@ -704,28 +742,44 @@ class PersonTaxYearHistoryListView(LoginRequiredMixin, DetailView):
             description=models.Value('Send', output_field=models.CharField()),
             history_type=models.Value('~', output_field=models.CharField()),
             klass=models.Value('TaxSlipGenerated', output_field=models.CharField()),
-        ).values('send_at', 'id', 'created_by', 'description', 'history_type', 'klass')
+            updated_by=models.Value(None, output_field=models.CharField()),
+        ).values_list('send_at', 'id', 'created_by', 'description', 'history_type', 'updated_by', 'klass')
 
         final_settlement_generated_qs = FinalSettlement.objects.filter(person_tax_year=self.object).annotate(
             id=models.Value(0, output_field=models.IntegerField()),
             created_by=models.Value('', output_field=models.CharField()),
             description=models.Value('Generated', output_field=models.CharField()),
             history_type=models.Value('+', output_field=models.CharField()),
-            klass=models.Value('FinalSettlement', output_field=models.CharField())
-        ).values('created_at', 'id', 'created_by', 'description', 'history_type', 'klass')
+            klass=models.Value('FinalSettlement', output_field=models.CharField()),
+            updated_by=models.Value('', output_field=models.CharField()),
+        ).values_list('created_at', 'id', 'created_by', 'description', 'history_type', 'updated_by', 'klass')
 
         final_settlement_send_qs = FinalSettlement.objects.filter(person_tax_year=self.object).exclude(send_at__isnull=True).annotate(
-            id=models.Value(0, output_field=models.IntegerField()),
+            id=models.Value(1, output_field=models.IntegerField()),
             created_by=models.Value('', output_field=models.CharField()),
             description=models.Value('Send', output_field=models.CharField()),
             history_type=models.Value('~', output_field=models.CharField()),
-            klass=models.Value('FinalSettlement', output_field=models.CharField())
-        ).values('send_at', 'id', 'created_by', 'description', 'history_type', 'klass')
+            klass=models.Value('FinalSettlement', output_field=models.CharField()),
+            updated_by=models.Value('', output_field=models.CharField()),
+        ).values_list('send_at', 'id', 'created_by', 'description', 'history_type', 'updated_by', 'klass')
 
-        ctx['objects'] = qs.union(policy_qs, person_qs, notes_qs, documents_qs,
-                                  tax_slip_generated_qs, tax_slip_sendt_qs, final_settlement_generated_qs,
-                                  final_settlement_send_qs,
-                                  all=True).order_by('-history_date')
+        # It appears that queryset.union() doesn't give the correct output, specifically putting values under the wrong keys
+        # e.g. putting the `klass` value under the `updated_by` key for items from _some_ querysets
+        # So instead we extract the values from each queryset and join them together in code
+        items = []
+        keys = ('history_date', 'history_id', 'history_user__username', 'history_change_reason', 'history_type', 'updated_by', 'klass')
+        for queryset in (qs, policy_qs, person_qs, notes_qs, documents_qs, tax_slip_generated_qs,
+                         tax_slip_sendt_qs, final_settlement_generated_qs, final_settlement_send_qs):
+            for obj in queryset:
+                items.append({key: obj[index] for index, key in enumerate(keys)})
+        items.sort(key=lambda item: item['history_date'], reverse=True)
+        ctx['objects'] = items
+
+#         ctx['objects'] = qs.union(policy_qs, person_qs, notes_qs, documents_qs,
+#                                   tax_slip_generated_qs, tax_slip_sendt_qs, final_settlement_generated_qs,
+#                                   final_settlement_send_qs,
+#                                   all=True).order_by('-history_date')
+
         return ctx
 
 
@@ -750,17 +804,18 @@ class PolicyTaxYearHistoryListView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super(PolicyTaxYearHistoryListView, self).get_context_data(**kwargs)
+
         qs = self.object.history.all().annotate(
             klass=models.Value('Policy', output_field=models.CharField()),
-        ).values('history_date', 'history_user__username', 'history_id', 'history_change_reason', 'history_type', 'klass')
+        ).values('history_date', 'history_user__username', 'history_id', 'history_change_reason', 'history_type', 'klass', 'updated_by')
         notes_qs = Note.objects.filter(policy_tax_year=self.object).annotate(
             history_type=models.Value('+', output_field=models.CharField()),
             klass=models.Value('Note', output_field=models.CharField()),
-        ).values('date', 'author__username', 'id', 'content', 'history_type', 'klass')
+        ).values('date', 'author__username', 'id', 'content', 'history_type', 'klass', 'policy_tax_year__updated_by')
         documents_qs = PolicyDocument.objects.filter(policy_tax_year=self.object).annotate(
             history_type=models.Value('+', output_field=models.CharField()),
             klass=models.Value('PolicyDocument', output_field=models.CharField()),
-        ).values('uploaded_at', 'uploaded_by__username', 'id', 'description', 'history_type', 'klass')
+        ).values('uploaded_at', 'uploaded_by__username', 'id', 'description', 'history_type', 'klass', 'policy_tax_year__updated_by')
         ctx['objects'] = qs.union(notes_qs, documents_qs, all=True).order_by('-history_date')
         return ctx
 

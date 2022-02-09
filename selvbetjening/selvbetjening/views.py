@@ -9,15 +9,17 @@ from django.template import Engine, Context
 from django.urls import reverse
 from django.utils import translation, timezone
 from django.utils.datetime_safe import date
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.utils.translation.trans_real import DjangoTranslation
 from django.views import View
 from django.views.decorators.cache import cache_control
-from django.views.generic import FormView, TemplateView
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import FormView, TemplateView, RedirectView
 from django.views.i18n import JavaScriptCatalog
 
 from selvbetjening.exceptions import PersonNotFoundException
-from selvbetjening.forms import PolicyForm, PersonTaxYearForm
+from selvbetjening.forms import PolicyForm, PersonTaxYearForm, RepresentationTokenForm
 from selvbetjening.restclient import RestClient
 
 
@@ -90,11 +92,16 @@ class HasUserMixin(object):
     def name(self):
         return self.request.session['user_info'].get('PersonName')
 
+    @property
+    def admin_name(self):
+        return self.request.session['user_info'].get('AdminUsername')
+
     def get_context_data(self, **kwargs):
         return super(HasUserMixin, self).get_context_data(**{
             'cpr': self.cpr,
             'cpr_x': (self.cpr[0:6] + 'xxxx') if self.cpr else None,
             'name': self.name,
+            'admin_name': self.admin_name,
             **kwargs
         })
 
@@ -192,7 +199,7 @@ class PolicyFormView(HasUserMixin, CloseMixin, FormView):
         return self.request.session['policy_tax_years']
 
     def form_valid(self, form, extra_form):
-        client = RestClient()
+        client = RestClient(self.request.session['user_info'])
         for policyform in form:
             policyform_data = policyform.get_nonfile_data()
             if len(policyform_data):
@@ -243,7 +250,7 @@ class PolicyDetailView(HasUserMixin, TemplateView):
 
         policies = client.get_policies(cpr=self.cpr, year=year)
         person_tax_year = client.get_person_tax_year(cpr=self.cpr, year=year)
-        context = {
+        return super().get_context_data(**{
             **kwargs,
             'items': policies,
             'person_tax_year': person_tax_year,
@@ -255,9 +262,7 @@ class PolicyDetailView(HasUserMixin, TemplateView):
                     'calculated_result'
                 ]
             },
-        }
-
-        return context
+        })
 
 
 class ViewFinalSettlementView(HasUserMixin, View):
@@ -271,3 +276,30 @@ class ViewFinalSettlementView(HasUserMixin, View):
         if r.status_code == 200:
             return FileResponse(r.iter_content(), content_type='application/pdf')
         return HttpResponse(content=_('Ingen slutopgørelse for givet år'), status=404, content_type='text/html; charset=utf-8')
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RepresentationStartView(FormView):
+    form_class = RepresentationTokenForm
+
+    def form_valid(self, form):
+        token = form.cleaned_data['token']
+        client = RestClient()
+        response = client.exchange_token(token)
+        if not response.ok:
+            return HttpResponse(status=response.status_code, content=response.content)
+        data = response.json()
+        pruned_data = {}
+        # Keys CPR and PersonName match what we get from login service
+        for key in ('CPR', 'PersonName', 'AdminUsername', 'AdminUserID'):
+            if key not in data:
+                return HttpResponse(status=500, content=f'Missing {key} in token service response')
+            pruned_data[key] = data[key]
+        self.request.session['user_info'] = pruned_data
+        return redirect(reverse('selvbetjening:policy-edit'))
+
+
+class RepresentationStopView(RedirectView):
+    def get_redirect_url(self):
+        del self.request.session['user_info']
+        return settings.KAS_REPRESENTATION_STOP

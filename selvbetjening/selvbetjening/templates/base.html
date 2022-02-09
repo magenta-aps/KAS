@@ -57,14 +57,24 @@
             <main>
                 <nav class="top-navigation">
                     <div class="userinfo">
-                        {% if name %}
-                            <span>{% blocktrans %}Logget ind som {{ name }}{% endblocktrans %}</span>
-                        {% elif cpr_x %}
-                            <span>{% blocktrans with cpr=cpr_x %}Logget ind som {{ cpr }}{% endblocktrans %}</span>
+                        {% if admin_name %}
+                            {% if name %}
+                            <span>{% blocktrans %}Logget ind som {{ admin_name }} på vegne af {{ name }}{% endblocktrans %}</span>
+                            {% elif cpr_x %}
+                            <span>{% blocktrans with cpr=cpr_x %}Logget ind som {{ admin_name }} på vegne af {{ cpr }}{% endblocktrans %}</span>
+                            {% endif %}
+                            <a href="{% url 'selvbetjening:representation-stop' %}">{% trans 'Afslut repræsentation' %}</a>
+                        {% else %}
+                            {% if name %}
+                                <span>{% blocktrans %}Logget ind som {{ name }}{% endblocktrans %}</span>
+                            {% elif cpr_x %}
+                                <span>{% blocktrans with cpr=cpr_x %}Logget ind som {{ cpr }}{% endblocktrans %}</span>
+                            {% endif %}
+                            {% if cpr %}
+                                <a href="{% url 'sullissivik:openid:logout' %}">{% trans 'Log ud' %}</a>
+                            {% endif %}
                         {% endif %}
-                        {% if cpr %}
-                            <a href="{% url 'sullissivik:openid:logout' %}">{% trans 'Log ud' %}</a>
-                        {% endif %}
+
                     </div>
                 </nav>
                 {% block content %}

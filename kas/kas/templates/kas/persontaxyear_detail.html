@@ -154,6 +154,13 @@
         <a class="btn btn-warning" href="{% url 'kas:generate-final-settlement' person_tax_year.pk %}">{% trans 'Generer ny slutopgørelse' %}</a>
         {% endif %}
         <a href="{% url 'kas:person_history_list' person_tax_year.pk %}" class="btn btn-secondary">{% trans 'Vis historik' %}</a>
+
+        {% if representing %}
+        <a href="{{ representation_stop }}" class="btn btn-outline-primary">{% trans 'Afslut repræsentation' %}</a>
+        {% else %}
+        <a href="{% url 'kas:person_represent_start' person_tax_year.person.id %}" class="btn btn-primary">{% trans 'Repræsentér borger' %}</a>
+        {% endif %}
+
         {% include 'includes/help_text/question_mark.html' with target_id='actions_help_texts' %}
         {% blocktrans asvar actions_help_text %}<b>Opret ny police</b> Opretter en ny police for personen for dette skatteår. Dette er praktisk hvis der eksisterer en police, men hverken borgeren eller R75-dataene har angivet policen
 
@@ -161,7 +168,11 @@
 
         <b>Generer ny slutopgørelse</b> Kun tilgængelig når skatteåret er i Genoptagelsesperioden, og der foreligger mindst én police for skatteåret. Opretter en slutopgørelse som pdf-fil, der kan downloades til inspektion eller sendes.
 
-        <b>Vis historik</b> Viser tidligere udgaver af dette personskatteår, hvor gamle stamdata kan inspiceres.{% endblocktrans %}
+        <b>Vis historik</b> Viser tidligere udgaver af dette personskatteår, hvor gamle stamdata kan inspiceres.
+
+        <b>Repræsentér borger</b> Åbner selvbetjeningssiden, så der kan indberettes på vegne af borgeren.
+        {% endblocktrans %}
+
         {% include 'includes/help_text/collapse.html' with help_text=actions_help_text target_id='actions_help_texts' %}
     </fieldset>
     <div class="mb-2">

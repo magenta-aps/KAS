@@ -3,7 +3,7 @@ from kas.models import TaxYear
 
 
 class Command(BaseCommand):
-    help = 'Creates the initial years used in the project (2018, 2019, 2020)'
+    help = 'Creates the initial years used in the project (2018, 2019, 2020, 2021)'
 
     rate_text = (
         "Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pil-\n"
@@ -22,11 +22,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        for year in (2018, 2019, 2020):
+        for year in (2018, 2019, 2020, 2021):
             year_part = 'selvangivelse'
 
             # Older years should default to genoptagelsesperiode
-            if year < 2020:
+            if year < 2021:
                 year_part = 'genoptagelsesperiode'
 
             TaxYear.objects.update_or_create(

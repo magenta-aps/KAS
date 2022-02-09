@@ -48,23 +48,27 @@ class Command(BaseCommand):
 
     def create_final_statement(self, user):
         person, _ = Person.objects.get_or_create(
-            cpr='0102031234',
-            name='Test Testperson',
-            municipality_code=956,
-            municipality_name='Sermersooq',
-            address_line_2='Testvej 42',
-            address_line_4='1234  Testby'
+            cpr='1802602810',
+            defaults={
+                'name': 'Test Testperson',
+                'municipality_code': 956,
+                'municipality_name': 'Sermersooq',
+                'address_line_2': 'Testvej 42',
+                'address_line_4': '1234  Testby'
+            }
         )
 
-        tax_year = TaxYear.objects.get(year=2020)
+        tax_year = TaxYear.objects.get(year=2021)
         person_tax_year, _ = PersonTaxYear.objects.get_or_create(
             person=person,
             tax_year=tax_year,
-            number_of_days=300,
+            defaults={
+                'number_of_days': 300,
+            }
         )
 
         pension_company1, _ = PensionCompany.objects.get_or_create(res=12345671, name='P+, Pensionskassen for Akademikere')
-        pension_company2, _ = PensionCompany.objects.get_or_create(res=12345672, name='PFA', agreement_present=True)
+        pension_company2, _ = PensionCompany.objects.get_or_create(res=12345672, name='PFA', defaults={'agreement_present': True})
         pension_company3, _ = PensionCompany.objects.get_or_create(res=12345673, name='High Risk Invest & Pension')
 
         Transaction.objects.create(

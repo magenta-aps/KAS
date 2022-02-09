@@ -5,6 +5,8 @@ import csv
 from io import StringIO
 from time import sleep
 from uuid import uuid4
+import random
+import string
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -402,6 +404,12 @@ class PersonTaxYear(HistoryMixin, models.Model):
         default=False
     )
 
+    # Charfield instead of User, so if a user is deleted we still remember him
+    updated_by = models.CharField(
+        max_length=150,
+        null=True
+    )
+
     @property
     def year(self):
         return self.tax_year.year
@@ -637,6 +645,11 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     citizen_pay_override = models.BooleanField(
         default=False,
         verbose_name=_('Borgeren betaler selvom der foreligger aftale med pensionsselskab')
+    )
+
+    updated_by = models.CharField(
+        max_length=150,
+        null=True
     )
 
     @classmethod
@@ -1511,3 +1524,33 @@ def cancel_batch_on_save(sender, instance, **kwargs):
             if batch.status in (Prisme10QBatch.STATUS_CREATED, Prisme10QBatch.STATUS_DELIVERY_FAILED):
                 batch.status = Prisme10QBatch.STATUS_CANCELLED
                 batch.save(update_fields=['status'])
+
+
+class RepresentationToken(models.Model):
+    token = models.CharField(
+        max_length=64,
+        null=False,
+        unique=True,
+    )
+    person = models.ForeignKey(
+        Person,
+        null=False,
+        on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(
+        User,
+        null=False,
+        on_delete=models.CASCADE
+    )
+    created = models.DateTimeField(
+        auto_now_add=True
+    )
+    consumed = models.BooleanField(
+        default=False
+    )
+
+    @staticmethod
+    def generate_token():
+        return ''.join(
+            [random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(64)]
+        )

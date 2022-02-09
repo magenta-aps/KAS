@@ -1,6 +1,7 @@
 import re
 
 from django.core.exceptions import ValidationError
+from django.core.validators import MinLengthValidator, MaxLengthValidator
 from django.forms import forms, fields, widgets, Field
 from django.utils.translation import gettext as _
 
@@ -167,4 +168,10 @@ class PersonTaxYearForm(forms.Form):
             attrs={'autocomplete': 'off', 'class': 'form-control'}
         ),
         required=False,
+    )
+
+
+class RepresentationTokenForm(forms.Form):
+    token = fields.CharField(
+        validators=(MinLengthValidator(64), MaxLengthValidator(64))
     )
