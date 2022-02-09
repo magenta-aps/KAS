@@ -14,7 +14,7 @@ from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetail
     DispatchFinalSettlement, PersonTaxYearGeneralAndForeignNotesListView, UpdateSingleMandtal, WaitForSingleMandtal, \
     PolicyTaxYearCompanyUpdateView, \
     PensionCompanyFormView, PensionCompanyHtmxView, PensionCompanyUpdateView, AgreementDownloadView, \
-    FeatureFlagView
+    FeatureFlagView, NoteUpdateView
 from kas.viewsets import CurrentFinalSettlementDownloadView
 
 app_name = 'kas'
@@ -72,6 +72,8 @@ urlpatterns = [
     path('pensioncompanyhtmx/<int:last_id>/', PensionCompanyHtmxView.as_view(), name='pensioncompany-htmxview'),
     path('pensioncompany/<int:pk>/edit/', PensionCompanyUpdateView.as_view(), name='pensioncompany-updateview'),
     path('pensioncompany/<int:pk>/agreement/', AgreementDownloadView.as_view(), name='pensioncompany-agreementdownload'),
+
+    path('note/<int:pk>/', NoteUpdateView.as_view(), name='note-update'),
 ]
 
 if settings.FEATURE_FLAGS.get('enable_feature_flag_list'):

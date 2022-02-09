@@ -23,8 +23,7 @@ from kas.filters import PensionCompanyFilterSet
 from kas.forms import PersonListFilterForm, SelfReportedAmountForm, EditAmountsUpdateForm, \
     PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, PolicyTaxYearActivationForm, PolicyNotesAndAttachmentForm, \
     PersonNotesAndAttachmentForm, PaymentOverrideUpdateForm, PolicyListFilterForm, FinalStatementForm, \
-    PolicyTaxYearCompanyForm, \
-    PensionCompanyModelForm, PensionCompanyMergeForm
+    PolicyTaxYearCompanyForm, PensionCompanyModelForm, PensionCompanyMergeForm, NoteUpdateForm
 from kas.jobs import dispatch_final_settlement, import_mandtal, merge_pension_companies
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note, TaxYear, PersonTaxYear, \
     PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement, PensionCompany
@@ -281,6 +280,31 @@ class PersonTaxYearDocumentsAndNotesUpdateView(LoginRequiredMixin, SingleObjectM
         instance.save(update_fields=['all_documents_and_notes_handled'])
         return HttpResponseRedirect(reverse('kas:person_in_year', kwargs={'year': instance.year,
                                                                           'person_id': instance.person.id}))
+
+
+class NoteUpdateView(LoginRequiredMixin, UpdateView):
+    form_class = NoteUpdateForm
+    model = Note
+    template_name = 'kas/form_with_notes.html'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_success_url(self):
+        if self.object.policy_tax_year:
+            return reverse('kas:policy_detail', kwargs={'pk': self.object.policy_tax_year.pk})
+        else:
+            return reverse('kas:person_in_year', kwargs={'year': self.object.person_tax_year.year, 'person_id': self.object.person_tax_year.person.id})
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx.update({
+            'person_tax_year': self.object.person_tax_year,
+            'policy_tax_year': self.object.policy_tax_year,
+        })
+        return ctx
 
 
 class PersonNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):

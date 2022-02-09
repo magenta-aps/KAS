@@ -1111,6 +1111,8 @@ class Note(models.Model):
     class Meta:
         ordering = ['date']
 
+    history = HistoricalRecords()
+
     person_tax_year = models.ForeignKey(
         PersonTaxYear,
         null=False,
@@ -1126,7 +1128,7 @@ class Note(models.Model):
     )
 
     date = models.DateTimeField(
-        auto_now_add=True,
+        auto_now=True,
     )
 
     author = models.ForeignKey(

@@ -63,46 +63,56 @@
                 {{ notes_formset }}
             </div>
         </div>
+
+        {% if upload_formset %}
         {{ upload_formset.management_form }}
+        <div id="upload-form-container">
         {% for upload_form in upload_formset  %}
             <div class="form-row mt-2" id="upload-row">
                 <div class="col">
                     {{ upload_form.description }}
                 </div>
-                <div class="col">
+                <div class="col custom-file">
                     {{ upload_form.file }}
+                    <label class="custom-file-label" for="{{ upload_form.file.id_for_label }}">{% trans 'Vælg en fil' %}</label>
                 </div>
             </div>
         {% endfor %}
-
+        </div>
     <div class="form-row mt-5">
         <div class="col">
             <input id="add-attachments" class="btn btn-primary" type="button" value="{% trans 'Tilføj flere bilag' %}"/>
         </div>
     </div>
+    {% endif %}
     <div class="form-row mt-5">
         <div class="col">
             <input class="btn btn-success float-right" type="submit" value="{% if create %}{% trans 'Opret' %}{% else %}{% trans 'Gem' %}{% endif %}"/>
         </div>
     </div>
 </form>
-
 {% if form.next_processing_date %}
 {{ form.next_processing_date.id_for_label|json_script:"next_processing_date_id" }}
 <script>
     $( document ).ready(function() {
-        $( "input#add-attachments" ).click(function() {
+        $("input#add-attachments").click(function() {
             let count = $('input#id_uploads-TOTAL_FORMS').val();
-            let row = `<div class="form-row mt-2">
+            let row = $(`<div class="form-row mt-2">
                 <div class="col">
                     <input type="text" name="uploads-${count}-description" placeholder="Fil-beskrivelse" autocomplete="off" class="form-control mr-2" id="id_uploads-${count}-description">
                 </div>
-                <div class="col">
-                    <input type="file" name="uploads-${count}-file" class="form-control mr-2" id="id_uploads-${count}-file">
+                <div class="col custom-file">
+                    <input type="file" name="uploads-${count}-file" class="form-control mr-2 custom-file-input" id="id_uploads-${count}-file">
+                    <label class="custom-file-label" for="id_uploads-${count}-file">{% trans 'Vælg en fil' %}</label>
                 </div>
-            </div>`
-            $(row).appendTo($("form#notes-and-documents-form"))
+            </div>`);
+            $("#upload-form-container").append(row);
             $('input#id_uploads-TOTAL_FORMS').val(count+1);
+
+            row.find(".custom-file-input").on("change", function() {
+                var fileName = $(this).val().split("\\").pop();
+                $(this).siblings(".custom-file-label").addClass("selected").text(fileName);
+            });
         });
 
         // Don't submit date field if it's hidden
@@ -115,8 +125,15 @@
                 nextProcessingDateField.attr("disabled", "disabled");
             }
         });
-    })
+        $(".custom-file-input").on("change", function() {
+            var fileName = $(this).val().split("\\").pop();
+            $(this).siblings(".custom-file-label").addClass("selected").text(fileName);
+        });
+    });
 </script>
+<style>
+    .custom-file-label::after { content: "{% trans 'Gennemse...' %}" !important; }
+</style>
 
 {% include 'includes/processing_date_scripts.html' with modal_id='processingWarningModal' checkbox_id=form.slutlignet.id_for_label %}
 {% endif %}

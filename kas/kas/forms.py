@@ -76,9 +76,26 @@ class PolicyListFilterForm(BootstrapForm):
         ]
 
 
+class NoteUpdateForm(forms.ModelForm, BootstrapForm):
+    class Meta:
+        model = Note
+        fields = ('content',)
+
+    def __init__(self, user, **kwargs):
+        super().__init__(**kwargs)
+        self.user = user
+
+    def save(self, commit=True):
+        instance = super().save(False)
+        instance.author = self.user
+        if commit:
+            instance.save()
+        return instance
+
+
 class PersonNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
     note = forms.CharField(widget=forms.Textarea(attrs={'placeholder': _('Nyt notat')}), required=False, )
-    attachment = forms.FileField(required=False)
+    attachment = forms.FileField(required=False, widget=forms.FileInput(attrs={'class': 'custom-file-input'}))
     attachment_description = forms.CharField(required=False,
                                              widget=forms.TextInput(attrs={'placeholder': _('Fil-beskrivelse')}))
 
@@ -108,11 +125,18 @@ class PersonNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
 
 
 class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
-    attachment = forms.FileField(required=False)
-    attachment_description = forms.CharField(required=False,
-                                             widget=forms.TextInput(attrs={'placeholder': _('Fil-beskrivelse')}))
-    note = forms.CharField(widget=forms.Textarea(attrs={'placeholder': _('Nyt notat')}),
-                           required=False)
+    attachment = forms.FileField(
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'custom-file-input'})
+    )
+    attachment_description = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': _('Fil-beskrivelse')})
+    )
+    note = forms.CharField(
+        widget=forms.Textarea(attrs={'placeholder': _('Nyt notat')}),
+        required=False
+    )
 
     def __init__(self, **kwargs):
         self.user = kwargs.pop('user')
@@ -195,7 +219,10 @@ class NoteForm(forms.ModelForm, BootstrapForm):
 
 
 class PolicyDocumentForm(forms.ModelForm, BootstrapForm):
-    file = forms.FileField(required=True)
+    file = forms.FileField(
+        required=True,
+        widget=forms.FileInput(attrs={'class': 'custom-file-input'})
+    )
     description = forms.CharField(required=False,
                                   widget=forms.TextInput(attrs={'placeholder': _('Fil-beskrivelse'),
                                                                 'autocomplete': 'off'}))
