@@ -19,7 +19,6 @@ from django.db.transaction import atomic
 from django.dispatch import receiver
 from django.forms import model_to_dict
 from django.utils import timezone
-from django.utils import translation
 from django.utils.translation import gettext as _
 from requests.exceptions import RequestException
 from simple_history.models import HistoricalRecords
@@ -828,10 +827,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         if (old_year_adjusted_amount <= 0 or self.year_adjusted_amount <= 0) and old_year_adjusted_amount != self.year_adjusted_amount:
             # When tax base is changed from or to negative, mark subsequent policies,
             # as the available deductible amount will have changed
-            note_texts = []
-            for locale in ('da', 'kl'):
-                with translation.override(locale):
-                    note_texts.append(_("Policen for %(year)s er blevet opdateret; denne police kan være påvirket af ændringen.") % {'year': self.year})
+
+            # This text has not been translated by request of the customer
+            note_text = f"Policen for {self.year} er blevet opdateret; denne police kan være påvirket af ændringen."
 
             for policy in self.subsequent_years_qs():
                 policy.efterbehandling = True
@@ -841,7 +839,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
                     person_tax_year=self.person_tax_year,
                     policy_tax_year=policy,
                     author=get_admin_user(),
-                    content='\n\n'.join(note_texts)
+                    content=note_text
                 )
 
     def sum_of_used_amount(self):
