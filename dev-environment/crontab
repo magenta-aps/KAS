@@ -5,3 +5,5 @@
 # │ │ │ │ ┌─ day of the week (0 - 6) (Sunday to Saturday)
 # │ │ │ │ │
 # * * * * * command to execute
+
+  * * * * * python manage.py cleanup_representation_tokens

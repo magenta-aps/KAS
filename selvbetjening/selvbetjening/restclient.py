@@ -10,6 +10,12 @@ class RestClient(object):
     INSURANCE_COMPANY_SLUG_FIELD = 'res'
     PERSON_TAX_YEAR_SLUG_FIELD = 'id'
 
+    username = None
+
+    def __init__(self, user_info=None):
+        if user_info:
+            self.username = user_info.get('AdminUsername') or user_info.get('CPR')
+
     @property
     def headers(self):
         return {'Authorization': f"Token {settings.REST_TOKEN}"}
@@ -113,7 +119,8 @@ class RestClient(object):
                 if k in [
                     'foreign_pension_notes', 'general_notes'
                 ]
-            }
+            },
+            updated_by=self.username
         )
         return person_response
 
@@ -125,7 +132,8 @@ class RestClient(object):
                 if k in [
                     'self_reported_amount',
                 ]
-            }
+            },
+            updated_by=self.username
         )
         if 'files' in policy:
             for file in policy['files']:
@@ -160,7 +168,8 @@ class RestClient(object):
                     'foreign_paid_amount_self_reported', 'pension_company', 'person_tax_year',
                     'policy_number'
                 ]
-            }
+            },
+            updated_by=self.username
         )
         if 'files' in policy:
             for file in policy['files']:
@@ -180,4 +189,11 @@ class RestClient(object):
             headers=self.headers,
             stream=True,
             verify=False,  # settings.REST_CA_CERT,
+        )
+
+    def exchange_token(self, token):
+        return requests.post(
+            f'{settings.REST_HOST}/token/',
+            headers=self.headers,
+            data={'token': token}
         )

@@ -30,7 +30,10 @@ class PersonTaxYearSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PersonTaxYear
-        fields = ['id', 'tax_year', 'person', 'fully_tax_liable', 'number_of_days', 'days_in_year_factor', 'foreign_pension_notes', 'general_notes']
+        fields = [
+            'id', 'tax_year', 'person', 'fully_tax_liable', 'number_of_days', 'days_in_year_factor',
+            'foreign_pension_notes', 'general_notes', 'updated_by',
+        ]
         read_only_fields = ['id', 'fully_tax_liable', 'number_of_days', 'days_in_year_factor']
 
     person = serializers.SlugRelatedField(queryset=Person.objects.all(), slug_field='cpr')
@@ -60,6 +63,7 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
             'person_tax_year', 'preliminary_paid_amount', 'from_pension', 'calculated_result',
             'foreign_paid_amount_self_reported', 'foreign_paid_amount_actual', 'applied_deduction_from_previous_years',
             'available_deduction_from_previous_years', 'year_adjusted_amount', 'documents', 'active',
+            'updated_by',
         ]
         read_only_fields = [
             'id', 'pension_company', 'person_tax_year', 'documents', 'active', 'prefilled_amount',

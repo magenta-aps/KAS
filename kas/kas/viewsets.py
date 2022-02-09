@@ -1,12 +1,19 @@
+from datetime import timedelta
+from django.conf import settings
 from django.db.models import Prefetch
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import Http404
 from django_filters import rest_framework as filters
 from rest_framework import routers, viewsets
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.utils import timezone
 
-from kas.models import PensionCompany, Person, PersonTaxYear, PolicyDocument, PolicyTaxYear, TaxYear, FinalSettlement
+
+from kas.models import PensionCompany, Person, PersonTaxYear, PolicyDocument, \
+    PolicyTaxYear, TaxYear, FinalSettlement, RepresentationToken
 from kas.serializers import PensionCompanySerializer, PersonSerializer, PersonTaxYearSerializer, \
     PolicyDocumentSerializer, PolicyTaxYearSerializer, TaxYearSerializer
 from project.renders import PdfProxyRender
@@ -119,3 +126,30 @@ class CurrentFinalSettlementDownloadView(APIView):
                             content_type='application/pdf',
                             filename='{year}_{cpr}.pdf'.format(year=instance.person_tax_year.tax_year.year,
                                                                cpr=instance.person_tax_year.person.cpr))
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class TokenValidationView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            tokenstring = request.POST['token']
+            token = RepresentationToken.objects.get(token=tokenstring)
+        except KeyError:
+            return HttpResponseBadRequest("Token not set")
+        except RepresentationToken.DoesNotExist:
+            return HttpResponseBadRequest("Invalid token")
+        if token.created < timezone.now() - timedelta(seconds=settings.SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE):
+            return HttpResponseBadRequest("Token expired")
+        if token.consumed:
+            return HttpResponseBadRequest("Token already used")
+        if RepresentationToken.objects.filter(user=token.user, consumed=True).exists():
+            return HttpResponseBadRequest("User already is using another token")
+
+        token.consumed = True
+        token.save()
+        return JsonResponse({
+            'CPR': token.person.cpr,
+            'PersonName': token.person.name,
+            'AdminUsername': token.user.username,
+            'AdminUserID': token.user.id,
+        })

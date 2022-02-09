@@ -64,6 +64,14 @@
         {% endif %}
         <a class="p-2 text-muted" href="{{ manual_url }}" target="_blank">{% trans 'Manual' %}</a>
 
+        {% if representing %}
+            <span class="ml-auto">
+            {% blocktrans with cpr=representing.person.cpr %}Du er logget ind i selvbetjening på vegne af {{cpr}}{% endblocktrans %}
+            <a href="{{ representation_stop }}" class="btn btn-outline-primary">{% trans 'Afslut repræsentation' %}</a>
+
+            </span>
+        {% endif %}
+
         <span class="ml-auto">
             <span class="p-2">{% blocktrans with username=user.username %}Du er logget ind som {{username}}{% endblocktrans %}</span>
             <a class="btn btn-secondary" href="{% url 'logout' %}">{% trans 'Log ud' %}</a>

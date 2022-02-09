@@ -316,6 +316,7 @@ class PersonTaxYearTest(RestTest):
                     'number_of_days': person_tax_year.number_of_days,
                     'foreign_pension_notes': person_tax_year.foreign_pension_notes,
                     'general_notes': person_tax_year.general_notes,
+                    'updated_by': person_tax_year.updated_by,
                     **extra
                 }
                 for person_tax_year in PersonTaxYear.objects.all()
@@ -352,6 +353,7 @@ class PersonTaxYearTest(RestTest):
             'number_of_days': person_tax_year1.number_of_days,
             'foreign_pension_notes': person_tax_year1.foreign_pension_notes,
             'general_notes': person_tax_year1.general_notes,
+            'updated_by': person_tax_year1.updated_by,
             **extra
         }, response.json())
         response = self.client.get(f"{self.url}{person_tax_year2.id}/")
@@ -365,6 +367,7 @@ class PersonTaxYearTest(RestTest):
             'number_of_days': person_tax_year2.number_of_days,
             'foreign_pension_notes': person_tax_year2.foreign_pension_notes,
             'general_notes': person_tax_year2.general_notes,
+            'updated_by': person_tax_year2.updated_by,
             **extra
         }, response.json())
 
@@ -394,6 +397,7 @@ class PersonTaxYearTest(RestTest):
             'number_of_days': person_tax_year1.number_of_days,
             'foreign_pension_notes': person_tax_year1.foreign_pension_notes,
             'general_notes': person_tax_year1.general_notes,
+            'updated_by': person_tax_year1.updated_by,
             **extra
         }], response.json())
         response = self.client.get(f"{self.url}?year=2021")
@@ -407,6 +411,7 @@ class PersonTaxYearTest(RestTest):
             'number_of_days': person_tax_year2.number_of_days,
             'foreign_pension_notes': person_tax_year2.foreign_pension_notes,
             'general_notes': person_tax_year2.general_notes,
+            'updated_by': person_tax_year1.updated_by,
             **extra
         }], response.json())
         response = self.client.get(f"{self.url}?cpr=1234567890&year=2020")
@@ -420,6 +425,7 @@ class PersonTaxYearTest(RestTest):
             'number_of_days': person_tax_year1.number_of_days,
             'foreign_pension_notes': person_tax_year1.foreign_pension_notes,
             'general_notes': person_tax_year1.general_notes,
+            'updated_by': person_tax_year1.updated_by,
             **extra
         }], response.json())
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2020")
@@ -441,6 +447,7 @@ class PersonTaxYearTest(RestTest):
             'number_of_days': None,
             'foreign_pension_notes': None,
             'general_notes': None,
+            'updated_by': None,
         }, self.strip_id(response.json()))
         self.assertEquals(1, PersonTaxYear.objects.count())
         self.assertEquals(person.cpr, PersonTaxYear.objects.first().person.cpr)
@@ -531,6 +538,7 @@ class PolicyTaxYearTest(RestTest):
                     'year_adjusted_amount': policy_tax_year.year_adjusted_amount,
                     'calculated_result': policy_tax_year.calculated_result,
                     'foreign_paid_amount_actual': policy_tax_year.foreign_paid_amount_actual,
+                    'updated_by': policy_tax_year.updated_by,
                     **extra
                 }
                 for policy_tax_year in PolicyTaxYear.objects.all()
@@ -590,6 +598,7 @@ class PolicyTaxYearTest(RestTest):
             'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
             'calculated_result': policy_tax_year1.calculated_result,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
+            'updated_by': None,
         }, response.json())
 
         response = self.client.get(f"{self.url}{policy_tax_year2.id}/")
@@ -611,6 +620,7 @@ class PolicyTaxYearTest(RestTest):
             'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
             'calculated_result': policy_tax_year1.calculated_result,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
+            'updated_by': None,
         }, response.json())
 
     def test_get_filter(self):
@@ -670,6 +680,7 @@ class PolicyTaxYearTest(RestTest):
             'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
             'calculated_result': policy_tax_year1.calculated_result,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
+            'updated_by': None,
         }], response.json())
 
         response = self.client.get(f"{self.url}?year=2020")
@@ -691,6 +702,7 @@ class PolicyTaxYearTest(RestTest):
             'year_adjusted_amount': policy_tax_year1.year_adjusted_amount,
             'calculated_result': policy_tax_year1.calculated_result,
             'foreign_paid_amount_actual': policy_tax_year1.foreign_paid_amount_actual,
+            'updated_by': None,
         }], response.json())
 
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2021")
@@ -712,6 +724,7 @@ class PolicyTaxYearTest(RestTest):
             'year_adjusted_amount': policy_tax_year2.year_adjusted_amount,
             'calculated_result': policy_tax_year2.calculated_result,
             'foreign_paid_amount_actual': policy_tax_year2.foreign_paid_amount_actual,
+            'updated_by': None,
         }], response.json())
 
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2020")
@@ -742,6 +755,7 @@ class PolicyTaxYearTest(RestTest):
             'preliminary_paid_amount': 30,
             'foreign_paid_amount_self_reported': 0,
             'from_pension': True,
+            'updated_by': None,
         }
         response = self.client.patch(f"{self.url}{policy_tax_year.id}/", json.dumps(item), content_type='application/json; charset=utf-8')
         policy_tax_year.refresh_from_db()

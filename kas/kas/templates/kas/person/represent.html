@@ -1,0 +1,12 @@
+<html lang="da">
+<body>
+<form id="autosubmitform" method="post" action="{{ form_action }}">
+    {% for key, value in form_data.items %}
+        <input type="hidden" name="{{key}}" value="{{value}}"/>
+    {% endfor %}
+</form>
+<script>
+    document.getElementById("autosubmitform").submit();
+</script>
+</body>
+</html>

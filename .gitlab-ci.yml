@@ -110,6 +110,9 @@ KAS Unittest:
     POSTGRES_HOST: kas-db
     REST_HOST: http://kas:8000
     REST_TOKEN: 1799c88d-10e6-489d-8fe9-adeb2fd8a36f
+    SELVBETJENING_REPRESENTATION_START: http://kas-selvbetjening:8080/represent-start
+    SELVBETJENING_REPRESENTATION_STOP: http://kas-selvbetjening:8000/represent-stop
+    SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE: 60
     EBOKS_DISPATCH_BULK_SIZE: 100
     EBOKS_CLIENT_CERTIFICATES: ""
     EBOKS_CLIENT_PRIVATE_KEY: ""
@@ -154,6 +157,7 @@ Selvbetjening Unittest:
     DJANGO_LANGUAGE_COOKIE_DOMAIN: localhost
     REST_HOST: http://kas:8000
     REST_TOKEN: 1799c88d-10e6-489d-8fe9-adeb2fd8a36f
+    KAS_REPRESENTATION_STOP: http://kas:8000/represent-stop
     OPENID_ENABLED: "false"
     OPENID_ISSUER: ""
     OPENID_SCOPE: ""

@@ -22,7 +22,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for entry in objects.iterator %}
+        {% for entry in objects %}
         <tr>
             <td>{{ entry.history_date|date:'SHORT_DATETIME_FORMAT' }}</td>
             <td>
@@ -53,7 +53,13 @@
                     {% trans 'Slettet' %}
                 {% endif %}
             </td>
-            <td>{{ entry.history_user__username|default_if_none:'' }}</td>
+            <td>
+                {% if entry.history_user__username == 'rest' %}
+                {{ entry.updated_by }}
+                {% else %}
+                {{ entry.history_user__username|default_if_none:'' }}
+                {% endif %}
+            </td>
             <td>
                 {{ entry.history_change_reason|default_if_none:'' }}
             </td>

@@ -10,6 +10,7 @@ DEBUG = bool(strtobool(os.environ.get('DJANGO_DEBUG', 'False')))
 ALLOWED_HOSTS = ['*']
 TIME_ZONE = os.environ['DJANGO_TIMEZONE']
 LOGIN_REDIRECT_URL = '/'
+SESSION_COOKIE_NAME = 'admin-sessionid'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Application definition
@@ -59,6 +60,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'project.context_processors.feature_flag_processor',
+                'kas.context_processors.representation_processor'
             ],
         },
     },
@@ -175,6 +177,10 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
+
+SELVBETJENING_REPRESENTATION_START = os.environ['SELVBETJENING_REPRESENTATION_START']
+SELVBETJENING_REPRESENTATION_STOP = os.environ['SELVBETJENING_REPRESENTATION_STOP']
+SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE = int(os.environ.get('SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE', 60))
 
 ENVIRONMENT = os.environ['ENVIRONMENT']
 
