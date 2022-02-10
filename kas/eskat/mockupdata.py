@@ -65,8 +65,8 @@ def create_person(
     adresselinje1: str = None,
     adresselinje2: str = "Mut aqqut 1",
     adresselinje3: str = None,
-    adresselinje4: str = None,
-    adresselinje5: str = "3900 Nuuk",
+    adresselinje4: str = "3900 Nuuk",
+    adresselinje5: str = None,
     person_extra: dict = None,
     person_years: dict = None,
     policies=[]
@@ -173,7 +173,7 @@ def import_default_mockup_data():
         "Borger med 0 afkast",
         cpr='0101570010',
         adresselinje2='Imaneq 32A, 3. sal.',
-        adresselinje5='3900 Nuuk',
+        adresselinje4='3900 Nuuk',
         policies=[
             {"res": 19676889, "years": {
                 2018: 0,
@@ -187,8 +187,8 @@ def import_default_mockup_data():
     create_person(
         "Borger med ikke dækkende negativt afkast",
         cpr='0101005089',
-        adresselinje3='Imaneq 32A, 2. sal.',
-        adresselinje5='3900 Nuuk',
+        adresselinje2='Imaneq 32A, 2. sal.',
+        adresselinje4='3900 Nuuk',
         policies=[
             {"res": 19676889, "years": {
                 2018: -2000,
@@ -202,8 +202,8 @@ def import_default_mockup_data():
     create_person(
         "Borger med dækkende negativt afkast",
         cpr='0103897769',
-        adresselinje3='Imaneq 32A, 1. sal.',
-        adresselinje5='3900 Nuuk',
+        adresselinje2='Imaneq 32A, 1. sal.',
+        adresselinje4='3900 Nuuk',
         policies=[
             {"res": 19676889, "years": {
                 2018: -5000,
@@ -217,8 +217,8 @@ def import_default_mockup_data():
     create_person(
         "Borger uden negativt afkast",
         cpr='1509814844',
-        adresselinje3='Imaneq 32A, 3. sal.',
-        adresselinje5='3900 Nuuk',
+        adresselinje2='Imaneq 32A, 3. sal.',
+        adresselinje4='3900 Nuuk',
         policies=[
             {"res": 19676889, "years": {
                 2018: 1000,
@@ -232,8 +232,8 @@ def import_default_mockup_data():
     create_person(
         "Borger med police hos PFA + andre",
         cpr='2512474856',
-        adresselinje3='Imaneq 32A, 2. sal.',
-        adresselinje5='3900 Nuuk',
+        adresselinje2='Imaneq 32A, 2. sal.',
+        adresselinje4='3900 Nuuk',
         policies=[
             {"res": 19676889, "years": {
                 2018: 1000,
@@ -254,8 +254,8 @@ def import_default_mockup_data():
     create_person(
         "Borger uden policer",
         cpr='2512484916',
-        adresselinje3='Imaneq 32A, 1. sal.',
-        adresselinje5='3900 Nuuk',
+        adresselinje2='Imaneq 32A, 1. sal.',
+        adresselinje4='3900 Nuuk',
         person_years={2018: {}, 2019: {}, 2020: {}, 2021: {}},
         policies=[]
     )
@@ -263,8 +263,8 @@ def import_default_mockup_data():
     create_person(
         "Borger med kun positivt afkast i 2021",
         cpr='3105781007',
-        adresselinje3='Imaneq 32A, 3. sal.',
-        adresselinje5='3900 Nuuk',
+        adresselinje2='Imaneq 32A, 3. sal.',
+        adresselinje4='3900 Nuuk',
         policies=[
             {"res": 19676889, "years": {
                 2021: 3000,
@@ -275,8 +275,8 @@ def import_default_mockup_data():
     create_person(
         "Borger med kun negativt afkast i 2021",
         cpr='1105015018',
-        adresselinje3='Imaneq 32A, 2. sal.',
-        adresselinje5='3900 Nuuk',
+        adresselinje2='Imaneq 32A, 2. sal.',
+        adresselinje4='3900 Nuuk',
         policies=[
             {"res": 19676889, "years": {
                 2021: -3000,
@@ -288,8 +288,8 @@ def import_default_mockup_data():
         "Borger der ikke er fuldt skattepligtig",
         person_extra={"skatteomfang": "ikke fuld skattepligtig"},
         cpr='0708614866',
-        adresselinje3='Imaneq 32A, 1. sal.',
-        adresselinje5='3900 Nuuk',
+        adresselinje2='Imaneq 32A, 1. sal.',
+        adresselinje4='3900 Nuuk',
         policies=[
             {"res": 19676889, "years": {
                 2018: 1000,
@@ -316,8 +316,8 @@ def import_default_mockup_data():
     create_person(
         "Borger der ikke er skattepligtig hele 2021",
         cpr='0101055035',
-        adresselinje3='Imaneq 32A, 2. sal.',
-        adresselinje5='3900 Nuuk',
+        adresselinje2='Imaneq 32A, 2. sal.',
+        adresselinje4='3900 Nuuk',
         person_years={2021: {"skattedage": 150}},
         policies=[
             {"res": 19676889, "years": {
@@ -332,8 +332,8 @@ def import_default_mockup_data():
     create_person(
         "Borger med negativt afkast påvirket af antal dage",
         cpr='0401570020',
-        adresselinje3='Imaneq 32A, 1. sal.',
-        adresselinje5='3900 Nuuk',
+        adresselinje2='Imaneq 32A, 1. sal.',
+        adresselinje4='3900 Nuuk',
         person_years={2019: {"skattedage": 73}},
         policies=[
             {"res": 19676889, "years": {
@@ -347,8 +347,8 @@ def import_default_mockup_data():
     create_person(
         "Borger med negativt afkast og nuværende år påvirket af antal dage",
         cpr='1105550193',
-        adresselinje3='Imaneq 32A, 3. sal.',
-        adresselinje5='3900 Nuuk',
+        adresselinje2='Imaneq 32A, 3. sal.',
+        adresselinje4='3900 Nuuk',
         person_years={2019: {"skattedage": 73}, 2020: {"skattedage": 146}, 2021: {"skattedage": 102}},
         policies=[
             {"res": 19676889, "years": {
@@ -362,8 +362,8 @@ def import_default_mockup_data():
     create_person(
         "Borger med negativt afkast for mere end 10 år siden",
         cpr='0209025000',
-        adresselinje3='Imaneq 32A, 2. sal.',
-        adresselinje5='3900 Nuuk',
+        adresselinje2='Imaneq 32A, 2. sal.',
+        adresselinje4='3900 Nuuk',
         person_years={2018: {"skattedage": 73}, 2019: {"skattedage": 146}},
         policies=[
             {"res": 19676889, "years": {
@@ -383,8 +383,8 @@ def import_default_mockup_data():
     create_person(
         "Person som kan logges ind på test",
         cpr='1802602810',
-        adresselinje3='Imaneq 32A, 1. sal.',
-        adresselinje5='3900 Nuuk',
+        adresselinje2='Imaneq 32A, 1. sal.',
+        adresselinje4='3900 Nuuk',
         policies=[
             {"ktd": 19676889, "years": {
                 2018: 1000,
@@ -404,8 +404,8 @@ def import_default_mockup_data():
     create_person(
         "Borger med negativt afkast fordelt over flere år",
         cpr='1105520049',
-        adresselinje3='Imaneq 32A, 3. sal.',
-        adresselinje5='3900 Nuuk',
+        adresselinje2='Imaneq 32A, 3. sal.',
+        adresselinje4='3900 Nuuk',
         policies=[
             {"res": 19676889, "years": {
                 2018: -600,
