@@ -31,6 +31,7 @@ from kas.managers import PolicyTaxYearManager
 
 from prisme.models import Prisme10QBatch
 from prisme.models import Transaction
+import re
 
 
 def filefield_path(instance, filename):
@@ -238,6 +239,10 @@ class Person(HistoryMixin, models.Model):
         blank=True,
         null=True
     )
+    updated_from_dafo = models.BooleanField(
+        verbose_name='Opdateret fra datafordeleren',
+        default=False
+    )
 
     @property
     def postal_address(self):
@@ -397,11 +402,6 @@ class PersonTaxYear(HistoryMixin, models.Model):
     general_notes = models.TextField(
         verbose_name='Yderligere noter',
         null=True
-    )
-
-    updated_from_dafo = models.BooleanField(
-        verbose_name='Opdateret fra datafordeleren',
-        default=False
     )
 
     # Charfield instead of User, so if a user is deleted we still remember him
@@ -1501,6 +1501,26 @@ class FinalSettlement(EboksDispatch):
             source_content_type=ContentType.objects.get_for_model(FinalSettlement),
             object_id=self.pk
         ).first()
+
+
+class AddressFromDafo(models.Model):
+    cpr = models.TextField(unique=True, null=False)
+    address = models.TextField(blank=True, null=True)
+    postal_area = models.TextField(blank=True, null=True)
+    name = models.TextField(blank=True, null=True)
+    co = models.TextField(blank=True, null=True)
+    full_address = models.TextField(blank=True, null=True)
+
+    def is_dafo_address_better(self, person_item):
+        if not self.name or not self.address or not self.postal_area:
+            return False
+        equal_name = self.name == person_item.name
+        equal_adress = re.sub('()_-,', '', self.address) == re.sub('()_-,', '', person_item.address_line_2)
+        equal_postal = self.postal_area == person_item.address_line_4
+        return not (equal_name and equal_adress and equal_postal)
+
+    def __str__(self):
+        return '%s - %s' % (self.navn, self.fuld_adresse)
 
 
 def delete_pdf(sender, instance, using, **kwargs):

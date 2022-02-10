@@ -19,13 +19,15 @@ from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.management.commands.create_initial_years import Command as CreateInitialYears
 from kas.management.commands.import_default_pension_companies import Command as CreateInitialPensionComanies
 from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated, \
-    PreviousYearNegativePayout, FinalSettlement, PolicyDocument
+    PreviousYearNegativePayout, FinalSettlement, PolicyDocument, AddressFromDafo
 from kas.models import PersonTaxYearCensus
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.reportgeneration.kas_report import TaxPDF
 from prisme.models import Prisme10QBatch
 from worker.job_registry import get_job_types, resolve_job_function
 from worker.models import job_decorator, Job
+from project.dafo import DatafordelerClient
+from kas.models import HistoryMixin
 
 
 @job_decorator
@@ -59,6 +61,7 @@ def import_mandtal(job):
 
     qs = ImportedKasMandtal.objects.filter(skatteaar=year)
 
+    cpr_updated_list = []
     if cpr_limit is not None:
         qs = qs.filter(cpr=cpr_limit)
 
@@ -85,6 +88,8 @@ def import_mandtal(job):
             }
 
             person, status = Person.update_or_create(person_data, 'cpr')
+            if status == HistoryMixin.CREATED or status == HistoryMixin.UPDATED:
+                cpr_updated_list.append(person_data.get('cpr'))
             if status == Person.CREATED:
                 persons_created += 1
             elif status == Person.UPDATED:
@@ -120,6 +125,42 @@ def import_mandtal(job):
                 progress = progress_start + (i / count) * (100 * progress_factor)
                 # Save this using 2nd db handle that is not inside the transaction
                 job.set_progress_pct(progress, using='second_default')
+
+    if settings.FEATURE_FLAGS.get('enable_dafo_override_of_address'):
+        cpr_updated_list_chunks = [cpr_updated_list[i:i + 100] for i in range(0, len(cpr_updated_list), 100)]
+
+        for chunk in cpr_updated_list_chunks:
+            cpr_request_params = ",".join(chunk)
+            dafo_client = DatafordelerClient.from_settings()
+            params = {'cpr': cpr_request_params}
+            result = dafo_client.get_person_information(params)
+
+            for cpr in result:
+                resultdict = result[cpr]
+                name = ' '.join(filter(None, [resultdict.get('fornavn'), resultdict.get('efternavn')]))
+                address = resultdict.get('adresse', '')
+                postal_area = None
+                if resultdict.get('postnummer') and resultdict.get('bynavn'):
+                    postal_area = ' '.join(filter(None, [str(resultdict.get('postnummer', 0)), resultdict.get('bynavn')]))
+                co = resultdict.get('co', '')
+                landekode = resultdict.get('landekode', '')
+                obj, status = AddressFromDafo.objects.update_or_create(
+                    cpr=cpr,
+                    name=name,
+                    address=address,
+                    postal_area=postal_area,
+                    co=co,
+                    full_address='\n'.join(filter(None, [address, postal_area]))
+                )
+                person_item = Person.objects.get(cpr=cpr)
+                if obj.is_dafo_address_better(person_item):
+                    Person.objects.filter(cpr=str(cpr)).update(name=name,
+                                                               address_line_2=address,
+                                                               address_line_1=co,
+                                                               address_line_4=postal_area,
+                                                               address_line_5=landekode,
+                                                               full_address=','.join(filter(None, [address, co, postal_area])),
+                                                               updated_from_dafo=True)
 
     job.result = {'summary': [
         {'label': 'Rå Mandtal-objekter', 'value': [
