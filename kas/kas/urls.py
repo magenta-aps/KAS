@@ -15,7 +15,7 @@ from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetail
     PolicyTaxYearCompanyUpdateView, \
     PensionCompanyFormView, PensionCompanyHtmxView, PensionCompanyUpdateView, AgreementDownloadView, \
     FeatureFlagView, PersonRepresentStartView, PersonRepresentStopView, NoteUpdateView
-from kas.viewsets import CurrentFinalSettlementDownloadView, TokenValidationView
+from kas.viewsets import CurrentFinalSettlementDownloadView, CurrentFinalSettlementExistsView, TokenValidationView
 
 app_name = 'kas'
 
@@ -66,6 +66,7 @@ urlpatterns = [
     path('final_settlement/dispatch/<uuid:pk>/', DispatchFinalSettlement.as_view(), name='dispatch-final-settlement'),
     path('final_settlement/<int:year>/<str:cpr>/', CurrentFinalSettlementDownloadView.as_view(),
          name='current-final-settlement'),
+    path('final_settlement/<int:year>/<str:cpr>/exists', CurrentFinalSettlementExistsView.as_view(), name='current-final-settlement-exists'),
     path('persontaxyear/<int:pk>//update_mandtal/', UpdateSingleMandtal.as_view(), name='update_persontaxyear_mandtal'),
     path('wait_for_mandtal_update/<uuid:pk>/', WaitForSingleMandtal.as_view(), name='wait_for_mandtal_update'),
 

@@ -75,7 +75,7 @@ class TaxYearTest(RestTest):
         response = self.client.get(self.url)
         self.assertEquals(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
-            [{'year': year.year, 'id': year.id, 'days_in_year': year.days_in_year} for year in TaxYear.objects.all()],
+            [{'year': year.year, 'id': year.id, 'days_in_year': year.days_in_year, 'year_part': year.year_part} for year in TaxYear.objects.all()],
             response.json()
         )
 
@@ -85,10 +85,10 @@ class TaxYearTest(RestTest):
         self.authenticate()
         response = self.client.get(f"{self.url}{year2020.id}/")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertDictEqual({'year': 2020, 'id': year2020.id, 'days_in_year': 366}, response.json())
+        self.assertDictEqual({'year': 2020, 'id': year2020.id, 'days_in_year': 366, 'year_part': year2020.year_part}, response.json())
         response = self.client.get(f"{self.url}{year2021.id}/")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertDictEqual({'year': 2021, 'id': year2021.id, 'days_in_year': 365}, response.json())
+        self.assertDictEqual({'year': 2021, 'id': year2021.id, 'days_in_year': 365, 'year_part': year2021.year_part}, response.json())
 
     def test_get_filter(self):
         year2020 = TaxYear.objects.create(year=2020)
@@ -96,46 +96,16 @@ class TaxYearTest(RestTest):
         self.authenticate()
         response = self.client.get(f"{self.url}?year=2020")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertCountEqual([{'year': 2020, 'id': year2020.id, 'days_in_year': year2020.days_in_year}], response.json())
+        self.assertCountEqual([{'year': 2020, 'id': year2020.id, 'days_in_year': year2020.days_in_year, 'year_part': year2020.year_part}], response.json())
         response = self.client.get(f"{self.url}?year_lt=2021")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
-        self.assertCountEqual([{'year': 2020, 'id': year2020.id, 'days_in_year': year2020.days_in_year}], response.json())
+        self.assertCountEqual([{'year': 2020, 'id': year2020.id, 'days_in_year': year2020.days_in_year, 'year_part': year2020.year_part}], response.json())
         response = self.client.get(f"{self.url}?year_lt=2022")
         self.assertEquals(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual([
-            {'year': 2020, 'id': year2020.id, 'days_in_year': year2020.days_in_year},
-            {'year': 2021, 'id': year2021.id, 'days_in_year': year2021.days_in_year}
+            {'year': 2020, 'id': year2020.id, 'days_in_year': year2020.days_in_year, 'year_part': year2020.year_part},
+            {'year': 2021, 'id': year2021.id, 'days_in_year': year2021.days_in_year, 'year_part': year2021.year_part}
         ], response.json())
-
-    def test_create_one(self):
-        # Create one item, test the response and the created object
-        self.authenticate()
-        item = {'year': 2021}
-        response = self.client.post(self.url, json.dumps(item), content_type='application/json; charset=utf-8')
-        self.assertEquals(201, response.status_code, response.content)
-        self.assertDictEqual({**item, 'days_in_year': 365}, self.strip_id(response.json()))
-        self.assertEquals(1, TaxYear.objects.count())
-        self.assertEquals(item['year'], TaxYear.objects.first().year)
-
-    def test_create_two(self):
-        # Create two items with the same input. Test that only one item is created
-        self.authenticate()
-        item = {'year': 2021}
-        response = self.client.post(self.url, json.dumps(item), content_type='application/json; charset=utf-8')
-        self.assertEquals(status.HTTP_201_CREATED, response.status_code)
-        self.assertEquals(1, TaxYear.objects.count())
-        response2 = self.client.post(self.url, json.dumps(item), content_type='application/json; charset=utf-8')
-        self.assertEquals(status.HTTP_400_BAD_REQUEST, response2.status_code)
-        self.assertEquals(1, TaxYear.objects.count())
-
-    def test_invalid_input(self):
-        # Create an item with invalid input and expect errors
-        self.authenticate()
-        inputs = self.invalid_submit_body + \
-            [{'year': x} for x in self.invalid_year_values]
-        for input in inputs:
-            response = self.client.post(self.url, json.dumps(input), content_type='application/json; charset=utf-8')
-            self.assertEquals(400, response.status_code, input)
 
 
 class PersonTest(RestTest):

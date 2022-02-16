@@ -14,8 +14,8 @@ class TaxYearSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TaxYear
-        fields = ['id', 'year', 'days_in_year']
-        read_only_fields = ['id', 'days_in_year']
+        fields = ['id', 'year', 'days_in_year', 'year_part']
+        read_only_fields = ['id', 'year', 'days_in_year', 'year_part']
 
 
 class PersonSerializer(serializers.ModelSerializer):

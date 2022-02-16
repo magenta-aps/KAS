@@ -1,7 +1,7 @@
 from datetime import timedelta
 from django.conf import settings
 from django.db.models import Prefetch
-from django.http import FileResponse, HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponse, FileResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import Http404
 from django_filters import rest_framework as filters
 from rest_framework import routers, viewsets
@@ -109,16 +109,30 @@ router.register(r'policy_tax_year', PolicyTaxYearViewSet)
 router.register(r'policy_document', PolicyDocumentViewSet)
 
 
-class CurrentFinalSettlementDownloadView(APIView):
-    renderer_classes = [PdfProxyRender, ]
+class CurrentFinalSettlementExistsView(APIView):
 
     def get_object(self):
         try:
-            return FinalSettlement.objects.filter(person_tax_year__person__cpr=self.kwargs['cpr'],
-                                                  person_tax_year__tax_year__year=self.kwargs['year'],
-                                                  status='send').order_by('-send_at')[0]
+            return FinalSettlement.objects.filter(
+                person_tax_year__person__cpr=self.kwargs['cpr'],
+                person_tax_year__tax_year__year=self.kwargs['year'],
+                status='send'
+            ).order_by('-send_at')[0]
         except IndexError:
             raise Http404()
+
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        try:
+            if instance.pdf.size == 0:
+                raise Http404()
+        except FileNotFoundError:
+            raise Http404()
+        return HttpResponse('')
+
+
+class CurrentFinalSettlementDownloadView(CurrentFinalSettlementExistsView):
+    renderer_classes = [PdfProxyRender, ]
 
     def get(self, request, *args, **kwargs):
         instance = self.get_object()

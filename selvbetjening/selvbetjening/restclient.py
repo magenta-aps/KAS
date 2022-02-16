@@ -76,6 +76,7 @@ class RestClient(object):
         person_tax_years = self.get('person_tax_year', cpr=cpr)
         for p in person_tax_years:
             p['tax_year'] = self.get_tax_year(p['tax_year'])
+        return person_tax_years
 
     def get_person_tax_year(self, cpr, year):
         person_tax_years = self.get('person_tax_year', cpr=cpr, year=year)
@@ -182,6 +183,15 @@ class RestClient(object):
                     files={'file': fileobject}
                 )
         return policy_response
+
+    def get_final_settlement_existence(self, year, cpr):
+        response = requests.get(
+            f'{settings.REST_HOST}/final_settlement/{year}/{cpr}/exists',
+            headers=self.headers,
+            stream=True,
+            verify=False,  # settings.REST_CA_CERT,
+        )
+        return response.status_code == 200
 
     def get_final_settlement(self, year, cpr):
         return requests.get(

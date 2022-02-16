@@ -4,24 +4,26 @@
 
 {% block content %}
 
+{% include "nav-tabs.html" with active=current_nav %}
+
 <div class="container">
 
-    {% include "nav-tabs.html" with active=current_nav %}
-
-    <div class="row">
-        <div class="col-10">
-            {% blocktrans %}Udtræk for {{ year }}{% endblocktrans %}
+    {% if prior %}
+        <div class="row mb-3">
+            <label for="select_year" class="col-sm-1 p-3 col-form-label col-form-label-sm">{% trans 'Skatteår:' %}</label>
+            <div class="col-sm-2">
+                <select name="year" id="select_year" data-change-href="/policy/prior/{value}/" autocomplete="off">
+                    {% for prior_person_tax_year in person_tax_years.prior %}
+                        {% with prior_year=prior_person_tax_year.tax_year.year %}
+                        <option value="{{ prior_year }}" {% if prior_year == year %} selected="selected"{% endif %}>
+                            {{ prior_year }}
+                        </option>
+                        {% endwith %}
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-        <div class="col-2">
-    {% if not showing_current_year and years|length > 1 %}
-        <select name="year" data-change-href="/policy/{value}/" autocomplete="off">
-            {% for y in years %}
-                <option value="{{ y }}" {% if y == year %} selected="selected"{% endif %}>{{ y }}</option>
-            {% endfor %}
-        </select>
     {% endif %}
-        </div>
-    </div>
 
     <script>
         $("select[data-change-href]").change(function(){
@@ -29,6 +31,18 @@
             window.location = $this.attr("data-change-href").replaceAll("{value}", $this.val());
         });
     </script>
+
+    {% if year == latest_year %}
+        {% if latest_tax_year.year_part == 'selvangivelse' %}
+            <a class="btn btn-primary" href="{% url 'selvbetjening:policy-edit' %}">{% trans 'Ret selvangivelse' %}</a>
+        {% else %}
+            <p>{% trans 'Der kan ikke ændres på selvangivelsen på nuværende tidspunkt' %}</p>
+        {% endif %}
+    {% endif %}
+
+    {% if final_settlement_exists %}
+        <a class="btn btn-primary" href="{% url 'selvbetjening:final-settlement' year=year %}">{% trans 'Hent slutopgørelse' %}</a>
+    {% endif %}
 
     <div class="accordion" id="policies">
 
@@ -55,28 +69,7 @@
                                 <td class="col-3-sm">{{ policy.self_reported_amount|default:policy.prefilled_amount }}</td>
                                 <td class="col-1-sm">KAS-201</td>
                             </tr>
-                            <tr>
-                                <td class="col-8-sm">{% trans 'Forudbetalt kapitalafkastskat' %}</td>
-                                <td class="col-3-sm">{{ policy.preliminary_paid_amount|default:0 }}</td>
-                                <td class="col-1-sm">KAS-205</td>
-                            </tr>
-                            <tr>
-                                <td class="col-8-sm">{% trans 'Hævet på pensionsordning' %}</td>
-                                <td class="col-3-sm">
-                                    {{ policy.from_pension|yesno }}
-                                </td>
-                                <td class="col-1-sm"></td>
-                            </tr>
-                            <tr>
-                                <td class="col-8-sm">{% trans 'Betalt kapitalafkastskat i udlandet' %}</td>
-                                <td class="col-3-sm">{{ policy.foreign_paid_amount_self_reported|default:0 }}</td>
-                                <td class="col-1-sm">KAS-208</td>
-                            </tr>
-                            <tr>
-                                <td class="col-8-sm">{% trans 'Negativt kapitalafkast fra tidligere år' %}</td>
-                                <td class="col-3-sm">{{ policy.deduction_from_previous_years|default:0 }}</td>
-                                <td class="col-1-sm"></td>
-                            </tr>
+
                             {% for document in policy.policy_documents %}
                             <tr>
                                 {% if forloop.first %}
@@ -84,21 +77,42 @@
                                 {% endif %}
                                 <td class="col-4-sm" colspan="2">{{ document.name }} | {{ document.description }}</td>
                             </tr>
-                            {% empty %}
-                            <tr>
-                                <td class="col-8-sm">{% trans 'Dokumentation' %}</td>
-                                <td class="col-4-sm"></td>
-                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
 
-
-                    {% include 'calculation.html' %}
                 </div>
             </div>
         </div>
         {% endfor %}
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading_notes">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_notes" aria-expanded="false" aria-controls="collapse_notes">
+                    {% trans 'Yderligere information til selvangivelsen.' %}
+                </button>
+            </h2>
+            <div id="collapse_notes" class="accordion-collapse collapse" aria-labelledby="heading_notes">
+                <div class="accordion-body">
+                    {% trans 'Ingen noter' as no_notes %}
+                    <p>{{ person_tax_year.foreign_pension_notes|default:no_notes }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading_foreign">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_foreign" aria-expanded="false" aria-controls="collapse_foreign">
+                    {% trans 'Indbetaling til private pensionsordninger i andre lande.' %}
+                </button>
+            </h2>
+            <div id="collapse_foreign" class="accordion-collapse collapse" aria-labelledby="heading_foreign">
+                <div class="accordion-body">
+                    {% trans 'Ingen noter' as no_notes %}
+                    <p>{{ person_tax_year.general_notes|default:no_notes }}</p>
+                </div>
+            </div>
+        </div>
 
         <div class="accordion-item">
             <h2 class="accordion-header" id="heading_summary">
@@ -112,8 +126,8 @@
                         <thead>
                         <tr>
                             <th class="col-8-sm">{% trans 'Feltnavn' %}</th>
-                            <th class="col-3-sm">{% trans 'Værdi' %}></th>
-                            <th class="col-1-sm">{% trans 'Felt nr.' %}></th>
+                            <th class="col-3-sm">{% trans 'Værdi' %}</th>
+                            <th class="col-1-sm">{% trans 'Felt nr.' %}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -126,11 +140,6 @@
                             <td class="col-8-sm">{% trans 'Forudbetalt kapitalafkastskat' %}</td>
                             <td class="col-3-sm">{{ summary.preliminary_paid_amount|default:0 }}</td>
                             <td class="col-1-sm">KAS-205</td>
-                        </tr>
-                        <tr>
-                            <td class="col-8-sm">{% trans 'Betalt kapitalafkastskat i udlandet' %}</td>
-                            <td class="col-3-sm">{{ summary.foreign_paid_amount_self_reported|default:0 }}</td>
-                            <td class="col-1-sm">KAS-208</td>
                         </tr>
                         </tbody>
                     </table>

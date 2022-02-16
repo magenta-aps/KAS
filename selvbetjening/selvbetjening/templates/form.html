@@ -5,7 +5,11 @@
 
 {% block content %}
 
+{% include "nav-tabs.html" with active=current_nav %}
+
 <div class="container">
+
+    <a href="{% url 'selvbetjening:policy-view' year=year %}">{% trans 'Tilbage' %}</a>
 
     <p>{% blocktrans with number_of_days=person_tax_year.number_of_days %}Antal skattepligtige dage i skatteår: {{number_of_days}}{% endblocktrans %}</p>
 
