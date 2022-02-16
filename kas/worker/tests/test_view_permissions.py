@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
 
@@ -14,11 +15,12 @@ class PermissionTestCase(TestCase):
         self.password = 'test'
         self.user.set_password(self.password)
         self.user.save()
-        self.staff_username = 'staff'
-        self.staff_password = 'staff_test 1234'
-        self.staff = get_user_model().objects.create_user(username=self.staff_username, is_staff=True)
-        self.staff.set_password(self.staff_password)
-        self.staff.save()
+        self.admin_username = 'admin'
+        self.admin_password = 'admin'
+        self.admin = get_user_model().objects.create_user(username=self.admin_username)
+        self.admin.set_password(self.admin_password)
+        self.admin.groups.add(Group.objects.get(name='administrator'))
+        self.admin.save()
 
     def test_job_list_not_logged_in(self):
         r = self.client.get(reverse('worker:job_list'), follow=True)
@@ -26,12 +28,12 @@ class PermissionTestCase(TestCase):
         self.assertRedirects(r, reverse('login')+'?next=/worker/jobs/', 302)
         self.assertEqual(r.status_code, 200)
 
-    def test_job_list_none_staff_user(self):
+    def test_job_list_none_admin_user(self):
         self.client.login(username=self.username, password=self.password)
         r = self.client.get(reverse('worker:job_list'))
         self.assertEqual(r.status_code, 403)
 
-    def test_job_list_staff_user(self):
-        self.client.login(username=self.staff_username, password=self.staff_password)
+    def test_job_list_admin_user(self):
+        self.client.login(username=self.admin_username, password=self.admin_password)
         r = self.client.get(reverse('worker:job_list'))
         self.assertEqual(r.status_code, 200)

@@ -7,39 +7,11 @@ from kas.models import FinalSettlement, TaxYear, Person, PersonTaxYear, PolicyTa
 from project.admin import kasadmin  # used by is_staff users
 
 
-class IsStaffPermission(admin.ModelAdmin):
-
+class KasUserAdmin(UserAdmin):
+    # Specialized admin
     def has_delete_permission(self, request, obj=None):
         # never allow deletion
         return False
-
-    def has_add_permission(self, request):
-        if request.user.is_authenticated:
-            if request.user.is_staff or request.user.is_superuser:
-                return True
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        if request.user.is_authenticated:
-            if request.user.is_staff or request.user.is_superuser:
-                return True
-        return False
-
-    def has_view_or_change_permission(self, request, obj=None):
-        if request.user.is_authenticated:
-            if request.user.is_staff or request.user.is_superuser:
-                return True
-        return False
-
-    def has_module_permission(self, request):
-        if request.user.is_authenticated:
-            if request.user.is_staff or request.user.is_superuser:
-                return True
-        return False
-
-
-class KasUserAdmin(UserAdmin, IsStaffPermission):
-    # Specialized admin
 
     def get_fieldsets(self, request, obj=None):
         if not obj:
@@ -61,8 +33,12 @@ class KasUserAdmin(UserAdmin, IsStaffPermission):
 kasadmin.register(User, KasUserAdmin)
 
 
-class TaxYearAdmin(IsStaffPermission, admin.ModelAdmin):
+class TaxYearAdmin(admin.ModelAdmin):
     list_display = ('year', 'year_part')
+
+    def has_delete_permission(self, request, obj=None):
+        # never allow deletion
+        return False
 
     def has_change_permission(self, request, obj=None):
         return False

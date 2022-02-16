@@ -81,6 +81,7 @@ def get_recipient_status_mock(as_side_effect=False):
     return mock
 
 
+@override_settings(METRICS={'disabled': True})
 class BaseTransactionTestCase(TransactionTestCase):
     def setUp(self) -> None:
         self.tax_year = TaxYear.objects.create(year=2020)
@@ -145,7 +146,7 @@ class TaxslipGeneratedJobsTest(BaseTransactionTestCase):
     @patch.object(EboksClient, 'send_message')
     @patch.object(EboksClient, 'get_message_id')
     @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
-    @override_settings(EBOKS=test_settings)
+    @override_settings(EBOKS=test_settings, METRICS={'disabled': True})
     def test_multi_child_jobs(self, django_rq, get_message_id_mock, send_message, get_recipient_mock):
         get_message_id_mock.side_effect = self.mock_message.keys()
         send_message.return_value = send_message_mock(self.mock_message)

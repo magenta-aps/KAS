@@ -4,14 +4,15 @@ from django.urls import reverse
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import FormView
 
-from project.view_mixin import IsStaffMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from worker.forms import JobTypeSelectForm
 from worker.job_registry import get_job_types, resolve_job_function
 from worker.models import Job
 
 
-class JobListHtmxView(IsStaffMixin, ListView):
+class JobListHtmxView(PermissionRequiredMixin, ListView):
     template_name = 'worker/htmx/jobs.html'
+    permission_required = 'worker.view_job'
 
     def get_queryset(self):
         last_uuid = self.kwargs.get('last_uuid')
@@ -23,26 +24,30 @@ class JobListHtmxView(IsStaffMixin, ListView):
         return qs.order_by('-created_at')[:10]
 
 
-class JobListTemplateView(IsStaffMixin, TemplateView):
+class JobListTemplateView(PermissionRequiredMixin, TemplateView):
     template_name = 'worker/job_list.html'
+    permission_required = 'worker.view_job'
 
 
-class JobDetailView(IsStaffMixin, DetailView):
+class JobDetailView(PermissionRequiredMixin, DetailView):
     slug_field = 'uuid'
     slug_url_kwarg = 'uuid'
     model = Job
+    permission_required = 'worker.view_job'
 
 
-class JobTypeSelectFormView(IsStaffMixin, FormView):
+class JobTypeSelectFormView(PermissionRequiredMixin, FormView):
     template_name = 'worker/job_type_select.html'
     form_class = JobTypeSelectForm
+    permission_required = 'worker.add_job'
 
     def form_valid(self, form):
         return HttpResponseRedirect(reverse('worker:job_start', kwargs={'job_type': form.cleaned_data['job_type']}))
 
 
-class StartJobView(IsStaffMixin, FormView):
+class StartJobView(PermissionRequiredMixin, FormView):
     template_name = 'worker/job_create_form.html'
+    permission_required = 'worker.add_job'
 
     def job_data(self):
         return get_job_types()[self.kwargs['job_type']]
