@@ -31,6 +31,8 @@ class Command(BaseCommand):
 
             TaxYear.objects.update_or_create(
                 year=year,
-                year_part=year_part,
-                rate_text_for_transactions=self.rate_text % {'year': year}
+                defaults={
+                    'year_part': year_part,
+                    'rate_text_for_transactions': self.rate_text % {'year': year}
+                }
             )

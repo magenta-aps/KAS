@@ -122,7 +122,26 @@ class CloseMixin(object):
         return super().dispatch(request, *args, **kwargs)
 
 
-class PolicyFormView(HasUserMixin, CloseMixin, FormView):
+class YearTabMixin(object):
+    cutoff_years = 3
+
+    def get_context_data(self, **kwargs):
+        client = RestClient()
+        all_years = client.get_person_tax_years(self.cpr)
+        all_years.sort(key=lambda pty: pty['tax_year']['year'], reverse=True)
+        return super().get_context_data(**{
+            **kwargs,
+            'person_tax_years': {
+                'all': all_years,
+                'latest': all_years[0:self.cutoff_years],
+                'prior': all_years[self.cutoff_years:]
+            },
+            'latest_year': date.today().year - 1,
+            'latest_tax_year': all_years[0]['tax_year']
+        })
+
+
+class PolicyFormView(HasUserMixin, CloseMixin, YearTabMixin, FormView):
     template_name = 'form.html'
     success_url = ''
     form_class = formset_factory(PolicyForm, min_num=0, extra=1)
@@ -236,8 +255,8 @@ class PolicyFormView(HasUserMixin, CloseMixin, FormView):
         return redirect(reverse('selvbetjening:policy-submitted'))
 
 
-class PolicyDetailView(HasUserMixin, TemplateView):
-    template_name = 'view_single_year.html'
+class PolicyDetailView(HasUserMixin, YearTabMixin, TemplateView):
+    template_name = 'view.html'
 
     def get_context_data(self, **kwargs):
         client = RestClient()
@@ -250,6 +269,7 @@ class PolicyDetailView(HasUserMixin, TemplateView):
 
         policies = client.get_policies(cpr=self.cpr, year=year)
         person_tax_year = client.get_person_tax_year(cpr=self.cpr, year=year)
+        final_settlement_exists = client.get_final_settlement_existence(cpr=self.cpr, year=year)
         return super().get_context_data(**{
             **kwargs,
             'items': policies,
@@ -262,7 +282,17 @@ class PolicyDetailView(HasUserMixin, TemplateView):
                     'calculated_result'
                 ]
             },
+            'final_settlement_exists': final_settlement_exists,
         })
+
+
+class PolicyDetailPriorView(PolicyDetailView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**{
+            **kwargs,
+            'prior': True
+        })
+        return context
 
 
 class ViewFinalSettlementView(HasUserMixin, View):
