@@ -17,7 +17,7 @@ from django.views.generic.detail import DetailView, SingleObjectMixin, BaseDetai
 from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
 from ipware import get_client_ip
-
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from kas.filters import PensionCompanyFilterSet
 from kas.forms import PersonListFilterForm, SelfReportedAmountForm, EditAmountsUpdateForm, \
@@ -996,13 +996,14 @@ class WaitForSingleMandtal(LoginRequiredMixin, SingleObjectMixin, TemplateView):
         return result
 
 
-class PensionCompanyFormView(LoginRequiredMixin, FormView):
+class PensionCompanyFormView(PermissionRequiredMixin, FormView):
     """
     Renders the pensioncompany list template and
     handles the start merge job form post.
     """
     template_name = 'kas/pensioncompany_list.html'
     form_class = PensionCompanyMergeForm
+    permission_required = 'kas.change_pensioncompany'
 
     def form_valid(self, form):
         redirect_response = super(PensionCompanyFormView, self).form_valid(form)
@@ -1030,12 +1031,13 @@ class PensionCompanyFormView(LoginRequiredMixin, FormView):
         return reverse('kas:pensioncompany-listview')
 
 
-class PensionCompanyHtmxView(LoginRequiredMixin, FilterView):
+class PensionCompanyHtmxView(PermissionRequiredMixin, FilterView):
     """
     returns a  list of pension selskaber.
     """
     template_name = 'kas/htmx/pensioncompany_list.html'
     filterset_class = PensionCompanyFilterSet
+    permission_required = 'kas.view_pensioncompany'
 
     def get_queryset(self):
         last_id = self.kwargs.get('last_id')
@@ -1049,9 +1051,10 @@ class PensionCompanyHtmxView(LoginRequiredMixin, FilterView):
         return super(PensionCompanyHtmxView, self).get_context_data(object_list=object_list[:20], kwargs=kwargs)
 
 
-class PensionCompanyUpdateView(LoginRequiredMixin, UpdateView):
+class PensionCompanyUpdateView(PermissionRequiredMixin, UpdateView):
     form_class = PensionCompanyModelForm
     model = PensionCompany
+    permission_required = 'kas.change_pensioncompany'
 
     def get_success_url(self):
         messages.add_message(self.request,

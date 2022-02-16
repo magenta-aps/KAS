@@ -41,20 +41,23 @@
             <li><a class="dropdown-item" href="{% url 'kas:person_search_foreign' %}">{% trans 'Personer med udenlandsk pensionsnotat' %}</a></li>
         </ul>
 
-        {% if user.is_staff %}
+            {% if perms.worker.view_job or perms.kas.change_pensioncompany %}
             <div class="p-2">
                 <a class="p-2 text-muted dropdown-toggle" href="#" role="button" id="adminMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     {% trans 'Administration' %}
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="adminMenuLink">
-                    <li><a class="dropdown-item" href="{% url 'kas:pensioncompany-listview' %}">{% trans 'Pensionsselskaber' %}</a></li>
-                    <li><a class="dropdown-item" href="{% url 'worker:job_list' %}">{% trans 'Jobadministration' %}</a></li>
+                    {% if perms.kas.change_pensioncompany %}
+                        <li><a class="dropdown-item" href="{% url 'kas:pensioncompany-listview' %}">{% trans 'Pensionsselskaber' %}</a></li>
+                    {% endif %}
+                    {% if perms.worker.view_job %}
+                        <li><a class="dropdown-item" href="{% url 'worker:job_list' %}">{% trans 'Jobadministration' %}</a></li>
+                    {% endif %}
                 </ul>
-
             </div>
+            {% endif %}
         <a class="p-2 text-muted" href="{% url 'kas:policy_summary_list_latest' %}">{% trans 'Policeopsummering' %}</a>
         <a class="p-2 text-muted" href="{% url 'prisme:batch-list' %}">{% trans '10Q Batches' %}</a>
-        {% endif %}
 
         {% get_current_language as language_code %}
         {% if language_code == 'kl-GL' %}
@@ -75,7 +78,7 @@
         <span class="ml-auto">
             <span class="p-2">{% blocktrans with username=user.username %}Du er logget ind som {{username}}{% endblocktrans %}</span>
             <a class="btn btn-secondary" href="{% url 'logout' %}">{% trans 'Log ud' %}</a>
-            {% if user.is_staff or user.is_superuser %}
+            {% if perms.auth.view_user or perms.kas.add_taxyear %}
                 <a class="btn btn-primary" href="{% url 'kasadmin:index' %}">{% trans 'Admin' %}</a>
             {% endif %}
         </span>

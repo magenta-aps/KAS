@@ -20,14 +20,6 @@ if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] || [ "$TEST" = true ] 
   if [ "$CREATE_USERS" = true ]; then
     echo 'creating users'
     python manage.py create_rest_user ${REST_TOKEN}
-    if [ "x${ADMIN_PASSWORD}" != "x" ]; then
-      echo 'creating admin user / setting admin password'
-      python manage.py create_admin_user --type=admin --password=${ADMIN_PASSWORD}
-    fi
-    if [ "x${STAFF_PASSWORD}" != "x" ]; then
-      echo 'creating staff user / setting staff password'
-      python manage.py create_admin_user --type=staff --login=nanoq --password=${STAFF_PASSWORD}
-    fi
   fi
   if [ "$CREATE_DUMMY_USERS" = true ]; then
     echo 'create dummy users'
