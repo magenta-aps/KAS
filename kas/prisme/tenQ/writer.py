@@ -139,7 +139,9 @@ class TenQTransactionWriter(object):
     transaction_list = ''
     tax_year = None
 
-    def __init__(self, collect_date, year):
+    def __init__(self, collect_date, year, time_stamp=None):
+        if time_stamp is None:
+            time_stamp = timezone.now()
         # Make sure collect_date is on local time
         collect_date = timezone.localtime(collect_date)
 
@@ -148,7 +150,7 @@ class TenQTransactionWriter(object):
 
         self.tax_year = TaxYear.objects.get(year=year)
 
-        time_stamp = TenQTransaction.format_timestamp(timezone.now())
+        time_stamp = TenQTransaction.format_timestamp(time_stamp)
         omraad_nummer = TenQTransaction.format_omraade_nummer(year)
         due_date = collect_date.date()
         last_payment_date = get_last_payment_date(collect_date)
