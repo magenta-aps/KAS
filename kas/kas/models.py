@@ -10,7 +10,7 @@ import string
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission, User
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
@@ -1156,16 +1156,6 @@ class Note(models.Model):
 
 
 post_save.connect(set_all_documents_and_notes_handled, Note, dispatch_uid='set_document_and_notes_handled')
-
-
-def add_all_user_permission_if_staff(sender, instance, **kwargs):
-    if instance.is_staff is True and instance.is_superuser is False:
-        content_type = ContentType.objects.get_for_model(type(instance))
-        # allow staff users to create, view and edit users, but not delete!.
-        instance.user_permissions.set(Permission.objects.filter(content_type=content_type).exclude(codename='delete_user'))
-
-
-post_save.connect(add_all_user_permission_if_staff, get_user_model(), dispatch_uid='User.permissions')
 
 
 def add_skatteaar_to_queue(sender, instance, **kwargs):

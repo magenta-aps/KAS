@@ -32,16 +32,15 @@ class Command(BaseCommand):
             },
             username="admin"
         )
-        admin.groups.add(Group.objects.get(name='administrator'))
-        User.objects.update_or_create(
-            defaults={
-                "first_name": "Normal",
-                "last_name": "User",
-                "email": "",
-                "password": make_password('user'),
-                "is_active": True,
-                "is_staff": False,
-                "is_superuser": False,
-            },
-            username="user"
-        )
+        if created:
+            admin.groups.add(Group.objects.get(name='administrator'))
+
+        for name in ('Sagsbehandler', 'Borgerservice', 'Regnskab', 'Skatteråd'):
+            user, created = User.objects.update_or_create(username=name.lower(),
+                                                          defaults={'password': make_password(name.lower()),
+                                                                    'first_name': name.capitalize(),
+                                                                    'last_name': name.capitalize(),
+                                                                    'is_active': True})
+            if created:
+                # if the user was created add the user to the group
+                user.groups.add(Group.objects.get(name=name))
