@@ -1,21 +1,17 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import dateformat
+from django.utils.translation import gettext as _
 from django.views.generic import CreateView, UpdateView, ListView, View, FormView
 from django.views.generic.detail import SingleObjectMixin
 
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocuments
-
-from prisme.forms import TransActionForm
+from prisme.forms import TransActionForm, BatchSendForm
 from prisme.models import Transaction, Prisme10QBatch
-from prisme.forms import BatchSendForm
-
-from worker.models import Job
 from worker.job_registry import resolve_job_function
-
-from project.view_mixin import IsStaffMixin
+from worker.models import Job
 
 
 class TransactionCreateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocuments, CreateView):
@@ -72,7 +68,9 @@ class TransactionUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDo
         })
 
 
-class Prisme10QBatchListView(IsStaffMixin, ListView):
+class Prisme10QBatchListView(PermissionRequiredMixin, ListView):
+    permission_denied_message = _('Only administrators and Regnskab can create 10Q files')
+    permission_required = 'prisme.add_prisme10qbatch'
     model = Prisme10QBatch
     template_name = 'prisme/batch_list.html'
     context_object_name = 'batches'

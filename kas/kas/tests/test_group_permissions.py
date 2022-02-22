@@ -24,14 +24,19 @@ class GroupPermissionTestCase(TestCase):
 
     def test_view_permissions_for_kas(self):
         """
-        all groups should have view_* permissions on all kas models.
+        all groups should have view_* permissions on all kas models, except pensioncompanysummaryfile.
         If this fails you most likely have added a new model without adding view_ permission to the groups
         or forgot to add the model to the blacklist.
         """
         kas_content_types = self.get_content_types_for_app('kas')
-        view_permissions = Permission.objects.filter(content_type__in=kas_content_types).filter(codename__startswith='view_')
+        view_permissions = Permission.objects.filter(content_type__in=kas_content_types
+                                                     ).filter(codename__startswith='view_').exclude(
+            content_type__model='pensioncompanysummaryfile')
         for group in Group.objects.all():
-            group_view_permission = group.permissions.filter(content_type__in=kas_content_types).filter(codename__startswith='view_')
+            group_view_permission = group.permissions.filter(
+                content_type__in=kas_content_types).filter(
+                codename__startswith='view_').exclude(
+                content_type__model='pensioncompanysummaryfile')
             self.assertCountEqual(view_permissions, group_view_permission)
 
     def test_administrator_worker_permission(self):
@@ -63,7 +68,7 @@ class GroupPermissionTestCase(TestCase):
         expected_kas_permission = Permission.objects.filter(
             content_type__in=kas_content_types).filter(
             Q(codename__startswith='view_') | Q(codename__in=['add_policydocument',
-                                                              'add_note']))
+                                                              'add_note'])).exclude(content_type__model='pensioncompanysummaryfile')
         current_group_permissions = group.permissions.filter(content_type__in=kas_content_types)
         self.assertCountEqual(expected_kas_permission, current_group_permissions)
 
