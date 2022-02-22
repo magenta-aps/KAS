@@ -30,6 +30,7 @@
 
         <a class="p-2 text-muted" href="{% url 'kas:person_search' %}">{% trans 'Find person' %}</a>
 
+        {% if perms.kas.list_persontaxyear %}
         <a class="p-2 text-muted dropdown-toggle" href="#" role="button" id="searchMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             {% trans 'Udtrækslister' %}
         </a>
@@ -40,7 +41,7 @@
             <li><a class="dropdown-item" href="{% url 'kas:person_search_unhandled' %}">{% trans 'Personer med nye dokumenter eller notater' %}</a></li>
             <li><a class="dropdown-item" href="{% url 'kas:person_search_foreign' %}">{% trans 'Personer med udenlandsk pensionsnotat' %}</a></li>
         </ul>
-
+        {% endif %}
             {% if perms.worker.view_job or perms.kas.change_pensioncompany %}
             <div class="p-2">
                 <a class="p-2 text-muted dropdown-toggle" href="#" role="button" id="adminMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -56,9 +57,12 @@
                 </ul>
             </div>
             {% endif %}
-        <a class="p-2 text-muted" href="{% url 'kas:policy_summary_list_latest' %}">{% trans 'Policeopsummering' %}</a>
-        <a class="p-2 text-muted" href="{% url 'prisme:batch-list' %}">{% trans '10Q Batches' %}</a>
-
+        {% if perms.kas.view_pensioncompanysummaryfile %}
+            <a class="p-2 text-muted" href="{% url 'kas:policy_summary_list_latest' %}">{% trans 'Policeopsummering' %}</a>
+        {% endif %}
+        {% if perms.prisme.add_prisme10qbatch %}
+            <a class="p-2 text-muted" href="{% url 'prisme:batch-list' %}">{% trans '10Q Batches' %}</a>
+        {% endif %}
         {% get_current_language as language_code %}
         {% if language_code == 'kl-GL' %}
             {% static 'doc/kl/Manual for system til skat af visse kapitalafkast (KAS).pdf' as manual_url %}

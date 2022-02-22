@@ -470,6 +470,9 @@ class PersonTaxYear(HistoryMixin, models.Model):
     class Meta:
         ordering = ['-tax_year__year', 'person__name']
         unique_together = ['tax_year', 'person']
+        permissions = [
+            ('list_persontaxyear', 'User is allow to use persontaxyear lists.'),
+        ]
 
 
 class PersonTaxYearCensus(HistoryMixin, models.Model):
