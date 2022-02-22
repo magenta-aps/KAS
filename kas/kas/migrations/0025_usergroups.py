@@ -43,6 +43,12 @@ def apply_migration(apps, schema_editor):
     administrators.permissions.add(*prisme_read_only_permissions)
     # prisme write permissions
     administrators.permissions.add(*tenq_write_permission)
+    try:
+        old_admin_group = Group.objects.get(name='admins')
+    except Group.DoesNotExist:
+        pass
+    else:
+        old_admin_group.delete()
 
 
 def revert_migration(apps, schema_editor):
