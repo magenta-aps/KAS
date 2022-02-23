@@ -5,6 +5,7 @@ from django.utils.translation import gettext as _
 
 from kas.models import FinalSettlement, TaxYear, Person, PersonTaxYear, PolicyTaxYear, PolicyDocument, TaxSlipGenerated
 from project.admin import kasadmin  # used by is_staff users
+from django.contrib.admin.models import LogEntry
 
 
 class KasUserAdmin(UserAdmin):
@@ -31,6 +32,63 @@ class KasUserAdmin(UserAdmin):
 
 
 kasadmin.register(User, KasUserAdmin)
+
+
+class LogEntryAdmin(admin.ModelAdmin):
+    # to have a date-based drilldown navigation in the admin page
+    date_hierarchy = 'action_time'
+    title = 'TEST'
+    # to filter the resultes by users, content types and action flags
+    list_filter = [
+        'user',
+        'action_flag'
+    ]
+
+    # when searching the user will be able to search in both object_repr and change_message
+    search_fields = [
+        'object_repr',
+        'change_message'
+    ]
+
+    list_display = [
+        'action_time',
+        'get_user',
+        'action_flag',
+        'get_changed_object'
+    ]
+
+    def has_module_permission(self, request):
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        # never allow deletion
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def get_user(self, obj):
+        return obj.user
+    get_user.short_description = _('Ændring fortaget af')
+
+    def get_changed_object(self, obj):
+        return obj.get_edited_object()
+    get_changed_object.short_description = _('Ændret bruger')
+
+    def has_view_permission(self, request, obj=None):
+        """
+        if wou can view the users you can also view the audit log
+        """
+        return request.user.has_perm('auth.view_user')
+
+    def get_queryset(self, request):
+        """
+        only show audit log for user changes
+        """
+        return LogEntry.objects.filter(content_type__model='user')
+
+
+kasadmin.register(LogEntry, LogEntryAdmin)
 
 
 class TaxYearAdmin(admin.ModelAdmin):
