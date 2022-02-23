@@ -139,44 +139,57 @@
         <fieldset class="border pl-4 pb-4 mb-4">
             <legend  class="w-auto">{% trans 'Handlinger' %}</legend>
             {% if policy.active %}
-                <a class="btn btn-info" href="{% url 'kas:policy_add_notes_or_attachement' policy.pk %}">{% trans 'Tilføj bilag/notater' %}</a>
-                {% if policy.person_tax_year.tax_year.year_part == 'selvangivelse' %}
-                    <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% trans 'Ret selvangivet beløb' %}</a>
-                {% else %}
-                    <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% trans 'Ret beløb' %}</a>
+                {% if perms.kas.add_policydocument and perms.kas.add_note %}
+                    <a class="btn btn-info" href="{% url 'kas:policy_add_notes_or_attachement' policy.pk %}">{% trans 'Tilføj bilag/notater' %}</a>
                 {% endif %}
-                <a class="btn btn-warning" href="{% url 'kas:policy_company' policy.pk %}">{% trans 'Skift pensionsselskab' %}</a>
-                {% if policy.pension_company.agreement_present %}
-                    <a class="btn btn-warning" href="{% url 'kas:policy_payment_override' policy.pk %}">{% trans 'Ret borgerbetaling' %}</a>
+                {% if perms.kas.change_policytaxyear %}
+                    {% if policy.person_tax_year.tax_year.year_part == 'selvangivelse' %}
+                        <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% trans 'Ret selvangivet beløb' %}</a>
+                    {% else %}
+                        <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% trans 'Ret beløb' %}</a>
+                    {% endif %}
+                    <a class="btn btn-warning" href="{% url 'kas:policy_company' policy.pk %}">{% trans 'Skift pensionsselskab' %}</a>
+                    {% if policy.pension_company.agreement_present %}
+                        <a class="btn btn-warning" href="{% url 'kas:policy_payment_override' policy.pk %}">{% trans 'Ret borgerbetaling' %}</a>
+                    {% endif %}
+                    <button type="button" class="btn btn-danger" id="deactivate" data-toggle="modal" data-target="#deactivateModal">{% trans 'Afregistrer' %}</button>
                 {% endif %}
-            <button type="button" class="btn btn-danger" id="deactivate" data-toggle="modal" data-target="#deactivateModal">{% trans 'Afregistrer' %}</button>
             {% else %}
-                <button type="button" class="btn btn-info" disabled="disabled" aria-disabled="true" title="{% trans 'Policen er afregistreret' %}">{% trans 'Tilføj bilag/notater' %}</button>
-                {% if policy.person_tax_year.tax_year.year_part == 'selvangivelse' %}
-                    <button type="button" class="btn btn-warning" disabled="disabled" aria-disabled="true" title="{% trans 'Policen er afregistreret' %}">{% trans 'Ret selvangivet beløb' %}</button>
-                {% else %}
-                    <button type="button" class="btn btn-warning"  disabled="disabled" aria-disabled="true" title="{% trans 'Policen er afregistreret' %}">{% trans 'Ret beløb' %}</button>
+                {% if perms.kas.change_policytaxyear %}
+                    <button type="button" class="btn btn-info" disabled="disabled" aria-disabled="true" title="{% trans 'Policen er afregistreret' %}">{% trans 'Tilføj bilag/notater' %}</button>
+                    {% if policy.person_tax_year.tax_year.year_part == 'selvangivelse' %}
+                        <button type="button" class="btn btn-warning" disabled="disabled" aria-disabled="true" title="{% trans 'Policen er afregistreret' %}">{% trans 'Ret selvangivet beløb' %}</button>
+                    {% else %}
+                        <button type="button" class="btn btn-warning"  disabled="disabled" aria-disabled="true" title="{% trans 'Policen er afregistreret' %}">{% trans 'Ret beløb' %}</button>
+                    {% endif %}
+                    <form style="display: inline" method="POST" action="{% url 'kas:policy_activate' policy.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">{% trans 'Aktivér' %}</button>
+                        <input type="hidden" name="active" value="true"/>
+                    </form>
                 {% endif %}
-                <form style="display: inline" method="POST" action="{% url 'kas:policy_activate' policy.pk %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-primary">{% trans 'Aktivér' %}</button>
-                    <input type="hidden" name="active" value="true"/>
-                </form>
             {% endif %}
             <a href="{% url 'kas:policy_history_list' policy.pk %}" class="btn btn-secondary">{% trans 'Vis historik' %}</a>
-            {% include 'includes/help_text/question_mark.html' with target_id='actions_help_texts' %}
-            {% blocktrans asvar actions_help_text %}<b>Tilføj bilag/notater</b> Vedhæfter en tekst og/eller en fil til denne police for skatteåret.
+            {% if perms.kas.add_policydocument and perms.kas.add_note and perms.kas.change_policytaxyear %}
+                {% include 'includes/help_text/question_mark.html' with target_id='actions_help_texts' %}
+                {% blocktrans asvar actions_help_text %}<b>Tilføj bilag/notater</b> Vedhæfter en tekst og/eller en fil til denne police for skatteåret.
+                    
+                    <b>Ret selvangivet beløb</b> Kun tilgængelig når skatteåret er i perioden "Selvangivelse". Her kan beløbet korrigeres, f.eks. ud fra henvendelse fra borger. I samme arbejdsgang kan der tilføjes notat og/eller bilag som dokumenterer korrektionen.
 
-            <b>Ret selvangivet beløb</b> Kun tilgængelig når skatteåret er i perioden "Selvangivelse". Her kan beløbet korrigeres, f.eks. ud fra henvendelse fra borger. I samme arbejdsgang kan der tilføjes notat og/eller bilag som dokumenterer korrektionen.
+                    <b>Ret beløb</b> Tilgængelig når skatteåret ikke er i perioden "Selvangivelse". Her kan alle beløbene korrigeres (justeret R75-beløb, selvangivet beløb, ansat-beløb), og policen kan markeres som slutlignet.
 
-            <b>Ret beløb</b> Tilgængelig når skatteåret ikke er i perioden "Selvangivelse". Her kan alle beløbene korrigeres (justeret R75-beløb, selvangivet beløb, ansat-beløb), og policen kan markeres som slutlignet.
+                    <b>Ret borgerbetaling</b> Kun tilgængelig hvis der foreligger en aftale med pensionsselskabet. Her kan rettes det beløb som borgeren allerede har betalt.
 
-            <b>Ret borgerbetaling</b> Kun tilgængelig hvis der foreligger en aftale med pensionsselskabet. Her kan rettes det beløb som borgeren allerede har betalt.
+                    <b>Afregistrer</b> Kun tilgængelig hvis policen ikke allerede er afregistreret. Deaktiverer policen, så den ikke indgår i beregningen af borgerens kapitalafkastskat
 
-            <b>Afregistrer</b> Kun tilgængelig hvis policen ikke allerede er afregistreret. Deaktiverer policen, så den ikke indgår i beregningen af borgerens kapitalafkastskat
-
-            <b>Aktivér</b> Kun tilgængelig hvis policen er afregistreret. Aktiverer policen, så den indgår i beregningen af borgerens kapitalafkastskat{% endblocktrans %}
-            {% include 'includes/help_text/collapse.html' with help_text=actions_help_text target_id='actions_help_texts' %}
+                    <b>Aktivér</b> Kun tilgængelig hvis policen er afregistreret. Aktiverer policen, så den indgår i beregningen af borgerens kapitalafkastskat
+                {% endblocktrans %}
+                {% include 'includes/help_text/collapse.html' with help_text=actions_help_text target_id='actions_help_texts' %}
+            {% elif perms.kas.add_policydocument and perms.kas.add_note %}
+                {% include 'includes/help_text/question_mark.html' with target_id='actions_help_texts' %}
+                {% blocktrans asvar actions_help_text %}<b>Tilføj bilag/notater</b> Vedhæfter en tekst og/eller en fil til denne police for skatteåret.{% endblocktrans %}
+                {% include 'includes/help_text/collapse.html' with help_text=actions_help_text target_id='actions_help_texts' %}
+            {% endif %}
         </fieldset>
     {% endif %}
     <div class="mb-2">

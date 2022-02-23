@@ -67,7 +67,7 @@
             {% include 'includes/detail_tabs/general_notes.html' %}
         </div>
         <div id="{{prefix}}settlement" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="settlement-tab">
-            {% include 'includes/detail_tabs/settlements.html' with settlements=settlements csrf_token=csrf_token person_tax_year=person_tax_year only %}
+            {% include 'includes/detail_tabs/settlements.html' with settlements=settlements csrf_token=csrf_token person_tax_year=person_tax_year perms=perms only %}
         </div>
         <div id="{{prefix}}transaction" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="trans-tab">
             {% include 'includes/detail_tabs/transactions.html' with transactions=transactions only %}
