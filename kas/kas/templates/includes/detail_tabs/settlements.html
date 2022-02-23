@@ -28,8 +28,10 @@
             </td>
             <td>
                 <a class="btn btn-primary" href="{% url 'kas:final_settlement_download' settlement.uuid %}">{% trans 'Vis' %}</a>
-                <button {% if settlement.invalid or settlement.status != 'created' %}disabled {% endif %} data-url="{% url 'kas:invalid-final-settlement' settlement.uuid %}" type="button" class="btn btn-danger ml-3" data-toggle="modal" data-target="#invalidFinalSettlementModal">{% trans 'Markér som ugyldig' %}</button>
-                {% if settlement.allow_dispatch is True and settlement.person_tax_year.tax_year.year_part == 'genoptagelsesperiode' %}
+                {% if perms.kas.change_finalsettlement %}
+                    <button {% if settlement.invalid or settlement.status != 'created' %}disabled {% endif %} data-url="{% url 'kas:invalid-final-settlement' settlement.uuid %}" type="button" class="btn btn-danger ml-3" data-toggle="modal" data-target="#invalidFinalSettlementModal">{% trans 'Markér som ugyldig' %}</button>
+                {% endif %}
+                {% if perms.kas.change_finalsettlement and settlement.allow_dispatch is True and settlement.person_tax_year.tax_year.year_part == 'genoptagelsesperiode' %}
                 <button {% if settlement.invalid %}disabled {% endif %} data-url="{% url 'kas:dispatch-final-settlement' settlement.uuid %}" type="button" class="btn btn-success ml-3" data-toggle="modal" data-target="#finalSettlementModal">
                     {% trans 'Afsend slutopgørelse' %}
                 </button>

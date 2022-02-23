@@ -148,9 +148,11 @@
     {% if not historical %}
     <fieldset class="border pl-4 pb-4 mb-4">
         <legend class="w-auto">{% trans 'Handlinger' %}</legend>
-        <a class="btn btn-success" href="{% url 'kas:policy_create' view.year view.person_id %}">{% trans 'Opret ny police' %}</a>
-        <a class="btn btn-info" href="{% url 'kas:person_add_notes_or_attachement' person_tax_year.pk %}" >{% trans 'Tilføj bilag/notater' %}</a>
-        {% if person_tax_year.tax_year.year_part == 'genoptagelsesperiode' and person_tax_year.policytaxyear_set.exists %}
+        {% if perms.kas.add_policydocument and perms.kas.add_note %}
+            <a class="btn btn-success" href="{% url 'kas:policy_create' view.year view.person_id %}">{% trans 'Opret ny police' %}</a>
+            <a class="btn btn-info" href="{% url 'kas:person_add_notes_or_attachement' person_tax_year.pk %}" >{% trans 'Tilføj bilag/notater' %}</a>
+        {% endif %}
+        {% if perms.kas.add_finalsettlement and person_tax_year.tax_year.year_part == 'genoptagelsesperiode' and person_tax_year.policytaxyear_set.exists %}
         <a class="btn btn-warning" href="{% url 'kas:generate-final-settlement' person_tax_year.pk %}">{% trans 'Generer ny slutopgørelse' %}</a>
         {% endif %}
         <a href="{% url 'kas:person_history_list' person_tax_year.pk %}" class="btn btn-secondary">{% trans 'Vis historik' %}</a>
