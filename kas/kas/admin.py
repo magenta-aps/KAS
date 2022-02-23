@@ -37,7 +37,6 @@ kasadmin.register(User, KasUserAdmin)
 class LogEntryAdmin(admin.ModelAdmin):
     # to have a date-based drilldown navigation in the admin page
     date_hierarchy = 'action_time'
-    title = 'TEST'
     # to filter the resultes by users, content types and action flags
     list_filter = [
         'user',
