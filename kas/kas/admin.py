@@ -1,11 +1,11 @@
 from django.contrib import admin
+from django.contrib.admin.models import LogEntry
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
+from project.admin import kasadmin  # used by the administrator group
 
 from kas.models import FinalSettlement, TaxYear, Person, PersonTaxYear, PolicyTaxYear, PolicyDocument, TaxSlipGenerated
-from project.admin import kasadmin  # used by is_staff users
-from django.contrib.admin.models import LogEntry
 
 
 class KasUserAdmin(UserAdmin):
@@ -57,7 +57,10 @@ class LogEntryAdmin(admin.ModelAdmin):
     ]
 
     def has_module_permission(self, request):
-        return True
+        """
+        If you can view the user you can view the logs
+        """
+        return request.user.has_perm('auth.view_user')
 
     def has_delete_permission(self, request, obj=None):
         # never allow deletion
@@ -84,7 +87,7 @@ class LogEntryAdmin(admin.ModelAdmin):
         """
         only show audit log for user changes
         """
-        return LogEntry.objects.filter(content_type__model='user')
+        return LogEntry.objects.filter(content_type__app_label='auth', content_type__model='user')
 
 
 kasadmin.register(LogEntry, LogEntryAdmin)
