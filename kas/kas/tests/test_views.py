@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -445,17 +445,12 @@ class PaymentOverrideTestCase(BaseTestCase):
 
         # Cruder way of calculating the current date + 3 months + until next month
         # because calculating the same way as the tested function proves nothing (if they were identical but wrong, we wouldn't catch it)
-        collect_date = timezone.now().replace(
-            hour=batch.collect_date.hour,
-            minute=batch.collect_date.minute,
-            second=batch.collect_date.second,
-            microsecond=batch.collect_date.microsecond
-        )
+        collect_date = date.today()
         # Always add 4 months to the 1st of the current month
         collect_date = collect_date.replace(day=1, month=((collect_date.month+3) % 12) + 1)
 
         # If we wrapped around to a month lower than the current one, we shold add a year
-        if collect_date.month < timezone.now().month:
+        if collect_date.month < date.today().month:
             collect_date = collect_date.replace(year=collect_date.year + 1)
 
         self.assertEqual(batch.collect_date, collect_date)
