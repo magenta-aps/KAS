@@ -1113,6 +1113,7 @@ class PensionCompanyUpdateView(PermissionRequiredMixin, UpdateView):
 
 class AgreementDownloadView(PermissionRequiredMixin, View):
     permission_required = 'kas.view_pensioncompany'
+    
     def get(self, *args, **kwargs):
         company = get_object_or_404(PensionCompany, pk=kwargs['pk'])
         if company.agreement is None:
