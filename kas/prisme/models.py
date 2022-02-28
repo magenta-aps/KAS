@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.utils.formats import date_format
 from django.utils.translation import gettext as _
 
-from prisme.tenQ.writer import TenQTransactionWriter
+from tenQ.writer import TenQTransactionWriter
 
 
 def filefield_path(instance, filename):
@@ -66,7 +66,9 @@ class Transaction(models.Model):
         self.prisme10Q_content = transaction_writer.serialize_transaction(
             cpr_nummer=self.person_tax_year.person.cpr,
             amount_in_dkk=self.amount,
-            afstem_noegle=str(self.uuid).replace('-', '')
+            afstem_noegle=str(self.uuid).replace('-', ''),
+            rate_text=self.prisme10Q_batch.tax_year.rate_text_for_transactions,
+            leverandoer_ident='KAS'
         )
 
     def get_10q_status_display(self):
@@ -145,7 +147,7 @@ class Prisme10QBatch(models.Model):
     # Any error encountered while trying to deliver the batch
     delivery_error = models.TextField(blank=True, default='')
 
-    collect_date = models.DateTimeField(null=True)
+    collect_date = models.DateField(null=True)
 
     # Status for delivery
     STATUS_CREATED = 'created'
@@ -211,7 +213,7 @@ class Prisme10QBatch(models.Model):
     @cached_property
     def transaction_writer(self):
         return TenQTransactionWriter(
-            collect_date=self.collect_date or self.created,
+            due_date=self.collect_date or self.created.date(),
             year=self.tax_year.year,
         )
 

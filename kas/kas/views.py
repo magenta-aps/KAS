@@ -1,5 +1,6 @@
 import mimetypes
 import os
+from datetime import date
 
 from django.conf import settings
 from django.contrib import messages
@@ -31,7 +32,7 @@ from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, HighestSingleObjectMixin, \
     SpecialExcelMixin, sagsbehandler_or_administrator_required, sagsbehandler_or_administrator_or_borgerservice_required
 from prisme.models import Transaction, Prisme10QBatch
-from prisme.tenQ.dates import get_due_date
+from tenQ.dates import get_due_date
 from worker.models import Job
 
 
@@ -903,7 +904,7 @@ class FinalSettlementGenerateView(PermissionRequiredMixin, SingleObjectMixin, Fo
         final_statement = TaxFinalStatementPDF.generate_pdf(person_tax_year=self.object, **form.cleaned_data)
 
         if final_statement.get_transaction_amount() != 0:
-            collect_date = get_due_date(timezone.now())
+            collect_date = get_due_date(date.today())
 
             prisme10Q_batch = Prisme10QBatch.objects.create(
                 created_by=self.request.user,

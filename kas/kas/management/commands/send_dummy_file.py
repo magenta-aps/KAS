@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.datetime_safe import datetime
 
-from prisme.tenQ.client import put_file_in_prisme_folder
+from tenQ.client import put_file_in_prisme_folder
 
 
 class Command(BaseCommand):
@@ -31,5 +31,5 @@ class Command(BaseCommand):
         with tempfile.NamedTemporaryFile(mode='w') as batchfile:
             batchfile.write(content)
             batchfile.flush()
-            put_file_in_prisme_folder(batchfile.name, destination_folder, filename, None)
+            put_file_in_prisme_folder(settings.TENQ, batchfile.name, destination_folder, filename, None)
         print("File uploaded")
