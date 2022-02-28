@@ -54,7 +54,7 @@ class StatisticsView(LoginRequiredMixin, TemplateView):
         for x in ImportedKasMandtal.objects.values("skatteaar").annotate(number_per_year=Count('skatteaar')):
             by_year_data['imported_mandtal'][x['skatteaar']] = x['number_per_year']
 
-        for x in ImportedR75PrivatePension.s.values("tax_year").annotate(number_per_year=Count('tax_year')):
+        for x in ImportedR75PrivatePension.objects.values("tax_year").annotate(number_per_year=Count('tax_year')):
             by_year_data['imported_r75'][x['tax_year']] = x['number_per_year']
 
         for x in PersonTaxYear.objects.values("tax_year__year").order_by("tax_year__year").annotate(number_per_year=Count('pk')):
