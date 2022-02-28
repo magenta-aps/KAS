@@ -1,24 +1,15 @@
-from datetime import datetime
-
-import pytz
+from datetime import datetime, date, timezone
 from django.test import TestCase
-from kas.models import TaxYear
-from prisme.tenQ.writer import TenQTransactionWriter
+from tenQ.writer import TenQTransactionWriter
 
 
 class Test10QDateCalculation(TestCase):
 
     def setUp(self):
-        TaxYear.objects.get_or_create(
-            year=2022,
-            defaults={
-                'rate_text_for_transactions': 'Testing\r\nwith\r\nlines'
-            }
-        )
         self.transaction_writer = TenQTransactionWriter(
-            collect_date=datetime(2022, 2, 18, 12, 4, 14, tzinfo=pytz.utc),
+            due_date=date(2022, 2, 18),
             year=2022,
-            time_stamp=datetime(2022, 2, 18, 12, 35, 57, tzinfo=pytz.utc)
+            timestamp=datetime(2022, 2, 18, 12, 35, 57, tzinfo=timezone.utc)
         )
 
     def test_writer_successful(self):
@@ -26,6 +17,8 @@ class Test10QDateCalculation(TestCase):
             cpr_nummer='1234567890',
             amount_in_dkk=1000,
             afstem_noegle='e688d6a6fc65424483819520bbbe7745',
+            rate_text='Testing\r\nwith\r\nlines',
+            leverandoer_ident='KAS',
         )
         self.assertEquals(
             prisme10Q_content,
@@ -47,15 +40,18 @@ class Test10QDateCalculation(TestCase):
             'cpr_nummer': '1234567890',
             'amount_in_dkk': 1000,
             'afstem_noegle': 'e688d6a6fc65424483819520bbbe7745',
+            'rate_text': 'hephey',
+            'leverandoer_ident': 'KAS'
         }
         too_long = {
             'cpr_nummer': '12345678901',
             'amount_in_dkk': 1000000000,
             'afstem_noegle': 'e688d6a6fc65424483819520bbbe7745xxxx',
+            'leverandoer_ident': 'Too long'
         }
         for key, value in too_long.items():
             with self.assertRaises(ValueError):
                 self.transaction_writer.serialize_transaction(**{
                     **defaults,
-                    key: value
+                    key: value,
                 })

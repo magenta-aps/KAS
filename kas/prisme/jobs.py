@@ -9,7 +9,7 @@ from kas.models import PersonTaxYear
 from prisme.models import PrePaymentFile, Transaction, Prisme10QBatch
 from prisme.models import batch_destinations_available
 from worker.models import job_decorator
-from prisme.tenQ.client import put_file_in_prisme_folder
+from tenQ.client import put_file_in_prisme_folder
 
 
 @job_decorator
@@ -81,7 +81,7 @@ def send_batch(job):
         with tempfile.NamedTemporaryFile(mode='w') as batchfile:
             batchfile.write(content)
             batchfile.flush()
-            put_file_in_prisme_folder(batchfile.name, destination_folder, filename, job.set_progress)
+            put_file_in_prisme_folder(settings.TENQ, batchfile.name, destination_folder, filename, job.set_progress)
         batch.status = completion_statuses[destination]
         batch.delivered_by = job.created_by
         batch.delivered = timezone.now()

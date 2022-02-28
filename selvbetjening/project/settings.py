@@ -112,12 +112,12 @@ LOGGING = {
     },
     'root': {
         'handlers': ['gunicorn'],
-        'level': 'WARNING',
+        'level': 'INFO',
     },
     'loggers': {
         'django': {
             'handlers': ['gunicorn'],
-            'level': 'WARNING',
+            'level': 'INFO',
             'propagate': False,
         },
     },
