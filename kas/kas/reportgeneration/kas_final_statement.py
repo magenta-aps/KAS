@@ -4,9 +4,9 @@ from datetime import date
 from operator import abs
 
 from django.core.files.base import ContentFile
-from django.utils import timezone, translation
+from django.utils import translation
 from django.utils.translation import gettext as _
-from prisme.tenQ.dates import get_due_date, get_last_payment_date
+from tenQ.dates import get_due_date, get_last_payment_date
 from fpdf import FPDF
 
 from kas.models import PersonTaxYear, FinalSettlement
@@ -204,7 +204,7 @@ class TaxFinalStatementPDF(FPDF):
         ])
 
         self.remainder_calculation = final_settlement.get_calculation_amounts()
-        self._reference_datetime = timezone.now()
+        self._reference_datetime = date.today()
         self._final_settlement = final_settlement
 
     def header(self):
