@@ -100,7 +100,7 @@ class LoginCallback(TemplateView):
         if isinstance(aresp, ErrorResponse):
             # we got an error from the OP
             del request.session['oid_state']
-            logger.error("Got ErrorResponse %s" % str(aresp.to_dict()))
+            logger.error(f"Got ErrorResponse {aresp}")
             context = self.get_context_data(errors=aresp.to_dict())
             return self.render_to_response(context)
 
@@ -108,7 +108,7 @@ class LoginCallback(TemplateView):
             # we got a valid response
             if not aresp.get('state', None):
                 del request.session['oid_state']
-                logger.error('did not receive state from OP: {}'. format(aresp.to_dict()))
+                logger.error(f'did not receive state from OP: {aresp.to_dict()}')
                 context = self.get_context_data(errors=aresp.to_dict())
                 return self.render_to_response(context)
 
@@ -118,24 +118,22 @@ class LoginCallback(TemplateView):
                 return HttpResponseRedirect(reverse('sullissivik:openid:login'))
 
             provider_info = client.provider_config(settings.OPENID_CONNECT['issuer'])  # noqa
-            logger.debug('provider info: {}'.format(client.config))
-
-            request_args = {
-                'code': aresp['code'],
-                'redirect_uri': settings.OPENID_CONNECT['login_callback']
-            }
+            logger.info(f'provider info: {client.provider_info}')
 
             resp = client.do_access_token_request(
                 state=aresp['state'],
                 scope=settings.OPENID_CONNECT['scope'],
-                request_args=request_args,
+                request_args={
+                    'code': aresp['code'],
+                    'redirect_uri': settings.OPENID_CONNECT['login_callback']
+                },
                 authn_method="private_key_jwt",
                 authn_endpoint='token'
             )
 
             if isinstance(resp, ErrorResponse):
                 del request.session['oid_state']
-                logger.error('Error received from headnet: {}'.format(str(ErrorResponse)))
+                logger.error(f'Error received from headnet: {resp}')
                 context = self.get_context_data(errors=resp.to_dict())
                 return self.render_to_response(context)
             else:

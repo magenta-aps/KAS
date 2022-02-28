@@ -331,5 +331,6 @@ class RepresentationStartView(FormView):
 
 class RepresentationStopView(RedirectView):
     def get_redirect_url(self):
-        del self.request.session['user_info']
+        if 'user_info' in self.request.session:
+            del self.request.session['user_info']
         return settings.KAS_REPRESENTATION_STOP
