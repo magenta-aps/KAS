@@ -675,7 +675,6 @@ class PolicyTaxYearCompanyUpdateView(PermissionRequiredWithMessage, CreateOrUpda
 
 class PensionCompanySummaryFileView(PermissionRequiredWithMessage, HighestSingleObjectMixin, MultipleObjectMixin, FormView):
     permission_required = 'kas.add_pensioncompanysummaryfile'
-    # TODO fix this
     model = TaxYear
     form_class = PensionCompanySummaryFileForm
     template_name = "kas/policycompanysummary_list.html"

@@ -94,11 +94,15 @@
       <tr>
         <th>{% blocktrans with year=view.year %}Skattedage i {{ year }}{% endblocktrans %}{% include 'includes/help_text/question_mark.html' with target_id='number_of_days_help' right=True %}</th>
         <td>
+            {% if perms.kas.change_persontaxyear %}
             <form action="{% url 'kas:update_persontaxyear_mandtal' person_tax_year.pk %}" method="POST">
                 {% csrf_token %}
                 {{ person_tax_year.number_of_days }}
                 <input type="submit" class="btn btn-sm btn-info" role="button" value="{% trans 'Opdater data fra mandtal' %}" />
             </form>
+            {% else %}
+                {{ person_tax_year.number_of_days }}
+            {% endif %}
         </td>
       </tr>
       <tr id="number_of_days_help" class="collapse">
@@ -148,8 +152,10 @@
     {% if not historical %}
     <fieldset class="border pl-4 pb-4 mb-4">
         <legend class="w-auto">{% trans 'Handlinger' %}</legend>
-        {% if perms.kas.add_policydocument and perms.kas.add_note %}
+        {% if perms.kas.add_policytaxyear %}
             <a class="btn btn-success" href="{% url 'kas:policy_create' view.year view.person_id %}">{% trans 'Opret ny police' %}</a>
+        {% endif %}
+        {% if perms.kas.add_policydocument and perms.kas.add_note %}
             <a class="btn btn-info" href="{% url 'kas:person_add_notes_or_attachement' person_tax_year.pk %}" >{% trans 'Tilføj bilag/notater' %}</a>
         {% endif %}
         {% if perms.kas.add_finalsettlement and person_tax_year.tax_year.year_part == 'genoptagelsesperiode' and person_tax_year.policytaxyear_set.exists %}
