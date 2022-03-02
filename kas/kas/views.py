@@ -36,7 +36,9 @@ from tenQ.dates import get_due_date
 from worker.models import Job
 
 
-class StatisticsView(LoginRequiredMixin, TemplateView):
+class StatisticsView(PermissionRequiredMixin, TemplateView):
+    permission_required = 'kas.list_persontaxyear'
+    permission_denied_message = sagsbehandler_or_administrator_required
     template_name = 'kas/statistics.html'
 
     def get_context_data(self, *args, **kwargs):
@@ -338,8 +340,9 @@ class PersonNotesAndAttachmentsView(PermissionRequiredMixin, UpdateView):
         return ctx
 
 
-class PersonRepresentStartView(LoginRequiredMixin, TemplateView):
-
+class PersonRepresentStartView(PermissionRequiredMixin, TemplateView):
+    permission_denied_message = sagsbehandler_or_administrator_required
+    permission_required = 'kas.add_persontaxyear'
     template_name = 'kas/person/represent.html'
 
     def get_context_data(self, **kwargs):
@@ -354,7 +357,10 @@ class PersonRepresentStartView(LoginRequiredMixin, TemplateView):
         return ctx
 
 
-class PersonRepresentStopView(LoginRequiredMixin, RedirectView):
+class PersonRepresentStopView(PermissionRequiredMixin, RedirectView):
+    permission_denied_message = sagsbehandler_or_administrator_required
+    permission_required = 'kas.add_persontaxyear'
+
     def get_redirect_url(self):
         # There really should be only one, but don't die if there are more
         tokens = RepresentationToken.objects.filter(user=self.request.user)
