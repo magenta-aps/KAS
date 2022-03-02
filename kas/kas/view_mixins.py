@@ -17,8 +17,7 @@ sagsbehandler_or_administrator_required = _('Du skal være logget ind som '
 
 sagsbehandler_or_administrator_or_borgerservice_required = _('Du skal være logget ind som enten administrator, '
                                                              'sagsbehandler eller borgerservice '
-                                                             'for at kunne tilføje notater og uploade bilag.'
-                                                             )
+                                                             'for at kunne tilføje notater og uploade bilag.')
 
 
 class BootstrapTableMixin:
