@@ -156,11 +156,12 @@
         <a class="btn btn-warning" href="{% url 'kas:generate-final-settlement' person_tax_year.pk %}">{% trans 'Generer ny slutopgørelse' %}</a>
         {% endif %}
         <a href="{% url 'kas:person_history_list' person_tax_year.pk %}" class="btn btn-secondary">{% trans 'Vis historik' %}</a>
-
+        {% if perms.kas.add_persontaxyear %}
         {% if representing %}
-        <a href="{{ representation_stop }}" class="btn btn-outline-primary">{% trans 'Afslut repræsentation' %}</a>
-        {% else %}
-        <a href="{% url 'kas:person_represent_start' person_tax_year.person.id %}" class="btn btn-primary">{% trans 'Repræsentér borger' %}</a>
+            <a href="{{ representation_stop }}" class="btn btn-outline-primary">{% trans 'Afslut repræsentation' %}</a>
+            {% else %}
+            <a href="{% url 'kas:person_represent_start' person_tax_year.person.id %}" class="btn btn-primary">{% trans 'Repræsentér borger' %}</a>
+            {% endif %}
         {% endif %}
 
         {% include 'includes/help_text/question_mark.html' with target_id='actions_help_texts' %}
