@@ -10,6 +10,7 @@ from openpyxl import Workbook
 from datetime import date
 from kas.forms import NoteForm, PolicyDocumentForm
 from kas.models import PersonTaxYear, PolicyTaxYear
+from django.contrib.auth.mixins import PermissionRequiredMixin
 
 sagsbehandler_or_administrator_required = _('Du skal være logget ind som '
                                             'enten administrator eller sagsbehandler '
@@ -18,6 +19,10 @@ sagsbehandler_or_administrator_required = _('Du skal være logget ind som '
 sagsbehandler_or_administrator_or_borgerservice_required = _('Du skal være logget ind som enten administrator, '
                                                              'sagsbehandler eller borgerservice '
                                                              'for at kunne tilføje notater og uploade bilag.')
+
+
+class PermissionRequiredWithMessage(PermissionRequiredMixin):
+    permission_denied_message = _('Du har ikke rettigheder til at tilgå denne funktion.')
 
 
 class BootstrapTableMixin:
