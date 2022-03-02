@@ -802,7 +802,6 @@ class PersonTaxYearHistoryListView(PermissionRequiredMixin, DetailView):
         # It appears that queryset.union() doesn't give the correct output, specifically putting values under the wrong keys
         # e.g. putting the `klass` value under the `updated_by` key for items from _some_ querysets
         # So instead we extract the values from each queryset and join them together in code
-
         items = []
         keys = ('history_date', 'history_id', 'history_user__username', 'history_change_reason', 'history_type', 'updated_by', 'klass')
         for queryset in (qs, policy_qs, person_qs, notes_qs, documents_qs, tax_slip_generated_qs,
