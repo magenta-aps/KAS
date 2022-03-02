@@ -11,11 +11,11 @@ from datetime import date
 from kas.forms import NoteForm, PolicyDocumentForm
 from kas.models import PersonTaxYear, PolicyTaxYear
 
-sagsbehandler_or_administrator_required = _('DU skal være logget ind som '
+sagsbehandler_or_administrator_required = _('Du skal være logget ind som '
                                             'enten administrator eller sagsbehandler '
                                             'for at kunne redigere')
 
-sagsbehandler_or_administrator_or_borgerservice_required = _('DU skal være logget ind som enten administrator, '
+sagsbehandler_or_administrator_or_borgerservice_required = _('Du skal være logget ind som enten administrator, '
                                                              'sagsbehandler eller borgerservice '
                                                              'for at kunne tilføje notater og uploade bilag.'
                                                              )
