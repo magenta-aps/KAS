@@ -18,7 +18,8 @@ from django.views.generic.detail import DetailView, SingleObjectMixin, BaseDetai
 from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
 from ipware import get_client_ip
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from tenQ.dates import get_due_date
+
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from kas.filters import PensionCompanyFilterSet
 from kas.forms import PersonListFilterForm, SelfReportedAmountForm, EditAmountsUpdateForm, \
@@ -30,13 +31,15 @@ from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownl
     PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement, PensionCompany, RepresentationToken, Person
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, HighestSingleObjectMixin, \
-    SpecialExcelMixin
+    SpecialExcelMixin, sagsbehandler_or_administrator_required, \
+    sagsbehandler_or_administrator_or_borgerservice_required, PermissionRequiredWithMessage
 from prisme.models import Transaction, Prisme10QBatch
-from tenQ.dates import get_due_date
 from worker.models import Job
 
 
-class StatisticsView(LoginRequiredMixin, TemplateView):
+class StatisticsView(PermissionRequiredWithMessage, TemplateView):
+    permission_required = 'kas.list_persontaxyear'
+    permission_denied_message = sagsbehandler_or_administrator_required
     template_name = 'kas/statistics.html'
 
     def get_context_data(self, *args, **kwargs):
@@ -83,7 +86,8 @@ class StatisticsView(LoginRequiredMixin, TemplateView):
         return result
 
 
-class PersonTaxYearListView(LoginRequiredMixin, ListView):
+class PersonTaxYearListView(PermissionRequiredWithMessage, ListView):
+    permission_required = 'kas.view_persontaxyear'
     template_name = 'kas/persontaxyear_list.html'
     context_object_name = 'personstaxyears'
     paginate_by = 20
@@ -227,7 +231,8 @@ class PersonTaxYearGeneralAndForeignNotesListView(PersonTaxYearSpecialListView):
         return qs
 
 
-class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
+class PersonTaxYearDetailView(PermissionRequiredWithMessage, DetailView):
+    permission_required = 'kas.view_persontaxyear'
     template_name = 'kas/persontaxyear_detail.html'
     model = PersonTaxYear
     context_object_name = 'person_tax_year'
@@ -273,7 +278,9 @@ class PersonTaxYearDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class PersonTaxYearDocumentsAndNotesUpdateView(LoginRequiredMixin, SingleObjectMixin, View):
+class PersonTaxYearDocumentsAndNotesUpdateView(PermissionRequiredWithMessage, SingleObjectMixin, View):
+    permission_required = 'kas.change_persontaxyear'
+    permission_denied_message = sagsbehandler_or_administrator_required
     model = PersonTaxYear
 
     def post(self, *args, **kwargs):
@@ -284,7 +291,9 @@ class PersonTaxYearDocumentsAndNotesUpdateView(LoginRequiredMixin, SingleObjectM
                                                                           'person_id': instance.person.id}))
 
 
-class NoteUpdateView(LoginRequiredMixin, UpdateView):
+class NoteUpdateView(PermissionRequiredWithMessage, UpdateView):
+    permission_required = 'kas.change_note'
+    permission_denied_message = sagsbehandler_or_administrator_required
     form_class = NoteUpdateForm
     model = Note
     template_name = 'kas/form_with_notes.html'
@@ -309,7 +318,9 @@ class NoteUpdateView(LoginRequiredMixin, UpdateView):
         return ctx
 
 
-class PersonNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):
+class PersonNotesAndAttachmentsView(PermissionRequiredWithMessage, UpdateView):
+    permission_required = ('kas.add_note', 'kas.add_policydocument')
+    permission_denied_message = sagsbehandler_or_administrator_or_borgerservice_required
     form_class = PersonNotesAndAttachmentForm
     model = PersonTaxYear
     template_name = 'kas/person/add_notes_and_attachment_form.html'
@@ -330,8 +341,9 @@ class PersonNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):
         return ctx
 
 
-class PersonRepresentStartView(LoginRequiredMixin, TemplateView):
-
+class PersonRepresentStartView(PermissionRequiredWithMessage, TemplateView):
+    permission_denied_message = sagsbehandler_or_administrator_required
+    permission_required = 'kas.add_persontaxyear'
     template_name = 'kas/person/represent.html'
 
     def get_context_data(self, **kwargs):
@@ -346,7 +358,10 @@ class PersonRepresentStartView(LoginRequiredMixin, TemplateView):
         return ctx
 
 
-class PersonRepresentStopView(LoginRequiredMixin, RedirectView):
+class PersonRepresentStopView(PermissionRequiredWithMessage, RedirectView):
+    permission_denied_message = sagsbehandler_or_administrator_required
+    permission_required = 'kas.add_persontaxyear'
+
     def get_redirect_url(self):
         # There really should be only one, but don't die if there are more
         tokens = RepresentationToken.objects.filter(user=self.request.user)
@@ -364,8 +379,9 @@ class PersonRepresentStopView(LoginRequiredMixin, RedirectView):
             return reverse('kas:person_search')
 
 
-class PolicyTaxYearListView(LoginRequiredMixin, ListView):
-    # template_name = 'kas/persontaxyear_list.html'
+class PolicyTaxYearListView(PermissionRequiredWithMessage, ListView):
+    permission_required = 'kas.list_persontaxyear'
+    permission_denied_message = sagsbehandler_or_administrator_required
     context_object_name = 'policytaxyears'
     paginate_by = 20
 
@@ -458,7 +474,8 @@ class PolicyTaxYearUnfinishedListView(SpecialExcelMixin, PolicyTaxYearSpecialLis
         )
 
 
-class PolicyTaxYearTabView(LoginRequiredMixin, ListView):
+class PolicyTaxYearTabView(PermissionRequiredWithMessage, ListView):
+    permission_required = 'kas.view_policytaxyear'
     template_name = 'kas/policytaxyear_tabs.html'
     model = PolicyTaxYear
 
@@ -476,7 +493,8 @@ class PolicyTaxYearTabView(LoginRequiredMixin, ListView):
         return context
 
 
-class PolicyTaxYearDetailView(LoginRequiredMixin, SingleObjectMixin, RedirectView):
+class PolicyTaxYearDetailView(PermissionRequiredWithMessage, SingleObjectMixin, RedirectView):
+    permission_required = 'kas.view_policytaxyear'
     model = PolicyTaxYear
 
     def get_redirect_url(self, *args, **kwargs):
@@ -491,7 +509,9 @@ class PolicyTaxYearDetailView(LoginRequiredMixin, SingleObjectMixin, RedirectVie
         ) + fragment
 
 
-class PolicyTaxYearCreateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, CreateView):
+class PolicyTaxYearCreateView(PermissionRequiredWithMessage, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, CreateView):
+    permission_required = 'kas.add_policytaxyear'
+    permission_denied_message = sagsbehandler_or_administrator_required
     form_class = CreatePolicyTaxYearForm
     template_name = "kas/policytaxyear_create.html"
 
@@ -512,7 +532,9 @@ class PolicyTaxYearCreateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAnd
         return super().form_valid(form)
 
 
-class PolicyNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):
+class PolicyNotesAndAttachmentsView(PermissionRequiredWithMessage, UpdateView):
+    permission_required = ('kas.add_note', 'kas.add_policydocument')
+    permission_denied_message = sagsbehandler_or_administrator_or_borgerservice_required
     model = PolicyTaxYear
     form_class = PolicyNotesAndAttachmentForm
     template_name = 'kas/policy/add_notes_and_attachment_form.html'
@@ -526,7 +548,8 @@ class PolicyNotesAndAttachmentsView(LoginRequiredMixin, UpdateView):
         return kwargs
 
 
-class PolicyDocumentDownloadView(LoginRequiredMixin, View):
+class PolicyDocumentDownloadView(PermissionRequiredWithMessage, View):
+    permission_required = 'kas.view_policydocument'
 
     def get(self, *args, **kwargs):
         document = get_object_or_404(PolicyDocument, pk=kwargs['pk'])
@@ -536,7 +559,8 @@ class PolicyDocumentDownloadView(LoginRequiredMixin, View):
         return response
 
 
-class PdfDownloadView(LoginRequiredMixin, SingleObjectMixin, View):
+class PdfDownloadView(PermissionRequiredWithMessage, SingleObjectMixin, View):
+    permission_required = 'kas.view_taxslipgenerated'
     model = TaxSlipGenerated
 
     def get_object(self, queryset=None):
@@ -578,18 +602,22 @@ class PdfDownloadView(LoginRequiredMixin, SingleObjectMixin, View):
         return response
 
 
-class SelfReportedAmountUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
+class SelfReportedAmountUpdateView(PermissionRequiredWithMessage, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
+    permission_required = 'kas.change_policytaxyear'
     form_class = SelfReportedAmountForm
     template_name = 'kas/form_with_notes.html'
+    permission_denied_message = sagsbehandler_or_administrator_required
     allowed_year_parts = ['selvangivelse']
 
     def get_queryset(self):
         return PolicyTaxYear.objects.filter(person_tax_year__tax_year__year_part='selvangivelse')
 
 
-class EditAmountsUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
+class EditAmountsUpdateView(PermissionRequiredWithMessage, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
     form_class = EditAmountsUpdateForm
+    permission_required = 'kas.change_policytaxyear'
     template_name = 'kas/form_with_notes.html'
+    permission_denied_message = sagsbehandler_or_administrator_required
 
     def get_queryset(self):
         return PolicyTaxYear.objects.filter(person_tax_year__tax_year__year_part__in=['ligning', 'genoptagelsesperiode'])
@@ -617,7 +645,9 @@ class EditAmountsUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDo
         return super(EditAmountsUpdateView, self).form_valid(form)
 
 
-class PolicyPaymentOverrideView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
+class PolicyPaymentOverrideView(PermissionRequiredWithMessage, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
+    permission_required = 'kas.change_policytaxyear'
+    permission_denied_message = sagsbehandler_or_administrator_required
     model = PolicyTaxYear
     form_class = PaymentOverrideUpdateForm
     template_name = 'kas/form_with_notes.html'
@@ -630,7 +660,9 @@ class PolicyPaymentOverrideView(LoginRequiredMixin, CreateOrUpdateViewWithNotesA
         return super(PolicyPaymentOverrideView, self).form_valid(form)
 
 
-class PolicyTaxYearCompanyUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
+class PolicyTaxYearCompanyUpdateView(PermissionRequiredWithMessage, CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, UpdateView):
+    permission_required = 'kas.change_policytaxyear'
+    permission_denied_message = sagsbehandler_or_administrator_required
     model = PolicyTaxYear
     form_class = PolicyTaxYearCompanyForm
     template_name = 'kas/form_with_notes.html'
@@ -641,7 +673,8 @@ class PolicyTaxYearCompanyUpdateView(LoginRequiredMixin, CreateOrUpdateViewWithN
         return super().form_valid(form)
 
 
-class PensionCompanySummaryFileView(LoginRequiredMixin, HighestSingleObjectMixin, MultipleObjectMixin, FormView):
+class PensionCompanySummaryFileView(PermissionRequiredWithMessage, HighestSingleObjectMixin, MultipleObjectMixin, FormView):
+    permission_required = 'kas.add_pensioncompanysummaryfile'
     model = TaxYear
     form_class = PensionCompanySummaryFileForm
     template_name = "kas/policycompanysummary_list.html"
@@ -667,8 +700,8 @@ class PensionCompanySummaryFileView(LoginRequiredMixin, HighestSingleObjectMixin
         return HttpResponseRedirect(self.get_success_url() + f'?download={file_entry.id}')
 
 
-class PensionCompanySummaryFileDownloadView(LoginRequiredMixin, BaseDetailView):
-
+class PensionCompanySummaryFileDownloadView(PermissionRequiredWithMessage, BaseDetailView):
+    permission_required = 'kas.view_pensioncompanysummaryfile'
     model = PensionCompanySummaryFile
 
     # Register info about who is downloading, and serve the file
@@ -685,8 +718,9 @@ class PensionCompanySummaryFileDownloadView(LoginRequiredMixin, BaseDetailView):
         return response
 
 
-class ActivatePolicyTaxYearView(LoginRequiredMixin, UpdateView):
-
+class ActivatePolicyTaxYearView(PermissionRequiredWithMessage, UpdateView):
+    permission_required = 'kas.change_policytaxyear'
+    permission_denied_message = sagsbehandler_or_administrator_required
     form_class = PolicyTaxYearActivationForm
     model = PolicyTaxYear
 
@@ -694,10 +728,11 @@ class ActivatePolicyTaxYearView(LoginRequiredMixin, UpdateView):
         return reverse('kas:policy_detail', kwargs=self.kwargs)
 
 
-class PersonTaxYearHistoryListView(LoginRequiredMixin, DetailView):
+class PersonTaxYearHistoryListView(PermissionRequiredWithMessage, DetailView):
     """
     shows all changes related to a person tax year
     """
+    permission_required = 'kas.view_policytaxyear'
     model = PersonTaxYear
     template_name = 'kas/persontaxyear_historical_list.html'
 
@@ -784,11 +819,12 @@ class PersonTaxYearHistoryListView(LoginRequiredMixin, DetailView):
         return ctx
 
 
-class PersonTaxYearHistoryDetailView(LoginRequiredMixin, DetailView):
+class PersonTaxYearHistoryDetailView(PermissionRequiredWithMessage, DetailView):
     """
     Shows a specific "version" of a person_tax_year
     """
     model = PersonTaxYear.history.model
+    permission_required = 'kas.view_policytaxyear'
     slug_field = 'history_id'
     template_name = 'kas/persontaxyear_detail.html'
     context_object_name = 'person_tax_year'
@@ -799,7 +835,8 @@ class PersonTaxYearHistoryDetailView(LoginRequiredMixin, DetailView):
         return ctx
 
 
-class PolicyTaxYearHistoryListView(LoginRequiredMixin, DetailView):
+class PolicyTaxYearHistoryListView(PermissionRequiredWithMessage, DetailView):
+    permission_required = 'kas.view_policytaxyear'
     model = PolicyTaxYear
     template_name = 'kas/policytaxyear_historical_list.html'
 
@@ -821,7 +858,8 @@ class PolicyTaxYearHistoryListView(LoginRequiredMixin, DetailView):
         return ctx
 
 
-class PolicyTaxYearHistoryDetailView(LoginRequiredMixin, DetailView):
+class PolicyTaxYearHistoryDetailView(PermissionRequiredWithMessage, DetailView):
+    permission_required = 'kas.view_policytaxyear'
     model = PolicyTaxYear.history.model
     slug_field = 'history_id'
     template_name = 'kas/policytaxyear_detail.html'
@@ -833,7 +871,8 @@ class PolicyTaxYearHistoryDetailView(LoginRequiredMixin, DetailView):
         return ctx
 
 
-class FinalSettlementDownloadView(LoginRequiredMixin, SingleObjectMixin, View):
+class FinalSettlementDownloadView(PermissionRequiredWithMessage, SingleObjectMixin, View):
+    permission_required = 'kas.view_finalsettlement'
     slug_field = 'uuid'
     slug_url_kwarg = 'uuid'
     model = FinalSettlement
@@ -846,7 +885,9 @@ class FinalSettlementDownloadView(LoginRequiredMixin, SingleObjectMixin, View):
         return response
 
 
-class FinalSettlementGenerateView(LoginRequiredMixin, SingleObjectMixin, FormView):
+class FinalSettlementGenerateView(PermissionRequiredWithMessage, SingleObjectMixin, FormView):
+    permission_required = 'kas.add_finalsettlement'
+    permission_denied_message = sagsbehandler_or_administrator_required
     model = PersonTaxYear
     template_name = 'kas/finalstatement_generate.html'
     form_class = FinalStatementForm
@@ -887,7 +928,9 @@ class FinalSettlementGenerateView(LoginRequiredMixin, SingleObjectMixin, FormVie
                                                                           'person_id': self.object.person.id}))
 
 
-class MarkFinalSettlementAsInvalid(LoginRequiredMixin, SingleObjectMixin, View):
+class MarkFinalSettlementAsInvalid(PermissionRequiredWithMessage, SingleObjectMixin, View):
+    permission_required = 'kas.change_finalsettlement'
+    permission_denied_message = sagsbehandler_or_administrator_required
     model = FinalSettlement
 
     def post(self, request, *args, **kwargs):
@@ -900,7 +943,9 @@ class MarkFinalSettlementAsInvalid(LoginRequiredMixin, SingleObjectMixin, View):
                                                                           'person_id': self.object.person_tax_year.person.id}))
 
 
-class DispatchFinalSettlement(LoginRequiredMixin, UpdateView):
+class DispatchFinalSettlement(PermissionRequiredWithMessage, UpdateView):
+    permission_required = 'kas.change_finalsettlement'
+    permission_denied_message = sagsbehandler_or_administrator_required
     """
     used to create a job that dispatches a single final settlement
     """
@@ -924,7 +969,9 @@ class DispatchFinalSettlement(LoginRequiredMixin, UpdateView):
                                                      'person_id': self.object.person_tax_year.person.id})
 
 
-class UpdateSingleMandtal(LoginRequiredMixin, SingleObjectMixin, View):
+class UpdateSingleMandtal(PermissionRequiredWithMessage, SingleObjectMixin, View):
+    permission_required = 'kas.change_persontaxyear'
+    permission_denied_message = sagsbehandler_or_administrator_required
     model = PersonTaxYear
     job = None
 
@@ -961,7 +1008,9 @@ class UpdateSingleMandtal(LoginRequiredMixin, SingleObjectMixin, View):
         )
 
 
-class WaitForSingleMandtal(LoginRequiredMixin, SingleObjectMixin, TemplateView):
+class WaitForSingleMandtal(PermissionRequiredWithMessage, SingleObjectMixin, TemplateView):
+    permission_required = 'kas.change_persontaxyear'
+    permission_denied_message = sagsbehandler_or_administrator_required
     model = Job
     template_name = 'kas/wait_for_single_mandtal.html'
 
@@ -997,7 +1046,7 @@ class WaitForSingleMandtal(LoginRequiredMixin, SingleObjectMixin, TemplateView):
         return result
 
 
-class PensionCompanyFormView(PermissionRequiredMixin, FormView):
+class PensionCompanyFormView(PermissionRequiredWithMessage, FormView):
     """
     Renders the pensioncompany list template and
     handles the start merge job form post.
@@ -1005,6 +1054,7 @@ class PensionCompanyFormView(PermissionRequiredMixin, FormView):
     template_name = 'kas/pensioncompany_list.html'
     form_class = PensionCompanyMergeForm
     permission_required = 'kas.change_pensioncompany'
+    permission_denied_message = sagsbehandler_or_administrator_required
 
     def form_valid(self, form):
         redirect_response = super(PensionCompanyFormView, self).form_valid(form)
@@ -1032,13 +1082,14 @@ class PensionCompanyFormView(PermissionRequiredMixin, FormView):
         return reverse('kas:pensioncompany-listview')
 
 
-class PensionCompanyHtmxView(PermissionRequiredMixin, FilterView):
+class PensionCompanyHtmxView(PermissionRequiredWithMessage, FilterView):
     """
     returns a  list of pension selskaber.
     """
     template_name = 'kas/htmx/pensioncompany_list.html'
     filterset_class = PensionCompanyFilterSet
     permission_required = 'kas.view_pensioncompany'
+    permission_denied_message = sagsbehandler_or_administrator_required
 
     def get_queryset(self):
         last_id = self.kwargs.get('last_id')
@@ -1052,10 +1103,11 @@ class PensionCompanyHtmxView(PermissionRequiredMixin, FilterView):
         return super(PensionCompanyHtmxView, self).get_context_data(object_list=object_list[:20], kwargs=kwargs)
 
 
-class PensionCompanyUpdateView(PermissionRequiredMixin, UpdateView):
+class PensionCompanyUpdateView(PermissionRequiredWithMessage, UpdateView):
     form_class = PensionCompanyModelForm
     model = PensionCompany
     permission_required = 'kas.change_pensioncompany'
+    permission_denied_message = sagsbehandler_or_administrator_required
 
     def get_success_url(self):
         messages.add_message(self.request,
@@ -1065,7 +1117,8 @@ class PensionCompanyUpdateView(PermissionRequiredMixin, UpdateView):
         return reverse('kas:pensioncompany-listview')
 
 
-class AgreementDownloadView(LoginRequiredMixin, View):
+class AgreementDownloadView(PermissionRequiredWithMessage, View):
+    permission_required = 'kas.view_pensioncompany'
 
     def get(self, *args, **kwargs):
         company = get_object_or_404(PensionCompany, pk=kwargs['pk'])

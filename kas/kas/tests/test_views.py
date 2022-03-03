@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
@@ -20,6 +21,9 @@ class BaseTestCase(TestCase):
         self.password = 'test'
         self.user.set_password(self.password)
         self.user.save()
+        # add user to administrator group
+        self.administrator_group = Group.objects.get(name='administrator')
+        self.user.groups.set([self.administrator_group])
         self.tax_year = TaxYear.objects.create(year=2021)
         self.person = Person.objects.create(cpr='1234567890', name='TestPerson')
         self.person_tax_year = PersonTaxYear.objects.create(tax_year=self.tax_year,
