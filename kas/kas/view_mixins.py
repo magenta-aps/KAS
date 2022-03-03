@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.forms import formset_factory
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -7,7 +9,7 @@ from django.utils.formats import date_format
 from django.utils.translation import to_locale, get_language, gettext as _
 from django.views.generic.detail import SingleObjectMixin
 from openpyxl import Workbook
-from datetime import date
+
 from kas.forms import NoteForm, PolicyDocumentForm
 from kas.models import PersonTaxYear, PolicyTaxYear
 
