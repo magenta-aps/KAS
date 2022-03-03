@@ -1,4 +1,4 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -9,21 +9,22 @@ from django.views.generic.detail import SingleObjectMixin
 
 from prisme.forms import BatchSendForm
 from prisme.models import Prisme10QBatch
+from project.view_mixins import PermissionRequiredWithMessage, regnskab_or_administrator_required
 from worker.job_registry import resolve_job_function
 from worker.models import Job
 
 
-class Prisme10QBatchListView(PermissionRequiredMixin, ListView):
-    permission_denied_message = _('Only administrators and Regnskab can create 10Q files')
-    permission_required = 'prisme.add_prisme10qbatch'
+class Prisme10QBatchListView(PermissionRequiredWithMessage, ListView):
+    permission_required = 'prisme.view_prisme10qbatch'
     model = Prisme10QBatch
     template_name = 'prisme/batch_list.html'
     context_object_name = 'batches'
     paginate_by = 10
 
 
-class Prisme10QBatchView(LoginRequiredMixin, SingleObjectMixin, ListView):
+class Prisme10QBatchView(PermissionRequiredWithMessage, SingleObjectMixin, ListView):
     template_name = 'prisme/batch_detail.html'
+    permission_required = 'prisme.view_prisme10qbatch'
     paginate_by = 10
 
     def get(self, request, *args, **kwargs):
@@ -41,7 +42,8 @@ class Prisme10QBatchView(LoginRequiredMixin, SingleObjectMixin, ListView):
         return self.object.active_transactions_qs
 
 
-class Prisme10QBatchDownloadView(LoginRequiredMixin, View):
+class Prisme10QBatchDownloadView(PermissionRequiredWithMessage, View):
+    permission_required = 'prisme.view_prisme10qbatch'
 
     def get(self, *args, **kwargs):
         batch = get_object_or_404(Prisme10QBatch, pk=kwargs['pk'])
@@ -54,8 +56,9 @@ class Prisme10QBatchDownloadView(LoginRequiredMixin, View):
         return response
 
 
-class Prisme10QBatchSendView(LoginRequiredMixin, FormView):
-
+class Prisme10QBatchSendView(PermissionRequiredWithMessage, FormView):
+    permission_required = 'prisme.add_prisme10qbatch'
+    permission_denied_message = regnskab_or_administrator_required
     form_class = BatchSendForm
     template_name = 'prisme/batch_send.html'
 
