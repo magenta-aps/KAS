@@ -1,16 +1,18 @@
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import FormView
 
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from project.view_mixins import administrator_required
 from worker.forms import JobTypeSelectForm
 from worker.job_registry import get_job_types, resolve_job_function
 from worker.models import Job
 
 
 class JobListHtmxView(PermissionRequiredMixin, ListView):
+    permission_denied_message = administrator_required
     template_name = 'worker/htmx/jobs.html'
     permission_required = 'worker.view_job'
 
@@ -25,11 +27,13 @@ class JobListHtmxView(PermissionRequiredMixin, ListView):
 
 
 class JobListTemplateView(PermissionRequiredMixin, TemplateView):
+    permission_denied_message = administrator_required
     template_name = 'worker/job_list.html'
     permission_required = 'worker.view_job'
 
 
 class JobDetailView(PermissionRequiredMixin, DetailView):
+    permission_denied_message = administrator_required
     slug_field = 'uuid'
     slug_url_kwarg = 'uuid'
     model = Job
@@ -37,6 +41,7 @@ class JobDetailView(PermissionRequiredMixin, DetailView):
 
 
 class JobTypeSelectFormView(PermissionRequiredMixin, FormView):
+    permission_denied_message = administrator_required
     template_name = 'worker/job_type_select.html'
     form_class = JobTypeSelectForm
     permission_required = 'worker.add_job'
@@ -46,6 +51,7 @@ class JobTypeSelectFormView(PermissionRequiredMixin, FormView):
 
 
 class StartJobView(PermissionRequiredMixin, FormView):
+    permission_denied_message = administrator_required
     template_name = 'worker/job_create_form.html'
     permission_required = 'worker.add_job'
 
