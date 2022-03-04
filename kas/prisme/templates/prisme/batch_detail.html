@@ -38,7 +38,7 @@
 
     <div>
         <a href="{% url 'prisme:batch-download' pk=batch.pk %}" role="button" class="btn btn-primary">{% trans 'Hent fil' %}</a>
-        {% if batch.status == batch_class.STATUS_CREATED or batch.status == batch_class.STATUS_DELIVERY_FAILED %}
+        {% if perms.prisme.add_prisme10qbatch and batch.status == batch_class.STATUS_CREATED or batch.status == batch_class.STATUS_DELIVERY_FAILED %}
         <a href="{% url 'prisme:batch-send' pk=batch.pk %}" role="button" class="btn btn-primary">{% trans 'Send til Prisme' %}</a>
         {% endif %}
     </div>

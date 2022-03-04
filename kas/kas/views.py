@@ -31,9 +31,10 @@ from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownl
     PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement, PensionCompany, RepresentationToken, Person
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, HighestSingleObjectMixin, \
-    SpecialExcelMixin, sagsbehandler_or_administrator_required, \
-    sagsbehandler_or_administrator_or_borgerservice_required, PermissionRequiredWithMessage
+    SpecialExcelMixin
 from prisme.models import Transaction, Prisme10QBatch
+from project.view_mixins import sagsbehandler_or_administrator_required, \
+    sagsbehandler_or_administrator_or_borgerservice_required, PermissionRequiredWithMessage
 from worker.models import Job
 
 
