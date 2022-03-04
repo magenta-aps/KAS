@@ -25,7 +25,7 @@ urlpatterns = [
     path('person/failsend', PersonTaxYearFailSendListView.as_view(), name='person_search_failsend'),
     path('person/unhandled/', PersonTaxYearUnhandledDocumentsAndNotes.as_view(), name='person_search_unhandled'),
     path('person/foreign/', PersonTaxYearGeneralAndForeignNotesListView.as_view(), name='person_search_foreign'),
-    path('person/<int:id>/represent', PersonRepresentStartView.as_view(), name='person_represent_start'),
+    path('person/<int:pk>/represent', PersonRepresentStartView.as_view(), name='person_represent_start'),
     path('represent-stop/', PersonRepresentStopView.as_view(), name='person_represent_stop'),
     path('token/', TokenValidationView.as_view()),
 

@@ -342,15 +342,16 @@ class PersonNotesAndAttachmentsView(PermissionRequiredWithMessage, UpdateView):
         return ctx
 
 
-class PersonRepresentStartView(PermissionRequiredWithMessage, TemplateView):
+class PersonRepresentStartView(PermissionRequiredWithMessage, DetailView):
     permission_denied_message = sagsbehandler_or_administrator_required
     permission_required = 'kas.add_persontaxyear'
     template_name = 'kas/person/represent.html'
+    model = Person
 
     def get_context_data(self, **kwargs):
         token = RepresentationToken.objects.create(
             token=RepresentationToken.generate_token(),
-            person=Person.objects.get(id=self.kwargs['id']),
+            person=self.object,
             user=self.request.user,
         )
         ctx = super().get_context_data(**kwargs)
