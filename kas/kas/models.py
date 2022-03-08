@@ -189,6 +189,16 @@ class TaxYear(models.Model):
         return f"{self.__class__.__name__}(year={self.year})"
 
 
+# If a person has the status undefined, it means that we have not tryed finding a status in Dafo, und we do not show a statustekst in UI
+# If a person has the status Alive, it is a standard status that we do nat want to show in the UI
+recipient_recieve_statuses = (
+    ('Undefined', _('')),
+    ('Invalid', _('Ugyldig')),
+    ('Alive', _('')),
+    ('Dead', _('Afdød'))
+)
+
+
 class Person(HistoryMixin, models.Model):
 
     history = HistoricalRecords()
@@ -243,6 +253,7 @@ class Person(HistoryMixin, models.Model):
         verbose_name='Opdateret fra datafordeleren',
         default=False
     )
+    status = models.TextField(choices=recipient_recieve_statuses, default='Undefined')
 
     @property
     def postal_address(self):

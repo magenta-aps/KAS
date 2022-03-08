@@ -17,9 +17,10 @@ class DatafordelerClient(object):
         self.cert = (certificate, private_key)
         self.root_ca = root_ca
         self.url = url
-        self.root_ca = root_ca
         self.timeout = timeout
         self.session = Session()
+        self.session.cert = self.cert
+        self.session.verify = self.root_ca
         self.session.headers.update({'Uxp-Client': client_header})
 
     def __del__(self):
@@ -43,7 +44,10 @@ class DatafordelerClient(object):
             return self._get(cpr, self.service_header_cpr)
 
     def _get(self, params, service_header):
-        r = self.session.get(self.url, params=params, cert=self.cert, verify=self.root_ca, timeout=self.timeout,
+        r = self.session.get(self.url, params=params, timeout=self.timeout,
                              headers={'Uxp-Service': service_header})
         r.raise_for_status()
         return r.json()
+
+    def close(self):
+        self.session.close()
