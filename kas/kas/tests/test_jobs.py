@@ -10,10 +10,13 @@ from fakeredis import FakeStrictRedis
 from rq import Queue
 
 from kas.eboks import EboksClient
-from kas.jobs import dispatch_tax_year, generate_batch_and_transactions_for_year, merge_pension_companies
+from kas.jobs import dispatch_tax_year, generate_batch_and_transactions_for_year, merge_pension_companies, \
+    import_mandtal
 from kas.models import TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany, TaxSlipGenerated, FinalSettlement
 from prisme.models import Prisme10QBatch
 from worker.models import Job
+from eskat.jobs import import_eskat_mockup
+from project.dafo import DatafordelerClient
 
 test_settings = dict(settings.EBOKS)
 test_settings['dispatch_bulk_size'] = 2
@@ -82,9 +85,12 @@ def get_recipient_status_mock(as_side_effect=False):
 
 
 @override_settings(METRICS={'disabled': True})
+@override_settings(FEATURE_FLAGS={'enable_dafo_override_of_address': True})
 class BaseTransactionTestCase(TransactionTestCase):
+    databases = {'default', 'second_default'}
+
     def setUp(self) -> None:
-        self.tax_year = TaxYear.objects.create(year=2020)
+        self.tax_year = TaxYear.objects.create(year=2021)
         self.pension_company = PensionCompany.objects.create(name='test', res=2)
         self.person = Person.objects.create(
             cpr='0102031234',
@@ -95,16 +101,64 @@ class BaseTransactionTestCase(TransactionTestCase):
             address_line_4='1234  Testby'
         )
 
+        self.user = get_user_model().objects.create(username='test2')
+
+
+class MandtalImportJobsTest(BaseTransactionTestCase):
+
+    @patch.object(DatafordelerClient, '_get', return_value={
+        "0101570010": {"cprNummer": "0101570010", "fornavn": "Anders", "efternavn": "And",
+                       "adresse": "Testadresse 32A, 3.", "postnummer": 3900, "bynavn": "Nuuk", "civilstand": "D"},
+        "2512484916": {"cprNummer": "2512484916", "fornavn": "Andersine", "efternavn": "And",
+                       "adresse": "Imaneq 32A, 3.", "postnummer": 3900, "bynavn": "Nuuk"}})
+    @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
+    def test_mandtal_import_and_merge_with_dafo(self, django_rq, _get):
+        # Indlaes fra E-skat mockup
+        Job.schedule_job(import_eskat_mockup,
+                         job_type='import_eskat_mockup',
+                         created_by=self.user)
+
+        # Indlæs fra e-skat data til KAS systemet, herunder fletning af adresser
+        Job.schedule_job(import_mandtal,
+                         job_type='ImportMandtalJob',
+                         job_kwargs={"year": "2021", "source_model": "mockup"}, created_by=self.user)
+
+        self.assertEqual(Person.objects.count(), 17)
+
+        self.assertEqual(Person.objects.filter(updated_from_dafo=True).count(), 2)
+        self.assertEqual(Person.objects.filter(updated_from_dafo=False).count(), 15)
+
+        self.assertEqual(Person.objects.filter(status='Alive').count(), 1)  # Mocked af Andessine in Dafo
+        self.assertEqual(Person.objects.filter(status='Dead').count(), 1)  # Mocked af Andes in Dafo
+        self.assertEqual(Person.objects.filter(status='Undefined').count(),
+                         15)  # 0102031234, the predefined person that is also 'Undefined'
+
+        person = Person.objects.get(cpr='0101570010')
+        self.assertEqual(person.name, 'Anders And')
+        self.assertEqual(person.full_address, "Testadresse 32A, 3.,3900 Nuuk")
+        self.assertEqual(person.updated_from_dafo, True)
+
+        person = Person.objects.get(cpr='2512484916')
+        self.assertEqual(person.name, 'Andersine And')
+        self.assertEqual(person.updated_from_dafo, True)
+
 
 class TaxslipGeneratedJobsTest(BaseTransactionTestCase):
     def setUp(self) -> None:
         super(TaxslipGeneratedJobsTest, self).setUp()
         report_file = ContentFile("test_report")
         for i in range(1, 8):
-            person = Person.objects.create(cpr='111111111{}'.format(i))
+            if i == 3:
+                person = Person.objects.create(cpr='111111111{}'.format(i), status='Dead')
+            elif i == 4:
+                person = Person.objects.create(cpr='111111111{}'.format(i), status='Invalid')
+            else:
+                person = Person.objects.create(cpr='111111111{}'.format(i))
+
             person_tax_year = PersonTaxYear.objects.create(tax_year=self.tax_year, person=person)
             person_tax_year.tax_slip = TaxSlipGenerated.objects.create(persontaxyear=person_tax_year)
             person_tax_year.tax_slip.file.save('test', report_file)
+
             person_tax_year.save()
 
             PolicyTaxYear.objects.create(person_tax_year=person_tax_year,
@@ -140,7 +194,7 @@ class TaxslipGeneratedJobsTest(BaseTransactionTestCase):
 
         self.assertEqual(Job.objects.filter(parent=parent_job).count(), 1)
         # all slips where marked as send
-        self.assertEqual(TaxSlipGenerated.objects.filter(status='send').count(), 7)
+        self.assertEqual(TaxSlipGenerated.objects.filter(status='send').count(), 5)  # 5 persons is not dead or invalid
 
     @patch.object(EboksClient, 'get_recipient_status')
     @patch.object(EboksClient, 'send_message')
@@ -155,8 +209,8 @@ class TaxslipGeneratedJobsTest(BaseTransactionTestCase):
                                       job_type='dispatch_tax_year',
                                       job_kwargs=self.job_kwargs,
                                       created_by=self.user)
-        self.assertEqual(Job.objects.filter(parent=parent_job).count(), 4)  # 4 jobs should have been started
-        self.assertEqual(TaxSlipGenerated.objects.filter(status='send').count(), 7)
+        self.assertEqual(Job.objects.filter(parent=parent_job).count(), 3)  # 4 jobs should have been started
+        self.assertEqual(TaxSlipGenerated.objects.filter(status='send').count(), 5)
 
 
 class GenerateBatchAndTransactionsForYearJobsTest(BaseTransactionTestCase):

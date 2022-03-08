@@ -85,6 +85,13 @@
           <td colspan="2">{% trans 'Personadresse (i én linje) importeret fra mandtal' %}</td>
       </tr>
       <tr>
+          <th>{% trans 'Personstatus' %}{% include 'includes/help_text/question_mark.html' with target_id='personstatus_help' right=True %}</th>
+          <td>{{ person.get_status_display }}</td>
+      </tr>
+      <tr id="personstatus_help" class="collapse">
+          <td colspan="2">{% trans 'Er der specielle omstændigheder omkring denne person. Her markeres det hvis personen er afdød, eller CPR-nummeret er ugyldigt' %}</td>
+      </tr>
+      <tr>
         <th>{% trans 'Skatteomfang' %}{% include 'includes/help_text/question_mark.html' with target_id='fully_tax_liable_help' right=True %}</th>
         <td>{% if person_tax_year.fully_tax_liable %}{% trans 'Fuldt skattepligtig' %}{% else %}{% trans 'Ikke fuldt skattepligtig' %}{% endif%}</td>
       </tr>

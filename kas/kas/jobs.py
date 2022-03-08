@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import base64
 import traceback
-from time import sleep
 from datetime import date
+from time import sleep
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db import transaction
+from django.db import transaction, connections
 from django.db.models import IntegerField, Sum, Q, Count
 from django.db.models.functions import Cast
 from django.db.utils import IntegrityError
@@ -14,21 +14,18 @@ from django.utils import timezone
 from requests.exceptions import HTTPError, ConnectionError
 from rq import get_current_job
 
-from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension
-from eskat.models import MockModels, EskatModels
+from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels, EskatModels
 from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.management.commands.create_initial_years import Command as CreateInitialYears
 from kas.management.commands.import_default_pension_companies import Command as CreateInitialPensionComanies
 from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated, \
-    PreviousYearNegativePayout, FinalSettlement, PolicyDocument, AddressFromDafo
-from kas.models import PersonTaxYearCensus
+    PreviousYearNegativePayout, FinalSettlement, PolicyDocument, AddressFromDafo, PersonTaxYearCensus, HistoryMixin
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.reportgeneration.kas_report import TaxPDF
 from prisme.models import Prisme10QBatch
+from project.dafo import DatafordelerClient
 from worker.job_registry import get_job_types, resolve_job_function
 from worker.models import job_decorator, Job
-from project.dafo import DatafordelerClient
-from kas.models import HistoryMixin
 
 
 @job_decorator
@@ -128,40 +125,54 @@ def import_mandtal(job):
                 job.set_progress_pct(progress, using='second_default')
 
     if settings.FEATURE_FLAGS.get('enable_dafo_override_of_address'):
-        cpr_updated_list_chunks = [cpr_updated_list[i:i + 100] for i in range(0, len(cpr_updated_list), 100)]
+        dafo_client = DatafordelerClient.from_settings()
+        try:
+            for chunk in chunks(cpr_updated_list, 100):
+                requested_cprs = chunk
+                cpr_request_params = ",".join(chunk)
+                params = {'cpr': cpr_request_params}
+                result = dafo_client.get_person_information(params)
 
-        for chunk in cpr_updated_list_chunks:
-            cpr_request_params = ",".join(chunk)
-            dafo_client = DatafordelerClient.from_settings()
-            params = {'cpr': cpr_request_params}
-            result = dafo_client.get_person_information(params)
+                for cpr in result:
+                    requested_cprs.remove(cpr)
+                    resultdict = result[cpr]
+                    name = ' '.join(filter(None, [resultdict.get('fornavn'), resultdict.get('efternavn')]))
+                    address = resultdict.get('adresse', '')
+                    postal_area = None
+                    if resultdict.get('postnummer') and resultdict.get('bynavn'):
+                        postal_area = ' '.join(filter(None, [str(resultdict.get('postnummer', 0)), resultdict.get('bynavn')]))
+                    co = resultdict.get('co', '')
+                    landekode = resultdict.get('landekode', '')
+                    civilstand = resultdict.get('civilstand', '')
+                    obj, _ = AddressFromDafo.objects.update_or_create(cpr=cpr,
+                                                                      defaults={'name': name,
+                                                                                'address': address,
+                                                                                'postal_area': postal_area,
+                                                                                'co': co,
+                                                                                'full_address': '\n'.join(
+                                                                                    filter(None, [address, postal_area]))})
 
-            for cpr in result:
-                resultdict = result[cpr]
-                name = ' '.join(filter(None, [resultdict.get('fornavn'), resultdict.get('efternavn')]))
-                address = resultdict.get('adresse', '')
-                postal_area = None
-                if resultdict.get('postnummer') and resultdict.get('bynavn'):
-                    postal_area = ' '.join(filter(None, [str(resultdict.get('postnummer', 0)), resultdict.get('bynavn')]))
-                co = resultdict.get('co', '')
-                landekode = resultdict.get('landekode', '')
-                obj, status = AddressFromDafo.objects.update_or_create(
-                    cpr=cpr,
-                    name=name,
-                    address=address,
-                    postal_area=postal_area,
-                    co=co,
-                    full_address='\n'.join(filter(None, [address, postal_area]))
-                )
-                person_item = Person.objects.get(cpr=cpr)
-                if obj.is_dafo_address_better(person_item):
-                    Person.objects.filter(cpr=str(cpr)).update(name=name,
-                                                               address_line_2=address,
-                                                               address_line_1=co,
-                                                               address_line_4=postal_area,
-                                                               address_line_5=landekode,
-                                                               full_address=','.join(filter(None, [address, co, postal_area])),
-                                                               updated_from_dafo=True)
+                    # Read the person fetched from madtal@eskat. Compare the address with the address from dafo.
+                    # Overwrite the address from mandtal if the address from dafo is better
+                    person = Person.objects.get(cpr=cpr)
+                    person.status = 'Dead' if (civilstand == 'D') else 'Alive'
+                    if obj.is_dafo_address_better(person):
+                        person.name = name
+                        person.address_line_2 = address
+                        person.address_line_1 = co
+                        person.address_line_4 = postal_area
+                        person.address_line_5 = landekode
+                        person.full_address = ','.join(filter(None, [address, co, postal_area, landekode]))
+                        person.updated_from_dafo = True
+
+                    person.save()
+
+                # If there is any requested cpr-numbers that is not recieved in a response, it means that the cpr-number is invalid
+                if requested_cprs:
+                    Person.objects.filter(cpr__in=requested_cprs, status='').update(status='Invalid')
+        finally:
+            dafo_client.close()
+            connections['second_default'].close()
 
     job.result = {'summary': [
         {'label': 'Rå Mandtal-objekter', 'value': [
@@ -393,7 +404,8 @@ def dispatch_eboks_tax_slips(job):
     i = 1
     has_more = False
     slips = TaxSlipGenerated.objects.filter(status='created').filter(
-        persontaxyear__tax_year__pk=job.parent.arguments['year_pk'])[:dispatch_page_size+1]
+        persontaxyear__tax_year__pk=job.parent.arguments['year_pk']).exclude(
+        persontaxyear__person__status__in=['Dead', 'Invalid'])[:dispatch_page_size+1]
     try:
         for slip in slips:
             if i == dispatch_page_size+1:
@@ -704,8 +716,8 @@ def dispatch_final_settlements(job):
     generator = EboksDispatchGenerator.from_settings()
     client = EboksClient.from_settings()
     has_more = False
-    settlements = FinalSettlement.objects.exclude(invalid=True).filter(
-        status='created').filter(person_tax_year__tax_year__pk=job.parent.arguments['year_pk'])[:dispatch_page_size+1]
+    settlements = FinalSettlement.objects.exclude(invalid=True, person_tax_year__person__status__in=['Dead', 'Invalid']).filter(
+        status='created', person_tax_year__tax_year__pk=job.parent.arguments['year_pk'])[:dispatch_page_size+1]
 
     pending_messages = {}
     current_number_of_items = 0
