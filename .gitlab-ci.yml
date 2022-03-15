@@ -134,6 +134,7 @@ KAS Unittest:
     TENQ_USER: ""
     TENQ_PASSWORD: ""
     TENQ_KNOWN_HOSTS: ""
+    TENQ_PROJECT_ID: "KAS"
     # Simulate development environment while running tests so we use mockup data
     ENVIRONMENT: development
     DISABLE_METRICS: 'True'
