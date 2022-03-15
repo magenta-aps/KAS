@@ -9,7 +9,8 @@ class Test10QDateCalculation(TestCase):
         self.transaction_writer = TenQTransactionWriter(
             due_date=date(2022, 2, 18),
             year=2022,
-            timestamp=datetime(2022, 2, 18, 12, 35, 57, tzinfo=timezone.utc)
+            timestamp=datetime(2022, 2, 18, 12, 35, 57, tzinfo=timezone.utc),
+            leverandoer_ident='KAS'
         )
 
     def test_writer_successful(self):
@@ -18,7 +19,6 @@ class Test10QDateCalculation(TestCase):
             amount_in_dkk=1000,
             afstem_noegle='e688d6a6fc65424483819520bbbe7745',
             rate_text='Testing\r\nwith\r\nlines',
-            leverandoer_ident='KAS',
         )
         self.assertEquals(
             prisme10Q_content,
@@ -41,13 +41,11 @@ class Test10QDateCalculation(TestCase):
             'amount_in_dkk': 1000,
             'afstem_noegle': 'e688d6a6fc65424483819520bbbe7745',
             'rate_text': 'hephey',
-            'leverandoer_ident': 'KAS'
         }
         too_long = {
             'cpr_nummer': '12345678901',
             'amount_in_dkk': 1000000000,
             'afstem_noegle': 'e688d6a6fc65424483819520bbbe7745xxxx',
-            'leverandoer_ident': 'Too long'
         }
         for key, value in too_long.items():
             with self.assertRaises(ValueError):

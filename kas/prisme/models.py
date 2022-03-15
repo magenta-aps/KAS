@@ -68,7 +68,6 @@ class Transaction(models.Model):
             amount_in_dkk=self.amount,
             afstem_noegle=str(self.uuid).replace('-', ''),
             rate_text=self.prisme10Q_batch.tax_year.rate_text_for_transactions,
-            leverandoer_ident='KAS'
         )
 
     def get_10q_status_display(self):
@@ -207,14 +206,16 @@ class Prisme10QBatch(models.Model):
         )
 
         new_entry.update_prisme10Q_content()
-
         new_entry.save()
 
     @cached_property
     def transaction_writer(self):
+        due_date = self.collect_date or self.created.date()
         return TenQTransactionWriter(
-            due_date=self.collect_date or self.created.date(),
+            due_date=due_date,
+            creation_date=due_date,
             year=self.tax_year.year,
+            leverandoer_ident=settings.TENQ['project_id'],
         )
 
     def __str__(self) -> str:
