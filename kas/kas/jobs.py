@@ -69,9 +69,8 @@ def import_mandtal(job):
     (persontaxyears_created, persontaxyears_updated) = (0, 0)
     (persontaxyearcensus_created, persontaxyearcensus_updated) = (0, 0)
 
-    with transaction.atomic():
-        for i, item in enumerate(qs.iterator()):
-
+    for i, item in enumerate(qs.iterator()):
+        with transaction.atomic():
             person_data = {
                 'cpr': item.cpr,
                 'name': item.navn,
@@ -119,10 +118,9 @@ def import_mandtal(job):
                 persontaxyearcensus_updated += 1
             person_tax_year.recalculate_mandtal()
 
-            if i % 1000 == 0:
-                progress = progress_start + (i / count) * (100 * progress_factor)
-                # Save this using 2nd db handle that is not inside the transaction
-                job.set_progress_pct(progress, using='second_default')
+        if i % 1000 == 0:
+            progress = progress_start + (i / count) * (100 * progress_factor)
+            job.set_progress_pct(progress)
 
     if settings.FEATURE_FLAGS.get('enable_dafo_override_of_address'):
         dafo_client = DatafordelerClient.from_settings()
@@ -258,8 +256,8 @@ def import_r75(job):
     else:
         til_efterbahndling.append(policy_tax_year)
 
-    with transaction.atomic():
-        for i, item in enumerate(qs):
+    for i, item in enumerate(qs):
+        with transaction.atomic():
             person, c = Person.objects.get_or_create(cpr=item['cpr'])
             try:
                 person_tax_year = PersonTaxYear.objects.get(
@@ -313,10 +311,9 @@ def import_r75(job):
             except PersonTaxYear.DoesNotExist:
                 pass
 
-            if i % 100 == 0:
-                progress = progress_start + (i / count) * (100 * progress_factor)
-                # Save progress using 2nd db handle not affected by transaction
-                job.set_progress_pct(progress, using='second_default')
+        if i % 100 == 0:
+            progress = progress_start + (i / count) * (100 * progress_factor)
+            job.set_progress_pct(progress)
 
     job.result = {'summary': [
         {'label': 'Rå R75-objekter', 'value': [
