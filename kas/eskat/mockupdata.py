@@ -161,8 +161,6 @@ def create_person(
         )
 
 
-
-
 def import_default_mockup_data():
     # Make sure we have pension company data
     PensionCompanyImport().handle()

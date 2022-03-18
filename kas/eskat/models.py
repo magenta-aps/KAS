@@ -242,7 +242,6 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
         if source_model is None:
             source_model = get_kas_mandtal_model()
 
-
         qs = source_model.objects.filter(skatteaar=year)
 
         if cpr_limit is not None:
@@ -291,7 +290,6 @@ class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
     def import_year(cls, year, job=None, progress_factor=1, progress_start=0, source_model=None):
         if source_model is None:
             source_model = get_r75_private_pension_model()
-
 
         qs = source_model.objects.filter(
             tax_year=year
