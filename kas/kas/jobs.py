@@ -68,7 +68,6 @@ def import_mandtal(job):
     (persons_created, persons_updated) = (0, 0)
     (persontaxyears_created, persontaxyears_updated) = (0, 0)
     (persontaxyearcensus_created, persontaxyearcensus_updated) = (0, 0)
-
     for i, item in enumerate(qs.iterator()):
         with transaction.atomic():
             person_data = {
@@ -170,7 +169,6 @@ def import_mandtal(job):
                     Person.objects.filter(cpr__in=requested_cprs, status='').update(status='Invalid')
         finally:
             dafo_client.close()
-            connections['second_default'].close()
 
     job.result = {'summary': [
         {'label': 'Rå Mandtal-objekter', 'value': [

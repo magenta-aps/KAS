@@ -242,17 +242,18 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
         if source_model is None:
             source_model = get_kas_mandtal_model()
 
-        with transaction.atomic():
-            qs = source_model.objects.filter(skatteaar=year)
 
-            if cpr_limit is not None:
-                qs = qs.filter(cpr=cpr_limit)
+        qs = source_model.objects.filter(skatteaar=year)
 
-            # In case we share progress with another function, we want to only fill part of the progress, e.g. up to 50%
-            count = qs.count()
-            created, updated = (0, 0)
+        if cpr_limit is not None:
+            qs = qs.filter(cpr=cpr_limit)
 
-            for i, x in enumerate(qs.iterator()):
+        # In case we share progress with another function, we want to only fill part of the progress, e.g. up to 50%
+        count = qs.count()
+        created, updated = (0, 0)
+
+        for i, x in enumerate(qs.iterator()):
+            with transaction.atomic():
                 try:
                     existing = cls.objects.get(pk=x.pk)
                     # No timestamp field to check here, so compare dicts
@@ -272,10 +273,9 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
                     new_obj.save()
                     created += 1
 
-                if job is not None and i % 1000 == 0:
-                    progress = progress_start + (i / count) * (100 * progress_factor)
-                    # Save progress using 2nd db handle unaffected by transaction
-                    job.set_progress_pct(progress, using='second_default')
+            if job is not None and i % 1000 == 0:
+                progress = progress_start + (i / count) * (100 * progress_factor)
+                job.set_progress_pct(progress)
 
         if job is not None:
             job.set_progress_pct(progress_start + (100 * progress_factor))
@@ -292,15 +292,16 @@ class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
         if source_model is None:
             source_model = get_r75_private_pension_model()
 
-        with transaction.atomic():
-            qs = source_model.objects.filter(
-                tax_year=year
-            )
-            qs = qs.annotate(res_length=Length('res')).filter(res_length__gt=4)
-            count = qs.count()
-            created, updated = (0, 0)
 
-            for i, x in enumerate(qs.iterator()):
+        qs = source_model.objects.filter(
+            tax_year=year
+        )
+        qs = qs.annotate(res_length=Length('res')).filter(res_length__gt=4)
+        count = qs.count()
+        created, updated = (0, 0)
+
+        for i, x in enumerate(qs.iterator()):
+            with transaction.atomic():
                 try:
                     existing = cls.objects.get(pk=x.pk)
                     if existing.r75_dato != x.r75_dato:
@@ -316,10 +317,9 @@ class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
                     new_obj.save()
                     created += 1
 
-                if job is not None and i % 100 == 0:
-                    progress = progress_start + (i / count) * (100 * progress_factor)
-                    # Save progress using 2nd db handle unaffected by transaction
-                    job.set_progress_pct(progress, using='second_default')
+            if job is not None and i % 100 == 0:
+                progress = progress_start + (i / count) * (100 * progress_factor)
+                job.set_progress_pct(progress)
 
         if job is not None:
             job.set_progress_pct(progress_start + (100 * progress_factor))
