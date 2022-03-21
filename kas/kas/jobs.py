@@ -9,7 +9,6 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import IntegerField, Sum, Q, Count
 from django.db.models.functions import Cast
-from django.db.utils import IntegrityError
 from django.utils import timezone
 from requests.exceptions import HTTPError, ConnectionError
 from rq import get_current_job
@@ -19,7 +18,7 @@ from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.management.commands.create_initial_years import Command as CreateInitialYears
 from kas.management.commands.import_default_pension_companies import Command as CreateInitialPensionComanies
 from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated, \
-    PreviousYearNegativePayout, FinalSettlement, PolicyDocument, AddressFromDafo, PersonTaxYearCensus, HistoryMixin
+    PreviousYearNegativePayout, FinalSettlement, AddressFromDafo, PersonTaxYearCensus, HistoryMixin
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.reportgeneration.kas_report import TaxPDF
 from prisme.models import Prisme10QBatch
@@ -228,32 +227,6 @@ def import_r75(job):
         indtaegter_sum=Sum(Cast('renteindtaegt', output_field=IntegerField()))
     )
     count = qs.count()
-    # mock data for autoligning
-    value = None if job.arguments['source_model'] == "mockup" else True
-    changed_by_citizen = value
-    changed_by_clerk = value
-    general_note_set = value
-    with_documents = value
-    rest_user = get_user_model().objects.get(username='rest')
-    clerk_user = get_user_model().objects.exclude(username='rest').first()
-    til_efterbahndling = []
-    person, _ = Person.objects.get_or_create(cpr='1212121212', defaults={'name': 'Til efterbehandling'})
-    person_tax_year, _ = PersonTaxYear.objects.get_or_create(person=person, tax_year=tax_year, number_of_days=365)
-    company, _ = PensionCompany.objects.get_or_create(name='test123')
-    # Created by citizen
-    try:
-        policy_tax_year = PolicyTaxYear(person_tax_year=person_tax_year,
-                                        pension_company=company,
-                                        policy_number=200,
-                                        prefilled_amount=10000)
-        policy_tax_year._history_user = rest_user  # fake creating through the res API
-        policy_tax_year.save()
-    except IntegrityError:
-        #
-        pass
-    else:
-        til_efterbahndling.append(policy_tax_year)
-
     for i, item in enumerate(qs):
         with transaction.atomic():
             person, c = Person.objects.get_or_create(cpr=item['cpr'])
@@ -284,27 +257,6 @@ def import_r75(job):
                         policies_created += 1
                     elif status == PersonTaxYear.UPDATED:
                         policies_updated += 1
-
-                if changed_by_citizen is None:
-                    policy_tax_year.self_reported_amount = 300
-                    policy_tax_year._history_user = rest_user  # changed by citizen
-                    policy_tax_year.recalculate()
-                    policy_tax_year.save()
-                    changed_by_citizen = policy_tax_year
-                elif changed_by_clerk is None:
-                    policy_tax_year.self_reported_amount = 600
-                    policy_tax_year._history_user = clerk_user  # changed by clerk
-                    policy_tax_year.recalculate()
-                    policy_tax_year.save()
-                    changed_by_clerk = policy_tax_year
-                elif general_note_set is None:
-                    policy_tax_year.general_notes = 'this is a general note'
-                    policy_tax_year.save()
-                    general_note_set = policy_tax_year
-                elif with_documents is None:
-                    # Create empty document
-                    with_documents = PolicyDocument.objects.create(person_tax_year=person_tax_year,
-                                                                   name='test', description='Trigger to efterbhandling')
 
             except PersonTaxYear.DoesNotExist:
                 pass
