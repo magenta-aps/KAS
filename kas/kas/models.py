@@ -10,7 +10,6 @@ import string
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
@@ -1159,7 +1158,7 @@ class Note(models.Model):
     )
 
     author = models.ForeignKey(
-        User,
+        get_user_model(),
         null=False,
         on_delete=models.PROTECT,
     )
@@ -1209,7 +1208,7 @@ class PensionCompanySummaryFile(models.Model):
     )
 
     creator = models.ForeignKey(
-        User,
+        get_user_model(),
         null=False,
         on_delete=models.CASCADE,
     )
@@ -1258,7 +1257,7 @@ class PensionCompanySummaryFile(models.Model):
 class PensionCompanySummaryFileDownload(models.Model):
 
     downloaded_by = models.ForeignKey(
-        User,
+        get_user_model(),
         null=False,
         on_delete=models.CASCADE,
     )
@@ -1562,7 +1561,7 @@ class RepresentationToken(models.Model):
         on_delete=models.CASCADE
     )
     user = models.ForeignKey(
-        User,
+        get_user_model(),
         null=False,
         on_delete=models.CASCADE
     )
