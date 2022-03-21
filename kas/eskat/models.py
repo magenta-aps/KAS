@@ -252,25 +252,24 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
         created, updated = (0, 0)
 
         for i, x in enumerate(qs.iterator()):
-            with transaction.atomic():
-                try:
-                    existing = cls.objects.get(pk=x.pk)
-                    # No timestamp field to check here, so compare dicts
+            try:
+                existing = cls.objects.get(pk=x.pk)
+                # No timestamp field to check here, so compare dicts
 
-                    existing_dict = model_to_dict(existing)
-                    new_dict = model_to_dict(x)
-                    if existing_dict != new_dict:
-                        for k, v in new_dict.items():
-                            setattr(existing, k, v)
-                        existing._change_reason = "Updated by import"
-                        existing.save()
-                        updated += 1
+                existing_dict = model_to_dict(existing)
+                new_dict = model_to_dict(x)
+                if existing_dict != new_dict:
+                    for k, v in new_dict.items():
+                        setattr(existing, k, v)
+                    existing._change_reason = "Updated by import"
+                    existing.save()
+                    updated += 1
 
-                except cls.DoesNotExist:
-                    new_obj = cls(**model_to_dict(x))
-                    new_obj._change_reason = "Created by import"
-                    new_obj.save()
-                    created += 1
+            except cls.DoesNotExist:
+                new_obj = cls(**model_to_dict(x))
+                new_obj._change_reason = "Created by import"
+                new_obj.save()
+                created += 1
 
             if job is not None and i % 1000 == 0:
                 progress = progress_start + (i / count) * (100 * progress_factor)
@@ -299,21 +298,20 @@ class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
         created, updated = (0, 0)
 
         for i, x in enumerate(qs.iterator()):
-            with transaction.atomic():
-                try:
-                    existing = cls.objects.get(pk=x.pk)
-                    if existing.r75_dato != x.r75_dato:
-                        for k, v in model_to_dict(x).items():
-                            setattr(existing, k, v)
-                        existing._change_reason = "Updated by import"
-                        existing.save()
-                        updated += 1
+            try:
+                existing = cls.objects.get(pk=x.pk)
+                if existing.r75_dato != x.r75_dato:
+                    for k, v in model_to_dict(x).items():
+                        setattr(existing, k, v)
+                    existing._change_reason = "Updated by import"
+                    existing.save()
+                    updated += 1
 
-                except cls.DoesNotExist:
-                    new_obj = cls(**model_to_dict(x))
-                    new_obj._change_reason = "Created by import"
-                    new_obj.save()
-                    created += 1
+            except cls.DoesNotExist:
+                new_obj = cls(**model_to_dict(x))
+                new_obj._change_reason = "Created by import"
+                new_obj.save()
+                created += 1
 
             if job is not None and i % 100 == 0:
                 progress = progress_start + (i / count) * (100 * progress_factor)
