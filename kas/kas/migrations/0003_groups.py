@@ -19,7 +19,6 @@ def create_groups(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('auth', '0011_update_proxy_permissions'),
         ('kas', '0002_note'),
     ]
 
