@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.db import models, transaction
+from django.db import models
 from django.conf import settings
 from django.db.models.functions import Length
 from django.forms.models import model_to_dict
