@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.db import models, transaction
+from django.db import models
 from django.conf import settings
 from django.db.models.functions import Length
 from django.forms.models import model_to_dict
@@ -242,40 +242,38 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
         if source_model is None:
             source_model = get_kas_mandtal_model()
 
-        with transaction.atomic():
-            qs = source_model.objects.filter(skatteaar=year)
+        qs = source_model.objects.filter(skatteaar=year)
 
-            if cpr_limit is not None:
-                qs = qs.filter(cpr=cpr_limit)
+        if cpr_limit is not None:
+            qs = qs.filter(cpr=cpr_limit)
 
-            # In case we share progress with another function, we want to only fill part of the progress, e.g. up to 50%
-            count = qs.count()
-            created, updated = (0, 0)
+        # In case we share progress with another function, we want to only fill part of the progress, e.g. up to 50%
+        count = qs.count()
+        created, updated = (0, 0)
 
-            for i, x in enumerate(qs.iterator()):
-                try:
-                    existing = cls.objects.get(pk=x.pk)
-                    # No timestamp field to check here, so compare dicts
+        for i, x in enumerate(qs.iterator()):
+            try:
+                existing = cls.objects.get(pk=x.pk)
+                # No timestamp field to check here, so compare dicts
 
-                    existing_dict = model_to_dict(existing)
-                    new_dict = model_to_dict(x)
-                    if existing_dict != new_dict:
-                        for k, v in new_dict.items():
-                            setattr(existing, k, v)
-                        existing._change_reason = "Updated by import"
-                        existing.save()
-                        updated += 1
+                existing_dict = model_to_dict(existing)
+                new_dict = model_to_dict(x)
+                if existing_dict != new_dict:
+                    for k, v in new_dict.items():
+                        setattr(existing, k, v)
+                    existing._change_reason = "Updated by import"
+                    existing.save()
+                    updated += 1
 
-                except cls.DoesNotExist:
-                    new_obj = cls(**model_to_dict(x))
-                    new_obj._change_reason = "Created by import"
-                    new_obj.save()
-                    created += 1
+            except cls.DoesNotExist:
+                new_obj = cls(**model_to_dict(x))
+                new_obj._change_reason = "Created by import"
+                new_obj.save()
+                created += 1
 
-                if job is not None and i % 1000 == 0:
-                    progress = progress_start + (i / count) * (100 * progress_factor)
-                    # Save progress using 2nd db handle unaffected by transaction
-                    job.set_progress_pct(progress, using='second_default')
+            if job is not None and i % 1000 == 0:
+                progress = progress_start + (i / count) * (100 * progress_factor)
+                job.set_progress_pct(progress)
 
         if job is not None:
             job.set_progress_pct(progress_start + (100 * progress_factor))
@@ -292,34 +290,32 @@ class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
         if source_model is None:
             source_model = get_r75_private_pension_model()
 
-        with transaction.atomic():
-            qs = source_model.objects.filter(
-                tax_year=year
-            )
-            qs = qs.annotate(res_length=Length('res')).filter(res_length__gt=4)
-            count = qs.count()
-            created, updated = (0, 0)
+        qs = source_model.objects.filter(
+            tax_year=year
+        )
+        qs = qs.annotate(res_length=Length('res')).filter(res_length__gt=4)
+        count = qs.count()
+        created, updated = (0, 0)
 
-            for i, x in enumerate(qs.iterator()):
-                try:
-                    existing = cls.objects.get(pk=x.pk)
-                    if existing.r75_dato != x.r75_dato:
-                        for k, v in model_to_dict(x).items():
-                            setattr(existing, k, v)
-                        existing._change_reason = "Updated by import"
-                        existing.save()
-                        updated += 1
+        for i, x in enumerate(qs.iterator()):
+            try:
+                existing = cls.objects.get(pk=x.pk)
+                if existing.r75_dato != x.r75_dato:
+                    for k, v in model_to_dict(x).items():
+                        setattr(existing, k, v)
+                    existing._change_reason = "Updated by import"
+                    existing.save()
+                    updated += 1
 
-                except cls.DoesNotExist:
-                    new_obj = cls(**model_to_dict(x))
-                    new_obj._change_reason = "Created by import"
-                    new_obj.save()
-                    created += 1
+            except cls.DoesNotExist:
+                new_obj = cls(**model_to_dict(x))
+                new_obj._change_reason = "Created by import"
+                new_obj.save()
+                created += 1
 
-                if job is not None and i % 100 == 0:
-                    progress = progress_start + (i / count) * (100 * progress_factor)
-                    # Save progress using 2nd db handle unaffected by transaction
-                    job.set_progress_pct(progress, using='second_default')
+            if job is not None and i % 100 == 0:
+                progress = progress_start + (i / count) * (100 * progress_factor)
+                job.set_progress_pct(progress)
 
         if job is not None:
             job.set_progress_pct(progress_start + (100 * progress_factor))

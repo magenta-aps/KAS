@@ -87,7 +87,6 @@ def get_recipient_status_mock(as_side_effect=False):
 @override_settings(METRICS={'disabled': True})
 @override_settings(FEATURE_FLAGS={'enable_dafo_override_of_address': True})
 class BaseTransactionTestCase(TransactionTestCase):
-    databases = {'default', 'second_default'}
 
     def setUp(self) -> None:
         self.tax_year = TaxYear.objects.create(year=2021)
