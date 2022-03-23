@@ -294,4 +294,4 @@ Deploy prod:
     SALTBERT_URL: https://ctrl1.magenta-aps.dk
   environment:
     name: production
-    url: "https://kas.aka.nanoq.gl/"
+    url: "https://kas.aka.nanoq.gl"
