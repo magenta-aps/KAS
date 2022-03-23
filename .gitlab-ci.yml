@@ -212,7 +212,7 @@ Selvbetjening Unittest:
 
 .release-self: &release-self
   extends:
-    .release-kas
+    - .release-kas
   needs: ["Selvbetjening Unittest"]
 
 Release kas dev image:
