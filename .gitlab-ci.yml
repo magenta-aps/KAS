@@ -286,7 +286,7 @@ Deploy test:
 Deploy prod:
   extends:
     - .rules:semver-all
-    - .salbert
+    - .saltbert
   needs: ["Release kas production image", "Release selvbetjening production image"]
   when: manual
   variables:
