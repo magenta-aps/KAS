@@ -291,7 +291,7 @@ Deploy prod:
   when: manual
   variables:
     SALTBERT_ORCHESTRATION: kas.service-prod
-    SALTBERT_URL: https://ctrl1.magenta-aps.dk/api/
+    SALTBERT_URL: https://ctrl1.magenta-aps.dk
   environment:
     name: production
     url: "https://kas.aka.nanoq.gl/"
