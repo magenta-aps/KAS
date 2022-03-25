@@ -670,5 +670,5 @@ class TaxFinalStatementPDF(FPDF):
         pdf_generator.print_tax_slip('gl')
         pdf_generator.print_tax_slip('dk')
         policy_file_name = f'Y_FINAL_{person_tax_year.tax_year.year}_{person_tax_year.person.cpr}.pdf'
-        final_settlement.pdf.save(content=ContentFile(pdf_generator.output(dest='S').encode('latin-1')), name=policy_file_name)
+        final_settlement.pdf.save(content=ContentFile(pdf_generator.output(dest='S')), name=policy_file_name)
         return final_settlement
