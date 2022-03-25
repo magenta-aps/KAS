@@ -121,9 +121,9 @@ class TaxPDF(FPDF):
                'dk': ''}
     text26B = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinernut nunani allaniittunut, Danmark ilanngullugu, nammineerluni akiliutit. '
                      'Nuna soraarnerussutisiaqarnissamut aaqqissuussinerup pilersinneqarfia, kiisalu aningaasat '
-                     'akiliutigineqartut amerlassusiat nalunaakkit',
+                     'akiliutigineqartut amerlassusiat nalunaakkit, uppernarsaat ilanngunneqassaq',
                'dk': 'Privat indbetaling til pensionsordninger i andre lande, herunder Danmark. Angiv landet, som pensionsordningen er '
-                     'hjemmehørende i, samt størrelsen på det indbetalte beløb'}
+                     'hjemmehørende i, samt størrelsen på det indbetalte beløb, dokumentation vedhæftes'}
     text26C = {'gl': '',
                'dk': ''}
     text26D = {'gl': '* Soraarnerussutisiaqarnissamut aaqqissuussinermut uunga tunngatillugu akileraarut '
