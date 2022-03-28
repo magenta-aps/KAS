@@ -168,7 +168,11 @@ class TaxYear(models.Model):
         blank=False,
         validators=(MinValueValidator(limit_value=2000),)
     )
-    year_part = models.TextField(choices=tax_year_part_year_choices, default='selvangivelse')
+    year_part = models.TextField(
+        choices=tax_year_part_year_choices,
+        default='selvangivelse',
+        verbose_name=_('Periode'),
+    )
 
     rate_text_for_transactions = models.TextField(
         verbose_name=_('Tekst brugt i opkrævninger sendt ud for skatteåret'),
