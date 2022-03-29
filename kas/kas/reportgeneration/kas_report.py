@@ -117,15 +117,11 @@ class TaxPDF(FPDF):
                     'inatsisaanni § 9-mi aalajangersakkat malillugit akisussaassuseqarluni nalunaarneqartussaapput',
               'dk': 'Oplysninger afgives under ansvar i henhold til bestemmelserne i § 9 i '
                     'Inatsisartutlov om beskatning af visse kapitalafkast'}
-    text26A = {'gl': '',
-               'dk': ''}
     text26B = {'gl': 'Soraarnerussutisiaqarnissamut aaqqissuussinernut nunani allaniittunut, Danmark ilanngullugu, nammineerluni akiliutit. '
                      'Nuna soraarnerussutisiaqarnissamut aaqqissuussinerup pilersinneqarfia, kiisalu aningaasat '
                      'akiliutigineqartut amerlassusiat nalunaakkit, uppernarsaat ilanngunneqassaq',
                'dk': 'Privat indbetaling til pensionsordninger i andre lande, herunder Danmark. Angiv landet, som pensionsordningen er '
                      'hjemmehørende i, samt størrelsen på det indbetalte beløb, dokumentation vedhæftes'}
-    text26C = {'gl': '',
-               'dk': ''}
     text26D = {'gl': '* Soraarnerussutisiaqarnissamut aaqqissuussinermut uunga tunngatillugu akileraarut '
                      'soraarnerussutisiaqarnissamut aaqqissuussivimmit ingerlaannaartumik akilerneqassaaq',
                'dk': '* Skatten for denne pensionsordning betales automatisk af pensionsselskabet'}
@@ -229,12 +225,12 @@ class TaxPDF(FPDF):
         self.set_font('arial', '', 8.5)
         # Adressing reciever
         self.set_xy(self.address_field.get('x'), self.address_field.get('y'))
-        self.multi_cell(self.address_field.get('w'), 3, border=0,
+        self.multi_cell(self.address_field.get('w'), 3, align='L', border=0,
                         txt=self.reciever_name+"\n"+self.full_reciever_address)
 
         # Adressing department
         self.set_xy(self.address_field.get('x'), self.address_field.get('y')+12)
-        self.multi_cell(self.address_field.get('w'), 4, border=0,
+        self.multi_cell(self.address_field.get('w'), 4, align='L', border=0,
                         txt=self.sender_name+"\n"+self.sender_address+"\n"+self.sender_postnumber)
         self.line(self.address_field.get('x'), self.address_field.get('y')+12,
                   self.address_field.get('x')+self.address_field.get('w')-30, self.address_field.get('y')+22)
@@ -389,7 +385,7 @@ class TaxPDF(FPDF):
                 actual_amount = math.floor(float(actual_amount) * self.tax_days_adjust_factor)
             self.multi_cell(h=rowheight, align='C', w=c2w, txt="{:,}".format(actual_amount).replace(",", "."), border=1)
             self.set_xy(self.left_margin+c1w+c2w, self.yposition)
-            self.multi_cell(h=rowheight, align='L', w=c3w, txt='', border=1)
+            self.multi_cell(h=rowheight, align='L', w=c3w, txt='  ', border=1)
             self.yposition += rowheight
             self.set_xy(self.left_margin, self.yposition)
             if policy.get('pension_company_pays'):
@@ -413,18 +409,18 @@ class TaxPDF(FPDF):
         self.multi_cell(h=columnheaderheight, align='C', w=c3w, txt=self.text17E[language], border=1)
         self.yposition += rowheight
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(h=rowheight, align='L', w=c1w, txt='', border=1)
+        self.multi_cell(h=rowheight, align='L', w=c1w, txt='  ', border=1)
         self.set_xy(self.left_margin+c1w, self.yposition)
-        self.multi_cell(h=rowheight, align='C', w=c2w, txt='', border=1)
+        self.multi_cell(h=rowheight, align='C', w=c2w, txt='  ', border=1)
         self.set_xy(self.left_margin+c1w+c2w, self.yposition)
-        self.multi_cell(h=rowheight, align='C', w=c3w, txt='', border=1)
+        self.multi_cell(h=rowheight, align='C', w=c3w, txt='  ', border=1)
         self.yposition += rowheight
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(h=rowheight, align='L', w=c1w, txt='', border=1)
+        self.multi_cell(h=rowheight, align='L', w=c1w, txt='  ', border=1)
         self.set_xy(self.left_margin+c1w, self.yposition)
-        self.multi_cell(h=rowheight, align='C', w=c2w, txt='', border=1)
+        self.multi_cell(h=rowheight, align='C', w=c2w, txt='  ', border=1)
         self.set_xy(self.left_margin+c1w+c2w, self.yposition)
-        self.multi_cell(h=rowheight, align='C', w=c3w, txt='', border=1)
+        self.multi_cell(h=rowheight, align='C', w=c3w, txt='  ', border=1)
         self.yposition = self.get_y()
         self.yposition += 15
 
@@ -432,14 +428,14 @@ class TaxPDF(FPDF):
         self.set_xy(self.left_margin, self.yposition)
         self.multi_cell(self.std_document_width, 5, align='L', txt=self.text26E[language], border=1)
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 50, txt='', border=1)
+        self.multi_cell(self.std_document_width, 50, txt='  ', border=1)
         self.yposition = self.get_y()
         self.yposition += 20
 
         self.set_xy(self.left_margin, self.yposition)
         self.multi_cell(self.std_document_width, 5, align='L', txt=self.text26B[language], border=1)
         self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 30, txt='', border=1)
+        self.multi_cell(self.std_document_width, 30, txt='  ', border=1)
         self.yposition = self.get_y()
         self.yposition += 20
 
