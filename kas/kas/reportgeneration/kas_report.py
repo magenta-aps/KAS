@@ -334,12 +334,6 @@ class TaxPDF(FPDF):
 
         self.yposition += 20
 
-        year_adjusted_text = ''
-        if not self.fully_tax_liable:
-            year_adjusted_text = self.text26A[language].format(self.tax_days_adjust_factor*100)
-
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 5, txt=year_adjusted_text, border=0, align='L')
         self.yposition = self.get_y()
 
         self.add_page()
