@@ -5,6 +5,12 @@ stages:
   - release
   - deploy
 
+include:
+  - project: 'labs/salt-automation'
+    file:
+      - '/gitlab-ci-templates/common/rules.v1.yml'
+      - '/gitlab-ci-templates/common/saltbert.v1.yml'
+
 variables:
   # Project variables
   RELEASE_REGISTRY: docker.io
@@ -191,7 +197,7 @@ Selvbetjening Unittest:
 # Release stage
 ###############
 
-.release-kas: &release-kas
+.release-kas:
   stage: release
   image: alpine
   needs: ["KAS Unittest"]
@@ -205,11 +211,13 @@ Selvbetjening Unittest:
     - apk add skopeo
 
 .release-self: &release-self
-  <<: *release-kas
+  extends:
+    - .release-kas
   needs: ["Selvbetjening Unittest"]
 
 Release kas dev image:
-  <<: *release-kas
+  extends:
+    - .release-kas
   only:
     refs:
       - master
@@ -221,7 +229,8 @@ Release kas dev image:
       "docker://${KAS_IMAGE_DEV}"
 
 Release selvbetjenings dev image:
-  <<: *release-self
+  extends:
+    - .release-self
   only:
     refs:
       - master
@@ -233,11 +242,9 @@ Release selvbetjenings dev image:
       "docker://${SELF_IMAGE_DEV}"
 
 Release kas production image:
-  <<: *release-kas
-  only:
-    variables:
-      # Matches all of SemVer 2.0.0
-      - $CI_COMMIT_TAG =~ /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
+  extends:
+    - .rules:semver-all
+    - .release-kas
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
@@ -246,11 +253,9 @@ Release kas production image:
       "docker://${KAS_IMAGE_TAG}"
 
 Release selvbetjening production image:
-  <<: *release-self
-  only:
-    variables:
-      # Matches all of SemVer 2.0.0
-      - $CI_COMMIT_TAG =~ /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
+  extends:
+    - .rules:semver-all
+    - .release-self
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
@@ -261,18 +266,9 @@ Release selvbetjening production image:
 # Deploy stage
 ##############
 
-.deploy-default: &deploy-default
-  stage: deploy
-  image: magentalabs/pepper:latest
-  services: []
-  dependencies: []
-  tags:
-    - deploy
-
-
 Deploy test:
-  # Automatic deployment of branch master to test
-  <<: *deploy-default
+  extends:
+    - .saltbert
   needs: ["Release kas dev image", "Release selvbetjenings dev image"]
   only:
     refs:
@@ -280,34 +276,21 @@ Deploy test:
       - development
   when: manual
   variables:
-    DEPLOYMENT_NAMESPACE: kas.service-test
-    SALTAPI_URL: https://ctrldev1.magenta-aps.dk/api/
-    SALTAPI_EAUTH: file
-    GIT_STRATEGY: none
-  script:
-    - echo Attempting to call deployment
-    - pepper --client runner --fail-any state.orchestrate ${DEPLOYMENT_NAMESPACE}
+    SALTBERT_ORCHESTRATION: kas.service-test
+    SALTBERT_URL: https://ctrldev1.magenta-aps.dk
   environment:
     name: test
     url: "https://test.kas.aka.nanoq.gl"
 
 Deploy prod:
-  # Automatic deployment of branch master to test
-  <<: *deploy-default
+  extends:
+    - .rules:semver-all
+    - .saltbert
   needs: ["Release kas production image", "Release selvbetjening production image"]
-  only:
-    variables:
-      # Matches all of SemVer 2.0.0
-      - $CI_COMMIT_TAG =~ /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
   when: manual
   variables:
-    DEPLOYMENT_NAMESPACE: kas.service-prod
-    SALTAPI_URL: https://ctrl1.magenta-aps.dk/api/
-    SALTAPI_EAUTH: file
-    GIT_STRATEGY: none
-  script:
-    - echo Attempting to call deployment
-    - pepper --client runner --fail-any state.orchestrate ${DEPLOYMENT_NAMESPACE}
+    SALTBERT_ORCHESTRATION: kas.service-prod
+    SALTBERT_URL: https://ctrl1.magenta-aps.dk
   environment:
     name: production
-    url: "https://kas.aka.nanoq.gl/"
+    url: "https://kas.aka.nanoq.gl"
