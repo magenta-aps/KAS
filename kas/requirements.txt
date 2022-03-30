@@ -16,3 +16,4 @@ openpyxl==3.0.7
 prometheus_client==0.11.0
 django-watchman==1.2.0
 tenQ @ git+https://github.com/magenta-aps/10Q.git@master
+coverage
