@@ -268,6 +268,7 @@ Release selvbetjening production image:
 ##############
 
 Configure test:
+  stage: deploy
   extends: .release-to-test
   when: manual
   needs: ["Release kas dev image", "Release selvbetjenings dev image"]
@@ -275,6 +276,7 @@ Configure test:
     ENDPOINT: kas/update-test
 
 Deploy test:
+  stage: deploy
   extends:
     - .saltbert
   needs: ["Release kas dev image", "Release selvbetjenings dev image", "Configure test"]
@@ -290,6 +292,7 @@ Deploy test:
 
 
 Configure prod:
+  stage: deploy
   extends: .release-to-prod
   when: manual
   needs: ["Release kas production image", "Release selvbetjening production image"]
@@ -297,6 +300,7 @@ Configure prod:
     ENDPOINT: kas/update-production
 
 Deploy prod:
+  stage: deploy
   extends:
     - .rules:semver-all
     - .saltbert
