@@ -10,6 +10,7 @@ include:
     file:
       - '/gitlab-ci-templates/common/rules.v1.yml'
       - '/gitlab-ci-templates/common/saltbert.v1.yml'
+      - '/gitlab-ci-templates/common/config-updater-meta.v1.yml'
 
 variables:
   # Project variables
@@ -266,15 +267,21 @@ Release selvbetjening production image:
 # Deploy stage
 ##############
 
+Configure test:
+  extends: .release-to-test
+  when: manual
+  needs:
+    - Release API version
+  variables:
+    ENDPOINT: kas/update-test
+
 Deploy test:
   extends:
     - .saltbert
-  needs: ["Release kas dev image", "Release selvbetjenings dev image"]
+  needs: ["Release kas dev image", "Release selvbetjenings dev image", "Configure test"]
   only:
     refs:
       - master
-      - development
-  when: manual
   variables:
     SALTBERT_ORCHESTRATION: kas.service-test
     SALTBERT_URL: https://ctrldev1.magenta-aps.dk
@@ -282,12 +289,20 @@ Deploy test:
     name: test
     url: "https://test.kas.aka.nanoq.gl"
 
+
+Configure prod:
+  extends: .release-to-prod
+  when: manual
+  needs:
+    - Release API version
+  variables:
+    ENDPOINT: kas/update-production
+
 Deploy prod:
   extends:
     - .rules:semver-all
     - .saltbert
-  needs: ["Release kas production image", "Release selvbetjening production image"]
-  when: manual
+  needs: ["Release kas production image", "Release selvbetjening production image", "Configure prod"]
   variables:
     SALTBERT_ORCHESTRATION: kas.service-prod
     SALTBERT_URL: https://ctrl1.magenta-aps.dk
