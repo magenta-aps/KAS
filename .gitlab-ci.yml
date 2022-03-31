@@ -270,8 +270,7 @@ Release selvbetjening production image:
 Configure test:
   extends: .release-to-test
   when: manual
-  needs:
-    - Release API version
+  needs: ["Release kas dev image", "Release selvbetjenings dev image"]
   variables:
     ENDPOINT: kas/update-test
 
@@ -293,8 +292,7 @@ Deploy test:
 Configure prod:
   extends: .release-to-prod
   when: manual
-  needs:
-    - Release API version
+  needs: ["Release kas production image", "Release selvbetjening production image"]
   variables:
     ENDPOINT: kas/update-production
 
