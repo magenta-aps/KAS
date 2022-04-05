@@ -139,7 +139,14 @@ KAS Unittest:
     ENVIRONMENT: development
     DISABLE_METRICS: 'True'
   script:
-    - cd /app && python manage.py test
+    - cd /app
+    - coverage run --source='.' --omit=manage.py,project/wsgi.py,*/admin.py manage.py test
+    - coverage report
+    - coverage xml
+  coverage: '/^TOTAL.+?(\d+\%)$/'
+  artifacts:
+    reports:
+      cobertura: /app/coverage.xml
 
 Selvbetjening Unittest:
   <<: *test-default
@@ -172,7 +179,14 @@ Selvbetjening Unittest:
     CLOSE_AT_MONTH: 5
     CLOSE_AT_DATE: 6
   script:
-    - cd /app && python manage.py test
+    - cd /app
+    - coverage run --source='.' --omit=manage.py,project/wsgi.py,*/admin.py manage.py test
+    - coverage report
+    - coverage xml
+  coverage: '/^TOTAL.+?(\d+\%)$/'
+  artifacts:
+    reports:
+      cobertura: /app/coverage.xml
 
 # Release stage
 ###############

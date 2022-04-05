@@ -101,7 +101,7 @@ class TaxYearAdmin(admin.ModelAdmin):
         return False
 
     def has_change_permission(self, request, obj=None):
-        return False
+        return True
 
     def get_fieldsets(self, request, obj=None):
         if obj is None:
