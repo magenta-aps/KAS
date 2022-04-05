@@ -26,7 +26,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django_cookies_samesite.middleware.CookiesSameSite',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
