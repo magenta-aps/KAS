@@ -12,6 +12,7 @@ TIME_ZONE = os.environ['DJANGO_TIMEZONE']
 LOGIN_REDIRECT_URL = '/'
 SESSION_COOKIE_NAME = 'admin-sessionid'
 WHITENOISE_USE_FINDERS = True
+# DEFAULT_AUTO_FIELD  er sat da vi benytter 3 parts biblioteker der ikke har fuldt implementeret app_config
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
