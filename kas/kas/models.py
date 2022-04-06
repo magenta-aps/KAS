@@ -455,9 +455,28 @@ class PersonTaxYear(HistoryMixin, models.Model):
         for person_tax_year_census in qs:
             number_of_days += person_tax_year_census.number_of_days
             fully_tax_liable = True
-        self.number_of_days = min(number_of_days, self.tax_year.days_in_year)
-        self.fully_tax_liable = fully_tax_liable
-        self.save()
+        number_of_days = min(number_of_days, self.tax_year.days_in_year)
+
+        # Hvis number_of_days eller fully_tax_liable er ændret pga. genberegningen,
+        # foretag genberegning på associerede policytaxyears
+        if number_of_days != self.number_of_days or fully_tax_liable != self.fully_tax_liable:
+            self.number_of_days = number_of_days
+            self.fully_tax_liable = fully_tax_liable
+            self.save()
+            for policytaxyear in self.active_policies_qs:
+                old_result = policytaxyear.calculated_result
+                policytaxyear.recalculate()
+                policytaxyear.save()
+                if policytaxyear.calculated_result != old_result:
+                    # Tilføj note på policen om at mandtal har ændret resultatet
+                    note_text = f"Personens antal skattedage i {self.year} er blevet opdateret;" \
+                                f" denne police er blevet påvirket af ændringen, og beregningen kan afvige fra en evt. oprettet slutopgørelse."
+                    Note.objects.create(
+                        person_tax_year=self,
+                        policy_tax_year=policytaxyear,
+                        author=get_admin_user(),
+                        content=note_text
+                    )
 
     @property
     def slutlignet(self):
@@ -857,17 +876,16 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         if (old_year_adjusted_amount <= 0 or self.year_adjusted_amount <= 0) and old_year_adjusted_amount != self.year_adjusted_amount:
             # When tax base is changed from or to negative, mark subsequent policies,
             # as the available deductible amount will have changed
-
             # This text has not been translated by request of the customer
             note_text = f"Policen for {self.year} er blevet opdateret; denne police kan være påvirket af ændringen."
 
-            for policy in self.subsequent_years_qs():
-                policy.efterbehandling = True
-                policy.save()
+            for other_policy_tax_year in self.subsequent_years_qs():
+                other_policy_tax_year.efterbehandling = True
+                other_policy_tax_year.save()
 
                 Note.objects.create(
-                    person_tax_year=self.person_tax_year,
-                    policy_tax_year=policy,
+                    person_tax_year=other_policy_tax_year.person_tax_year,
+                    policy_tax_year=other_policy_tax_year,
                     author=get_admin_user(),
                     content=note_text
                 )
