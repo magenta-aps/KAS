@@ -146,7 +146,9 @@ class Command(BaseCommand):
         older_policy_1.recalculate()
         older_policy_2.recalculate()
 
-        TaxFinalStatementPDF.generate_pdf(person_tax_year=person_tax_year)
+        final_settlement = TaxFinalStatementPDF.generate_pdf(person_tax_year=person_tax_year)
+        final_settlement.status = 'send'  # "send" the statement so it can be downloaded in selvbetjening
+        final_settlement.save(update_fields=['status'])
 
     def create_pensioncompanysummary(self, user):
         pension_company, _ = PensionCompany.objects.get_or_create(res=12345671, name='P+, Pensionskassen for Akademikere')
