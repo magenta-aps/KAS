@@ -223,7 +223,7 @@ class TaxFinalStatementPDF(FPDF):
     @staticmethod
     def format_amount(amount):
         if amount is None:
-            return ''
+            return '  '  # If the text is completely empty, then the cell is collapsed
         return "{:,}".format(amount).replace(",", ".")
 
     # This method format dates according to the specified langauge.
@@ -293,12 +293,12 @@ class TaxFinalStatementPDF(FPDF):
         self.set_font(self.std_font_name, '', self.std_table_font_size)
         # Adressing reciever
         self.set_xy(self.address_field.get('x'), self.address_field.get('y'))
-        self.multi_cell(self.address_field.get('w'), 3, border=0,
+        self.multi_cell(self.address_field.get('w'), 3, align='L', border=0,
                         txt=self._person_tax_year.person.name+"\n"+self._person_tax_year.person.postal_address)
 
         # Adressing department
         self.set_xy(self.address_field.get('x'), self.address_field.get('y')+12)
-        self.multi_cell(self.address_field.get('w'), 4, border=0,
+        self.multi_cell(self.address_field.get('w'), 4, align='L', border=0,
                         txt=self.sender_name+"\n"+self.sender_address+"\n"+self.sender_postnumber)
         self.line(self.address_field.get('x'), self.address_field.get('y')+12,
                   self.address_field.get('x')+self.address_field.get('w')-30, self.address_field.get('y')+22)
@@ -670,5 +670,5 @@ class TaxFinalStatementPDF(FPDF):
         pdf_generator.print_tax_slip('gl')
         pdf_generator.print_tax_slip('dk')
         policy_file_name = f'Y_FINAL_{person_tax_year.tax_year.year}_{person_tax_year.person.cpr}.pdf'
-        final_settlement.pdf.save(content=ContentFile(pdf_generator.output(dest='S').encode('latin-1')), name=policy_file_name)
+        final_settlement.pdf.save(content=ContentFile(pdf_generator.output()), name=policy_file_name)
         return final_settlement

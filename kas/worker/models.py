@@ -6,7 +6,7 @@ import django_rq
 import redis
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.postgres.fields import JSONField
+from django.db.models import JSONField
 from django.db import transaction, models
 from django.utils import timezone
 from django.utils.datetime_safe import datetime
