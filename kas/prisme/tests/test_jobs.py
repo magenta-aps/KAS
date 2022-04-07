@@ -1,4 +1,5 @@
 import os
+from unittest import mock
 from unittest.mock import patch
 
 import django_rq
@@ -10,10 +11,18 @@ from fakeredis import FakeStrictRedis
 from rq import Queue
 
 from kas.jobs import generate_final_settlements_for_year, generate_batch_and_transactions_for_year
+from prisme.jobs import send_batch
 from kas.models import TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany
 from prisme.jobs import import_pre_payment_file
 from prisme.models import PrePaymentFile, Transaction
 from worker.models import Job
+from django.test import override_settings
+from django.conf import settings
+import pysftp
+from prisme.models import Prisme10QBatch
+
+test_settings = dict(settings.TENQ)
+test_settings['dirs']['10q_mocking'] = 'dummy'
 
 
 class ImportPrePaymentFile(TestCase):
@@ -112,3 +121,75 @@ class ImportPrePaymentFile(TestCase):
         self.assertEqual(second_person_10q.count(), 1)
         # the citizen needs to pay 23.516kr
         self.assertEqual(second_person_10q.first().amount, 23516)
+
+
+class MinimumAmountHandling(TestCase):
+
+    def setUp(self) -> None:
+        self.user = User.objects.create(
+            username='user',
+            email='test@example.com'
+        )
+        self.tax_year = TaxYear.objects.create(year=2020, year_part='ligning')
+        self.company = PensionCompany.objects.create(name='test_company')
+
+        for i, cpr in enumerate(['1111111111', '1111111112', '1111111113'], start=1):  # different from those in test file
+            person2 = Person.objects.create(cpr=cpr, name='person {}'.format(i))
+            person_tax_year = PersonTaxYear.objects.create(person=person2,
+                                                           number_of_days=365,
+                                                           tax_year=self.tax_year)
+
+            PolicyTaxYear.objects.create(person_tax_year=person_tax_year,
+                                         prefilled_amount=600*i,
+                                         self_reported_amount=600*i,
+                                         slutlignet=True,
+                                         pension_company=self.company,
+                                         policy_number='1234',
+                                         )
+
+    @mock.patch.object(target=pysftp, attribute='Connection', autospec=True, return_value=mock.Mock(spec=pysftp.Connection, __enter__=lambda self: self, __exit__=lambda *args: None))
+    @override_settings(TENQ=test_settings, METRICS={'disabled': True})
+    @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
+    def test_minimim_amount_transactions(self, mock_connection, django_rq):
+        '''Validate that transactions below minimum amount abs(100) is set to status indifferent'''
+
+        # generate final settlement
+        Job.schedule_job(generate_final_settlements_for_year,
+                         job_type='generate_final_settlements_for_year',
+                         job_kwargs={'year_pk': self.tax_year.pk},
+                         created_by=self.user)
+
+        # generate batch and transactions
+        Job.schedule_job(generate_batch_and_transactions_for_year,
+                         job_type='generate_batch_and_transactions_for_year',
+                         job_kwargs={'year_pk': self.tax_year.pk},
+                         created_by=self.user)
+
+        prismebatch = Prisme10QBatch.objects.get(tax_year=self.tax_year)
+        Job.schedule_job(send_batch,
+                         job_type='prisme.jobs.send_batch',
+                         job_kwargs={'year_pk': self.tax_year.pk, 'pk': prismebatch.pk, 'destination': '10q_mocking', 'created_by': 'unittest'},
+                         created_by=self.user)
+
+        # Hent alle transaktioner, som er under grænsen for at være ubetydelig
+        indifferent_transactions = Transaction.objects.filter(status='indifferent')
+        self.assertEqual(1, indifferent_transactions.count())
+
+        # Valider at personen 1111111111 har en transaktion med et ubetydeligt beløb
+        person_transactions = indifferent_transactions.get(person_tax_year__person__cpr='1111111111')
+        self.assertEqual(91, person_transactions.amount)
+        self.assertEqual('prisme10q', person_transactions.type)
+
+        # Hent alle transaktioner, som er over grænsen for at være ubetydelig
+        transferred_transactions = Transaction.objects.filter(status='transferred')
+        self.assertEqual(2, transferred_transactions.count())
+
+        # Valider at personen 1111111112 har en transaktion med et betydeligt beløb
+        person_transactions = transferred_transactions.get(person_tax_year__person__cpr='1111111112')
+        self.assertEqual(182, person_transactions.amount)
+        self.assertEqual('prisme10q', person_transactions.type)
+
+        # Valider at personen 1111111113 har en transaktion med et betydeligt beløb
+        person_transactions = transferred_transactions.get(person_tax_year__person__cpr='1111111113')
+        self.assertEqual(274, person_transactions.amount)
+        self.assertEqual('prisme10q', person_transactions.type)

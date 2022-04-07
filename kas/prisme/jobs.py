@@ -54,7 +54,8 @@ def send_batch(job):
     destination = job.arguments['destination']
     completion_statuses = {
         '10q_production': Prisme10QBatch.STATUS_DELIVERED,
-        '10q_development': Prisme10QBatch.STATUS_CREATED
+        '10q_development': Prisme10QBatch.STATUS_CREATED,
+        '10q_mocking': Prisme10QBatch.STATUS_DELIVERED
     }
     try:
 
@@ -95,3 +96,4 @@ def send_batch(job):
         # If batch was delivered, mark all the related transactions as delivered
         if batch.status == Prisme10QBatch.STATUS_DELIVERED:
             batch.active_transactions_qs.update(status='transferred')
+            batch.transactions_below_abs100_qs.update(status='indifferent')

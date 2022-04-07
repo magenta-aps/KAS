@@ -25,6 +25,7 @@ transaction_status = (
     ('ready', _('Klar til overførsel')),
     ('transferred', _('Overført')),
     ('cancelled', _('Annulleret')),
+    ('indifferent', _('Afregnes ikke')),
 )
 transaction_types = (
     ('prisme10q', _('Prisme opkrævning / tilbagebetaling')),
@@ -105,6 +106,7 @@ class PrePaymentFile(models.Model):
 batch_destinations_all = (
     ('10q_development', _('Undervisningssystem')),
     ('10q_production', _('Produktionssystem')),
+    ('10q_mocking', _('Mocking')),
 )
 
 # Which destinations should be available for each of our environments
@@ -172,12 +174,33 @@ class Prisme10QBatch(models.Model):
     tax_year = models.ForeignKey('kas.TaxYear', on_delete=models.PROTECT)
 
     @property
-    def active_transactions_qs(self):
+    def all_transactions_except_cancelled_qs(self):
+        '''Return all transactions which are ready to be sent'''
         return self.transaction_set.exclude(
-            status='cancelled'
+            status=['cancelled']
+        )
+
+    @property
+    def active_transactions_qs(self):
+        '''Return all transactions which are ready to be sent, and which are not below the indifferent limit
+        Amounts below abs(100) are considered indifferent, and are not sent to prisme'''
+        return self.transaction_set.exclude(
+            status=['cancelled', 'indifferent']
         ).exclude(
             amount__gt=-100,
             amount__lt=100
+        )
+
+    @property
+    def transactions_below_abs100_qs(self):
+        '''Return all transactions which are ready to be sent, and which are below the indifferent limit
+        Small amounts below abs(100) are considered indifferent and should be marked for that
+        '''
+        return self.transaction_set.exclude(
+            status=['cancelled', 'indifferent']
+        ).filter(
+            amount__gte=-100,
+            amount__lte=100
         )
 
     def get_content(self, max_entries=None):
