@@ -267,19 +267,12 @@ Release selvbetjening production image:
 # Deploy stage
 ##############
 
-Configure test:
-  stage: deploy
-  extends: .release-to-test
-  when: manual
-  needs: ["Release kas dev image", "Release selvbetjenings dev image"]
-  variables:
-    ENDPOINT: kas/update-test
-
 Deploy test:
   stage: deploy
   extends:
     - .saltbert
-  needs: ["Release kas dev image", "Release selvbetjenings dev image", "Configure test"]
+  when: manual
+  needs: ["Release kas dev image", "Release selvbetjenings dev image"]
   only:
     refs:
       - master
