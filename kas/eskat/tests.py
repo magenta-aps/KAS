@@ -1,36 +1,18 @@
-from django.test import TransactionTestCase, override_settings
-from eskat.management.commands.import_eskat_mockup_data import Command
-from eskat.models import MockModels
+from django.test import TestCase, override_settings
 
-# Need to import the module here since we want to fetch models using runtime
-# properties.
 import eskat.models as eskat_models
+from eskat.mockupdata import generate_persons
+from eskat.models import MockModels
+from kas.models import Person, PersonTaxYear, TaxYear, PolicyDocument
+from eskat.jobs import delete_protected
+from django.apps import apps
 
 
-# Make sure this test never uses the production eSkat database
-@override_settings(ENVIRONMENT="development")
-class EskatModelsTestCase(TransactionTestCase):
+class EskatModelsTestCase(TestCase):
 
-    imported_tables = (
-        eskat_models.ImportedKasMandtal,
-        eskat_models.ImportedR75PrivatePension,
-    )
-
-    def import_all_tables(self):
-
-        # Run imports for years 2018 and 2019 on all Imported tables, moving
-        # data from mock tables to imported tables
-        for year in (2018, 2019):
-            for model in self.imported_tables:
-                model.import_year(year)
-
-    def setUp(self):
-
-        # Run the import command, importing data files into the Mockup tables
-        Command().handle()
-
-        # And import data from mockup tables to imported tables
-        self.import_all_tables()
+    @classmethod
+    def setUpTestData(cls):
+        generate_persons()
 
     def test_models_points_to_mock_database(self):
 
@@ -52,45 +34,19 @@ class EskatModelsTestCase(TransactionTestCase):
             self.assertFalse(model._meta.model_name.startswith("mock"))
 
     def test_mockup_data_present(self):
-
         self.assertTrue(MockModels.MockKasMandtal.objects.exists())
         self.assertTrue(MockModels.MockR75Idx4500230.objects.exists())
 
-    def test_imported_data_present(self):
-        for x in self.imported_tables:
-            self.assertGreater(x.objects.count(), 0)
+    def test_delete_protected(self):
+        person = Person.objects.create()
+        tax_year = TaxYear.objects.create(year=2022)
+        person_tax_year = PersonTaxYear.objects.create(tax_year=tax_year, person=person)
+        PolicyDocument.objects.create(person_tax_year=person_tax_year)
 
-    def test_mock_reimport_does_not_create_new_entries(self):
-        tables = (
-            eskat_models.get_kas_beregninger_x_model(),
-            eskat_models.get_kas_mandtal_model(),
-            eskat_models.get_r75_private_pension_model(),
-        )
+        for model in apps.all_models.get('kas').values():
+            delete_protected(model.objects.all())
 
-        before_counts = [x.objects.count() for x in tables]
-        Command().handle()
-        after_counts = [x.objects.count() for x in tables]
-
-        self.assertEquals(before_counts, after_counts)
-
-    def test_reimport_does_not_create_new_entries(self):
-
-        before_counts = [x.objects.count() for x in self.imported_tables]
-        self.import_all_tables()
-        after_counts = [x.objects.count() for x in self.imported_tables]
-
-        self.assertEquals(before_counts, after_counts)
-
-    def test_update_creates_history(self):
-
-        for model in self.imported_tables:
-            item = model.objects.first()
-
-            count_before = item.history.count()
-
-            item._change_reason = "Updated during testing"
-            item.save()
-
-            count_after = item.history.count()
-
-            self.assertEqual(count_before + 1, count_after)
+        self.assertFalse(Person.objects.exists())
+        self.assertFalse(TaxYear.objects.exists())
+        self.assertFalse(PersonTaxYear.objects.exists())
+        self.assertFalse(PolicyDocument.objects.exists())

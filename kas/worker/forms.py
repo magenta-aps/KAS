@@ -1,5 +1,4 @@
 from django import forms
-from django.conf import settings
 from django.utils.translation import gettext as _
 
 from kas.forms_mixin import BootstrapForm
@@ -12,18 +11,8 @@ class JobTypeSelectForm(BootstrapForm):
 
     def __init__(self, *args, **kwargs):
         super(JobTypeSelectForm, self).__init__(*args, **kwargs)
-        if settings.ENVIRONMENT == "production":
-            self.fields['job_type'].choices = (
-                (k, v['label'])
-                for k, v in get_job_types().items()
-                if not v.get('not_in_dropdown', False) and not v.get('test_only', False)
-            )
-        else:
-            self.fields['job_type'].choices = (
-                (k, v['label'])
-                for k, v in get_job_types().items()
-                if not v.get('not_in_dropdown', False)
-            )
+        self.fields['job_type'].choices = [(k, v['label']) for k, v in get_job_types().items()
+                                           if not v.get('not_in_dropdown')]
 
 
 class YearForm(BootstrapForm):
@@ -62,29 +51,11 @@ class YearFormWithAll(BootstrapForm):
         ]
 
 
-class YearAndSourceForm(YearForm):
-    source_model = forms.ChoiceField(
-        label=_('Datakilde'),
-        choices=(
-            ('mockup', _('Mock-up data')),
-            ('eskat', _('Den rigtige eSkat database')),
-        )
-    )
-
-    def __init__(self, *args, **kwargs):
-        super(YearAndSourceForm, self).__init__(*args, **kwargs)
-
-        if settings.ENVIRONMENT == "production":
-            self.fields['source_model'].widget.choices = (
-                ('eskat', _('Den rigtige eSkat database')),
-            )
-
-
-class MandtalImportJobForm(YearAndSourceForm):
+class MandtalImportJobForm(YearForm):
     pass
 
 
-class R75ImportJobForm(YearAndSourceForm):
+class R75ImportJobForm(YearForm):
     pass
 
 
