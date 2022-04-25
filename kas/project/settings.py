@@ -1,6 +1,7 @@
 import os
 from distutils.util import strtobool
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -182,6 +183,8 @@ SELVBETJENING_REPRESENTATION_STOP = os.environ['SELVBETJENING_REPRESENTATION_STO
 SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE = int(os.environ.get('SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE', 60))
 
 ENVIRONMENT = os.environ['ENVIRONMENT']
+if ENVIRONMENT not in ('development', 'staging', 'production'):
+    raise ImproperlyConfigured('Environment needs to be set to either development, staging or production!')
 
 KAS_TAX_RATE = 0.153
 KAS_TAX_RATE_IN_PERCENT = KAS_TAX_RATE * 100

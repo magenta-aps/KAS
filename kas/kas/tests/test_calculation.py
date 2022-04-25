@@ -8,15 +8,15 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.test import override_settings
-from eskat.mockupdata import import_default_mockup_data
 from fakeredis import FakeStrictRedis
+
+from eskat.jobs import generate_sample_data
 from kas.models import PersonTaxYearCensus
 from kas.models import PolicyTaxYear, PersonTaxYear, TaxYear, Person, PensionCompany, FinalSettlement
 from kas.tests.test_mixin import create_admin_user
 from prisme.models import Transaction, Prisme10QBatch
 from rq import Queue
 from worker.models import Job
-
 from kas.jobs import import_mandtal
 
 
@@ -548,7 +548,11 @@ class TestCalculationMath(TestCase):
 
     @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
     def test_mandtal_update_flags(self, django_rq):
-        import_default_mockup_data()
+        Job.schedule_job(
+            generate_sample_data,
+            'GenerateSampleData',
+            get_user_model().objects.get(username='admin'),
+        )
         year2020, _ = TaxYear.objects.get_or_create(year=2020)
         year2021, _ = TaxYear.objects.get_or_create(year=2021)
 
