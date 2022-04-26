@@ -1583,8 +1583,6 @@ class AddressFromDafo(models.Model):
         return '%s - %s' % (self.navn, self.fuld_adresse)
 
 
-
-
 @receiver(post_save, sender=FinalSettlement)
 def cancel_batch_on_save(sender, instance, **kwargs):
     if instance.invalid and instance.person_tax_year.tax_year.year_part == 'genoptagelsesperiode':
