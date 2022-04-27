@@ -52,6 +52,14 @@ Lint Dockerfiles:
   script:
     - git ls-files --exclude='Dockerfile*' --ignored | xargs --max-lines=1 hadolint
 
+Lint REUSE compliance:
+  extends: .lint-default
+  image:
+    name: fsfe/reuse:latest
+    entrypoint: [""]
+  script:
+    - reuse lint
+
 # Build stage
 #############
 
