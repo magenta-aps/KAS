@@ -65,7 +65,7 @@ class MockResponse:
         This mocks a response for a valid GL citizen and the message is delivered to E-boks.
         Please note that normally the nr field would be the CPR number of the citizen.
         """
-        return {"message_id": self._message_id,
+        return {'message_id': self._message_id,
                 'recipients': [{
                     'nr': "",
                     'recipient_type': 'cpr',
@@ -78,9 +78,8 @@ class MockResponse:
 class EboksClient(object):
     def __init__(self, mock=False, client_certificate=None, client_private_key=None, verify=None,
                  client_id=None, system_id=None, host=None, timeout=60):
-        if mock is True:
-            self._mock = mock
-        else:
+        self._mock = mock
+        if not self._mock:
             self._client_id = client_id
             self._system_id = str(system_id)
             self._host = host
@@ -113,7 +112,7 @@ class EboksClient(object):
                 raise
 
     def get_message_id(self):
-        if self._mock is True:
+        if self._mock:
             return uuid4().hex
         return '{sys_id}{client_id}{uuid}'.format(sys_id=self._system_id.zfill(6),
                                                   client_id=self._client_id,
@@ -151,10 +150,6 @@ class EboksClient(object):
             except ValueError:
                 error = {'status_code': status_code, 'error': e.response.text}
         return error
-
-    @property
-    def mock(self):
-        return self._mock
 
     def close(self):
         if hasattr(self, '_session'):
