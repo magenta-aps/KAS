@@ -6,6 +6,7 @@ from uuid import uuid4
 from lxml import etree
 from django.conf import settings
 from time import sleep
+from dataclasses import dataclass
 
 
 class EboksDispatchGenerator(object):
@@ -52,18 +53,44 @@ class EboksDispatchGenerator(object):
         return cls(content_type_id=settings.EBOKS['content_type_id'])
 
 
+@dataclass()
+class MockResponse:
+    status_code: int = 200
+
+    def __init__(self, message_id):
+        self._message_id = message_id
+
+    def json(self):
+        """
+        This mocks a response for a valid GL citizen and the message is delivered to E-boks.
+        Please note that normally the nr field would be the CPR number of the citizen.
+        """
+        return {"message_id": self._message_id,
+                'recipients': [{
+                 'nr': "",
+                 'recipient_type': 'cpr',
+                 'nationality': 'Denmark',
+                 'status': '',
+                 'reject_reason': '',
+                 'post_processing_status': ''}]}
+
+
 class EboksClient(object):
-    def __init__(self, client_certificate, client_private_key, verify, client_id, system_id, host, timeout=60):
-        self._client_id = client_id
-        self._system_id = str(system_id)
-        self._host = host
-        self.timeout = timeout
-        self._session = requests.session()
-        self._session.cert = (client_certificate, client_private_key)
-        self._verify = verify
-        self._session.verify = verify
-        self._session.headers.update({'content-type': 'application/xml'})
-        self._url_with_prefix = urllib.parse.urljoin(self._host, '/int/rest/srv.svc/')
+    def __init__(self, mock=False, client_certificate=None, client_private_key=None, verify=None,
+                 client_id=None, system_id=None, host=None, timeout=60):
+        if mock is True:
+            self._mock = mock
+        else:
+            self._client_id = client_id
+            self._system_id = str(system_id)
+            self._host = host
+            self.timeout = timeout
+            self._session = requests.session()
+            self._session.cert = (client_certificate, client_private_key)
+            self._verify = verify
+            self._session.verify = verify
+            self._session.headers.update({'content-type': 'application/xml'})
+            self._url_with_prefix = urllib.parse.urljoin(self._host, '/int/rest/srv.svc/')
 
     def _make_request(self, url, method='GET', params=None, data=None):
         r = self._session.request(method, url, params, data, timeout=self.timeout)
@@ -86,9 +113,15 @@ class EboksClient(object):
                 raise
 
     def get_message_id(self):
-        return '{sys_id}{client_id}{uuid}'.format(sys_id=self._system_id.zfill(6), client_id=self._client_id, uuid=uuid4().hex)
+        if self._mock is True:
+            return uuid4().hex
+        return '{sys_id}{client_id}{uuid}'.format(sys_id=self._system_id.zfill(6),
+                                                  client_id=self._client_id,
+                                                  uuid=uuid4().hex)
 
     def send_message(self, message, message_id, retries=0, retry_wait_time=10):
+        if self._mock:
+            return MockResponse(message_id)
         url = urllib.parse.urljoin(self._url_with_prefix, '3/dispatchsystem/{sys_id}/dispatches/{message_id}'.format(sys_id=self._system_id, message_id=message_id))
         try:
             return self._make_request(url=url, method='PUT', data=message)
@@ -119,8 +152,13 @@ class EboksClient(object):
                 error = {'status_code': status_code, 'error': e.response.text}
         return error
 
+    @property
+    def mock(self):
+        return self._mock
+
     def close(self):
-        self._session.close()
+        if hasattr(self, '_session'):
+            self._session.close()
 
     @classmethod
     def from_settings(cls):
