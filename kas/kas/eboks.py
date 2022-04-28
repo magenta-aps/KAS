@@ -67,12 +67,12 @@ class MockResponse:
         """
         return {"message_id": self._message_id,
                 'recipients': [{
-                 'nr': "",
-                 'recipient_type': 'cpr',
-                 'nationality': 'Denmark',
-                 'status': '',
-                 'reject_reason': '',
-                 'post_processing_status': ''}]}
+                    'nr': "",
+                    'recipient_type': 'cpr',
+                    'nationality': 'Denmark',
+                    'status': '',
+                    'reject_reason': '',
+                    'post_processing_status': ''}]}
 
 
 class EboksClient(object):
