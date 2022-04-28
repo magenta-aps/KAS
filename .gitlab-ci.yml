@@ -128,7 +128,7 @@ KAS Unittest:
     SELVBETJENING_REPRESENTATION_STOP: http://kas-selvbetjening:8000/represent-stop
     SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE: 60
     EBOKS_DISPATCH_BULK_SIZE: 100
-    EBOKS_MOCK: True
+    EBOKS_MOCK: 'True'
     # No access to the eskat database, so give it dummy environment variables
     ESKAT_HOST: ""
     ESKAT_PORT: ""
