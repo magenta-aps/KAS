@@ -67,7 +67,7 @@ class MockResponse:
         """
         return {'message_id': self._message_id,
                 'recipients': [{
-                    'nr': "",
+                    'nr': '',
                     'recipient_type': 'cpr',
                     'nationality': 'Denmark',
                     'status': '',
