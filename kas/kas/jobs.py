@@ -18,7 +18,7 @@ from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, get_kas_
     get_r75_private_pension_model
 from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, FinalSettlement, AddressFromDafo, \
-    PersonTaxYearCensus, HistoryMixin, PensionCompanySummaryFileDownload, TaxSlipGenerated
+    PersonTaxYearCensus, HistoryMixin, TaxSlipGenerated, PensionCompanySummaryFile
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.reportgeneration.kas_report import TaxPDF
 from prisme.models import Prisme10QBatch
@@ -674,6 +674,6 @@ def reset_tax_year(job):
     with transaction.atomic():
         tax_year = TaxYear.objects.get(pk=job.arguments['year_pk'])
         TaxSlipGenerated.objects.filter(persontaxyear__tax_year=tax_year).delete()
-        PensionCompanySummaryFileDownload.objects.all().delete()
+        PensionCompanySummaryFile.objects.filter(tax_year=tax_year).delete()
         AddressFromDafo.objects.all().delete()
         delete_protected(tax_year)
