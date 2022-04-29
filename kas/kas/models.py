@@ -375,6 +375,20 @@ class TaxSlipGenerated(EboksDispatch):
         return f"reports/{self.persontaxyear.year}/{self.persontaxyear.person.cpr_formatted}/{filename}"
 
 
+def delete_file(sender, instance, using, **kwargs):
+    """
+    This method expect a model with a filefield named file.
+    """
+    if instance.file:
+        # delete the pdf file
+        instance.file.delete(save=False)
+
+
+post_delete.connect(delete_file,
+                    sender=TaxSlipGenerated,
+                    dispatch_uid='delete_tax_slip_file')
+
+
 class PersonTaxYear(HistoryMixin, models.Model):
     all_documents_and_notes_handled = models.BooleanField(default=True)
 
@@ -1106,6 +1120,11 @@ class PolicyDocument(models.Model):
         return '/'.join(path)
 
 
+post_delete.connect(delete_file,
+                    sender=PolicyDocument,
+                    dispatch_uid='delete_policy_document')
+
+
 def set_all_documents_and_notes_handled(sender, instance, created, raw, using, update_fields, **kwargs):
     if created is True and instance.policy_tax_year is None:
         with atomic():
@@ -1274,6 +1293,11 @@ class PensionCompanySummaryFile(models.Model):
 
     def file_path(self, filename):
         return f"pensioncompany_summary/{self.tax_year.year}/{self.company.res}/{filename}"
+
+
+post_delete.connect(delete_file,
+                    sender=PensionCompanySummaryFile,
+                    dispatch_uid='delete_pension_file')
 
 
 class PensionCompanySummaryFileDownload(models.Model):
@@ -1528,6 +1552,17 @@ class FinalSettlement(EboksDispatch):
         ).first()
 
 
+def delete_pdf(sender, instance, using, **kwargs):
+    if instance.pdf:
+        # delete the pdf file
+        instance.pdf.delete(save=False)
+
+
+post_delete.connect(delete_pdf,
+                    sender=FinalSettlement,
+                    dispatch_uid='delete_final_settlement_pdf')
+
+
 class AddressFromDafo(models.Model):
     cpr = models.TextField(unique=True, null=False)
     address = models.TextField(blank=True, null=True)
@@ -1546,15 +1581,6 @@ class AddressFromDafo(models.Model):
 
     def __str__(self):
         return '%s - %s' % (self.navn, self.fuld_adresse)
-
-
-def delete_pdf(sender, instance, using, **kwargs):
-    if instance.pdf:
-        # delete the pdf file
-        instance.pdf.delete(save=False)
-
-
-post_delete.connect(delete_pdf, sender=FinalSettlement, dispatch_uid='delete_pdf')
 
 
 @receiver(post_save, sender=FinalSettlement)

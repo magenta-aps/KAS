@@ -13,11 +13,12 @@ from django.utils import timezone
 from requests.exceptions import HTTPError, ConnectionError
 from rq import get_current_job
 
+from eskat.jobs import delete_protected
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, get_kas_mandtal_model, \
     get_r75_private_pension_model
 from kas.eboks import EboksClient, EboksDispatchGenerator
-from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated, \
-    FinalSettlement, AddressFromDafo, PersonTaxYearCensus, HistoryMixin
+from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, FinalSettlement, AddressFromDafo, \
+    PersonTaxYearCensus, HistoryMixin, TaxSlipGenerated, PensionCompanySummaryFile
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.reportgeneration.kas_report import TaxPDF
 from prisme.models import Prisme10QBatch
@@ -661,3 +662,18 @@ def merge_pension_companies(job):
                       'message': '''Flyttede %(policer)s policer
                       og flettede %(companies)s pensionsselskaber.''' % {'policer': moved_policies,
                                                                          'companies': deleted_count}}
+
+
+@job_decorator
+def reset_tax_year(job):
+    if settings.ENVIRONMENT not in ('development', 'staging'):
+        # Only allow this job to be executed in development og staging
+        # the job is also hidden in the UI for production so this is just a safeguard.
+        return
+
+    with transaction.atomic():
+        tax_year = TaxYear.objects.get(pk=job.arguments['year_pk'])
+        TaxSlipGenerated.objects.filter(persontaxyear__tax_year=tax_year).delete()
+        PensionCompanySummaryFile.objects.filter(tax_year=tax_year).delete()
+        AddressFromDafo.objects.all().delete()
+        delete_protected(tax_year)
