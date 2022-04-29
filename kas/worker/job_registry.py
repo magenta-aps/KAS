@@ -83,6 +83,16 @@ def get_job_types():
             'result_template': 'worker/includes/status_only.html',
         }
     }
+    if settings.ENVIRONMENT in ('development', 'staging'):
+        jobs.update({
+            'ResetTaxYear': {
+                'label': _('Reset data for skatteår'),  # translated label
+                'form_class': YearPkForm,  # form class used in the start job workflow
+                'result_template': 'worker/includes/status_only.html',
+                'function': 'kas.jobs.reset_tax_year',
+            },
+        })
+
     if settings.ENVIRONMENT == 'development':
         # include jobs to generate mock data
         jobs.update({
