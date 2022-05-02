@@ -217,36 +217,16 @@ Selvbetjening Unittest:
     - .release-kas
   needs: ["Selvbetjening Unittest"]
 
-Release kas dev image:
-  extends:
-    - .release-kas
-  only:
-    refs:
-      - master
-  script:
-    - skopeo copy
-      --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
-      --dest-creds=${RELEASE_REGISTRY_USER}:${RELEASE_REGISTRY_PASSWORD}
-      "docker://${KAS_IMAGE_SHA}"
-      "docker://${KAS_IMAGE_DEV}"
 
-Release selvbetjenings dev image:
-  extends:
-    - .release-self
-  only:
-    refs:
-      - master
-  script:
-    - skopeo copy
-      --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
-      --dest-creds=${RELEASE_REGISTRY_USER}:${RELEASE_REGISTRY_PASSWORD}
-      "docker://${SELF_IMAGE_SHA}"
-      "docker://${SELF_IMAGE_DEV}"
-
-Release kas production image:
+Release kas image:
+  # Releases both stable and RC releases.
   extends:
     - .rules:semver-all
     - .release-kas
+  only:
+    refs:
+      - master
+      - production
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
@@ -254,10 +234,14 @@ Release kas production image:
       "docker://${KAS_IMAGE_SHA}"
       "docker://${KAS_IMAGE_TAG}"
 
-Release selvbetjening production image:
+Release selvbetjening image:
   extends:
     - .rules:semver-all
     - .release-self
+    only:
+      refs:
+        - master
+        - production
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
@@ -268,14 +252,14 @@ Release selvbetjening production image:
 # Deploy stage
 ##############
 
-Deploy test:
+Deploy to Staging:
   extends:
+    - .rules:semver-all
     - .saltbert
-  needs: ["Release kas dev image", "Release selvbetjenings dev image"]
+  needs: ["Release kas image", "Release selvbetjening image"]
   only:
     refs:
       - master
-      - development
   when: manual
   variables:
     SALTBERT_ORCHESTRATION: kas.service-test
@@ -286,9 +270,9 @@ Deploy test:
 
 Deploy prod:
   extends:
-    - .rules:semver-all
+    - .rules:semver-core
     - .saltbert
-  needs: ["Release kas production image", "Release selvbetjening production image"]
+  needs: ["Release kas image", "Release selvbetjening image"]
   when: manual
   variables:
     SALTBERT_ORCHESTRATION: kas.service-prod
