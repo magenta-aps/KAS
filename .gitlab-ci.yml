@@ -268,7 +268,7 @@ Deploy to Staging:
   extends:
     - .rules:semver-all
     - .saltbert
-  needs: ["Release kas image", "Release selvbetjening image"]
+  needs: ["Configure staging"]
   when: manual
   variables:
     SALTBERT_ORCHESTRATION: kas.service-test
@@ -282,7 +282,7 @@ Deploy prod:
   extends:
     - .rules:semver-core
     - .saltbert
-  needs: ["Release kas image", "Release selvbetjening image"]
+  needs: ["Configure prod"]
   when: manual
   variables:
     SALTBERT_ORCHESTRATION: kas.service-prod
