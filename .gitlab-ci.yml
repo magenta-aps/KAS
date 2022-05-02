@@ -270,10 +270,10 @@ Deploy to Staging:
     - .rules:semver-all
     - .saltbert
   needs: ["Configure staging"]
-  when: manual
   variables:
     SALTBERT_ORCHESTRATION: kas.service-test
     SALTBERT_URL: https://ctrldev1.magenta-aps.dk
+  when: manual
   environment:
     name: test
     url: "https://test.kas.aka.nanoq.gl"
@@ -284,10 +284,10 @@ Deploy prod:
     - .rules:semver-core
     - .saltbert
   needs: ["Configure prod"]
-  when: manual
   variables:
     SALTBERT_ORCHESTRATION: kas.service-prod
     SALTBERT_URL: https://ctrl1.magenta-aps.dk
+  when: manual
   environment:
     name: production
     url: "https://kas.aka.nanoq.gl"
