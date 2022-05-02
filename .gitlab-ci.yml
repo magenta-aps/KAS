@@ -264,6 +264,7 @@ Configure prod:
     ENDPOINT: kas/update-production
 
 Deploy to Staging:
+  stage: deploy
   extends:
     - .rules:semver-all
     - .saltbert
