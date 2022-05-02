@@ -5,7 +5,6 @@ from django.db.models.functions import Length
 from django.forms.models import model_to_dict
 from simple_history.models import HistoricalRecords
 
-
 """
 There are four types of models in this module:
 
@@ -189,24 +188,24 @@ class MockModels:
 # Add methods that can be used to access correct source data models
 # in both production and test/development.
 def get_kas_beregninger_x_model():
-    if settings.ENVIRONMENT != "production":
-        return MockModels.MockKasBeregningerX
-    else:
+    if settings.ENVIRONMENT in ('production', 'staging'):
         return EskatModels.KasBeregningerX
+    elif settings.ENVIRONMENT == 'development':
+        return MockModels.MockKasBeregningerX
 
 
 def get_kas_mandtal_model():
-    if settings.ENVIRONMENT != "production":
-        return MockModels.MockKasMandtal
-    else:
+    if settings.ENVIRONMENT in ('production', 'staging'):
         return EskatModels.KasMandtal
+    elif settings.ENVIRONMENT == 'development':
+        return MockModels.MockKasMandtal
 
 
 def get_r75_private_pension_model():
-    if settings.ENVIRONMENT != "production":
-        return MockModels.MockR75Idx4500230
-    else:
+    if settings.ENVIRONMENT in ('production', 'staging'):
         return EskatModels.R75Idx4500230
+    elif settings.ENVIRONMENT == 'development':
+        return MockModels.MockR75Idx4500230
 
 
 class ImportedKasBeregningerX(AbstractModels.KasBeregningerX):

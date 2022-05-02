@@ -9,13 +9,13 @@ from django.test import override_settings, TransactionTestCase
 from fakeredis import FakeStrictRedis
 from rq import Queue
 
+from eskat.jobs import generate_sample_data
 from kas.eboks import EboksClient
 from kas.jobs import dispatch_tax_year, generate_batch_and_transactions_for_year, merge_pension_companies, \
     import_mandtal
 from kas.models import TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany, TaxSlipGenerated, FinalSettlement
 from prisme.models import Prisme10QBatch
 from worker.models import Job
-from eskat.jobs import import_eskat_mockup
 from project.dafo import DatafordelerClient
 
 test_settings = dict(settings.EBOKS)
@@ -112,25 +112,26 @@ class MandtalImportJobsTest(BaseTransactionTestCase):
                        "adresse": "Imaneq 32A, 3.", "postnummer": 3900, "bynavn": "Nuuk"}})
     @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
     def test_mandtal_import_and_merge_with_dafo(self, django_rq, _get):
-        # Indlaes fra E-skat mockup
-        Job.schedule_job(import_eskat_mockup,
-                         job_type='import_eskat_mockup',
-                         created_by=self.user)
+        Job.schedule_job(
+            generate_sample_data,
+            'GenerateSampleData',
+            self.user,
+        )
 
         # Indlæs fra e-skat data til KAS systemet, herunder fletning af adresser
         Job.schedule_job(import_mandtal,
                          job_type='ImportMandtalJob',
-                         job_kwargs={"year": "2021", "source_model": "mockup"}, created_by=self.user)
+                         job_kwargs={"year": "2021"}, created_by=self.user)
 
-        self.assertEqual(Person.objects.count(), 17)
+        self.assertEqual(Person.objects.count(), 16)
 
         self.assertEqual(Person.objects.filter(updated_from_dafo=True).count(), 2)
-        self.assertEqual(Person.objects.filter(updated_from_dafo=False).count(), 15)
+        self.assertEqual(Person.objects.filter(updated_from_dafo=False).count(), 14)
 
         self.assertEqual(Person.objects.filter(status='Alive').count(), 1)  # Mocked af Andessine in Dafo
         self.assertEqual(Person.objects.filter(status='Dead').count(), 1)  # Mocked af Andes in Dafo
         self.assertEqual(Person.objects.filter(status='Undefined').count(),
-                         15)  # 0102031234, the predefined person that is also 'Undefined'
+                         14)  # 0102031234, the predefined person that is also 'Undefined'
 
         person = Person.objects.get(cpr='0101570010')
         self.assertEqual(person.name, 'Anders And')

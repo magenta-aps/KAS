@@ -1,7 +1,6 @@
 import uuid
 
 from eskat.models import MockModels
-from kas.management.commands.import_default_pension_companies import Command as PensionCompanyImport
 from kas.models import TaxYear
 
 unique_res_counter = 0
@@ -161,13 +160,7 @@ def create_person(
         )
 
 
-def import_default_mockup_data():
-    # Make sure we have pension company data
-    PensionCompanyImport().handle()
-
-    # Clean out existing mockup data
-    MockModels.MockR75Idx4500230.objects.all().delete()
-    MockModels.MockKasMandtal.objects.all().delete()
+def generate_persons():
 
     create_person(
         "Borger med 0 afkast",

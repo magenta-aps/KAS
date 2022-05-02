@@ -2,6 +2,7 @@ import base64
 import calendar
 import math
 import csv
+import uuid
 from io import StringIO
 from time import sleep
 from uuid import uuid4
@@ -34,7 +35,7 @@ import re
 
 
 def filefield_path(instance, filename):
-    return instance.file_path(filename)
+    return filename
 
 
 def get_admin_user():
@@ -306,7 +307,7 @@ recipient_statuses = (
 
 
 def taxslip_path_by_year(instance, filename):
-    return 'reports/{filename}'.format(filename=filename)
+    return f"taxslip/{instance.persontaxyear.year}/{uuid.uuid4()}.pdf"
 
 
 class EboksDispatch(models.Model):
@@ -369,10 +370,21 @@ class EboksDispatch(models.Model):
 
 class TaxSlipGenerated(EboksDispatch):
 
-    file = models.FileField(upload_to=filefield_path, null=True)
+    file = models.FileField(upload_to=taxslip_path_by_year, null=True)
 
-    def file_path(self, filename):
-        return f"reports/{self.persontaxyear.year}/{self.persontaxyear.person.cpr_formatted}/{filename}"
+
+def delete_file(sender, instance, using, **kwargs):
+    """
+    This method expect a model with a filefield named file.
+    """
+    if instance.file:
+        # delete the pdf file
+        instance.file.delete(save=False)
+
+
+post_delete.connect(delete_file,
+                    sender=TaxSlipGenerated,
+                    dispatch_uid='delete_tax_slip_file')
 
 
 class PersonTaxYear(HistoryMixin, models.Model):
@@ -1068,6 +1080,10 @@ class PreviousYearNegativePayout(models.Model):
         return f'used from :{self.used_from} used for :{self.used_for} payout :{self.transferred_negative_payout}'
 
 
+def policydocument_file_path(instance, filename):
+    return f"policydocuments/{instance.person_tax_year.year}/{uuid.uuid4()}"
+
+
 class PolicyDocument(models.Model):
     person_tax_year = models.ForeignKey(PersonTaxYear, null=False, db_index=True, on_delete=models.PROTECT)
     uploaded_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.PROTECT)
@@ -1093,17 +1109,13 @@ class PolicyDocument(models.Model):
     file = models.FileField(
         verbose_name=_('Fil'),
         blank=False,
-        upload_to=filefield_path,
+        upload_to=policydocument_file_path,
     )
 
-    def file_path(self, filename):
-        path = ['policydocuments', str(self.person_tax_year.year), self.person_tax_year.person.cpr_formatted]
-        if self.policy_tax_year:
-            path.append(f"policy_{self.policy_tax_year.policy_number}")
-        else:
-            path.append("person")
-        path.append(filename)
-        return '/'.join(path)
+
+post_delete.connect(delete_file,
+                    sender=PolicyDocument,
+                    dispatch_uid='delete_policy_document')
 
 
 def set_all_documents_and_notes_handled(sender, instance, created, raw, using, update_fields, **kwargs):
@@ -1205,9 +1217,7 @@ post_save.connect(add_skatteaar_to_queue, TaxYear, dispatch_uid='Skatteaar.add_t
 
 
 def pensioncompanysummaryfile_path(instance, filename):
-    # settings.USE_TZ is True, so we get an aware datetime
-    return f"pensioncompany_summary/{instance.company.id}/" \
-           f"{instance.tax_year.year}/{timezone.now().strftime('%Y-%m-%d %H.%M.%S UTC')}.csv"
+    return f"pensioncompany_summary/{instance.tax_year.year}/{uuid.uuid4()}.csv"
 
 
 class PensionCompanySummaryFile(models.Model):
@@ -1225,7 +1235,7 @@ class PensionCompanySummaryFile(models.Model):
     )
 
     file = models.FileField(
-        upload_to=filefield_path,
+        upload_to=pensioncompanysummaryfile_path,
         null=False,
     )
 
@@ -1247,7 +1257,7 @@ class PensionCompanySummaryFile(models.Model):
             pension_company=pension_company,
             person_tax_year__tax_year=tax_year
         ).prefetch_related('person_tax_year', 'person_tax_year__person')
-        file_entry = PensionCompanySummaryFile(company=pension_company, tax_year=tax_year, creator=creator)
+        file_entry = PensionCompanySummaryFile.objects.create(company=pension_company, tax_year=tax_year, creator=creator)
 
         csvfile = StringIO()
         writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -1272,8 +1282,10 @@ class PensionCompanySummaryFile(models.Model):
         csvfile.close()
         return file_entry
 
-    def file_path(self, filename):
-        return f"pensioncompany_summary/{self.tax_year.year}/{self.company.res}/{filename}"
+
+post_delete.connect(delete_file,
+                    sender=PensionCompanySummaryFile,
+                    dispatch_uid='delete_pension_file')
 
 
 class PensionCompanySummaryFileDownload(models.Model):
@@ -1300,13 +1312,17 @@ class PensionCompanySummaryFileDownload(models.Model):
     )
 
 
+def final_settlement_file_path(instance, filename):
+    return f"settlements/{instance.person_tax_year.tax_year.year}/{uuid.uuid4()}.pdf"
+
+
 class FinalSettlement(EboksDispatch):
     """
     Slutopgørelse
     """
     uuid = models.UUIDField(primary_key=True, default=uuid4)
     person_tax_year = models.ForeignKey(PersonTaxYear, null=False, db_index=True, on_delete=models.PROTECT)
-    pdf = models.FileField(upload_to=filefield_path)
+    pdf = models.FileField(upload_to=final_settlement_file_path)
     invalid = models.BooleanField(default=False, verbose_name=_('Slutopgørelse er ikke gyldig'))
 
     interest_on_remainder = models.DecimalField(
@@ -1347,9 +1363,6 @@ class FinalSettlement(EboksDispatch):
         null=False,
         default=PAYMENT_TEXT_BULK
     )
-
-    def file_path(self, filename):
-        return f"settlements/{self.person_tax_year.year}/{self.person_tax_year.person.cpr}/{self.uuid.hex}.pdf"
 
     def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
         if self.status == 'send':
@@ -1528,6 +1541,17 @@ class FinalSettlement(EboksDispatch):
         ).first()
 
 
+def delete_pdf(sender, instance, using, **kwargs):
+    if instance.pdf:
+        # delete the pdf file
+        instance.pdf.delete(save=False)
+
+
+post_delete.connect(delete_pdf,
+                    sender=FinalSettlement,
+                    dispatch_uid='delete_final_settlement_pdf')
+
+
 class AddressFromDafo(models.Model):
     cpr = models.TextField(unique=True, null=False)
     address = models.TextField(blank=True, null=True)
@@ -1546,15 +1570,6 @@ class AddressFromDafo(models.Model):
 
     def __str__(self):
         return '%s - %s' % (self.navn, self.fuld_adresse)
-
-
-def delete_pdf(sender, instance, using, **kwargs):
-    if instance.pdf:
-        # delete the pdf file
-        instance.pdf.delete(save=False)
-
-
-post_delete.connect(delete_pdf, sender=FinalSettlement, dispatch_uid='delete_pdf')
 
 
 @receiver(post_save, sender=FinalSettlement)

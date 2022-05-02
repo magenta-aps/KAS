@@ -53,6 +53,14 @@ Lint Dockerfiles:
   script:
     - git ls-files --exclude='Dockerfile*' --ignored | xargs --max-lines=1 hadolint
 
+Lint REUSE compliance:
+  extends: .lint-default
+  image:
+    name: fsfe/reuse:latest
+    entrypoint: [""]
+  script:
+    - reuse lint
+
 # Build stage
 #############
 
@@ -121,13 +129,7 @@ KAS Unittest:
     SELVBETJENING_REPRESENTATION_STOP: http://kas-selvbetjening:8000/represent-stop
     SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE: 60
     EBOKS_DISPATCH_BULK_SIZE: 100
-    EBOKS_CLIENT_CERTIFICATES: ""
-    EBOKS_CLIENT_PRIVATE_KEY: ""
-    EBOKS_VERIFY: ""
-    EBOKS_CLIENT_ID: ""
-    EBOKS_SYSTEM_ID: ""
-    EBOKS_HOST: ""
-    EBOKS_CONTENT_TYPE_ID: ""
+    EBOKS_MOCK: 'True'
     # No access to the eskat database, so give it dummy environment variables
     ESKAT_HOST: ""
     ESKAT_PORT: ""
@@ -216,33 +218,9 @@ Selvbetjening Unittest:
     - .release-kas
   needs: ["Selvbetjening Unittest"]
 
-Release kas dev image:
-  extends:
-    - .release-kas
-  only:
-    refs:
-      - master
-  script:
-    - skopeo copy
-      --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
-      --dest-creds=${RELEASE_REGISTRY_USER}:${RELEASE_REGISTRY_PASSWORD}
-      "docker://${KAS_IMAGE_SHA}"
-      "docker://${KAS_IMAGE_DEV}"
 
-Release selvbetjenings dev image:
-  extends:
-    - .release-self
-  only:
-    refs:
-      - master
-  script:
-    - skopeo copy
-      --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
-      --dest-creds=${RELEASE_REGISTRY_USER}:${RELEASE_REGISTRY_PASSWORD}
-      "docker://${SELF_IMAGE_SHA}"
-      "docker://${SELF_IMAGE_DEV}"
-
-Release kas production image:
+Release kas image:
+  # Releases both stable and RC releases.
   extends:
     - .rules:semver-all
     - .release-kas
@@ -253,7 +231,7 @@ Release kas production image:
       "docker://${KAS_IMAGE_SHA}"
       "docker://${KAS_IMAGE_TAG}"
 
-Release selvbetjening production image:
+Release selvbetjening image:
   extends:
     - .rules:semver-all
     - .release-self
@@ -267,15 +245,30 @@ Release selvbetjening production image:
 # Deploy stage
 ##############
 
-Deploy test:
+Configure staging:
   stage: deploy
   extends:
+    - .rules:semver-all
+    - .release-to-prod
+  needs: ["Release kas image", "Release selvbetjening image"]
+  variables:
+    ENDPOINT: kas/update-test
+
+Configure prod:
+  stage: deploy
+  extends:
+    - .rules:semver-core
+    - .release-to-prod
+  needs: ["Release kas image", "Release selvbetjening image"]
+  variables:
+    ENDPOINT: kas/update-production
+
+Deploy to Staging:
+  extends:
+    - .rules:semver-all
     - .saltbert
+  needs: ["Release kas image", "Release selvbetjening image"]
   when: manual
-  needs: ["Release kas dev image", "Release selvbetjenings dev image"]
-  only:
-    refs:
-      - master
   variables:
     SALTBERT_ORCHESTRATION: kas.service-test
     SALTBERT_URL: https://ctrldev1.magenta-aps.dk
@@ -283,21 +276,13 @@ Deploy test:
     name: test
     url: "https://test.kas.aka.nanoq.gl"
 
-
-Configure prod:
-  stage: deploy
-  extends: .release-to-prod
-  when: manual
-  needs: ["Release kas production image", "Release selvbetjening production image"]
-  variables:
-    ENDPOINT: kas/update-production
-
 Deploy prod:
   stage: deploy
   extends:
-    - .rules:semver-all
+    - .rules:semver-core
     - .saltbert
-  needs: ["Release kas production image", "Release selvbetjening production image", "Configure prod"]
+  needs: ["Release kas image", "Release selvbetjening image"]
+  when: manual
   variables:
     SALTBERT_ORCHESTRATION: kas.service-prod
     SALTBERT_URL: https://ctrl1.magenta-aps.dk

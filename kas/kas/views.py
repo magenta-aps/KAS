@@ -990,7 +990,6 @@ class UpdateSingleMandtal(PermissionRequiredWithMessage, SingleObjectMixin, View
                 job_kwargs={
                     'year': obj.year,
                     'cpr': obj.person.cpr,
-                    'source_model': 'eskat' if settings.ENVIRONMENT == "production" else 'mockup'
                 }
             )
         except Exception as e:
