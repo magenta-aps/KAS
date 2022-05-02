@@ -249,9 +249,6 @@ Deploy to Staging:
     - .rules:semver-all
     - .saltbert
   needs: ["Release kas image", "Release selvbetjening image"]
-  only:
-    refs:
-      - master
   when: manual
   variables:
     SALTBERT_ORCHESTRATION: kas.service-test
