@@ -248,6 +248,7 @@ Configure staging:
   extends:
     - .rules:semver-all
     - .config:endpoint-with-tag
+  when: manual
   needs: ["Release kas image", "Release selvbetjening image"]
   variables:
     ENDPOINT: kas/update-test
@@ -258,6 +259,7 @@ Configure prod:
     - .rules:semver-core
     - .config:endpoint-with-tag
   needs: ["Release kas image", "Release selvbetjening image"]
+  when: manual
   variables:
     ENDPOINT: kas/update-production
 
@@ -267,7 +269,6 @@ Configure prod:
 Deploy to Staging:
   stage: deploy
   extends:
-    - .rules:semver-all
     - .saltbert
   needs: ["Configure staging"]
   variables:
@@ -281,7 +282,6 @@ Deploy to Staging:
 Deploy prod:
   stage: deploy
   extends:
-    - .rules:semver-core
     - .saltbert
   needs: ["Configure prod"]
   variables:
