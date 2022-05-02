@@ -267,6 +267,7 @@ Configure prod:
 Deploy to Staging:
   stage: deploy
   extends:
+    - .rules:semver-all
     - .saltbert
   needs: ["Configure staging"]
   variables:
@@ -280,6 +281,7 @@ Deploy to Staging:
 Deploy prod:
   stage: deploy
   extends:
+    - .rules:semver-core
     - .saltbert
   needs: ["Configure prod"]
   variables:
