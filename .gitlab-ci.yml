@@ -3,6 +3,7 @@ stages:
   - build
   - test
   - release
+  - configure
   - deploy
 
 include:
@@ -242,11 +243,8 @@ Release selvbetjening image:
       "docker://${SELF_IMAGE_SHA}"
       "docker://${SELF_IMAGE_TAG}"
 
-# Deploy stage
-##############
-
 Configure staging:
-  stage: deploy
+  stage: configure
   extends:
     - .rules:semver-all
     - .release-to-prod
@@ -255,13 +253,16 @@ Configure staging:
     ENDPOINT: kas/update-test
 
 Configure prod:
-  stage: deploy
+  stage: configure
   extends:
     - .rules:semver-core
     - .release-to-prod
   needs: ["Release kas image", "Release selvbetjening image"]
   variables:
     ENDPOINT: kas/update-production
+
+# Deploy stage
+##############
 
 Deploy to Staging:
   stage: deploy
