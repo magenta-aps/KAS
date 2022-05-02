@@ -238,10 +238,10 @@ Release selvbetjening image:
   extends:
     - .rules:semver-all
     - .release-self
-    only:
-      refs:
-        - master
-        - production
+  only:
+    refs:
+      - master
+      - production
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
