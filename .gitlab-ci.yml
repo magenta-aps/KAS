@@ -223,10 +223,6 @@ Release kas image:
   extends:
     - .rules:semver-all
     - .release-kas
-  only:
-    refs:
-      - master
-      - production
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
@@ -238,10 +234,6 @@ Release selvbetjening image:
   extends:
     - .rules:semver-all
     - .release-self
-  only:
-    refs:
-      - master
-      - production
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
