@@ -243,26 +243,6 @@ Release selvbetjening image:
       "docker://${SELF_IMAGE_SHA}"
       "docker://${SELF_IMAGE_TAG}"
 
-Configure staging:
-  stage: configure
-  extends:
-    - .rules:semver-all
-    - .config:endpoint-with-tag
-  needs: ["Release kas image", "Release selvbetjening image"]
-  variables:
-    ENDPOINT: kas/update-test
-    CONFIG_UPDATER_USERNAME: kas
-
-Configure prod:
-  stage: configure
-  extends:
-    - .rules:semver-core
-    - .config:endpoint-with-tag
-  needs: ["Release kas image", "Release selvbetjening image"]
-  variables:
-    ENDPOINT: kas/update-production
-    CONFIG_UPDATER_USERNAME: kas
-
 # Deploy stage
 ##############
 
@@ -271,7 +251,7 @@ Deploy to Staging:
   extends:
     - .rules:semver-all
     - .saltbert
-  needs: ["Configure staging"]
+  needs: ["Release selvbetjening image", "Release kas image"]
   variables:
     SALTBERT_ORCHESTRATION: kas.service-test
     SALTBERT_URL: https://ctrldev1.magenta-aps.dk
@@ -285,7 +265,7 @@ Deploy prod:
   extends:
     - .rules:semver-core
     - .saltbert
-  needs: ["Configure prod"]
+  needs: ["Release selvbetjening image", "Release kas image"]
   variables:
     SALTBERT_ORCHESTRATION: kas.service-prod
     SALTBERT_URL: https://ctrl1.magenta-aps.dk
