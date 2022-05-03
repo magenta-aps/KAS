@@ -67,7 +67,7 @@ Lint REUSE compliance:
 
 Build kas image:
   stage: build
-  needs: []
+  needs: ["Lint Python", "Lint Dockerfiles", "Lint REUSE compliance"]
   dependencies: []
   image:
     name: gcr.io/kaniko-project/executor:debug-v0.16.0
@@ -85,7 +85,7 @@ Build kas image:
 
 Build selvbetjenings image:
   stage: build
-  needs: []
+  needs: ["Lint Python", "Lint Dockerfiles", "Lint REUSE compliance"]
   dependencies: []
   image:
     name: gcr.io/kaniko-project/executor:debug-v0.16.0
