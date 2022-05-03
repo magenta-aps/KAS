@@ -220,6 +220,7 @@ TENQ = {
     'destinations': {
         'production': ['10q_production', '10q_development'],  # Our prod server can use both prod and dev on the 10q server
         'development': ['10q_development', '10q_mocking']  # Our dev server can only use dev on the 10q server
+        'staging': ['10q_development'],
     },
     'project_id': os.environ['TENQ_PROJECT_ID'],
 }
