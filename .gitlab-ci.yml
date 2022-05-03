@@ -3,6 +3,7 @@ stages:
   - build
   - test
   - release
+  - configure
   - deploy
 
 include:
