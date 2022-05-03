@@ -1261,19 +1261,39 @@ class PensionCompanySummaryFile(models.Model):
 
         csvfile = StringIO()
         writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+        headers = [
+            'Skatteår',
+            'Reg.nr.',
+            'Cpr.nr.',
+            'Aftalenr.',
+            'Afkast',
+            'Modregnet negativt afkast tidl. år',
+            'Beregningsgrundlag',
+            'Forudbetaling',
+            'Kapitalafkastskat',
+            f"Afregnet af {pension_company.name}",
+            'Bemærkninger'
+        ]
+        writer.writerow(headers)
+
         for policy_tax_year in qs.iterator():
             calculation = policy_tax_year.get_calculation()
+            note = ''
+            if calculation['year_adjusted_amount'] != calculation['initial_amount']:
+                note = 'Afkast reduceret pga. af delvis skattepligt i året'
             line = [
                 policy_tax_year.tax_year.year,  # TaxYear (Integer, 4 digits, positive. XXXX eg. 2013)
                 pension_company.res,  # Reg_se_nr (Integer, positive)
                 policy_tax_year.cpr,  # Cpr: The CPR on the person
                 policy_tax_year.policy_number,  # Police_no (Integer, positive)
-                calculation['initial_amount'],  # Tax base 1 per police (Return)(Integer)
+                calculation['year_adjusted_amount'],  # Tax base 1 per police (Return)(Integer)  # Årets justerede afkast
                 calculation['used_negative_return'],  # The previous year's negative return (Integer)
                 calculation['taxable_amount'],  # Tax base 2 (Tax base 1 minus the previous year's negative return)(Integer, 10 digits)
                 policy_tax_year.preliminary_paid_amount or 0,  # Provisional tax paid (Integer, 10 digits, positive)
                 calculation['tax_with_deductions'],  # Wanted cash tax (Integer)
                 None,  # Actual settlement pension company (Empty column)
+                note
             ]
             writer.writerow(line)
 
