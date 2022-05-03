@@ -251,6 +251,7 @@ Configure staging:
   needs: ["Release kas image", "Release selvbetjening image"]
   variables:
     ENDPOINT: kas/update-test
+    CONFIG_UPDATER_USERNAME: kas
 
 Configure prod:
   stage: configure
@@ -260,6 +261,7 @@ Configure prod:
   needs: ["Release kas image", "Release selvbetjening image"]
   variables:
     ENDPOINT: kas/update-production
+    CONFIG_UPDATER_USERNAME: kas
 
 # Deploy stage
 ##############
