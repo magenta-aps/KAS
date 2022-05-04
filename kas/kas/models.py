@@ -1,5 +1,6 @@
 import base64
 import calendar
+import datetime
 import math
 import csv
 from io import StringIO
@@ -7,6 +8,8 @@ from time import sleep
 from uuid import uuid4
 import random
 import string
+
+import pytz
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -180,6 +183,10 @@ class TaxYear(models.Model):
         validators=[max_sixty_characters_per_line_validator],
     )
 
+    def get_active_lock(self):
+        '''Get the TaxYears active Lock, There is allways one'''
+        return self.lock_set.get(interval_to=None)
+
     @property
     def is_leap_year(self):
         return calendar.isleap(self.year)
@@ -200,6 +207,43 @@ recipient_recieve_statuses = (
     ('Alive', _('')),
     ('Dead', _('Afdød'))
 )
+
+
+class Lock(models.Model):
+
+    class Meta:
+        ordering = ('interval_from', )
+
+    interval_from = models.DateTimeField(null=True)
+
+    interval_to = models.DateTimeField(null=True, blank=True)
+
+    taxyear = models.ForeignKey(
+        TaxYear,
+        db_index=True,
+        on_delete=models.PROTECT,
+    )
+
+    @classmethod
+    def create_default(self, taxyear):
+        return Lock.objects.create(taxyear=taxyear, interval_from=datetime.datetime(year=taxyear.year, month=1, day=1, tzinfo=pytz.timezone('UTC')))
+
+    def lock_and_create(self):
+        """This is a helperfunction for creation of a new lock. The new lock is created on the same TaxYear as the current Lock,
+        and the old Lock is closed"""
+        old_lock = self.taxyear.lock_set.get(interval_to=None)
+        created_lock = Lock.create_default(taxyear=self.taxyear)
+        old_lock.interval_to = created_lock.interval_from
+        old_lock.save()
+
+        return created_lock
+
+
+@receiver(post_save, sender=TaxYear, dispatch_uid='create_lock_for_year')
+def create_lock_for_year(sender, instance, created, **kwargs):
+    """Automatically create a Lock every time a TaxYear is created"""
+    if created:
+        Lock.create_default(taxyear=instance)
 
 
 class Person(HistoryMixin, models.Model):
@@ -1308,6 +1352,13 @@ class FinalSettlement(EboksDispatch):
     person_tax_year = models.ForeignKey(PersonTaxYear, null=False, db_index=True, on_delete=models.PROTECT)
     pdf = models.FileField(upload_to=filefield_path)
     invalid = models.BooleanField(default=False, verbose_name=_('Slutopgørelse er ikke gyldig'))
+
+    lock = models.ForeignKey(
+        Lock,
+        on_delete=models.PROTECT,
+        null=True,  # TODO After attaching all TaxSlipGenerated to a lock, this needs to be removed. It needs lock
+        blank=False,
+    )
 
     interest_on_remainder = models.DecimalField(
         default='0.0',

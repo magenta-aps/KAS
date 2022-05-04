@@ -661,6 +661,7 @@ class TaxFinalStatementPDF(FPDF):
     def generate_pdf(cls, person_tax_year: PersonTaxYear, **modelform_fields):
         final_settlement = FinalSettlement(
             person_tax_year=person_tax_year,
+            lock=person_tax_year.tax_year.get_active_lock(),
             **modelform_fields
         )
         pdf_generator = cls(
