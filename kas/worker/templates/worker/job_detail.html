@@ -28,7 +28,7 @@
         <td>{{ object.duration|duration }}</td>
     </tr>
     {% endif %}
-    {% if object.status == 'finished' or object.status == 'failed' %}
+    {% if object.status == 'finished' %}
     <tr>
         <th>{% trans 'Opsummering' %}</th>
         <td class="job-summary">
@@ -42,6 +42,14 @@
         <th>{% trans 'Fremskridt' %}</th>
         <td>{{ object.pretty_progress }}</td>
     </tr>
+    {% elif object.status == 'failed' %}
+        <tr>
+            <th>{% trans 'Fejl' %}</th>
+            <td>
+                {{ object.traceback }}
+            </td>
+        </tr>
+
     {% endif %}
     </tbody>
 </table>
