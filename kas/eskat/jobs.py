@@ -115,7 +115,7 @@ def importere_kas_beregninger_for_legacy_years(job):
         raise Exception('skatteår eksistere ikke')
 
     if year.year not in settings.LEGACY_YEARS:
-        raise Exception("Kun import af tidligere er (2018/219) er understøttet")
+        raise Exception("Kun import af tidligere år (2018/219) er understøttet")
 
     SourceModel = get_kas_beregninger_x_model().objects.filter(skatteaar=year.year)
     fundet_beregninger = SourceModel.count()
