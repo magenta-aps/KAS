@@ -42,7 +42,7 @@ class AbstractKasBeregningerX(models.Model):
     cpr_dashed = models.TextField(blank=True, null=True)
     pension_crt_lock_batch_guid = models.UUIDField(blank=True, null=True)
     reg_date = models.DateTimeField()
-    is_locked = models.CharField(max_length=1, blank=True, null=True) # What can this be?
+    is_locked = models.CharField(max_length=1, blank=True, null=True)
     no = models.IntegerField(blank=True, null=True)
     capital_return = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     sum_negative_capital_return = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
@@ -78,11 +78,9 @@ class ImportedKasBeregningerX(models.Model):
     pension_crt_calc_guid = models.UUIDField(primary_key=True)
     cpr = models.TextField()
     skatteaar = models.IntegerField()
-    # Dette er det eneste felt der er relavant for 2018/2019 data
+    # Dette er det eneste felt der er relevant for 2018/2019 data
     capital_return_tax = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-    # TODO mangler vi ikke pensionsselskabet?
     history = HistoricalRecords()
-    # Maybe create a compose index on (cpr, skatteaar)
 
 
 def get_kas_beregninger_x_model():

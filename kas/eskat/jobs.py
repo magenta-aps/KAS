@@ -1,13 +1,15 @@
+from uuid import uuid4
+
+from django.apps import apps
+from django.conf import settings
+from django.core.management import call_command
+from django.db.models.deletion import ProtectedError
+
 from eskat.mockupdata import generate_persons
 from eskat.models import MockModels, get_kas_beregninger_x_model, ImportedKasBeregningerX, MockKasBeregningerX
+from kas.models import TaxYear
 from worker.job_registry import resolve_job_function
 from worker.models import job_decorator, Job
-from kas.models import TaxYear, Person
-from django.core.management import call_command
-from django.conf import settings
-from django.apps import apps
-from django.db.models.deletion import ProtectedError
-from uuid import uuid4
 
 rate_text = (
     "Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pil-\n"
