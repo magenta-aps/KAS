@@ -8,7 +8,7 @@ def get_job_types():
     :returns available jobs based on environment
     """
     from worker.forms import MandtalImportJobForm, R75ImportJobForm, YearAndTitleForm, ConfirmForm, YearPkForm, \
-        AutoligningsYearForm
+        AutoligningsYearForm, LegacyYearsForm
     from prisme.forms import PrePaymentFileModelForm
 
     jobs = {
@@ -81,7 +81,13 @@ def get_job_types():
             'label': _('Flet pensionsselskaber'),
             'not_in_dropdown': True,
             'result_template': 'worker/includes/status_only.html',
-        }
+        },
+        'ImportLegacyCalculations': {
+            'label': _('Importere kas beregninger for tidligere år (2018/2019)'),
+            'form_class': LegacyYearsForm,
+            'result_template': 'worker/includes/status_only.html',
+            'function': 'eskat.jobs.importere_kas_beregninger_for_legacy_years'
+        },
     }
     if settings.ENVIRONMENT in ('development', 'staging'):
         jobs.update({
