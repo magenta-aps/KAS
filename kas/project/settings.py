@@ -258,3 +258,5 @@ for x in FEATURE_FLAGS:
     if env_key in os.environ:
         value = os.environ[env_key]
         FEATURE_FLAGS[x] = bool(strtobool(value))
+
+LEGACY_YEARS = (2018, 2019)

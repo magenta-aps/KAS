@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.utils.translation import gettext as _
 
 from kas.forms_mixin import BootstrapForm
@@ -65,6 +66,14 @@ class YearPkForm(BootstrapForm):
     def __init__(self, *args, **kwargs):
         super(YearPkForm, self).__init__(*args, **kwargs)
         self.fields['year_pk'].choices = ((year.pk, str(year.year)) for year in TaxYear.objects.all())
+
+
+class LegacyYearsForm(YearPkForm):
+
+    def __init__(self, *args, **kwargs):
+        super(LegacyYearsForm, self).__init__(*args, **kwargs)
+        self.fields['year_pk'].choices = ((year.pk, str(year.year))
+                                          for year in TaxYear.objects.filter(year__in=settings.LEGACY_YEARS))
 
 
 class AutoligningsYearForm(BootstrapForm):
