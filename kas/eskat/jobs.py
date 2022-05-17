@@ -4,6 +4,7 @@ from django.apps import apps
 from django.conf import settings
 from django.core.management import call_command
 from django.db.models.deletion import ProtectedError
+from django.utils import timezone
 
 from eskat.mockupdata import generate_persons
 from eskat.models import MockModels, get_kas_beregninger_x_model, ImportedKasBeregningerX, MockKasBeregningerX
@@ -96,7 +97,6 @@ def generate_sample_data(job):
             job_kwargs={'year': tax_year.year}
         )
     # Generate mockkas beregninger
-    from django.utils import timezone
     for tax_year in settings.LEGACY_YEARS:
         for cpr in ['0101570010', '0101005089', '0103897769', '1509814844', '2512474856']:
             MockKasBeregningerX.objects.update_or_create(skatteaar=tax_year,
