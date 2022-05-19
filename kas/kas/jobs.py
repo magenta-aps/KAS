@@ -13,17 +13,16 @@ from django.utils import timezone
 from requests.exceptions import HTTPError, ConnectionError
 from rq import get_current_job
 
-from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels, EskatModels
+from eskat.jobs import delete_protected
+from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, get_kas_mandtal_model, \
+    get_r75_private_pension_model
 from kas.eboks import EboksClient, EboksDispatchGenerator
-from kas.management.commands.create_initial_years import Command as CreateInitialYears
-from kas.management.commands.import_default_pension_companies import Command as CreateInitialPensionComanies
-from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated, \
-    PreviousYearNegativePayout, FinalSettlement, AddressFromDafo, PersonTaxYearCensus, HistoryMixin
+from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, FinalSettlement, AddressFromDafo, \
+    PersonTaxYearCensus, HistoryMixin, TaxSlipGenerated, PensionCompanySummaryFile
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.reportgeneration.kas_report import TaxPDF
 from prisme.models import Prisme10QBatch
 from project.dafo import DatafordelerClient
-from worker.job_registry import get_job_types, resolve_job_function
 from worker.models import job_decorator, Job
 
 
@@ -43,16 +42,9 @@ def import_mandtal(job):
     number_of_progress_segments = 2
     progress_factor = 1 / number_of_progress_segments
 
-    if job.arguments['source_model'] == "mockup":
-        source_model = MockModels.MockKasMandtal
-    elif job.arguments['source_model'] == "eskat":
-        source_model = EskatModels.KasMandtal
-    else:
-        source_model = None
-
     mandtal_created, mandtal_updated = ImportedKasMandtal.import_year(
         year, job, progress_factor, 0,
-        source_model=source_model,
+        source_model=get_kas_mandtal_model(),
         cpr_limit=cpr_limit
     )
 
@@ -200,16 +192,9 @@ def import_r75(job):
     number_of_progress_segments = 2
     progress_factor = 1 / number_of_progress_segments
 
-    if job.arguments['source_model'] == "mockup":
-        source_model = MockModels.MockR75Idx4500230
-    elif job.arguments['source_model'] == "eskat":
-        source_model = EskatModels.R75Idx4500230
-    else:
-        source_model = None
-
     (r75_created, r75_updated) = ImportedR75PrivatePension.import_year(
         year, job, progress_factor, 0,
-        source_model=source_model
+        source_model=get_r75_private_pension_model()
     )
 
     progress_start = 50
@@ -413,97 +398,6 @@ def dispatch_eboks_tax_slips(job):
 
     if has_more:
         Job.schedule_job(dispatch_eboks_tax_slips, 'dispatch_tax_year_child', job.parent.created_by, parent=job.parent)
-
-
-@job_decorator
-def clear_test_data(job):
-    if settings.ENVIRONMENT == "production":
-        raise Exception("Will not clear data in production")
-
-    for model in (
-        ImportedKasMandtal,
-        ImportedR75PrivatePension,
-        MockModels.MockKasMandtal,
-        MockModels.MockR75Idx4500230,
-        PreviousYearNegativePayout,
-        PolicyTaxYear,
-        PersonTaxYear,
-        Person,
-        TaxYear,
-        PensionCompany,
-    ):
-        model.objects.all().delete()
-
-    CreateInitialYears().handle()
-    CreateInitialPensionComanies().handle()
-
-    return {
-        'status': 'OK',
-        'message': 'Data nulstillet',
-    }
-
-
-def dispatch_chained_jobs(list_of_jobs, parent_job):
-    total_jobs = len(list_of_jobs)
-
-    parent_job.pretty_title = '%s - %s jobs' % (parent_job.pretty_job_type, total_jobs)
-
-    previous_job = None
-    for i, pair in enumerate(list_of_jobs):
-        job_type, arguments = pair
-        job_data = get_job_types()[job_type]
-        function = resolve_job_function(job_data['function'])
-
-        new_job = Job.schedule_job(
-            function=function,
-            job_type=job_type,
-            created_by=parent_job.created_by,
-            parent=parent_job,
-            depends_on=previous_job,
-            job_kwargs=arguments
-        )
-        previous_job = new_job
-
-    return {
-        'status': 'OK',
-        'message': '%d jobs scheduled' % (total_jobs),
-    }
-
-
-@job_decorator
-def reset_to_mockup_data(job):
-
-    subjobs = [
-        ('ImportEskatMockup', job.arguments),
-        ('ImportAllMockupMandtal', job.arguments),
-        ('ImportAllMockupR75', job.arguments),
-    ]
-
-    # Unless explicitly told to not delete stuff add job at start that deletes everything
-    if not job.arguments.get('skip_deletions'):
-        subjobs = [('ClearTestData', job.arguments)] + subjobs
-
-    dispatch_chained_jobs(subjobs, job)
-
-
-@job_decorator
-def import_all_mandtal(job):
-    jobs = [
-        ('ImportMandtalJob', {'source_model': 'mockup', 'year': tax_year.year})
-        for tax_year in TaxYear.objects.order_by('year')
-    ]
-
-    dispatch_chained_jobs(jobs, job)
-
-
-@job_decorator
-def import_all_r75(job):
-    jobs = [
-        ('ImportR75Job', {'source_model': 'mockup', 'year': tax_year.year})
-        for tax_year in TaxYear.objects.order_by('year')
-    ]
-
-    dispatch_chained_jobs(jobs, job)
 
 
 def check_year_period(year, job, periode):
@@ -768,3 +662,18 @@ def merge_pension_companies(job):
                       'message': '''Flyttede %(policer)s policer
                       og flettede %(companies)s pensionsselskaber.''' % {'policer': moved_policies,
                                                                          'companies': deleted_count}}
+
+
+@job_decorator
+def reset_tax_year(job):
+    if settings.ENVIRONMENT not in ('development', 'staging'):
+        # Only allow this job to be executed in development og staging
+        # the job is also hidden in the UI for production so this is just a safeguard.
+        return
+
+    with transaction.atomic():
+        tax_year = TaxYear.objects.get(pk=job.arguments['year_pk'])
+        TaxSlipGenerated.objects.filter(persontaxyear__tax_year=tax_year).delete()
+        PensionCompanySummaryFile.objects.filter(tax_year=tax_year).delete()
+        AddressFromDafo.objects.all().delete()
+        delete_protected(tax_year)

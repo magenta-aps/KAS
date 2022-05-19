@@ -1,6 +1,7 @@
 import os
 from distutils.util import strtobool
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -182,20 +183,29 @@ SELVBETJENING_REPRESENTATION_STOP = os.environ['SELVBETJENING_REPRESENTATION_STO
 SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE = int(os.environ.get('SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE', 60))
 
 ENVIRONMENT = os.environ['ENVIRONMENT']
+if ENVIRONMENT not in ('development', 'staging', 'production'):
+    raise ImproperlyConfigured('Environment needs to be set to either development, staging or production!')
 
 KAS_TAX_RATE = 0.153
 KAS_TAX_RATE_IN_PERCENT = KAS_TAX_RATE * 100
 
-EBOKS = {
-    'client_certificate': os.environ['EBOKS_CLIENT_CERTIFICATES'],
-    'client_private_key': os.environ['EBOKS_CLIENT_PRIVATE_KEY'],
-    'verify': os.environ['EBOKS_VERIFY'],
-    'client_id': os.environ['EBOKS_CLIENT_ID'],
-    'system_id': os.environ['EBOKS_SYSTEM_ID'],
-    'content_type_id': os.environ['EBOKS_CONTENT_TYPE_ID'],
-    'host': os.environ['EBOKS_HOST'],
-    'dispatch_bulk_size': int(os.environ['EBOKS_DISPATCH_BULK_SIZE'])
-}
+EBOKS_MOCK = bool(strtobool(os.environ.get('EBOKS_MOCK', 'False')))
+EBOKS = {'dispatch_bulk_size': int(os.environ['EBOKS_DISPATCH_BULK_SIZE'])}
+if EBOKS_MOCK:
+    # If mock is set ignore the rest of the settings.
+    EBOKS['mock'] = EBOKS_MOCK
+    EBOKS['content_type_id'] = ''
+else:
+    # Otherwise failfast if a single setting is missing.
+    EBOKS.update({
+        'client_certificate': os.environ['EBOKS_CLIENT_CERTIFICATES'],
+        'client_private_key': os.environ['EBOKS_CLIENT_PRIVATE_KEY'],
+        'verify': os.environ['EBOKS_VERIFY'],
+        'client_id': os.environ['EBOKS_CLIENT_ID'],
+        'system_id': os.environ['EBOKS_SYSTEM_ID'],
+        'content_type_id': os.environ['EBOKS_CONTENT_TYPE_ID'],
+        'host': os.environ['EBOKS_HOST']
+    })
 
 TENQ = {
     'host': os.environ['TENQ_HOST'],
@@ -209,7 +219,8 @@ TENQ = {
     },
     'destinations': {
         'production': ['10q_production', '10q_development'],  # Our prod server can use both prod and dev on the 10q server
-        'development': ['10q_development', '10q_mocking']  # Our dev server can only use dev on the 10q server
+        'development': ['10q_development', '10q_mocking'],  # Our dev server can only use dev on the 10q server
+        'staging': ['10q_development']
     },
     'project_id': os.environ['TENQ_PROJECT_ID'],
 }
@@ -247,3 +258,5 @@ for x in FEATURE_FLAGS:
     if env_key in os.environ:
         value = os.environ[env_key]
         FEATURE_FLAGS[x] = bool(strtobool(value))
+
+LEGACY_YEARS = (2018, 2019)

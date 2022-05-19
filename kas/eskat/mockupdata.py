@@ -1,7 +1,6 @@
 import uuid
 
 from eskat.models import MockModels
-from kas.management.commands.import_default_pension_companies import Command as PensionCompanyImport
 from kas.models import TaxYear
 
 unique_res_counter = 0
@@ -161,13 +160,7 @@ def create_person(
         )
 
 
-def import_default_mockup_data():
-    # Make sure we have pension company data
-    PensionCompanyImport().handle()
-
-    # Clean out existing mockup data
-    MockModels.MockR75Idx4500230.objects.all().delete()
-    MockModels.MockKasMandtal.objects.all().delete()
+def generate_persons():
 
     create_person(
         "Borger med 0 afkast",
@@ -176,8 +169,6 @@ def import_default_mockup_data():
         adresselinje4='3900 Nuuk',
         policies=[
             {"res": 19676889, "years": {
-                2018: 0,
-                2019: 0,
                 2020: 0,
                 2021: 0
             }}
@@ -191,8 +182,6 @@ def import_default_mockup_data():
         adresselinje4='3900 Nuuk',
         policies=[
             {"res": 19676889, "years": {
-                2018: -2000,
-                2019: 1000,
                 2020: 2500,
                 2021: 0,
             }}
@@ -206,8 +195,6 @@ def import_default_mockup_data():
         adresselinje4='3900 Nuuk',
         policies=[
             {"res": 19676889, "years": {
-                2018: -5000,
-                2019: 1000,
                 2020: 2500,
                 2021: 0
             }}
@@ -221,8 +208,6 @@ def import_default_mockup_data():
         adresselinje4='3900 Nuuk',
         policies=[
             {"res": 19676889, "years": {
-                2018: 1000,
-                2019: 2000,
                 2020: 3000,
                 2021: 0
             }}
@@ -236,15 +221,11 @@ def import_default_mockup_data():
         adresselinje4='3900 Nuuk',
         policies=[
             {"res": 19676889, "years": {
-                2018: 1000,
-                2019: 2000,
                 2020: 3000,
                 2021: 0
             }},
             # 55143315 is PFA
             {"res": 55143315, "years": {
-                2018: 1000,
-                2019: 2000,
                 2020: 3000,
                 2021: 0
             }},
@@ -256,7 +237,7 @@ def import_default_mockup_data():
         cpr='2512484916',
         adresselinje2='Imaneq 32A, 1. sal.',
         adresselinje4='3900 Nuuk',
-        person_years={2018: {}, 2019: {}, 2020: {}, 2021: {}},
+        person_years={2020: {}, 2021: {}},
         policies=[]
     )
 
@@ -292,8 +273,6 @@ def import_default_mockup_data():
         adresselinje4='3900 Nuuk',
         policies=[
             {"res": 19676889, "years": {
-                2018: 1000,
-                2019: 2000,
                 2020: 3000,
                 2021: 4000,
             }},
@@ -321,8 +300,6 @@ def import_default_mockup_data():
         person_years={2021: {"skattedage": 150}},
         policies=[
             {"res": 19676889, "years": {
-                2018: 1000,
-                2019: 2000,
                 2020: 3000,
                 2021: 4000,
             }},
@@ -334,11 +311,10 @@ def import_default_mockup_data():
         cpr='0401570020',
         adresselinje2='Imaneq 32A, 1. sal.',
         adresselinje4='3900 Nuuk',
-        person_years={2019: {"skattedage": 73}},
+        person_years={2020: {"skattedage": 73}},
         policies=[
             {"res": 19676889, "years": {
-                2019: -5000,
-                2020: 3000,
+                2020: -5000,
                 2021: 1000,
             }},
         ]
@@ -349,10 +325,9 @@ def import_default_mockup_data():
         cpr='1105550193',
         adresselinje2='Imaneq 32A, 3. sal.',
         adresselinje4='3900 Nuuk',
-        person_years={2019: {"skattedage": 73}, 2020: {"skattedage": 146}, 2021: {"skattedage": 102}},
+        person_years={2020: {"skattedage": 146}, 2021: {"skattedage": 102}},
         policies=[
             {"res": 19676889, "years": {
-                2019: -5000,
                 2020: 3000,
                 2021: 500,
             }},
@@ -364,12 +339,9 @@ def import_default_mockup_data():
         cpr='0209025000',
         adresselinje2='Imaneq 32A, 2. sal.',
         adresselinje4='3900 Nuuk',
-        person_years={2018: {"skattedage": 73}, 2019: {"skattedage": 146}},
+        person_years={2020: {"skattedage": 73}, 2021: {"skattedage": 146}},
         policies=[
             {"res": 19676889, "years": {
-                2009: -100000,
-                2018: 1000,
-                2019: 1000,
                 2020: 1000,
                 2021: 1000,
             }},

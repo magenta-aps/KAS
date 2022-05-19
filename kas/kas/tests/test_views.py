@@ -100,7 +100,7 @@ class SelfReportedAmountUpdateViewTestCase(BaseTestCase):
                                    'notes-INITIAL_FORMS': 0,
                                    'uploads-TOTAL_FORMS': 1,
                                    'uploads-0-description': 'test_description',
-                                   'uploads-0-file': SimpleUploadedFile(name='test', content=b'test'),
+                                   'uploads-0-file': SimpleUploadedFile(name='test', content=b'test_submit_document'),
                                    'uploads-INITIAL_FORMS': 0})
         self.assertEqual(r.status_code, 200)
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
@@ -123,7 +123,7 @@ class SelfReportedAmountUpdateViewTestCase(BaseTestCase):
                                    'notes-0-content': 'test',
                                    'uploads-TOTAL_FORMS': 1,
                                    'uploads-0-description': 'test_description',
-                                   'uploads-0-file': SimpleUploadedFile(name='test', content=b'test'),
+                                   'uploads-0-file': SimpleUploadedFile(name='test', content=b'test_submit_note_and_document'),
                                    'uploads-INITIAL_FORMS': 0})
         self.assertEqual(r.status_code, 200)
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
@@ -207,7 +207,7 @@ class EditAmountsUpdateViewTestCase(BaseTestCase):
                                    'uploads-TOTAL_FORMS': 1,
                                    'uploads-INITIAL_FORMS': 0,
                                    'uploads-0-description': 'test_description',
-                                   'uploads-0-file': SimpleUploadedFile(name='test', content=b'test')})
+                                   'uploads-0-file': SimpleUploadedFile(name='test', content=b'test_set_efterbehandling_by_attachment')})
         self.assertEqual(r.status_code, 200)
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
         self.assertTrue(policy_tax_year.efterbehandling)
@@ -262,7 +262,7 @@ class PolicyNotesAndAttachmentsViewTestCase(BaseTestCase):
         attachment_description = 'this is a test file'
         self.client.post(reverse('kas:policy_add_notes_or_attachement', args=[self.policy_tax_year.pk]),
                          follow=True,
-                         data={'attachment': SimpleUploadedFile(name='test', content=b'test'),
+                         data={'attachment': SimpleUploadedFile(name='test', content=b'test_save_attachment'),
                                'attachment_description': attachment_description})
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
         self.assertEqual(policy_tax_year.policy_documents.count(), 1)
@@ -316,7 +316,7 @@ class PersonNotesAndAttachmentsViewTestCase(BaseTestCase):
         attachment_description = 'this is a test file 1531253'
         self.client.post(reverse('kas:person_add_notes_or_attachement', args=[self.person_tax_year.pk]),
                          follow=True,
-                         data={'attachment': SimpleUploadedFile(name='test', content=b'test'),
+                         data={'attachment': SimpleUploadedFile(name='test', content=b'test_save_attachment'),
                                'attachment_description': attachment_description})
 
         person_tax_year = PersonTaxYear.objects.get(pk=self.person_tax_year.pk)
@@ -330,7 +330,7 @@ class PersonNotesAndAttachmentsViewTestCase(BaseTestCase):
         attachment_description = 'this is a test file 1531253'
         self.client.post(reverse('kas:person_add_notes_or_attachement', args=[self.person_tax_year.pk]),
                          follow=True,
-                         data={'attachment': SimpleUploadedFile(name='test', content=b'test'),
+                         data={'attachment': SimpleUploadedFile(name='test', content=b'test_save_attachment_and_note'),
                                'attachment_description': attachment_description,
                                'note': note_string})
         person_tax_year = PersonTaxYear.objects.get(pk=self.person_tax_year.pk)

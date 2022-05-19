@@ -1,6 +1,6 @@
+import uuid
 from functools import cached_property
 from uuid import uuid4
-from os.path import basename
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -9,15 +9,13 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.template.defaultfilters import date as _date
-from django.utils import timezone
 from django.utils.formats import date_format
 from django.utils.translation import gettext as _
-
 from tenQ.writer import TenQTransactionWriter
 
 
 def filefield_path(instance, filename):
-    return instance.file_path(basename(filename))
+    return filename
 
 
 transaction_status = (
@@ -87,16 +85,14 @@ class Transaction(models.Model):
                                                                  year=self.person_tax_year.tax_year.year)
 
 
+def payment_file_by_year(instance, filename):
+    return f"pre_payments/{instance.uploaded_at.year}/{uuid.uuid4()}.csv"
+
+
 class PrePaymentFile(models.Model):
     uploaded_by = models.ForeignKey(get_user_model(), on_delete=models.PROTECT)
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    file = models.FileField(upload_to=filefield_path, validators=[FileExtensionValidator(allowed_extensions=['csv'])])
-
-    def file_path(self, filename):
-        now = self.uploaded_at
-        if now is None:
-            now = timezone.now()
-        return f"pre_payments/{now.year}/{self.pk}"
+    file = models.FileField(upload_to=payment_file_by_year, validators=[FileExtensionValidator(allowed_extensions=['csv'])])
 
     def __str__(self):
         return 'Forudindbetalingsfil uploadet {date} af {by}'.format(date=date_format(self.uploaded_at, 'SHORT_DATETIME_FORMAT'),

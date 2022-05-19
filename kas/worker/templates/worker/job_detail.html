@@ -28,6 +28,15 @@
         <td>{{ object.duration|duration }}</td>
     </tr>
     {% endif %}
+    {% if object.status == 'failed' %}
+        <tr>
+            <th>{% trans 'Fejl' %}</th>
+            <td>
+                {{ object.traceback }}
+            </td>
+        </tr>
+
+    {% endif %}
     {% if object.status == 'finished' or object.status == 'failed' %}
     <tr>
         <th>{% trans 'Opsummering' %}</th>
