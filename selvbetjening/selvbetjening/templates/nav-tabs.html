@@ -16,9 +16,11 @@
                 {% endfor %}
 
                 {% with first_prior=person_tax_years.prior|first %}
+                {% if first_prior %}
                 <li class="nav-item">
                     <a href="{% url 'selvbetjening:policy-prior-view' year=first_prior.tax_year.year %}" class="nav-link {% if prior %}active{% endif %}">{% blocktrans %}Tidligere skatteår{% endblocktrans %}</a>
                 </li>
+                {% endif %}
                 {% endwith %}
             </ul>
         </div>
