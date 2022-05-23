@@ -55,7 +55,7 @@ def generate_sample_data(job):
     # Clean out existing mockup data
     MockModels.MockR75Idx4500230.objects.all().delete()
     MockModels.MockKasMandtal.objects.all().delete()
-    get_kas_beregninger_x_model().objects.all().delete()
+    MockKasBeregningerX.objects.all().delete()
     # Make sure we have pension company data
     call_command('import_default_pension_companies')
     for year in (2018, 2019, 2020, 2021):
@@ -99,6 +99,11 @@ def generate_sample_data(job):
     # Generate mockkas beregninger
     for tax_year in settings.LEGACY_YEARS:
         for cpr in ['0101570010', '0101005089', '0103897769', '1509814844', '2512474856']:
+            #  Ensure mandtal for the cpr
+            MockModels.MockKasMandtal.objects.update_or_create(pt_census_guid=uuid4(),
+                                                               cpr=cpr,
+                                                               skatteaar=tax_year)
+            # Create kas_beregning for cpr and year
             MockKasBeregningerX.objects.update_or_create(skatteaar=tax_year,
                                                          pt_census_guid=uuid4(),
                                                          pension_crt_calc_guid=uuid4(),
