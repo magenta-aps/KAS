@@ -677,3 +677,32 @@ def reset_tax_year(job):
         PensionCompanySummaryFile.objects.filter(tax_year=tax_year).delete()
         AddressFromDafo.objects.all().delete()
         delete_protected(tax_year)
+
+
+@job_decorator
+def generate_pseudo_settlements_and_transactions_for_legacy_years(job):
+    created_final_settlements = 0
+    updated_final_settlements = 0
+    for tax_year in TaxYear.objects.filter(year__in=[2018, 2019]).order_by('year'):
+        for person_tax_year in PersonTaxYear.objects.filter(tax_year=tax_year):
+            sum_tax_after_foreign_paid_deduction = 0
+            for policy in person_tax_year.policytaxyear_set.filter(active=True,
+                                                                   pension_company__agreement_present=False):
+                sum_tax_after_foreign_paid_deduction += policy.full_tax - policy.foreign_paid_amount_actual
+
+            # Generate pseudo final settlement
+            final_settlement, created = FinalSettlement.objects.update_or_create(person_tax_year=person_tax_year,
+                                                                                 pseudo=True,
+                                                                                 defaults={'title': 'Pseudo opgørelse',
+                                                                                           'pseudo': True,
+                                                                                           'pseudo_amount': sum_tax_after_foreign_paid_deduction,
+                                                                                           'person_tax_year': person_tax_year})
+            if created:
+                created_final_settlements += 1
+            else:
+                updated_final_settlements += 1
+
+    job.result = {'message': 'Generering af pseudo slutopgørelser',
+                  'status': {'Oprettet': created_final_settlements,
+                             'Opdateret': updated_final_settlements,
+                             }}

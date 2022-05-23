@@ -15,7 +15,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
-from django.db.models import Sum, Max
+from django.db.models import Sum, Max, UniqueConstraint, Q
 from django.db.models.signals import post_save, post_delete
 from django.db.transaction import atomic
 from django.dispatch import receiver
@@ -787,6 +787,17 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         }
 
     @property
+    def full_tax(self):
+        """
+        Returns the full taxable amount.
+        """
+        calculation_result = self.perform_calculation(initial_amount=int(self.get_assessed_amount()),
+                                                      taxable_days_in_year=int(self.person_tax_year.number_of_days or 0),
+                                                      days_in_year=int(self.person_tax_year.tax_year.days_in_year or 0),
+                                                      available_deduction_data=self.calculate_available_yearly_deduction())
+        return calculation_result['full_tax']
+
+    @property
     def initial_amount(self):
         if self.active_amount == self.ACTIVE_AMOUNT_PREFILLED:
             return self.prefilled_amount
@@ -1383,6 +1394,14 @@ class FinalSettlement(EboksDispatch):
         null=False,
         default=PAYMENT_TEXT_BULK
     )
+    # pseudo final settlement original exists in eskat for 2018/2019
+    # Being "pseudo" means that the FinalSettlement is not actually dispatched,
+    # but only used for comparison to our own calculations, flagging the user if there are differences
+    pseudo = models.BooleanField(default=False)
+    # Final settlement ammount provided by the user when uploading the pdf.
+    pseudo_amount = models.DecimalField(null=True,
+                                        max_digits=5,
+                                        decimal_places=2)
 
     def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
         if self.status == 'send':
@@ -1559,6 +1578,14 @@ class FinalSettlement(EboksDispatch):
             source_content_type=ContentType.objects.get_for_model(FinalSettlement),
             object_id=self.pk
         ).first()
+
+    class Meta:
+        constraints = [
+            # Ensure there can only by a single pseudo final settlement per person_tax_year
+            UniqueConstraint(name='idx_pseudo_true',
+                             fields=['person_tax_year', 'pseudo'],
+                             condition=Q(pseudo=True))
+        ]
 
 
 def delete_pdf(sender, instance, using, **kwargs):

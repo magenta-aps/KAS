@@ -12,11 +12,11 @@ from rq import Queue
 from eskat.jobs import generate_sample_data
 from kas.eboks import EboksClient
 from kas.jobs import dispatch_tax_year, generate_batch_and_transactions_for_year, merge_pension_companies, \
-    import_mandtal
+    import_mandtal, generate_pseudo_settlements_and_transactions_for_legacy_years
 from kas.models import TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany, TaxSlipGenerated, FinalSettlement
 from prisme.models import Prisme10QBatch
-from worker.models import Job
 from project.dafo import DatafordelerClient
+from worker.models import Job
 
 test_settings = dict(settings.EBOKS)
 test_settings['dispatch_bulk_size'] = 2
@@ -90,7 +90,9 @@ class BaseTransactionTestCase(TransactionTestCase):
 
     def setUp(self) -> None:
         self.tax_year = TaxYear.objects.create(year=2021)
-        self.pension_company = PensionCompany.objects.create(name='test', res=2)
+        self.pension_company = PensionCompany.objects.create(name='test',
+                                                             res=2)
+
         self.person = Person.objects.create(
             cpr='0102031234',
             name='Test Testperson',
@@ -310,3 +312,39 @@ class MergeCompanyJobsTest(BaseTransactionTestCase):
         policies = PolicyTaxYear.objects.filter(pension_company=self.pension_company,
                                                 person_tax_year=self.person_tax_year)
         self.assertEqual(policies.count(), 2)
+
+
+class TestPseudoFinalSettlement(BaseTransactionTestCase):
+
+    def setUp(self) -> None:
+        super(TestPseudoFinalSettlement, self).setUp()
+        pension_company_with_agreement = PensionCompany.objects.create(name='with_agreement',
+                                                                       res=3,
+                                                                       agreement_present=True)
+
+        pension_company_without_agreement = PensionCompany.objects.create(name='without_agreement',
+                                                                          res=4,
+                                                                          agreement_present=False)
+
+        self.tax_years = [TaxYear.objects.create(year=2018), TaxYear.objects.create(year=2019)]
+
+        for i, tax_year in enumerate(self.tax_years, start=1):
+            person_tax_year = PersonTaxYear.objects.create(tax_year=tax_year,
+                                                           person=self.person,
+                                                           number_of_days=365)
+            for company in (self.pension_company, pension_company_with_agreement, pension_company_without_agreement):
+                PolicyTaxYear.objects.create(person_tax_year=person_tax_year,
+                                             pension_company=company,
+                                             prefilled_amount=i*100)
+
+    @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
+    def test_generate_pseudo_final_settlements(self, django_rq):
+        self.assertEqual(PersonTaxYear.objects.count(), 2)
+        self.assertEqual(PolicyTaxYear.objects.count(), 6)
+        Job.schedule_job(generate_pseudo_settlements_and_transactions_for_legacy_years,
+                         job_type='GeneratePseudoFinalSettlements',
+                         created_by=self.user)
+        pseudo_settlements = FinalSettlement.objects.filter(pseudo=True)
+        self.assertEqual(pseudo_settlements.count(), 2)
+        self.assertEqual(pseudo_settlements.get(person_tax_year__tax_year__year=2018).pseudo_amount, 30)
+        self.assertEqual(pseudo_settlements.get(person_tax_year__tax_year__year=2019).pseudo_amount, 60)
