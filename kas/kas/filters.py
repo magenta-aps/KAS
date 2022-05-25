@@ -1,5 +1,6 @@
 from django.db.models import Q
 from django_filters import FilterSet, CharFilter
+from kas.models import Lock
 
 
 class PensionCompanyFilterSet(FilterSet):
@@ -18,3 +19,9 @@ class PensionCompanyFilterSet(FilterSet):
 
     class Meta:
         fields = []
+
+
+class LockFilterSet(FilterSet):
+    class Meta:
+        model = Lock
+        fields = ['taxyear', ]

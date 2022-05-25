@@ -1,0 +1,22 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+{% block content %}
+
+    <h1>{% trans 'Låsning' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
+    {% blocktrans asvar top_help %} Fra denne side er der mulighed for at se/eksportere indholdet af slutopgørelser under denne lås{% endblocktrans %}
+    {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
+        <a href="{% url 'kas:settlementexport' object.pk %}" class="btn btn-success">{% trans 'Download excel'%}</a>
+       <table class="table table-striped mt-2">
+            <thead>
+            <tr>
+                <th>{% trans 'Skatteår' %}</th>
+                <th>{% trans 'Personnummer' %}</th>
+                <th>{% trans 'Navn' %}</th>
+                <th>{% trans 'Samlet beregnet skat' %}</th>
+                <th>{% trans 'Samlede overførsler til Prisme' %}</th>
+                <th>{% trans 'Udestående' %}</th>
+            </tr>
+            </thead>
+            <tbody hx-get="{% url 'kas:lockdetails-htmxview' object.pk %}" hx-trigger="load"/>
+        </table>
+{% endblock %}

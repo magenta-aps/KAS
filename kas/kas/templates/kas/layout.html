@@ -54,6 +54,7 @@
                     {% if perms.worker.view_job %}
                         <li><a class="dropdown-item" href="{% url 'worker:job_list' %}">{% trans 'Jobadministration' %}</a></li>
                     {% endif %}
+                    <li><a class="dropdown-item" href="{% url 'kas:lock-templateview' %}">{% trans 'Lås' %}</a></li>
                 </ul>
             </div>
             {% endif %}

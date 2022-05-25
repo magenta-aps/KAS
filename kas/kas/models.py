@@ -1,6 +1,5 @@
 import base64
 import calendar
-import datetime
 import math
 import csv
 import uuid
@@ -10,24 +9,23 @@ from uuid import uuid4
 import random
 import string
 
-import pytz
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Sum, Max
 from django.db.models.signals import post_save, post_delete
 from django.db.transaction import atomic
 from django.dispatch import receiver
 from django.forms import model_to_dict
-from django.utils import timezone
 from django.utils.translation import gettext as _
 from requests.exceptions import RequestException
 from simple_history.models import HistoricalRecords
-
+import datetime
+from django.utils import timezone
+import pytz
 from eskat.models import ImportedR75PrivatePension
 from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.managers import PolicyTaxYearManager
@@ -185,8 +183,18 @@ class TaxYear(models.Model):
     )
 
     def get_active_lock(self):
-        '''Get the TaxYears active Lock, There is allways one'''
+        """Get the TaxYears active Lock, There is always one. The active lock is important for the connection to final settlements"""
         return self.lock_set.get(interval_to=None)
+
+    def create_new_open_lock(self):
+        """ Creates a new lock with current date as start date
+        And closes the old open lock"""
+        with transaction.atomic():
+            old_lock = self.lock_set.get(interval_to=None)
+            current_date = timezone.now().date()
+            old_lock.interval_to = current_date
+            old_lock.save(update_fields=['interval_to'])
+            return Lock.objects.create(interval_from=current_date, taxyear=self)
 
     @property
     def is_leap_year(self):
@@ -215,7 +223,7 @@ class Lock(models.Model):
     class Meta:
         ordering = ('interval_from', )
 
-    interval_from = models.DateTimeField(null=True)
+    interval_from = models.DateTimeField()
 
     interval_to = models.DateTimeField(null=True, blank=True)
 
@@ -225,19 +233,36 @@ class Lock(models.Model):
         on_delete=models.PROTECT,
     )
 
+    @property
+    def total_tax_sum(self):
+        sum = 0
+
+        for stl in FinalSettlement.objects.filter(lock=self):
+            sum += stl.get_calculation_amounts().get('total_tax')
+        return sum
+
+    @property
+    def previous_transactions_sum(self):
+        sum = 0
+
+        for stl in FinalSettlement.objects.filter(lock=self):
+            sum += stl.get_calculation_amounts().get('previous_transactions_sum')
+        return sum
+
+    @property
+    def remainder_sum(self):
+        sum = 0
+        for stl in FinalSettlement.objects.filter(lock=self):
+            sum += stl.get_calculation_amounts().get('remainder')
+
+        return sum
+
     @classmethod
-    def create_default(self, taxyear):
-        return Lock.objects.create(taxyear=taxyear, interval_from=datetime.datetime(year=taxyear.year, month=1, day=1, tzinfo=pytz.timezone('UTC')))
-
-    def lock_and_create(self):
-        """This is a helperfunction for creation of a new lock. The new lock is created on the same TaxYear as the current Lock,
-        and the old Lock is closed"""
-        old_lock = self.taxyear.lock_set.get(interval_to=None)
-        created_lock = Lock.create_default(taxyear=self.taxyear)
-        old_lock.interval_to = created_lock.interval_from
-        old_lock.save()
-
-        return created_lock
+    def create_default(self, taxyear, interval_from=None):
+        if interval_from is None:
+            return Lock.objects.create(taxyear=taxyear, interval_from=datetime.datetime(year=taxyear.year, month=1, day=1, tzinfo=pytz.timezone('UTC')))
+        else:
+            return Lock.objects.create(taxyear=taxyear, interval_from=interval_from)
 
 
 @receiver(post_save, sender=TaxYear, dispatch_uid='create_lock_for_year')
@@ -1538,23 +1563,23 @@ class FinalSettlement(EboksDispatch):
                     'source_object': policy,
                 })
         # modregn eksisterende transaktioner
-        for transaction in Transaction.objects.filter(
+        for transaction_item in Transaction.objects.filter(
             person_tax_year=self.person_tax_year,
             status='transferred',
         ):
-            if transaction.type == 'prepayment':
+            if transaction_item.type == 'prepayment':
                 result.append({
                     'text': _('Forudindbetaling'),
-                    'amount': transaction.amount,  # prepayment are stored as negative so add the amount
+                    'amount': transaction_item.amount,  # prepayments are stored as negative so add the amount
                     'source_object': transaction,
                 })
-            elif transaction.type == 'prisme10q':
+            elif transaction_item.type == 'prisme10q':
                 result.append({
                     'text': _('Justering fra årsopgørelse oprettet d. {oprettelsesdato}').format(
-                        oprettelsesdato=transaction.created_at,
+                        oprettelsesdato=transaction_item.created_at,
                     ),
-                    'amount': -transaction.amount,
-                    'source_object': transaction,
+                    'amount': -transaction_item.amount,
+                    'source_object': transaction_item,
                 })
 
         remainder_calculation = self.get_calculation_amounts()
@@ -1646,12 +1671,12 @@ class AddressFromDafo(models.Model):
 @receiver(post_save, sender=FinalSettlement)
 def cancel_batch_on_save(sender, instance, **kwargs):
     if instance.invalid and instance.person_tax_year.tax_year.year_part == 'genoptagelsesperiode':
-        for transaction in Transaction.objects.filter(
+        for transaction_item in Transaction.objects.filter(
             person_tax_year=instance.person_tax_year
         ).exclude(
             status='transferred',
         ):
-            batch = transaction.prisme10Q_batch
+            batch = transaction_item.prisme10Q_batch
             if batch.status in (Prisme10QBatch.STATUS_CREATED, Prisme10QBatch.STATUS_DELIVERY_FAILED):
                 batch.status = Prisme10QBatch.STATUS_CANCELLED
                 batch.save(update_fields=['status'])
