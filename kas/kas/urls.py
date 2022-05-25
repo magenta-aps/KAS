@@ -1,20 +1,24 @@
 from django.conf import settings
 from django.urls import path
 
-from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetailView, PolicyTaxYearTabView, \
-    PolicyTaxYearDetailView, PdfDownloadView, PolicyDocumentDownloadView, SelfReportedAmountUpdateView, \
-    FinalSettlementDownloadView, \
-    PersonNotesAndAttachmentsView, PolicyNotesAndAttachmentsView, \
-    EditAmountsUpdateView, PensionCompanySummaryFileView, PensionCompanySummaryFileDownloadView, \
-    PolicyTaxYearCreateView, ActivatePolicyTaxYearView, PersonTaxYearHistoryListView, PersonTaxYearHistoryDetailView, \
-    PolicyTaxYearHistoryDetailView, PolicyTaxYearHistoryListView, PersonTaxYearUnfinishedListView, \
-    PersonTaxYearFailSendListView, PolicyTaxYearUnfinishedListView, PersonTaxYearDocumentsAndNotesUpdateView, \
-    PolicyPaymentOverrideView, \
-    PersonTaxYearUnhandledDocumentsAndNotes, FinalSettlementGenerateView, MarkFinalSettlementAsInvalid, \
-    DispatchFinalSettlement, PersonTaxYearGeneralAndForeignNotesListView, UpdateSingleMandtal, WaitForSingleMandtal, \
-    PolicyTaxYearCompanyUpdateView, \
-    PensionCompanyFormView, PensionCompanyHtmxView, PensionCompanyUpdateView, AgreementDownloadView, \
-    FeatureFlagView, PersonRepresentStartView, PersonRepresentStopView, NoteUpdateView
+from kas.views import (
+    StatisticsView, PersonTaxYearListView, PersonTaxYearDetailView, PolicyTaxYearTabView,
+    PolicyTaxYearDetailView, PdfDownloadView, PolicyDocumentDownloadView, SelfReportedAmountUpdateView,
+    FinalSettlementDownloadView,
+    PersonNotesAndAttachmentsView, PolicyNotesAndAttachmentsView,
+    EditAmountsUpdateView, PensionCompanySummaryFileView, PensionCompanySummaryFileDownloadView,
+    PolicyTaxYearCreateView, ActivatePolicyTaxYearView, PersonTaxYearHistoryListView, PersonTaxYearHistoryDetailView,
+    PolicyTaxYearHistoryDetailView, PolicyTaxYearHistoryListView, PersonTaxYearUnfinishedListView,
+    PersonTaxYearFailSendListView, PolicyTaxYearUnfinishedListView, PersonTaxYearDocumentsAndNotesUpdateView,
+    PolicyPaymentOverrideView,
+    PersonTaxYearUnhandledDocumentsAndNotes, FinalSettlementGenerateView, MarkFinalSettlementAsInvalid,
+    DispatchFinalSettlement, PersonTaxYearGeneralAndForeignNotesListView, UpdateSingleMandtal, WaitForSingleMandtal,
+    PolicyTaxYearCompanyUpdateView,
+    PensionCompanyFormView, PensionCompanyHtmxView, PensionCompanyUpdateView, AgreementDownloadView,
+    FeatureFlagView, PersonRepresentStartView, PersonRepresentStopView, NoteUpdateView,
+    LockHtmxView, LockTemplateView, LockContentHtmxView, LockContentTemplateView, CreateLockDetailView,
+    ExcelSettlementExportView
+)
 from kas.viewsets import CurrentFinalSettlementDownloadView, CurrentFinalSettlementExistsView, TokenValidationView
 
 app_name = 'kas'
@@ -75,6 +79,18 @@ urlpatterns = [
     path('pensioncompanyhtmx/<int:last_id>/', PensionCompanyHtmxView.as_view(), name='pensioncompany-htmxview'),
     path('pensioncompany/<int:pk>/edit/', PensionCompanyUpdateView.as_view(), name='pensioncompany-updateview'),
     path('pensioncompany/<int:pk>/agreement/', AgreementDownloadView.as_view(), name='pensioncompany-agreementdownload'),
+
+    path('lock/', LockTemplateView.as_view(), name='lock-templateview'),
+    path('lockhtmx/', LockHtmxView.as_view(), name='lock-htmxview'),
+    path('lockhtmx/<int:pk>/', LockHtmxView.as_view(), name='lock-htmxview'),
+    path('lockhtmx/<int:pk>/<int:last_id>/', LockHtmxView.as_view(), name='lock-htmxview'),
+
+    path('lockdetail/', LockContentTemplateView.as_view(), name='lockdetails-listview'),
+    path('lockdetail/<int:pk>/', LockContentTemplateView.as_view(), name='lockdetail-listview'),
+    path('lockdetailshtmx/<int:pk>/', LockContentHtmxView.as_view(), name='lockdetails-htmxview'),
+    path('lockdetailshtmx/<int:pk>/<int:last_id>/', LockContentHtmxView.as_view(), name='lockdetails-htmxview'),
+    path('lock/create', CreateLockDetailView.as_view(), name='lockcreate'),
+    path('lock/settlementexport/<int:pk>/', ExcelSettlementExportView.as_view(), name='settlementexport'),
 
     path('note/<int:pk>/', NoteUpdateView.as_view(), name='note-update'),
 ]

@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             name='Lock',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('interval_from', models.DateTimeField(null=True)),
+                ('interval_from', models.DateTimeField()),
                 ('interval_to', models.DateTimeField(blank=True, null=True)),
                 ('taxyear', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='kas.taxyear')),
             ],

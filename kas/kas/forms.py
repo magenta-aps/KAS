@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 
 from kas.fields import PensionCompanyChoiceField, DateInput
 from kas.forms_mixin import BootstrapForm
-from kas.models import PersonTaxYear, PolicyTaxYear, Note, PolicyDocument, PensionCompany, TaxYear, FinalSettlement
+from kas.models import PersonTaxYear, PolicyTaxYear, Note, PolicyDocument, PensionCompany, TaxYear, FinalSettlement, Lock
 
 
 class PersonListFilterForm(BootstrapForm):
@@ -336,3 +336,11 @@ class PensionCompanyMergeForm(BootstrapForm):
         if 'target' in cleaned_data and 'to_be_merged' in cleaned_data:
             if cleaned_data['target'] in cleaned_data['to_be_merged']:
                 raise ValidationError(_('Du kan ikke flette %s ind i sig selv.' % cleaned_data['target'].name))
+
+
+class LockForm(BootstrapForm):
+    lock_list = forms.ModelMultipleChoiceField(queryset=Lock.objects.all())
+
+
+class LockCreateForm(BootstrapForm):
+    label = forms.CharField(initial=_('Lås skatteår'))

@@ -16,11 +16,11 @@ class TestLockSystem(TestCase):
         self.old_lock_2021 = self.taxyear2021.lock_set.get(interval_to=None)
 
     def test_creation_of_locks_per_taxyear(self):
-        new_lock1_2020 = self.old_lock_2020.lock_and_create()
-        new_lock1_2020.lock_and_create()
+        self.taxyear2020.create_new_open_lock()
+        self.taxyear2020.create_new_open_lock()
 
-        new_lock1_2021 = self.old_lock_2021.lock_and_create()
-        new_lock1_2021.lock_and_create()
+        self.taxyear2021.create_new_open_lock()
+        self.taxyear2021.create_new_open_lock()
 
         self.assertEquals(6, Lock.objects.count())
         self.assertEquals(3, self.taxyear2020.lock_set.count())
