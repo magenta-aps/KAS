@@ -1551,6 +1551,10 @@ class FinalSettlement(EboksDispatch):
         return result
 
     def get_transaction_summary(self):
+        if self.pseudo:
+            # TODO: Hvilken tekst skal stå ved transaktion for uploadet slutopgørelse?
+            return _('Importeret:') + ' ' + str(self.pseudo_amount)
+
         payment_info = self.get_payment_info()
 
         summary = ''
@@ -1564,6 +1568,9 @@ class FinalSettlement(EboksDispatch):
         return summary
 
     def get_transaction_amount(self):
+        if self.pseudo:
+            return self.pseudo_amount
+
         payment_info = self.get_payment_info()
 
         amount = 0
@@ -1578,6 +1585,10 @@ class FinalSettlement(EboksDispatch):
             source_content_type=ContentType.objects.get_for_model(FinalSettlement),
             object_id=self.pk
         ).first()
+
+    @property
+    def allow_dispatch(self):
+        return super().allow_dispatch and not self.pseudo
 
     class Meta:
         constraints = [

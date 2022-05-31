@@ -42,3 +42,8 @@ table.table tr td > a:only-child {
 .w-5 {
     width: 5% !important;
 }
+
+.custom-file-label {
+    margin-left: 5px;
+    margin-right: 5px;
+}
