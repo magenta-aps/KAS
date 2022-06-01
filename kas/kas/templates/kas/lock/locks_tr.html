@@ -1,0 +1,11 @@
+{# return locks as TR`s used by htmx #}
+{% for lock in object_list %}
+    <tr>
+        <td>{{ lock.taxyear.year }}</td>
+        <td><a href="{% url 'kas:lockdetail-listview' lock.id %}">{{ lock.interval_from }}</a></td>
+        <td>{% if lock.interval_to is None %}Åben{% else %}{{lock.interval_to}}{% endif %}</td>
+        <td>{{ lock.finalsettlement_set.count }}</td>
+        <td>{{ lock.total_tax_sum }}</td>
+        <td>{{ lock.previous_transactions_sum }}</td>
+    </tr>
+{% endfor %}
