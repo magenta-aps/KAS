@@ -7,15 +7,11 @@
     <h1>{% trans 'Låsesystem' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
     {% blocktrans asvar top_help %} Fra denne side er der mulighed for at administrere låse på et skatteår. Hvis der oprettes en ny lås, så tilknyttes eksisterende slutopgørelser automatisk til teil den nuværende åbne lås for skatteåret{% endblocktrans %}
     {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
-        <form method="GET" id="js-filters">
-            {% csrf_token %}
-            <div id="js-filters" class="form-row">
-                {{ filter.form.as_p }}
-            </div>
-            <div id="js-filters" class="form-row">
-                <button hx-target="#js-lock-trs" hx-confirm="{% trans 'Er du sikker? '%}" id="js-create-lock" type="button" class="btn btn-success" hx-post="{% url 'kas:lockcreate'%}" hx-include="form#js-filters" >{% trans 'Opret lås'%}</button>
-            </div>
-        </form>
+        <div class="form-inline" id="js-filters">
+            <label class="sr-only">{% translate 'Skatteår' %}:</label>
+            {{ filter.form.taxyear }}
+            <button hx-target="#js-lock-trs" hx-confirm="{% trans 'Er du sikker? '%}" id="js-create-lock" type="button" class="btn btn-success" hx-post="{% url 'kas:lockcreate'%}" hx-include="form#js-filters" >{% trans 'Opret lås'%}</button>
+        </div>
             <table class="table table-striped mt-2">
                 <thead>
                 <tr>
@@ -27,23 +23,9 @@
                     <th>{% trans 'Sendt til Prisme' %}</th>
                 </tr>
                 </thead>
-                <tbody id="js-lock-trs" hx-get="{% url 'kas:lock-htmxview' %}" hx-trigger="load, change from:form#js-filters" hx-include="form#js-filters"/>
+                <tbody hx-get="{% url 'kas:locks-htmxview' %}" hx-trigger="load, change from:div#js-filters" hx-include="div#js-filters"/>
             </table>
-        </form>
-    <script>
-        const selectid='{{filter.form.taxyear.id_for_label}}';
-        const select=$('#'+selectid);
-        const button = $("#js-create-lock")
-        const update_taxyear = function() {
-            if (select.val()) {
-                button.prop('disabled', false)
-            } else {
-                button.prop('disabled', true)
-            }
-        }
+    <div id="modal">
 
-        select.change (update_taxyear)
-        update_taxyear()
-
-        </script>
+    </div>
 {% endblock %}

@@ -1,6 +1,7 @@
 from django.db.models import Q
-from django_filters import FilterSet, CharFilter
-from kas.models import Lock
+from django_filters import FilterSet, CharFilter, ModelChoiceFilter
+from kas.models import Lock, TaxYear
+from kas.forms_mixin import BootstrapForm
 
 
 class PensionCompanyFilterSet(FilterSet):
@@ -22,6 +23,11 @@ class PensionCompanyFilterSet(FilterSet):
 
 
 class LockFilterSet(FilterSet):
+    taxyear = ModelChoiceFilter(queryset=TaxYear.objects.all(),
+                                initial=TaxYear.objects.get_current_year_or_latest(),
+                                empty_label=None)
+
     class Meta:
         model = Lock
         fields = ['taxyear', ]
+        form = BootstrapForm

@@ -3,6 +3,7 @@ import calendar
 import math
 import csv
 import uuid
+from functools import cached_property
 from io import StringIO
 from time import sleep
 from uuid import uuid4
@@ -156,6 +157,12 @@ def max_sixty_characters_per_line_validator(value):
             )
 
 
+class TaxYearManager(models.Manager):
+    def get_current_year_or_latest(self):
+        # get so only returns a single element
+        return self.filter(year__lte=timezone.now().year).order_by('-year')[0]
+
+
 class TaxYear(models.Model):
 
     class Meta:
@@ -204,8 +211,22 @@ class TaxYear(models.Model):
     def days_in_year(self):
         return 366 if self.is_leap_year else 365
 
+    @property
+    def allow_new_lock(self):
+        """
+        If there are any open locks where total_tax_sum != previous_transactions_sum
+        We are not allowed to create a new lock since and there for closing the lock.
+        we need to transferer all the remanding transactions before we can close a lock.
+        """
+        for lock in self.locks:
+            if not lock.allow_closing:
+                return False
+        return True
+
     def __str__(self):
-        return f"{self.__class__.__name__}(year={self.year})"
+        return str(self.year)
+
+    objects = TaxYearManager()
 
 
 # If a person has the status undefined, it means that we have not tryed finding a status in Dafo, und we do not show a statustekst in UI
@@ -231,9 +252,10 @@ class Lock(models.Model):
         TaxYear,
         db_index=True,
         on_delete=models.PROTECT,
+        related_name='locks'
     )
 
-    @property
+    @cached_property
     def total_tax_sum(self):
         sum = 0
 
@@ -241,7 +263,7 @@ class Lock(models.Model):
             sum += stl.get_calculation_amounts().get('total_tax')
         return sum
 
-    @property
+    @cached_property
     def previous_transactions_sum(self):
         sum = 0
 
@@ -256,6 +278,12 @@ class Lock(models.Model):
             sum += stl.get_calculation_amounts().get('remainder')
 
         return sum
+
+    @property
+    def allow_closing(self):
+        if self.total_tax_sum == self.previous_transactions_sum:
+            return True
+        return False
 
     @classmethod
     def create_default(self, taxyear, interval_from=None):

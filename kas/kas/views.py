@@ -5,6 +5,7 @@ from datetime import date
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Count, F, Q, Min
 from django.http import Http404, HttpResponse, HttpResponseRedirect
@@ -18,8 +19,8 @@ from django.views.generic.detail import DetailView, SingleObjectMixin, BaseDetai
 from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
 from ipware import get_client_ip
+from openpyxl import Workbook
 from tenQ.dates import get_due_date
-from django.contrib.contenttypes.models import ContentType
 
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from kas.filters import PensionCompanyFilterSet, LockFilterSet
@@ -29,16 +30,14 @@ from kas.forms import PersonListFilterForm, SelfReportedAmountForm, EditAmountsU
     PolicyTaxYearCompanyForm, PensionCompanyModelForm, PensionCompanyMergeForm, NoteUpdateForm, LockForm, LockCreateForm
 from kas.jobs import dispatch_final_settlement, import_mandtal, merge_pension_companies
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note, TaxYear, PersonTaxYear, \
-    PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement, PensionCompany, RepresentationToken, Person
+    PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement, PensionCompany, RepresentationToken, Person, Lock
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, HighestSingleObjectMixin, \
     SpecialExcelMixin
 from prisme.models import Transaction, Prisme10QBatch
 from project.view_mixins import sagsbehandler_or_administrator_required, \
-    sagsbehandler_or_administrator_or_borgerservice_required, PermissionRequiredWithMessage
+    sagsbehandler_or_administrator_or_borgerservice_required, PermissionRequiredWithMessage, administrator_required
 from worker.models import Job
-from openpyxl import Workbook
-from kas.models import Lock
 
 
 class StatisticsView(PermissionRequiredWithMessage, TemplateView):
@@ -1152,21 +1151,35 @@ class PensionCompanyUpdateView(PermissionRequiredWithMessage, UpdateView):
 
 class LockTemplateView(PermissionRequiredWithMessage, FilterView):
     filterset_class = LockFilterSet
+    # TODO check permissions
     queryset = Lock.objects.none()
-    template_name = 'kas/lock_list.html'
     permission_required = 'kas.view_lock'
     permission_denied_message = sagsbehandler_or_administrator_required
 
 
-class LockHtmxView(PermissionRequiredWithMessage, FilterView):
+class LocksHtmxView(PermissionRequiredWithMessage, FilterView):
     """
-    returns a  list of Locks.
+    returns a  list of Locks. Used by htmx
     """
     filterset_class = LockFilterSet
     queryset = Lock.objects.all()
     permission_required = 'kas.view_lock'
-    permission_denied_message = sagsbehandler_or_administrator_required
-    template_name = 'kas/htmx/locks.html'
+    permission_denied_message = administrator_required
+    template_name = 'kas/lock/locks_tr.html'
+
+
+class AllowLockForYearTemplateView(PermissionRequiredWithMessage, DetailView):
+    filterset_class = LockFilterSet
+    queryset = TaxYear
+    permission_required = 'kas.change_lock'
+    permission_denied_message = administrator_required
+    template_name = 'kas/htmx/lock_confirm.html'
+
+    def get_template_names(self):
+        if self.object.allow_new_lock:
+            super(AllowLockForYearTemplateView, self).get_template_names()
+        else:
+            return ['kas/html/lock_not_permitted.html']
 
 
 class CreateLockDetailView(PermissionRequiredWithMessage, View):

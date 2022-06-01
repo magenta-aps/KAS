@@ -16,7 +16,7 @@ from kas.views import (
     PolicyTaxYearCompanyUpdateView,
     PensionCompanyFormView, PensionCompanyHtmxView, PensionCompanyUpdateView, AgreementDownloadView,
     FeatureFlagView, PersonRepresentStartView, PersonRepresentStopView, NoteUpdateView,
-    LockHtmxView, LockTemplateView, LockContentHtmxView, LockContentTemplateView, CreateLockDetailView,
+    LocksHtmxView, LockTemplateView, LockContentHtmxView, LockContentTemplateView, CreateLockDetailView,
     ExcelSettlementExportView
 )
 from kas.viewsets import CurrentFinalSettlementDownloadView, CurrentFinalSettlementExistsView, TokenValidationView
@@ -80,10 +80,8 @@ urlpatterns = [
     path('pensioncompany/<int:pk>/edit/', PensionCompanyUpdateView.as_view(), name='pensioncompany-updateview'),
     path('pensioncompany/<int:pk>/agreement/', AgreementDownloadView.as_view(), name='pensioncompany-agreementdownload'),
 
-    path('lock/', LockTemplateView.as_view(), name='lock-templateview'),
-    path('lockhtmx/', LockHtmxView.as_view(), name='lock-htmxview'),
-    path('lockhtmx/<int:pk>/', LockHtmxView.as_view(), name='lock-htmxview'),
-    path('lockhtmx/<int:pk>/<int:last_id>/', LockHtmxView.as_view(), name='lock-htmxview'),
+    path('locks/', LockTemplateView.as_view(), name='locks'),
+    path('locks/htmx/', LocksHtmxView.as_view(), name='locks-htmxview'),
 
     path('lockdetail/', LockContentTemplateView.as_view(), name='lockdetails-listview'),
     path('lockdetail/<int:pk>/', LockContentTemplateView.as_view(), name='lockdetail-listview'),
