@@ -88,6 +88,12 @@ def get_job_types():
             'result_template': 'worker/includes/status_only.html',
             'function': 'eskat.jobs.importere_kas_beregninger_for_legacy_years'
         },
+        'GeneratePseudoFinalSettlements': {
+            'label': _('Generering af pseudo slutopgørelser (2018/2019)'),
+            'form_class': ConfirmForm,
+            'result_template': 'worker/includes/status_only.html',
+            'function': 'kas.jobs.generate_pseudo_settlements_and_transactions_for_legacy_years'
+        }
     }
     if settings.ENVIRONMENT in ('development', 'staging'):
         jobs.update({

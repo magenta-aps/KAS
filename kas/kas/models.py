@@ -15,6 +15,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
+from django.db import models
+from django.db.models import Sum, Max, UniqueConstraint, Q
 from django.db import models, transaction
 from django.db.models import Sum, Max
 from django.db.models.signals import post_save, post_delete
@@ -884,6 +886,17 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         }
 
     @property
+    def full_tax(self):
+        """
+        Returns the full taxable amount.
+        """
+        calculation_result = self.perform_calculation(initial_amount=int(self.get_assessed_amount()),
+                                                      taxable_days_in_year=int(self.person_tax_year.number_of_days or 0),
+                                                      days_in_year=int(self.person_tax_year.tax_year.days_in_year or 0),
+                                                      available_deduction_data=self.calculate_available_yearly_deduction())
+        return calculation_result['full_tax']
+
+    @property
     def initial_amount(self):
         if self.active_amount == self.ACTIVE_AMOUNT_PREFILLED:
             return self.prefilled_amount
@@ -1487,6 +1500,14 @@ class FinalSettlement(EboksDispatch):
         null=False,
         default=PAYMENT_TEXT_BULK
     )
+    # pseudo final settlement original exists in eskat for 2018/2019
+    # Being "pseudo" means that the FinalSettlement is not actually dispatched,
+    # but only used for comparison to our own calculations, flagging the user if there are differences
+    pseudo = models.BooleanField(default=False)
+    # Final settlement ammount provided by the user when uploading the pdf.
+    pseudo_amount = models.DecimalField(null=True,
+                                        max_digits=5,
+                                        decimal_places=2)
 
     def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
         if self.status == 'send':
@@ -1591,23 +1612,23 @@ class FinalSettlement(EboksDispatch):
                     'source_object': policy,
                 })
         # modregn eksisterende transaktioner
-        for transaction_item in Transaction.objects.filter(
+        for transaction in Transaction.objects.filter(
             person_tax_year=self.person_tax_year,
             status='transferred',
         ):
-            if transaction_item.type == 'prepayment':
+            if transaction.type == 'prepayment':
                 result.append({
                     'text': _('Forudindbetaling'),
-                    'amount': transaction_item.amount,  # prepayments are stored as negative so add the amount
+                    'amount': transaction.amount,  # prepayment are stored as negative so add the amount
                     'source_object': transaction,
                 })
-            elif transaction_item.type == 'prisme10q':
+            elif transaction.type == 'prisme10q':
                 result.append({
                     'text': _('Justering fra årsopgørelse oprettet d. {oprettelsesdato}').format(
-                        oprettelsesdato=transaction_item.created_at,
+                        oprettelsesdato=transaction.created_at,
                     ),
-                    'amount': -transaction_item.amount,
-                    'source_object': transaction_item,
+                    'amount': -transaction.amount,
+                    'source_object': transaction,
                 })
 
         remainder_calculation = self.get_calculation_amounts()
@@ -1636,6 +1657,10 @@ class FinalSettlement(EboksDispatch):
         return result
 
     def get_transaction_summary(self):
+        if self.pseudo:
+            # TODO: Hvilken tekst skal stå ved transaktion for uploadet slutopgørelse?
+            return _('Importeret:') + ' ' + str(self.pseudo_amount)
+
         payment_info = self.get_payment_info()
 
         summary = ''
@@ -1649,6 +1674,9 @@ class FinalSettlement(EboksDispatch):
         return summary
 
     def get_transaction_amount(self):
+        if self.pseudo:
+            return self.pseudo_amount
+
         payment_info = self.get_payment_info()
 
         amount = 0
@@ -1663,6 +1691,18 @@ class FinalSettlement(EboksDispatch):
             source_content_type=ContentType.objects.get_for_model(FinalSettlement),
             object_id=self.pk
         ).first()
+
+    @property
+    def allow_dispatch(self):
+        return super().allow_dispatch and not self.pseudo
+
+    class Meta:
+        constraints = [
+            # Ensure there can only by a single pseudo final settlement per person_tax_year
+            UniqueConstraint(name='idx_pseudo_true',
+                             fields=['person_tax_year', 'pseudo'],
+                             condition=Q(pseudo=True))
+        ]
 
 
 def delete_pdf(sender, instance, using, **kwargs):
@@ -1699,12 +1739,12 @@ class AddressFromDafo(models.Model):
 @receiver(post_save, sender=FinalSettlement)
 def cancel_batch_on_save(sender, instance, **kwargs):
     if instance.invalid and instance.person_tax_year.tax_year.year_part == 'genoptagelsesperiode':
-        for transaction_item in Transaction.objects.filter(
+        for transaction in Transaction.objects.filter(
             person_tax_year=instance.person_tax_year
         ).exclude(
             status='transferred',
         ):
-            batch = transaction_item.prisme10Q_batch
+            batch = transaction.prisme10Q_batch
             if batch.status in (Prisme10QBatch.STATUS_CREATED, Prisme10QBatch.STATUS_DELIVERY_FAILED):
                 batch.status = Prisme10QBatch.STATUS_CANCELLED
                 batch.save(update_fields=['status'])

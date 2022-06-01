@@ -18,6 +18,7 @@ from django.views.generic import TemplateView, ListView, View, UpdateView, Creat
 from django.views.generic.detail import DetailView, SingleObjectMixin, BaseDetailView
 from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
+from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from ipware import get_client_ip
 from openpyxl import Workbook
 from tenQ.dates import get_due_date
@@ -38,6 +39,8 @@ from prisme.models import Transaction, Prisme10QBatch
 from project.view_mixins import sagsbehandler_or_administrator_required, \
     sagsbehandler_or_administrator_or_borgerservice_required, PermissionRequiredWithMessage, administrator_required
 from worker.models import Job
+
+from kas.jobs import dispatch_final_settlement, import_mandtal, merge_pension_companies
 
 
 class StatisticsView(PermissionRequiredWithMessage, TemplateView):
@@ -980,6 +983,30 @@ class DispatchFinalSettlement(PermissionRequiredWithMessage, UpdateView):
     def get_success_url(self):
         return reverse('kas:person_in_year', kwargs={'year': self.object.person_tax_year.year,
                                                      'person_id': self.object.person_tax_year.person.id})
+
+
+class UploadExistingFinalSettlementView(PermissionRequiredWithMessage, UpdateView):
+    form_class = UploadExistingFinalSettlementForm
+    permission_required = 'kas.change_finalsettlement'
+    permission_denied_message = sagsbehandler_or_administrator_required
+
+    def get_queryset(self):
+        return FinalSettlement.objects.filter(pseudo=True, invalid=False)
+
+    def form_valid(self, form):
+        self.object = form.save()
+        transaction = self.object.get_transaction()
+        if transaction is not None:
+            transaction.amount = self.object.pseudo_amount
+            transaction.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        person_tax_year = self.object.person_tax_year
+        return reverse(
+            'kas:person_in_year',
+            kwargs={'year': person_tax_year.year, 'person_id': person_tax_year.person.id}
+        ) + '#settlement'
 
 
 class UpdateSingleMandtal(PermissionRequiredWithMessage, SingleObjectMixin, View):
