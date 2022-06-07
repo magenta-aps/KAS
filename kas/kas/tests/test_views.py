@@ -497,7 +497,7 @@ class CreateLockForYearTestCase(BaseTestCase):
         settlement = FinalSettlement.objects.create(person_tax_year=self.person_tax_year,
                                                     lock=self.tax_year.get_current_lock)
         # Create pending transaction
-        new_entry = Transaction.objects.create(
+        Transaction.objects.create(
             person_tax_year=self.person_tax_year,
             amount=100,
             type='prisme10q',
@@ -505,7 +505,9 @@ class CreateLockForYearTestCase(BaseTestCase):
             summary=settlement.get_transaction_summary(),
         )
         self.assertFalse(self.tax_year.get_current_lock.allow_closing)
-        r = self.client.post(reverse('kas:lock-create'), data={'taxyear': self.tax_year.pk}, follow=True)
+        r = self.client.post(reverse('kas:lock-create'),
+                             data={'taxyear': self.tax_year.pk},
+                             follow=True)
         self.assertEqual(r.status_code, 200)
-        # No lock was create 
+        # No lock was create
         self.assertEqual(self.tax_year.locks.count(), 1)
