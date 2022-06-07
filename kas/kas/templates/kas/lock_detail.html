@@ -1,0 +1,32 @@
+{# Shows the Final settlments belonging to the selected lock #}
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+{% block content %}
+    <a href="{% url 'kas:locks' %}">{% trans 'Tilbage til lås'%}</a>
+    <h1 class="mt-3">{% trans 'Lås for' %} {{ object.interval_from|date:'SHORT_DATE_FORMAT' }} -{% if objet.interval_to %}{{ object.interval_to|date:'SHORT_DATE_FORMAT' }}{% else %} (Åben){% endif %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
+    {% blocktrans asvar top_help %} Fra denne side er der mulighed for at se/eksportere indholdet af slutopgørelser under denne lås{% endblocktrans %}
+    {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
+        <a href="{% url 'kas:lock-details' lock.pk 'excel' %}" class="btn btn-success mt-2">{% trans 'Download lås som excel'%}</a>
+       <table class="table table-striped mt-4">
+            <thead>
+            <tr>
+                <th>{% trans 'Personnummer' %}</th>
+                <th>{% trans 'Navn' %}</th>
+                <th class="text-center">{% trans 'Samlet beregnet skat' %}</th>
+                <th class="text-center">{% trans 'Overført til prisme' %}</th>
+                <th class="text-center">{% trans 'Udestående' %}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for settlement in object_list %}
+                <tr>
+                    <td><a href="{% url 'kas:person_in_year' settlement.person_tax_year.tax_year.year settlement.person_tax_year.person.pk  %}">{{ settlement.person_tax_year.person.cpr}}</a></td>
+                    <td>{{ settlement.person_tax_year.person.name}}</td>
+                    <td class="text-center">{{ settlement.total_tax }}</td>
+                    <td class="text-center">{{ settlement.previous_transactions_sum }}</td>
+                    <td class="text-center">{{ settlement.remaining_transaction_sum}}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+{% endblock %}

@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Count, F, Q, Min
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
@@ -18,7 +18,6 @@ from django.views.generic import TemplateView, ListView, View, UpdateView, Creat
 from django.views.generic.detail import DetailView, SingleObjectMixin, BaseDetailView
 from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
-from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from ipware import get_client_ip
 from openpyxl import Workbook
 from tenQ.dates import get_due_date
@@ -28,7 +27,8 @@ from kas.filters import PensionCompanyFilterSet, LockFilterSet
 from kas.forms import PersonListFilterForm, SelfReportedAmountForm, EditAmountsUpdateForm, \
     PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, PolicyTaxYearActivationForm, PolicyNotesAndAttachmentForm, \
     PersonNotesAndAttachmentForm, PaymentOverrideUpdateForm, PolicyListFilterForm, FinalStatementForm, \
-    PolicyTaxYearCompanyForm, PensionCompanyModelForm, PensionCompanyMergeForm, NoteUpdateForm, LockForm, LockCreateForm
+    PolicyTaxYearCompanyForm, PensionCompanyModelForm, PensionCompanyMergeForm, NoteUpdateForm, LockForm, \
+    LockCreateForm, UploadExistingFinalSettlementForm
 from kas.jobs import dispatch_final_settlement, import_mandtal, merge_pension_companies
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note, TaxYear, PersonTaxYear, \
     PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement, PensionCompany, RepresentationToken, Person, Lock
@@ -39,8 +39,6 @@ from prisme.models import Transaction, Prisme10QBatch
 from project.view_mixins import sagsbehandler_or_administrator_required, \
     sagsbehandler_or_administrator_or_borgerservice_required, PermissionRequiredWithMessage, administrator_required
 from worker.models import Job
-
-from kas.jobs import dispatch_final_settlement, import_mandtal, merge_pension_companies
 
 
 class StatisticsView(PermissionRequiredWithMessage, TemplateView):
@@ -1176,128 +1174,6 @@ class PensionCompanyUpdateView(PermissionRequiredWithMessage, UpdateView):
         return reverse('kas:pensioncompany-listview')
 
 
-class LockTemplateView(PermissionRequiredWithMessage, FilterView):
-    filterset_class = LockFilterSet
-    # TODO check permissions
-    queryset = Lock.objects.none()
-    permission_required = 'kas.view_lock'
-    permission_denied_message = sagsbehandler_or_administrator_required
-
-
-class LocksHtmxView(PermissionRequiredWithMessage, FilterView):
-    """
-    returns a  list of Locks. Used by htmx
-    """
-    filterset_class = LockFilterSet
-    queryset = Lock.objects.all()
-    permission_required = 'kas.view_lock'
-    permission_denied_message = administrator_required
-    template_name = 'kas/lock/locks_tr.html'
-
-
-class AllowLockForYearTemplateView(PermissionRequiredWithMessage, DetailView):
-    filterset_class = LockFilterSet
-    queryset = TaxYear
-    permission_required = 'kas.change_lock'
-    permission_denied_message = administrator_required
-    template_name = 'kas/htmx/lock_confirm.html'
-
-    def get_template_names(self):
-        if self.object.allow_new_lock:
-            super(AllowLockForYearTemplateView, self).get_template_names()
-        else:
-            return ['kas/html/lock_not_permitted.html']
-
-
-class CreateLockDetailView(PermissionRequiredWithMessage, View):
-    """This view accepts the POST, which is creating a new Lock"""
-    permission_required = 'kas.add_lock'
-    permission_denied_message = sagsbehandler_or_administrator_required
-
-    def post(self, request, *args, **kwargs):
-        self.tax_year = get_object_or_404(TaxYear, pk=self.request.POST.get('taxyear'))
-        active_lock = self.tax_year.get_active_lock()
-        if active_lock.remainder_sum == 0:
-            self.tax_year.create_new_open_lock()
-
-        return HttpResponseRedirect(reverse('kas:lock-htmxview')+'?taxyear={tax_year}'.format(tax_year=self.tax_year.pk))
-
-
-class LockContentTemplateView(PermissionRequiredWithMessage, DetailView):
-    template_name = 'kas/settlement_list.html'
-    permission_required = 'kas.view_lock'
-    permission_denied_message = sagsbehandler_or_administrator_required
-    model = Lock
-
-
-class ExcelSettlementExportView(PermissionRequiredWithMessage, DetailView):
-    permission_required = 'kas.view_lock'
-    permission_denied_message = sagsbehandler_or_administrator_required
-    model = Lock
-    excel_headers = ['Skatteår', 'Personnummer', 'Samlet beregnet skat', 'Samlede overførsler til Prisme', 'Udestående']
-
-    def render_to_response(self, request, *args, **kwargs):
-        wb = Workbook(write_only=True)
-        ws = wb.create_sheet()
-        ws.append(self.excel_headers)
-
-        for settlement in FinalSettlement.objects.filter(lock=request['object'].id):
-
-            calculation_amount = settlement.get_calculation_amounts()
-            ws.append([settlement.lock.taxyear.year, settlement.person_tax_year.person.cpr,
-                       calculation_amount.get('total_tax'),
-                       calculation_amount.get('previous_transactions_sum'),
-                       calculation_amount.get('remainder')])
-
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename={}'.format('export.xlsx')
-        wb.save(response)
-        return response
-
-
-class LockContentHtmxView(PermissionRequiredWithMessage, ListView):
-    """
-    returns a  list of FinalSettlements, to be used as HTMX-view of FinalSettlements attached to a Lock
-    """
-    permission_required = 'kas.view_lock'
-    permission_denied_message = sagsbehandler_or_administrator_required
-    template_name = 'kas/htmx/policies_under_lock.html'
-
-    def get_queryset(self):
-        last_id = self.kwargs.get('last_id')
-        self.lock_id = self.kwargs.get('pk')
-        q = FinalSettlement.objects.filter(lock__id=self.lock_id)
-
-        if last_id:
-            last_object = get_object_or_404(FinalSettlement, pk=last_id)
-            q = q.filter(name__gt=last_object.name)
-
-        return q
-
-
-class CreateLock(PermissionRequiredWithMessage, FormView):
-    """Create a new Lock on a specified TaxYear and close the existing Lock"""
-
-    template_name = 'kas/create_lock.html'
-    form_class = LockCreateForm
-    permission_required = 'kas.view_lock'
-    permission_denied_message = sagsbehandler_or_administrator_required
-
-    def __init__(self, *args, **kwargs):
-        self.taxyear = kwargs.get('taxyear')
-
-    def form_valid(self, form):
-        return HttpResponseRedirect(reverse('kas:lock-templateview'))
-
-    def post(self, *args, **kwargs):
-        taxyear = TaxYear.objects.get(year=kwargs.get('taxyear'))
-        active_lock = taxyear.get_active_lock()
-
-        if active_lock.remainder_sum() == 0:
-            active_lock.lock_and_create()
-        return HttpResponseRedirect(reverse('kas:lock-templateview'))
-
-
 class AgreementDownloadView(PermissionRequiredWithMessage, View):
     permission_required = 'kas.view_pensioncompany'
 
@@ -1313,3 +1189,87 @@ class AgreementDownloadView(PermissionRequiredWithMessage, View):
 
 class FeatureFlagView(LoginRequiredMixin, TemplateView):
     template_name = 'kas/feature_flag_list.html'
+
+
+class LockFilterView(PermissionRequiredWithMessage, FilterView):
+    filterset_class = LockFilterSet
+    queryset = Lock.objects.none()
+    permission_required = 'kas.view_lock'
+    permission_denied_message = administrator_required
+
+
+class LocksHtmxView(PermissionRequiredWithMessage, FilterView):
+    """
+    Returns a  list of Locks, rendered as TR`s used by htmx.
+    """
+    filterset_class = LockFilterSet
+    queryset = Lock.objects.all().annotate(settlements_count=Count('settlements'))
+    permission_required = 'kas.view_lock'
+    permission_denied_message = administrator_required
+    template_name = 'kas/lock/locks_tr.html'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        ctx = super(LocksHtmxView, self).get_context_data(object_list=object_list, **kwargs)
+        ctx['object_list'] = sorted(ctx.get('object_list', []), key=lambda x: x.remaining_transaction_sum, reverse=True)
+        return ctx
+
+
+class CreateLockForYearTemplateView(PermissionRequiredWithMessage, TemplateView):
+    permission_required = 'kas.change_lock'
+    permission_denied_message = administrator_required
+    template_name = 'kas/lock/allow.html'
+
+    def get_context_data(self, **kwargs):
+        """
+        For get requests return the context for the modal,
+        stating if it is allowed to create a new lock or not.
+        """
+        kwargs['object'] = get_object_or_404(TaxYear, pk=self.request.GET.get('taxyear'))
+        return super(CreateLockForYearTemplateView, self).get_context_data(**kwargs)
+
+    def post(self, request):
+        tax_year = get_object_or_404(TaxYear, pk=request.POST.get('taxyear'))
+        if tax_year.get_current_lock.allow_closing:
+            with transaction.atomic():
+                today = timezone.now().date()
+                tax_year.get_current_lock.interval_to = today
+                # Create new open lock
+                Lock.objects.create(taxyear=tax_year, interval_from=today)
+                tax_year.get_current_lock.save(update_fields=['interval_to'])
+        return HttpResponseRedirect(reverse('kas:locks-htmxview')+f'?taxyear={tax_year.pk}')
+
+
+class LockDetailView(PermissionRequiredWithMessage, DetailView):
+    permission_required = 'kas.view_lock'
+    permission_denied_message = administrator_required
+    model = Lock
+    excel_headers = ['Personnummer',
+                     'navn',
+                     'Samlet beregnet skat',
+                     'Samlede overførsler til Prisme',
+                     'Udestående']
+
+    def get_context_data(self, **kwargs):
+        ctx = super(LockDetailView, self).get_context_data(**kwargs)
+        ctx['object_list'] = sorted(self.object.settlements.all(),
+                                    key=lambda x: x.remaining_transaction_sum,
+                                    reverse=True)
+        return ctx
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.kwargs.get('format') == 'excel':
+            wb = Workbook(write_only=True)
+            ws = wb.create_sheet()
+            ws.append(self.excel_headers)
+            for settlement in context.get('object_list'):
+                ws.append([settlement.person_tax_year.person.cpr,
+                           settlement.person_tax_year.person.name,
+                           settlement.total_tax,
+                           settlement.previous_transactions_sum,
+                           settlement.remaining_transaction_sum
+                           ])
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename={}'.format('export.xlsx')
+            wb.save(response)
+            return response
+        return super(LockDetailView, self).render_to_response(context, **response_kwargs)

@@ -1,14 +1,15 @@
 import base64
 import calendar
-import math
 import csv
+import math
+import random
+import re
+import string
 import uuid
 from functools import cached_property
 from io import StringIO
 from time import sleep
 from uuid import uuid4
-import random
-import string
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -16,26 +17,20 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
-from django.db.models import Sum, Max, UniqueConstraint, Q
-from django.db import models, transaction
-from django.db.models import Sum, Max
+from django.db.models import UniqueConstraint, Q, Sum, Max
 from django.db.models.signals import post_save, post_delete
 from django.db.transaction import atomic
 from django.dispatch import receiver
 from django.forms import model_to_dict
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from requests.exceptions import RequestException
 from simple_history.models import HistoricalRecords
-import datetime
-from django.utils import timezone
-import pytz
+
 from eskat.models import ImportedR75PrivatePension
 from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.managers import PolicyTaxYearManager
-
-from prisme.models import Prisme10QBatch
-from prisme.models import Transaction
-import re
+from prisme.models import Prisme10QBatch, Transaction
 
 
 def filefield_path(instance, filename):
@@ -162,7 +157,10 @@ def max_sixty_characters_per_line_validator(value):
 class TaxYearManager(models.Manager):
     def get_current_year_or_latest(self):
         # get so only returns a single element
-        return self.filter(year__lte=timezone.now().year).order_by('-year')[0]
+        try:
+            return self.filter(year__lte=timezone.now().year).order_by('-year')[0]
+        except IndexError:
+            return None
 
 
 class TaxYear(models.Model):
@@ -191,20 +189,6 @@ class TaxYear(models.Model):
         validators=[max_sixty_characters_per_line_validator],
     )
 
-    def get_active_lock(self):
-        """Get the TaxYears active Lock, There is always one. The active lock is important for the connection to final settlements"""
-        return self.lock_set.get(interval_to=None)
-
-    def create_new_open_lock(self):
-        """ Creates a new lock with current date as start date
-        And closes the old open lock"""
-        with transaction.atomic():
-            old_lock = self.lock_set.get(interval_to=None)
-            current_date = timezone.now().date()
-            old_lock.interval_to = current_date
-            old_lock.save(update_fields=['interval_to'])
-            return Lock.objects.create(interval_from=current_date, taxyear=self)
-
     @property
     def is_leap_year(self):
         return calendar.isleap(self.year)
@@ -213,17 +197,13 @@ class TaxYear(models.Model):
     def days_in_year(self):
         return 366 if self.is_leap_year else 365
 
-    @property
-    def allow_new_lock(self):
+    @cached_property
+    def get_current_lock(self):
         """
-        If there are any open locks where total_tax_sum != previous_transactions_sum
-        We are not allowed to create a new lock since and there for closing the lock.
-        we need to transferer all the remanding transactions before we can close a lock.
+        There should always be at least one "active" lock for each year.
+        So this should never raise an IndexError if it does this would be a serious problem and should result in a 500.
         """
-        for lock in self.locks:
-            if not lock.allow_closing:
-                return False
-        return True
+        return self.locks.filter(interval_to__isnull=True).order_by('-interval_from')[0]
 
     def __str__(self):
         return str(self.year)
@@ -246,9 +226,9 @@ class Lock(models.Model):
     class Meta:
         ordering = ('interval_from', )
 
-    interval_from = models.DateTimeField()
+    interval_from = models.DateField()
 
-    interval_to = models.DateTimeField(null=True, blank=True)
+    interval_to = models.DateField(null=True, blank=True)
 
     taxyear = models.ForeignKey(
         TaxYear,
@@ -259,47 +239,48 @@ class Lock(models.Model):
 
     @cached_property
     def total_tax_sum(self):
-        sum = 0
-
-        for stl in FinalSettlement.objects.filter(lock=self):
-            sum += stl.get_calculation_amounts().get('total_tax')
-        return sum
+        return sum([settlement.total_tax for settlement in self.settlements.all()])
 
     @cached_property
     def previous_transactions_sum(self):
-        sum = 0
-
-        for stl in FinalSettlement.objects.filter(lock=self):
-            sum += stl.get_calculation_amounts().get('previous_transactions_sum')
-        return sum
+        return sum([settlement.previous_transactions_sum for settlement in self.settlements.all()])
 
     @property
     def remainder_sum(self):
         sum = 0
-        for stl in FinalSettlement.objects.filter(lock=self):
+        for stl in self.settlements.all():
             sum += stl.get_calculation_amounts().get('remainder')
 
         return sum
 
     @property
+    def remaining_transaction_sum(self):
+        return self.total_tax_sum - self.previous_transactions_sum
+
+    @property
     def allow_closing(self):
-        if self.total_tax_sum == self.previous_transactions_sum:
+        """
+        All transactions should have been transfered to prisme before we can close the lock
+        And you cannot close a lock that is all ready closed.
+        """
+        if not self.interval_to and self.remaining_transaction_sum == 0:
             return True
         return False
 
-    @classmethod
-    def create_default(self, taxyear, interval_from=None):
-        if interval_from is None:
-            return Lock.objects.create(taxyear=taxyear, interval_from=datetime.datetime(year=taxyear.year, month=1, day=1, tzinfo=pytz.timezone('UTC')))
+    def __str__(self):
+        if self.interval_to:
+            return _('%(year)s (Låst)' % {'year': self.taxyear.year})
         else:
-            return Lock.objects.create(taxyear=taxyear, interval_from=interval_from)
+            return _('%(year)s (Åben)' % {'year': self.taxyear.year})
 
 
 @receiver(post_save, sender=TaxYear, dispatch_uid='create_lock_for_year')
 def create_lock_for_year(sender, instance, created, **kwargs):
-    """Automatically create a Lock every time a TaxYear is created"""
+    """
+    Always create a new open lock when a taxyear is created.
+    """
     if created:
-        Lock.create_default(taxyear=instance)
+        Lock.objects.create(taxyear=instance, interval_from=timezone.now().date())
 
 
 class Person(HistoryMixin, models.Model):
@@ -1460,6 +1441,7 @@ class FinalSettlement(EboksDispatch):
         on_delete=models.PROTECT,
         null=True,  # TODO After attaching all TaxSlipGenerated to a lock, this needs to be removed. It needs lock
         blank=False,
+        related_name='settlements'
     )
 
     interest_on_remainder = models.DecimalField(
@@ -1695,6 +1677,18 @@ class FinalSettlement(EboksDispatch):
     @property
     def allow_dispatch(self):
         return super().allow_dispatch and not self.pseudo
+
+    @cached_property
+    def total_tax(self):
+        return self.get_calculation_amounts().get('total_tax')
+
+    @cached_property
+    def previous_transactions_sum(self):
+        return self.get_calculation_amounts().get('previous_transactions_sum')
+
+    @property
+    def remaining_transaction_sum(self):
+        return self.total_tax - self.previous_transactions_sum
 
     class Meta:
         constraints = [
