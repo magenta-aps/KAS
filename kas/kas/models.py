@@ -1428,8 +1428,6 @@ class FinalSettlement(EboksDispatch):
     lock = models.ForeignKey(
         Lock,
         on_delete=models.PROTECT,
-        null=True,  # TODO After attaching all TaxSlipGenerated to a lock, this needs to be removed. It needs lock
-        blank=False,
         related_name='settlements'
     )
 
