@@ -13,7 +13,7 @@
                     {% translate 'Dette vil lukke den igangværende lås.' %}
                 {% else %}
                     {% blocktranslate with amount=object.get_current_lock.remaining_transaction_sum %}
-                        Kan ikke oprette ny lås da der mangler at blive overført {{ amount }} til prisme'!
+                        Kan ikke oprette ny lås da der mangler at blive overført {{ amount }} kr. til prisme!
                     {% endblocktranslate %}
                 {% endif %}
                 </p>
