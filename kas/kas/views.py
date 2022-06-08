@@ -27,7 +27,7 @@ from kas.filters import PensionCompanyFilterSet, LockFilterSet
 from kas.forms import PersonListFilterForm, SelfReportedAmountForm, EditAmountsUpdateForm, \
     PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, PolicyTaxYearActivationForm, PolicyNotesAndAttachmentForm, \
     PersonNotesAndAttachmentForm, PaymentOverrideUpdateForm, PolicyListFilterForm, FinalStatementForm, \
-    PolicyTaxYearCompanyForm, PensionCompanyModelForm, PensionCompanyMergeForm, NoteUpdateForm, LockForm, \
+    PolicyTaxYearCompanyForm, PensionCompanyModelForm, PensionCompanyMergeForm, NoteUpdateForm, \
     UploadExistingFinalSettlementForm
 from kas.jobs import dispatch_final_settlement, import_mandtal, merge_pension_companies
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note, TaxYear, PersonTaxYear, \
@@ -1119,26 +1119,6 @@ class PensionCompanyFormView(PermissionRequiredWithMessage, FormView):
         return reverse('kas:pensioncompany-listview')
 
 
-class LockFormView(PermissionRequiredWithMessage, FormView):
-    """
-    Renders the pensioncompany list template and handles the start merge job form post.
-    """
-    template_name = 'kas/lock_list.html'
-    form_class = LockForm
-    permission_required = 'kas.view_lock'
-    permission_denied_message = sagsbehandler_or_administrator_required
-
-    def form_invalid(self, form):
-        # raise None field errors as messages
-        messages.add_message(self.request,
-                             messages.ERROR,
-                             form.non_field_errors())
-        return super(LockFormView, self).form_invalid(form)
-
-    def get_success_url(self):
-        return reverse('kas:lock-templateview')
-
-
 class PensionCompanyHtmxView(PermissionRequiredWithMessage, FilterView):
     """
     returns a  list of pension selskaber.
@@ -1240,6 +1220,10 @@ class CreateLockForYearTemplateView(PermissionRequiredWithMessage, TemplateView)
 
 
 class LockDetailView(PermissionRequiredWithMessage, DetailView):
+    """
+    Shows the finalsettlements belonging to the chosen lock (PK).
+    Also allows the list of finalsettlements to be downloaded as an excel file.
+    """
     permission_required = 'kas.view_lock'
     permission_denied_message = administrator_required
     model = Lock

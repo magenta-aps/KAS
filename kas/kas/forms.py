@@ -349,7 +349,3 @@ class PensionCompanyMergeForm(BootstrapForm):
 
 class LockForm(BootstrapForm):
     lock_list = forms.ModelMultipleChoiceField(queryset=Lock.objects.all())
-
-
-class LockCreateForm(BootstrapForm):
-    label = forms.CharField(initial=_('Lås skatteår'))
