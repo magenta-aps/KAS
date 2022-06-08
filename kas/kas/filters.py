@@ -24,7 +24,6 @@ class PensionCompanyFilterSet(FilterSet):
 
 class LockFilterSet(FilterSet):
     taxyear = ModelChoiceFilter(queryset=TaxYear.objects.all(),
-                                initial=TaxYear.objects.get_current_year_or_latest(),
                                 empty_label=None)
 
     class Meta:

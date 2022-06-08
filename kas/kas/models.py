@@ -154,15 +154,6 @@ def max_sixty_characters_per_line_validator(value):
             )
 
 
-class TaxYearManager(models.Manager):
-    def get_current_year_or_latest(self):
-        # get so only returns a single element
-        try:
-            return self.filter(year__lte=timezone.now().year).order_by('-year')[0]
-        except IndexError:
-            return None
-
-
 class TaxYear(models.Model):
 
     class Meta:
@@ -207,8 +198,6 @@ class TaxYear(models.Model):
 
     def __str__(self):
         return str(self.year)
-
-    objects = TaxYearManager()
 
 
 # If a person has the status undefined, it means that we have not tryed finding a status in Dafo, und we do not show a statustekst in UI
