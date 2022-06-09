@@ -373,7 +373,8 @@ class TestCalculationMath(TestCase):
         final_statement = FinalSettlement(
             person_tax_year=person_tax_year,
             interest_on_remainder=10,
-            extra_payment_for_previous_missing=500
+            extra_payment_for_previous_missing=500,
+            lock=person_tax_year.tax_year.get_current_lock
         )
         final_statement.save()
 
@@ -404,7 +405,8 @@ class TestCalculationMath(TestCase):
         final_statement = FinalSettlement(
             person_tax_year=person_tax_year,
             interest_on_remainder=20,
-            extra_payment_for_previous_missing=200
+            extra_payment_for_previous_missing=200,
+            lock=person_tax_year.tax_year.get_current_lock
         )
         final_statement.save()
 
@@ -431,13 +433,15 @@ class TestCalculationMath(TestCase):
         final_statement = FinalSettlement(
             person_tax_year=person_tax_year,
             interest_on_remainder=10,
-            extra_payment_for_previous_missing=500
+            extra_payment_for_previous_missing=500,
+            lock=person_tax_year.tax_year.get_current_lock
         )
         final_statement.save()
         final_statement = FinalSettlement(
             person_tax_year=person_tax_year,
             interest_on_remainder=20,
-            extra_payment_for_previous_missing=200
+            extra_payment_for_previous_missing=200,
+            lock=person_tax_year.tax_year.get_current_lock
         )
         final_statement.save()
 

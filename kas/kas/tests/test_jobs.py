@@ -237,7 +237,8 @@ class GenerateBatchAndTransactionsForYearJobsTest(BaseTransactionTestCase):
             foreign_paid_amount_actual=0,
             slutlignet=True
         )
-        self.settlement = FinalSettlement.objects.create(person_tax_year=person_tax_year)
+        self.settlement = FinalSettlement.objects.create(person_tax_year=person_tax_year,
+                                                         lock=person_tax_year.tax_year.get_current_lock)
         self.user = get_user_model().objects.create(username='test')
 
         self.job_kwargs = {

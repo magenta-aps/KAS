@@ -1,0 +1,33 @@
+{# used as a modal from the locks view to either show an error or allow the user to confirm the creation of the new lock #}
+{% load i18n %}
+<div id="modal-backdrop" class="modal-backdrop fade show" style="display:block;"></div>
+<div id="modal" class="modal fade show" tabindex="-1" style="display:block;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% if object.get_current_lock.allow_closing %}{% translate 'Bekræft oprettelse af ny lås' %}{% else %}{% translate 'Kan ikke oprette lås' %}{% endif %}</h5>
+            </div>
+            <div class="modal-body">
+                <p>
+                {% if object.get_current_lock.allow_closing %}
+                    {% translate 'Dette vil lukke den igangværende lås.' %}
+                {% else %}
+                    {% blocktranslate with amount=object.get_current_lock.remaining_transaction_sum %}
+                        Kan ikke oprette ny lås da der mangler at blive overført {{ amount }} kr. til prisme!
+                    {% endblocktranslate %}
+                {% endif %}
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" type="button" class="btn btn-secondary">{% translate 'Luk' %}</button>
+                {% if object.get_current_lock.allow_closing %}
+                    <form>
+                        {% csrf_token %}
+                        <input type="hidden" name="taxyear" value="{{ object.pk }}"/>
+                        <button onclick="closeModal()" hx-target="#js-locks-tr" hx-post="{% url 'kas:lock-create' %}" type="button" class="btn btn-success">{% translate 'Bekræft oprettelse' %}</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

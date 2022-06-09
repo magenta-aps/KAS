@@ -1,20 +1,24 @@
 from django.conf import settings
 from django.urls import path
 
-from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetailView, PolicyTaxYearTabView, \
-    PolicyTaxYearDetailView, PdfDownloadView, PolicyDocumentDownloadView, SelfReportedAmountUpdateView, \
-    FinalSettlementDownloadView, \
-    PersonNotesAndAttachmentsView, PolicyNotesAndAttachmentsView, \
-    EditAmountsUpdateView, PensionCompanySummaryFileView, PensionCompanySummaryFileDownloadView, \
-    PolicyTaxYearCreateView, ActivatePolicyTaxYearView, PersonTaxYearHistoryListView, PersonTaxYearHistoryDetailView, \
-    PolicyTaxYearHistoryDetailView, PolicyTaxYearHistoryListView, PersonTaxYearUnfinishedListView, \
-    PersonTaxYearFailSendListView, PolicyTaxYearUnfinishedListView, PersonTaxYearDocumentsAndNotesUpdateView, \
-    PolicyPaymentOverrideView, \
-    PersonTaxYearUnhandledDocumentsAndNotes, FinalSettlementGenerateView, MarkFinalSettlementAsInvalid, \
-    DispatchFinalSettlement, PersonTaxYearGeneralAndForeignNotesListView, UpdateSingleMandtal, WaitForSingleMandtal, \
-    PolicyTaxYearCompanyUpdateView, UploadExistingFinalSettlementView, \
-    PensionCompanyFormView, PensionCompanyHtmxView, PensionCompanyUpdateView, AgreementDownloadView, \
-    FeatureFlagView, PersonRepresentStartView, PersonRepresentStopView, NoteUpdateView
+from kas.views import (
+    StatisticsView, PersonTaxYearListView, PersonTaxYearDetailView, PolicyTaxYearTabView,
+    PolicyTaxYearDetailView, PdfDownloadView, PolicyDocumentDownloadView, SelfReportedAmountUpdateView,
+    FinalSettlementDownloadView,
+    PersonNotesAndAttachmentsView, PolicyNotesAndAttachmentsView,
+    EditAmountsUpdateView, PensionCompanySummaryFileView, PensionCompanySummaryFileDownloadView,
+    PolicyTaxYearCreateView, ActivatePolicyTaxYearView, PersonTaxYearHistoryListView, PersonTaxYearHistoryDetailView,
+    PolicyTaxYearHistoryDetailView, PolicyTaxYearHistoryListView, PersonTaxYearUnfinishedListView,
+    PersonTaxYearFailSendListView, PolicyTaxYearUnfinishedListView, PersonTaxYearDocumentsAndNotesUpdateView,
+    PolicyPaymentOverrideView,
+    PersonTaxYearUnhandledDocumentsAndNotes, FinalSettlementGenerateView, MarkFinalSettlementAsInvalid,
+    DispatchFinalSettlement, PersonTaxYearGeneralAndForeignNotesListView, UpdateSingleMandtal, WaitForSingleMandtal,
+    PolicyTaxYearCompanyUpdateView,
+    PensionCompanyFormView, PensionCompanyHtmxView, PensionCompanyUpdateView, AgreementDownloadView,
+    FeatureFlagView, PersonRepresentStartView, PersonRepresentStopView, NoteUpdateView,
+    LocksHtmxView, LockFilterView, LockDetailView,
+    UploadExistingFinalSettlementView, CreateLockForYearTemplateView
+)
 from kas.viewsets import CurrentFinalSettlementDownloadView, CurrentFinalSettlementExistsView, TokenValidationView
 
 app_name = 'kas'
@@ -31,6 +35,7 @@ urlpatterns = [
 
     path('statistics', StatisticsView.as_view(), name='statistics'),
     path('tax_year/<int:year>/persons/<int:person_id>/', PersonTaxYearDetailView.as_view(), name='person_in_year'),
+
     path('tax_year/<int:year>/persons/<int:person_id>/pdf/', PdfDownloadView.as_view(), name='get_pdf'),
     path('tax_year/<int:year>/persons/<int:person_id>/policy/', PolicyTaxYearCreateView.as_view(), name='policy_create'),
     path('tax_year/<int:year>/persons/<int:person_id>/policies/', PolicyTaxYearTabView.as_view(), name='policy_tabs'),
@@ -77,6 +82,12 @@ urlpatterns = [
     path('pensioncompanyhtmx/<int:last_id>/', PensionCompanyHtmxView.as_view(), name='pensioncompany-htmxview'),
     path('pensioncompany/<int:pk>/edit/', PensionCompanyUpdateView.as_view(), name='pensioncompany-updateview'),
     path('pensioncompany/<int:pk>/agreement/', AgreementDownloadView.as_view(), name='pensioncompany-agreementdownload'),
+
+    path('locks/', LockFilterView.as_view(), name='locks'),
+    path('locks/htmx/', LocksHtmxView.as_view(), name='locks-htmxview'),
+    path('lockdetail/<int:pk>/', LockDetailView.as_view(), name='lock-details'),
+    path('lockdetail/<int:pk>/<str:format>/', LockDetailView.as_view(), name='lock-details'),
+    path('locks/create/', CreateLockForYearTemplateView.as_view(), name='lock-create'),
 
     path('note/<int:pk>/', NoteUpdateView.as_view(), name='note-update'),
 ]
