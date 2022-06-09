@@ -696,7 +696,8 @@ def generate_pseudo_settlements_and_transactions_for_legacy_years(job):
                                                                                  defaults={'title': 'Pseudo opgørelse',
                                                                                            'pseudo': True,
                                                                                            'pseudo_amount': sum_tax_after_foreign_paid_deduction,
-                                                                                           'person_tax_year': person_tax_year})
+                                                                                           'person_tax_year': person_tax_year,
+                                                                                           'lock': person_tax_year.tax_year.get_current_lock})
             if created:
                 created_final_settlements += 1
             else:
