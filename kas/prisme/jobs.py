@@ -69,8 +69,6 @@ def send_batch(job):
                 )
             )
 
-        destination_folder = settings.TENQ['dirs'][destination]
-
         # When sending to development environment, only send 100 entries
         if destination == '10q_development':
             content = batch.get_content(max_entries=100)
@@ -82,7 +80,11 @@ def send_batch(job):
         with tempfile.NamedTemporaryFile(mode='w') as batchfile:
             batchfile.write(content)
             batchfile.flush()
-            put_file_in_prisme_folder(settings.TENQ, batchfile.name, destination_folder, filename, job.set_progress)
+            if destination == '10q_mocking':
+                job.set_progress(1, 1)
+            else:
+                destination_folder = settings.TENQ['dirs'][destination]
+                put_file_in_prisme_folder(settings.TENQ, batchfile.name, destination_folder, filename, job.set_progress)
         batch.status = completion_statuses[destination]
         batch.delivered_by = job.created_by
         batch.delivered = timezone.now()
