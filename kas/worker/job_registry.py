@@ -8,7 +8,7 @@ def get_job_types():
     :returns available jobs based on environment
     """
     from worker.forms import MandtalImportJobForm, R75ImportJobForm, YearAndTitleForm, ConfirmForm, YearPkForm, \
-        AutoligningsYearForm, LegacyYearsForm
+        AutoligningsYearForm, LegacyYearsForm, R75ImportSpreadsheetJobForm
     from prisme.forms import PrePaymentFileModelForm
 
     jobs = {
@@ -93,7 +93,13 @@ def get_job_types():
             'form_class': ConfirmForm,
             'result_template': 'worker/includes/status_only.html',
             'function': 'kas.jobs.generate_pseudo_settlements_and_transactions_for_legacy_years'
-        }
+        },
+        'ImportSpreadsheetR75Job': {
+            'label': _('Import af data fra R75 i regneark'),  # translated label
+            'form_class': R75ImportSpreadsheetJobForm,  # form class used in the start job workflow
+            'result_template': 'worker/includes/r75.html',
+            'function': 'kas.jobs.import_spreadsheet_r75',
+        },
     }
     if settings.ENVIRONMENT in ('development', 'staging'):
         jobs.update({

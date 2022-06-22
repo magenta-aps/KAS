@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-b
-from django.db import models
+
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core.validators import FileExtensionValidator
+from django.db import models
 from django.db.models.functions import Length
 from django.forms.models import model_to_dict
+from django.utils.formats import date_format
 from simple_history.models import HistoricalRecords
 
 """
@@ -193,6 +197,13 @@ class EskatModels:
             managed = False  # Created from a view. Don't remove.
             db_table = 'r75_idx_4500230'
 
+    class R75SpreadsheetImport(AbstractModels.R75Idx4500230):
+        file = models.ForeignKey(
+            'R75SpreadsheetFile',
+            on_delete=models.SET_NULL,
+            null=True,
+        )
+
 
 class MockModels:
 
@@ -285,17 +296,22 @@ class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
         created, updated = (0, 0)
 
         for i, x in enumerate(qs.iterator()):
+
+            # Get dict from model instance x, but only fields we have in our current model
+            modelfield_names = {field.name for field in cls._meta.get_fields()}
+            data = {k: v for k, v in model_to_dict(x).items() if k in modelfield_names}
+
             try:
                 existing = cls.objects.get(pk=x.pk)
                 if existing.r75_dato != x.r75_dato:
-                    for k, v in model_to_dict(x).items():
+                    for k, v in data.items():
                         setattr(existing, k, v)
                     existing._change_reason = "Updated by import"
                     existing.save()
                     updated += 1
 
             except cls.DoesNotExist:
-                new_obj = cls(**model_to_dict(x))
+                new_obj = cls(**data)
                 new_obj._change_reason = "Created by import"
                 new_obj.save()
                 created += 1
@@ -308,3 +324,22 @@ class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
             job.set_progress_pct(progress_start + (100 * progress_factor))
 
         return created, updated
+
+
+def r75_spreadsheet_file_path(instance, filename):
+    return f"r75_spreadsheets/{instance.uploaded_at.year}/{filename}.xlsx"
+
+
+class R75SpreadsheetFile(models.Model):
+    uploaded_by = models.ForeignKey(get_user_model(), on_delete=models.PROTECT)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    file = models.FileField(
+        upload_to=r75_spreadsheet_file_path,
+        validators=[FileExtensionValidator(allowed_extensions=['xlsx'])]
+    )
+
+    def __str__(self):
+        return 'R75 regneark uploadet {date} af {by}'.format(
+            date=date_format(self.uploaded_at, 'SHORT_DATETIME_FORMAT'),
+            by=self.uploaded_by
+        )

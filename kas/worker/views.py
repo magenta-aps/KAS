@@ -1,4 +1,7 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.db import models
+from django.forms import FileField
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -73,21 +76,28 @@ class StartJobView(PermissionRequiredMixin, FormView):
             raise Http404('No such job type')
 
     def form_valid(self, form):
-        function = None
-
         # Todo: Raise a validation error if something goes wrong here?
         function_string = self.job_data().get('function', None)
         function = resolve_job_function(function_string)
 
         if function:
             job_kwargs = form.cleaned_data
-            if self.kwargs['job_type'] == 'ImportPrePaymentFile':
+            if FileField in [field.__class__ for field in form.fields.values()]:
                 # we need to store the upload file in the file field
-                # since we cant json serialize it
+                # since we can't json-serialize it
                 instance = form.save(commit=False)
                 instance.uploaded_by = self.request.user
                 instance.save()
-                job_kwargs = {'pk': str(instance.pk)}
+                # Remove InMemoryUploadedFile instances from job_kwargs;
+                # they have been saved to `instance`, which we refer by pk
+                job_kwargs = dict(filter(
+                    lambda kvp: not isinstance(kvp[1], InMemoryUploadedFile),
+                    job_kwargs.items()
+                ))
+                job_kwargs['pk'] = str(instance.pk)
+            for key, value in form.cleaned_data.items():
+                if isinstance(value, models.Model):
+                    job_kwargs[key] = value.pk
 
             Job.schedule_job(function=function,
                              job_type=self.kwargs['job_type'],
