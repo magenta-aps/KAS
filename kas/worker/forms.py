@@ -1,7 +1,8 @@
 from django import forms
 from django.conf import settings
+from django.forms import ModelForm
 from django.utils.translation import gettext as _
-
+from eskat.models import R75SpreadsheetFile
 from kas.forms_mixin import BootstrapForm
 from kas.models import TaxYear
 from worker.job_registry import get_job_types
@@ -52,12 +53,31 @@ class YearFormWithAll(BootstrapForm):
         ]
 
 
+class FileForm(BootstrapForm, ModelForm):
+    # FileForms must use a model to store the uploaded files, since the form data can't
+    # be json-serialized. Subclasses must specify a model that stores a FileField
+    # and an `uploaded_by` ForeignKey to User (see StartJobView.form_valid)
+    file = forms.FileField(
+        label=_('Fil'),
+        widget=forms.FileInput(attrs={'class': 'custom-file-input'}),
+    )
+
+    class Meta:
+        fields = ('file', )
+
+
 class MandtalImportJobForm(YearForm):
     pass
 
 
 class R75ImportJobForm(YearForm):
     pass
+
+
+class R75ImportSpreadsheetJobForm(FileForm):
+    class Meta:
+        model = R75SpreadsheetFile
+        fields = ('file',)
 
 
 class YearPkForm(BootstrapForm):

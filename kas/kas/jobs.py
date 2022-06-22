@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 import base64
+import importlib
+import re
 import traceback
-from datetime import date
+import uuid
+from datetime import date, datetime
+from decimal import Decimal
 from time import sleep
 
 from django.conf import settings
@@ -10,19 +14,21 @@ from django.db import transaction
 from django.db.models import IntegerField, Sum, Q, Count
 from django.db.models.functions import Cast
 from django.utils import timezone
-from requests.exceptions import HTTPError, ConnectionError
-from rq import get_current_job
-
 from eskat.jobs import delete_protected
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, get_kas_mandtal_model, \
     get_r75_private_pension_model
+from eskat.models import R75SpreadsheetFile, EskatModels
 from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, FinalSettlement, AddressFromDafo, \
     PersonTaxYearCensus, HistoryMixin, TaxSlipGenerated, PensionCompanySummaryFile
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.reportgeneration.kas_report import TaxPDF
+from openpyxl import load_workbook
 from prisme.models import Prisme10QBatch
 from project.dafo import DatafordelerClient
+from requests.exceptions import HTTPError, ConnectionError
+from rq import get_current_job
+from worker.job_registry import resolve_job_function
 from worker.models import job_decorator, Job
 
 
@@ -191,10 +197,14 @@ def import_r75(job):
     tax_year = TaxYear.objects.get(year=year)
     number_of_progress_segments = 2
     progress_factor = 1 / number_of_progress_segments
+    if 'source_model' in job.arguments:
+        source_model = resolve_class(job.arguments['source_model'])
+    else:
+        source_model = get_r75_private_pension_model()
 
     (r75_created, r75_updated) = ImportedR75PrivatePension.import_year(
         year, job, progress_factor, 0,
-        source_model=get_r75_private_pension_model()
+        source_model=source_model
     )
 
     progress_start = 50
@@ -707,3 +717,117 @@ def generate_pseudo_settlements_and_transactions_for_legacy_years(job):
                   'status': {'Oprettet': created_final_settlements,
                              'Opdateret': updated_final_settlements,
                              }}
+
+
+@job_decorator
+def import_spreadsheet_r75(job):
+    file = R75SpreadsheetFile.objects.get(pk=job.arguments['pk']).file
+    company = PensionCompany.objects.get(res=19625087)  # Topdanmark
+
+    # Used to generate uuids from input data, DO NOT CHANGE!
+    uuid_namespace = uuid.UUID('93874238-461b-4e7a-9989-788a3d8b46e5')
+
+    spreadsheet_fields = {
+        'Navn': (str,),
+        'PoliceNr': (str, int),
+        'KontoStart': (datetime,),
+        'KontoOphør': (datetime,),
+        'Land': (str,),
+        'Adresse': (str,),
+        'PensionsOrdningBeløb': (Decimal,),
+        'PensionKapitalværdi': (Decimal,),
+        'Kontotype': (int,),
+        'År': (int,),
+        'TIN Land': (str,),
+        'TIN Nummer': (int,),
+    }
+
+    years = set()
+    workbook = load_workbook(filename=file.path)
+    for sheetname in workbook.sheetnames:
+        sheet = workbook.get_sheet_by_name(sheetname)
+        if sheet.max_row > 1:
+            title_fields = []
+            for rowindex, row in enumerate(sheet.iter_rows()):
+                if rowindex == 0:
+                    title_fields = [cell.value for cell in row]
+                else:
+                    rowdata = {}
+                    for colindex, cell in enumerate(row):
+                        value = get_formatted_cell_value(cell)
+                        if colindex < len(title_fields):
+                            fieldname = title_fields[colindex]
+                            if type(value) == str and value.strip() == '':
+                                value = None
+                            if value is not None:
+                                expected_type = spreadsheet_fields.get(fieldname)
+                                if expected_type:
+                                    if Decimal in expected_type and type(value) in (str, int, float):
+                                        value = Decimal(value)
+                                    if type(value) not in expected_type:
+                                        raise Exception(
+                                            f"Expected type {expected_type} in column {colindex+1}, "
+                                            f"row {rowindex+1}, got type {type(value)} "
+                                            f"for value {str(value)}"
+                                        )
+                            rowdata[fieldname] = value
+
+                    if any(rowdata.values()):
+                        model = EskatModels.R75SpreadsheetImport
+                        year = rowdata['År']
+                        years.add(year)
+
+                        identifying_data = {
+                            'ktd': rowdata['PoliceNr'],
+                            'res': str(company.res),  # Pensionsselskab cvr
+                            'cpr': str(rowdata['TIN Nummer']).zfill(10),  # CPR
+                            'tax_year': year,
+                        }
+
+                        model.objects.update_or_create(
+                            # Identificerende; skal være den samme for en given importeret entry (ikke autogen)
+                            r75_ctl_sekvens_guid=uuid.uuid5(
+                                namespace=uuid_namespace,
+                                name=str(identifying_data)
+                            ),
+                            **identifying_data,
+                            defaults={
+                                'renteindtaegt': int(rowdata['PensionsOrdningBeløb']),
+                                # Dummydata, not used in calculations
+                                'pt_census_guid': uuid.uuid4(),
+                                'r75_ctl_indeks_guid': uuid.uuid4(),
+                                'idx_nr': 1,
+                            }
+                        )
+
+    for year in years:
+        Job.schedule_job(
+            function=resolve_job_function('kas.jobs.import_r75'),
+            job_type='ImportR75Job',
+            created_by=job.created_by,
+            parent=job,
+            job_kwargs={'year': year, 'source_model': 'eskat.models:EskatModels.R75SpreadsheetImport'}
+        )
+
+
+def resolve_class(string):
+    module_string, class_name = string.rsplit(':', 1)
+    item = importlib.import_module(module_string)
+    for itempath in class_name.split('.'):
+        item = getattr(item, itempath)
+    return item
+
+
+number_formatters = [
+    (re.compile('^(0+)$'), lambda value, match: str(value).zfill(len(match.group(1)))),
+    # Add more if needed
+]
+
+
+def get_formatted_cell_value(cell):
+    value = cell.value
+    for matcher, formatter in number_formatters:
+        match = matcher.fullmatch(cell.number_format)
+        if match:
+            return formatter(value, match)
+    return value
