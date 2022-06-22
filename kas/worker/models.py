@@ -6,14 +6,13 @@ import django_rq
 import redis
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db.models import JSONField
 from django.db import transaction, models
+from django.db.models import JSONField
 from django.utils import timezone
 from django.utils.datetime_safe import datetime
 from django.utils.translation import gettext as _
 from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 from rq import get_current_job
-
 from worker.job_registry import get_job_types
 
 logger = getLogger(__name__)

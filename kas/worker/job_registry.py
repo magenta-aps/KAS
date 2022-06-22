@@ -8,7 +8,7 @@ def get_job_types():
     :returns available jobs based on environment
     """
     from worker.forms import MandtalImportJobForm, R75ImportJobForm, YearAndTitleForm, ConfirmForm, YearPkForm, \
-        AutoligningsYearForm
+        AutoligningsYearForm, R75ImportSpreadsheetJobForm
     from prisme.forms import PrePaymentFileModelForm
 
     jobs = {
@@ -81,7 +81,13 @@ def get_job_types():
             'label': _('Flet pensionsselskaber'),
             'not_in_dropdown': True,
             'result_template': 'worker/includes/status_only.html',
-        }
+        },
+        'ImportSpreadsheetR75Job': {
+            'label': _('Import af data fra R75 i regneark'),  # translated label
+            'form_class': R75ImportSpreadsheetJobForm,  # form class used in the start job workflow
+            'result_template': 'worker/includes/r75.html',
+            'function': 'kas.jobs.import_spreadsheet_r75',
+        },
     }
     if settings.ENVIRONMENT == 'development':
         # include jobs to generate mock data

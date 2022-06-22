@@ -6,6 +6,19 @@
         {% csrf_token %}
         {% for field in form %}
             <div class="form-row">
+                {% if 'custom-file-input' in field.field.widget.attrs.class %}
+                {# special DOM for file inputs #}
+                <div class="col custom-file">
+                    {{ form.file }}
+                    <label class="custom-file-label" for="{{ form.file.id_for_label }}">{% trans 'Vælg en fil' %}</label>
+                </div>
+                <script>
+                    $(".custom-file-input").on("change", function() {
+                        var fileName = $(this).val().split("\\").pop();
+                        $(this).siblings(".custom-file-label").addClass("selected").text(fileName);
+                    });
+                </script>
+                {% else %}
                 <div class="col">
                     <label class="mr-2">{{ field.label }}</label>{{ field }}
                     {% if field.errors %}
@@ -18,6 +31,7 @@
                         <small class="form-text text-muted ml-2">{{ field.help_text }}.</small>
                     {% endif %}
                 </div>
+                {% endif %}
             </div>
         {% endfor %}
         <input class="form-control btn btn-success" type="submit" value="{% trans 'Start job' %}">
