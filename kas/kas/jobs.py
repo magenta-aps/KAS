@@ -215,7 +215,7 @@ def import_r75(job):
     # It must be constructed with the calss in this order to generate
     # the correct SELECT .. GROUP BY .. query-
     qs = ImportedR75PrivatePension.objects.values(
-        'cpr', 'res', 'ktd'
+        'cpr', 'res', 'ktd', 'company_pay_override'
     ).filter(
         tax_year=year
     ).annotate(
@@ -241,6 +241,7 @@ def import_r75(job):
                     'pension_company': pension_company,
                     'policy_number': item['ktd'],
                     'prefilled_amount': item['indtaegter_sum'],
+                    'company_pay_override': item.get('company_pay_override', False),
                 }
                 (policy_tax_year, status) = PolicyTaxYear.update_or_create(policy_data, 'person_tax_year', 'pension_company', 'policy_number')
                 if status in (PersonTaxYear.CREATED, PersonTaxYear.UPDATED):
@@ -722,6 +723,7 @@ def generate_pseudo_settlements_and_transactions_for_legacy_years(job):
 @job_decorator
 def import_spreadsheet_r75(job):
     file = R75SpreadsheetFile.objects.get(pk=job.arguments['pk']).file
+    company_pay_override = job.arguments['company_pay_override']
     company = PensionCompany.objects.get(res=19625087)  # Topdanmark
 
     # Used to generate uuids from input data, DO NOT CHANGE!
@@ -793,6 +795,7 @@ def import_spreadsheet_r75(job):
                             **identifying_data,
                             defaults={
                                 'renteindtaegt': int(rowdata['PensionsOrdningBeløb']),
+                                'company_pay_override': company_pay_override,
                                 # Dummydata, not used in calculations
                                 'pt_census_guid': uuid.uuid4(),
                                 'r75_ctl_indeks_guid': uuid.uuid4(),

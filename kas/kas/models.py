@@ -24,13 +24,12 @@ from django.dispatch import receiver
 from django.forms import model_to_dict
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from requests.exceptions import RequestException
-from simple_history.models import HistoricalRecords
-
 from eskat.models import ImportedR75PrivatePension
 from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.managers import PolicyTaxYearManager
 from prisme.models import Prisme10QBatch, Transaction
+from requests.exceptions import RequestException
+from simple_history.models import HistoricalRecords
 
 
 def filefield_path(instance, filename):
@@ -764,6 +763,14 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         verbose_name=_('Borgeren betaler selvom der foreligger aftale med pensionsselskab')
     )
 
+    # Overstyring af pensionsselskabs-betaling; selskabet betaler selvom der ikke foreligger aftale med pensionsselskab
+    # citizen_pay_override tager præcedens over company_pay_override; hvis citizen_pay_override er True, betaler borgeren
+    # uanset hvad company_pay_override er sat til
+    company_pay_override = models.BooleanField(
+        default=False,
+        verbose_name=_('Pensionsselskabet betaler selvom der ikke foreligger aftale med pensionsselskab'),
+    )
+
     updated_by = models.CharField(
         max_length=150,
         null=True
@@ -1112,7 +1119,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     @property
     def pension_company_pays(self):
-        return self.pension_company.agreement_present and not self.citizen_pay_override
+        return (self.pension_company.agreement_present or self.company_pay_override) and not self.citizen_pay_override
 
     def __str__(self):
         return f"{self.__class__.__name__}(policy_number={self.policy_number}, cpr={self.person.cpr}, " \
