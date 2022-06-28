@@ -181,6 +181,9 @@ class EskatModels:
             on_delete=models.SET_NULL,
             null=True,
         )
+        company_pay_override = models.BooleanField(
+            default=False
+        )
 
 
 class MockModels:
@@ -294,6 +297,8 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
 class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
 
     history = HistoricalRecords()
+
+    company_pay_override = models.BooleanField(default=False)
 
     @classmethod
     def import_year(cls, year, job=None, progress_factor=1, progress_start=0, source_model=None):

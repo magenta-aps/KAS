@@ -683,6 +683,14 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         verbose_name=_('Borgeren betaler selvom der foreligger aftale med pensionsselskab')
     )
 
+    # Overstyring af pensionsselskabs-betaling; selskabet betaler selvom der ikke foreligger aftale med pensionsselskab
+    # citizen_pay_override tager præcedens over company_pay_override; hvis citizen_pay_override er True, betaler borgeren
+    # uanset hvad company_pay_override er sat til
+    company_pay_override = models.BooleanField(
+        default=False,
+        verbose_name=_('Pensionsselskabet betaler selvom der ikke foreligger aftale med pensionsselskab'),
+    )
+
     updated_by = models.CharField(
         max_length=150,
         null=True
@@ -1020,7 +1028,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     @property
     def pension_company_pays(self):
-        return self.pension_company.agreement_present and not self.citizen_pay_override
+        return (self.pension_company.agreement_present or self.company_pay_override) and not self.citizen_pay_override
 
     def __str__(self):
         return f"{self.__class__.__name__}(policy_number={self.policy_number}, cpr={self.person.cpr}, " \

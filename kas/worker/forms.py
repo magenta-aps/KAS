@@ -77,7 +77,14 @@ class R75ImportJobForm(YearForm):
 class R75ImportSpreadsheetJobForm(FileForm):
     class Meta:
         model = R75SpreadsheetFile
-        fields = ('file',)
+        fields = ('file', 'company_pay_override',)
+    company_pay_override = forms.BooleanField(
+        label=_('Selskabet betaler'),
+        widget=forms.Select(
+            choices=((False, _('Nej')), (True, _('Ja')))
+        ),
+        required=False,
+    )
 
 
 class YearPkForm(BootstrapForm):
