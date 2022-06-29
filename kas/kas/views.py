@@ -8,7 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
 from django.db.models import Count, F, Q, Min
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect, FileResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
@@ -18,27 +18,34 @@ from django.views.generic import TemplateView, ListView, View, UpdateView, Creat
 from django.views.generic.detail import DetailView, SingleObjectMixin, BaseDetailView
 from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
-from ipware import get_client_ip
-from openpyxl import Workbook
-from tenQ.dates import get_due_date
-
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
+from ipware import get_client_ip
 from kas.filters import PensionCompanyFilterSet, LockFilterSet
-from kas.forms import PersonListFilterForm, SelfReportedAmountForm, EditAmountsUpdateForm, \
-    PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, PolicyTaxYearActivationForm, PolicyNotesAndAttachmentForm, \
-    PersonNotesAndAttachmentForm, PaymentOverrideUpdateForm, PolicyListFilterForm, FinalStatementForm, \
-    PolicyTaxYearCompanyForm, PensionCompanyModelForm, PensionCompanyMergeForm, NoteUpdateForm, \
+from kas.forms import (
+    PersonListFilterForm, SelfReportedAmountForm, EditAmountsUpdateForm,
+    PensionCompanySummaryFileForm, CreatePolicyTaxYearForm, PolicyTaxYearActivationForm,
+    PolicyNotesAndAttachmentForm,
+    PersonNotesAndAttachmentForm, PaymentOverrideUpdateForm, PolicyListFilterForm,
+    FinalStatementForm,
+    PolicyTaxYearCompanyForm, PensionCompanyModelForm, PensionCompanyMergeForm, NoteUpdateForm,
     UploadExistingFinalSettlementForm
-from kas.jobs import dispatch_final_settlement, import_mandtal, merge_pension_companies
-from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note, TaxYear, PersonTaxYear, \
-    PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement, PensionCompany, RepresentationToken, Person, Lock
+)
+from kas.models import (
+    PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note, TaxYear, PersonTaxYear,
+    PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement, PensionCompany,
+    RepresentationToken, Person, Lock, Agterskrivelse
+)
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, HighestSingleObjectMixin, \
     SpecialExcelMixin
+from openpyxl import Workbook
 from prisme.models import Transaction, Prisme10QBatch
 from project.view_mixins import sagsbehandler_or_administrator_required, \
     sagsbehandler_or_administrator_or_borgerservice_required, PermissionRequiredWithMessage, administrator_required
+from tenQ.dates import get_due_date
 from worker.models import Job
+
+from kas.jobs import dispatch_final_settlement, import_mandtal, merge_pension_companies
 
 
 class StatisticsView(PermissionRequiredWithMessage, TemplateView):
@@ -1257,3 +1264,13 @@ class LockDetailView(PermissionRequiredWithMessage, DetailView):
             wb.save(response)
             return response
         return super(LockDetailView, self).render_to_response(context, **response_kwargs)
+
+
+class AgterskrivelseView(PermissionRequiredWithMessage, DetailView):
+    model = Agterskrivelse
+    permission_required = 'kas.view_agterskrivelse'
+    permission_denied_message = administrator_required
+
+    def get(self, request, *args, **kwargs):
+        agterskrivelse = self.get_object()
+        return FileResponse(agterskrivelse.pdf)

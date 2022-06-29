@@ -170,6 +170,7 @@
                 {% endif %}
             {% endif %}
             <a href="{% url 'kas:policy_history_list' policy.pk %}" class="btn btn-secondary">{% trans 'Vis historik' %}</a>
+
             {% if perms.kas.add_policydocument and perms.kas.add_note and perms.kas.change_policytaxyear %}
                 {% include 'includes/help_text/question_mark.html' with target_id='actions_help_texts' %}
                 {% blocktrans asvar actions_help_text %}<b>Tilføj bilag/notater</b> Vedhæfter en tekst og/eller en fil til denne police for skatteåret.

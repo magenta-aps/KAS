@@ -21,6 +21,8 @@ from kas.views import (
 )
 from kas.viewsets import CurrentFinalSettlementDownloadView, CurrentFinalSettlementExistsView, TokenValidationView
 
+from kas.views import AgterskrivelseView
+
 app_name = 'kas'
 
 urlpatterns = [
@@ -90,6 +92,8 @@ urlpatterns = [
     path('locks/create/', CreateLockForYearTemplateView.as_view(), name='lock-create'),
 
     path('note/<int:pk>/', NoteUpdateView.as_view(), name='note-update'),
+
+    path('agterskrivelse/<uuid:pk>/', AgterskrivelseView.as_view(), name='agterskrivelse'),
 ]
 
 if settings.FEATURE_FLAGS.get('enable_feature_flag_list'):

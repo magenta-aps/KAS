@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0035_alter_finalsettlement_lock'),
+        ('kas', '0036_auto_20220623_1636'),
     ]
 
     operations = [
