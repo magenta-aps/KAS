@@ -1536,6 +1536,16 @@ class FinalSettlement(EboksDispatch):
         ).first()
 
 
+def agterskrivelse_file_path(instance, filename):
+    return f"agterskrivelse/{instance.person_tax_year.tax_year.year}/{uuid.uuid4()}.pdf"
+
+
+class Agterskrivelse(EboksDispatch):
+    uuid = models.UUIDField(primary_key=True, default=uuid4)
+    person_tax_year = models.ForeignKey(PersonTaxYear, on_delete=models.CASCADE)
+    pdf = models.FileField(upload_to=agterskrivelse_file_path)
+
+
 class AddressFromDafo(models.Model):
     cpr = models.TextField(unique=True, null=False)
     address = models.TextField(blank=True, null=True)

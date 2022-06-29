@@ -17,6 +17,8 @@ from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetail
     FeatureFlagView, PersonRepresentStartView, PersonRepresentStopView, NoteUpdateView
 from kas.viewsets import CurrentFinalSettlementDownloadView, CurrentFinalSettlementExistsView, TokenValidationView
 
+from kas.views import AgterskrivelseView
+
 app_name = 'kas'
 
 urlpatterns = [
@@ -77,6 +79,8 @@ urlpatterns = [
     path('pensioncompany/<int:pk>/agreement/', AgreementDownloadView.as_view(), name='pensioncompany-agreementdownload'),
 
     path('note/<int:pk>/', NoteUpdateView.as_view(), name='note-update'),
+
+    path('agterskrivelse/<uuid:pk>/', AgterskrivelseView.as_view(), name='agterskrivelse'),
 ]
 
 if settings.FEATURE_FLAGS.get('enable_feature_flag_list'):

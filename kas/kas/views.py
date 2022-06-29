@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.db.models import Count, F, Q, Min
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect, FileResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
@@ -28,7 +28,7 @@ from kas.forms import PersonListFilterForm, SelfReportedAmountForm, EditAmountsU
     PolicyTaxYearCompanyForm, PensionCompanyModelForm, PensionCompanyMergeForm, NoteUpdateForm
 from kas.jobs import dispatch_final_settlement, import_mandtal, merge_pension_companies
 from kas.models import PensionCompanySummaryFile, PensionCompanySummaryFileDownload, Note, TaxYear, PersonTaxYear, \
-    PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement, PensionCompany, RepresentationToken, Person
+    PolicyTaxYear, TaxSlipGenerated, PolicyDocument, FinalSettlement, PensionCompany, RepresentationToken, Person, Agterskrivelse
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.view_mixins import CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, HighestSingleObjectMixin, \
     SpecialExcelMixin
@@ -1133,3 +1133,13 @@ class AgreementDownloadView(PermissionRequiredWithMessage, View):
 
 class FeatureFlagView(LoginRequiredMixin, TemplateView):
     template_name = 'kas/feature_flag_list.html'
+
+
+class AgterskrivelseView(PermissionRequiredWithMessage, DetailView):
+    model = Agterskrivelse
+    permission_required = 'kas.view_agterskrivelse'
+    permission_denied_message = sagsbehandler_or_administrator_required
+
+    def get(self, request, *args, **kwargs):
+        agterskrivelse = self.get_object()
+        return FileResponse(agterskrivelse.pdf)

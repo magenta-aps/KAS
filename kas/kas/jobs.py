@@ -22,6 +22,7 @@ from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCom
     PersonTaxYearCensus, HistoryMixin, TaxSlipGenerated
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.reportgeneration.kas_report import TaxPDF
+from kas.reportgeneration.kas_topdanmark_agterskrivelse import AgterskrivelsePDF
 from openpyxl import load_workbook
 from prisme.models import Prisme10QBatch
 from project.dafo import DatafordelerClient
@@ -540,6 +541,32 @@ def generate_batch_and_transactions_for_year(job):
                                                                                                             settlements=settlements_count)}
 
 
+@job_decorator
+def generate_agterskrivelser(job):
+    policy_tax_year_idents = job.arguments['policy_tax_year_idents']
+    policies = [
+        PolicyTaxYear.objects.filter(**policy_tax_year_ident).first()
+        for policy_tax_year_ident in policy_tax_year_idents
+    ]
+    policies = list(filter(None, policies))
+
+    person_tax_years_map = {}
+    for policy_tax_year in policies:
+        person_tax_year = policy_tax_year.person_tax_year
+        if person_tax_year not in person_tax_years_map:
+            person_tax_years_map[person_tax_year] = []
+        person_tax_years_map[person_tax_year].append(policy_tax_year)
+
+    job.progress = 0
+    total_count = len(policies)
+    job.started_at = timezone.now()
+    job.save(update_fields=['status', 'progress', 'started_at'])
+
+    for i, (person_tax_year, policy_tax_years) in enumerate(person_tax_years_map.items(), 1):
+        AgterskrivelsePDF.generate_pdf(person_tax_year, policy_tax_years)
+        job.set_progress(i, total_count)
+
+
 def dispatch_final_settlements_for_year():
     rq_job = get_current_job()
     with transaction.atomic():
@@ -680,6 +707,7 @@ def import_spreadsheet_r75(job):
     file = R75SpreadsheetFile.objects.get(pk=job.arguments['pk']).file
     company_pay_override = job.arguments['company_pay_override']
     company = PensionCompany.objects.get(res=19625087)  # Topdanmark
+    cvr = str(company.res)
 
     # Used to generate uuids from input data, DO NOT CHANGE!
     uuid_namespace = uuid.UUID('93874238-461b-4e7a-9989-788a3d8b46e5')
@@ -701,6 +729,7 @@ def import_spreadsheet_r75(job):
 
     years = set()
     workbook = load_workbook(filename=file.path)
+    policy_tax_year_idents = []
     for sheetname in workbook.sheetnames:
         sheet = workbook.get_sheet_by_name(sheetname)
         if sheet.max_row > 1:
@@ -732,14 +761,21 @@ def import_spreadsheet_r75(job):
                     if any(rowdata.values()):
                         model = EskatModels.R75SpreadsheetImport
                         year = rowdata['År']
+                        policy_number = rowdata['PoliceNr']
+                        cpr = str(rowdata['TIN Nummer']).zfill(10)
                         years.add(year)
 
                         identifying_data = {
-                            'ktd': rowdata['PoliceNr'],
-                            'res': str(company.res),  # Pensionsselskab cvr
-                            'cpr': str(rowdata['TIN Nummer']).zfill(10),  # CPR
+                            'ktd': policy_number,
+                            'res': cvr,
+                            'cpr': cpr,
                             'tax_year': year,
                         }
+                        policy_tax_year_idents.append({
+                            'pension_company__pk': company.pk,
+                            'person_tax_year__tax_year__year': year,
+                            'policy_number': policy_number,
+                        })
 
                         model.objects.update_or_create(
                             # Identificerende; skal være den samme for en given importeret entry (ikke autogen)
@@ -766,6 +802,16 @@ def import_spreadsheet_r75(job):
             parent=job,
             job_kwargs={'year': year, 'source_model': 'eskat.models:EskatModels.R75SpreadsheetImport'}
         )
+
+    Job.schedule_job(
+        function=generate_agterskrivelser,
+        job_type='generate_agterskrivelser',
+        created_by=job.created_by,
+        parent=job,
+        job_kwargs={
+            'policy_tax_year_idents': policy_tax_year_idents
+        }
+    )
 
 
 def resolve_class(string):
