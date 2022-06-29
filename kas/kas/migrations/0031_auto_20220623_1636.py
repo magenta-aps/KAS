@@ -9,7 +9,7 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0029_auto_20220328_0920'),
+        ('kas', '0030_auto_20220628_1313'),
     ]
 
     operations = [

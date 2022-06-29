@@ -696,6 +696,12 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         null=True
     )
 
+    agterskrivelse = models.ForeignKey(
+        'Agterskrivelse',
+        null=True,
+        on_delete=models.SET_NULL,
+    )
+
     @classmethod
     def perform_calculation(
         cls,
@@ -1537,7 +1543,7 @@ class FinalSettlement(EboksDispatch):
 
 
 def agterskrivelse_file_path(instance, filename):
-    return f"agterskrivelse/{instance.person_tax_year.tax_year.year}/{uuid.uuid4()}.pdf"
+    return f"agterskrivelse/{instance.person_tax_year.tax_year.year}/{uuid4()}.pdf"
 
 
 class Agterskrivelse(EboksDispatch):

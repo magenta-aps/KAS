@@ -177,7 +177,6 @@
             {% endif %}
         {% endif %}
 
-        {{person_tax_year.agterskrivelse_set}}
         {% if person_tax_year.agterskrivelse_set and perms.kas.view_agterskrivelse %}
         {% for agterskrivelse in person_tax_year.agterskrivelse_set.all %}
         <a href="{% url 'kas:agterskrivelse' agterskrivelse.uuid %}" class="btn btn-primary">Agterskrivelse</a>
