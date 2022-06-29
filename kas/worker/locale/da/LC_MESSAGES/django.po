@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-16 12:35+0000\n"
+"POT-Creation-Date: 2022-06-29 10:42+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,183 +18,189 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: forms.py:11 templates/worker/job_list.html:25
+#: worker/forms.py:12 worker/templates/worker/job_list.html:23
 msgid "Job type"
 msgstr ""
 
-#: forms.py:31 forms.py:48 forms.py:92 forms.py:100
+#: worker/forms.py:22 worker/forms.py:39 worker/forms.py:84 worker/forms.py:100
 msgid "År"
 msgstr ""
 
-#: forms.py:61
+#: worker/forms.py:52
 msgid "Alle år"
 msgstr ""
 
-#: forms.py:67
-msgid "Datakilde"
+#: worker/forms.py:61
+msgid "Fil"
 msgstr ""
 
-#: forms.py:69
-msgid "Mock-up data"
-msgstr ""
-
-#: forms.py:70 forms.py:79
-msgid "Den rigtige eSkat database"
-msgstr ""
-
-#: forms.py:109
+#: worker/forms.py:109
 msgid "Titel"
 msgstr ""
 
-#: forms.py:109
+#: worker/forms.py:109
 msgid "Vil blive brugt som titelfeltet i e-boks"
 msgstr ""
 
-#: job_registry.py:16
+#: worker/job_registry.py:16
 msgid "Kør autoligning"
 msgstr ""
 
-#: job_registry.py:23
+#: worker/job_registry.py:23
 msgid "Import af forudindbetalinger"
 msgstr ""
 
-#: job_registry.py:29
+#: worker/job_registry.py:29
 msgid "Import af mandtal"
 msgstr ""
 
-#: job_registry.py:36
+#: worker/job_registry.py:35
 msgid "Import af data fra R75"
 msgstr ""
 
-#: job_registry.py:43
+#: worker/job_registry.py:41
 msgid "Forcering af slutligning på alle udestående policer"
 msgstr ""
 
-#: job_registry.py:48
+#: worker/job_registry.py:46
 msgid "Generering af KAS selvangivelser for et givet år"
 msgstr ""
 
-#: job_registry.py:53
+#: worker/job_registry.py:51
 msgid "Afsendelse af KAS selvangivelser for et givet år"
 msgstr ""
 
-#: job_registry.py:58
+#: worker/job_registry.py:56
 msgid "Generering af KAS slutopgørelser for et givet år"
 msgstr ""
 
-#: job_registry.py:64
+#: worker/job_registry.py:62
 msgid "Generering af Transaktioner og batch for et givent år"
 msgstr ""
 
-#: job_registry.py:70
+#: worker/job_registry.py:68
 msgid "Afsendelse af KAS slutopgørelser for et givet år"
 msgstr ""
 
-#: job_registry.py:76
-msgid "Import af mockup data for eSkat"
-msgstr ""
-
-#: job_registry.py:83
-msgid "Nulstil test-data"
-msgstr ""
-
-#: job_registry.py:90
-msgid "Nulstil til KUN mockup data"
-msgstr ""
-
-#: job_registry.py:97
-msgid "Importer alle mockup mandtal"
-msgstr ""
-
-#: job_registry.py:105
-msgid "Importer alle mockup r75"
-msgstr ""
-
-#: job_registry.py:113
+#: worker/job_registry.py:74
 msgid "Sender et Q10 batch"
 msgstr ""
 
-#: models.py:17
+#: worker/job_registry.py:81
+msgid "Flet pensionsselskaber"
+msgstr ""
+
+#: worker/job_registry.py:86
+msgid "Importere kas beregninger for tidligere år (2018/2019)"
+msgstr ""
+
+#: worker/job_registry.py:92
+msgid "Generering af pseudo slutopgørelser (2018/2019)"
+msgstr ""
+
+#: worker/job_registry.py:98
+msgid "Import af data fra R75 i regneark"
+msgstr ""
+
+#: worker/job_registry.py:107
+msgid "Reset data for skatteår"
+msgstr ""
+
+#: worker/job_registry.py:118
+msgid "Generate sample data"
+msgstr ""
+
+#: worker/models.py:22
 msgid "Sat i kø"
 msgstr ""
 
-#: models.py:18
+#: worker/models.py:23
 msgid "Igang"
 msgstr ""
 
-#: models.py:19
+#: worker/models.py:24
 msgid "Afventer"
 msgstr ""
 
-#: models.py:20
+#: worker/models.py:25
 msgid "Fejlet"
 msgstr ""
 
-#: models.py:21
+#: worker/models.py:26
 msgid "Færdig"
 msgstr ""
 
-#: templates/worker/includes/autoligning.html:6
+#: worker/templates/worker/includes/autoligning.html:6
 msgid "Kræver efterbehandling"
 msgstr ""
 
-#: templates/worker/includes/forudindbetalinger.html:5
+#: worker/templates/worker/includes/forudindbetalinger.html:5
 msgid "Oprettede transaktioner"
 msgstr ""
 
-#: templates/worker/includes/forudindbetalinger.html:18
+#: worker/templates/worker/includes/forudindbetalinger.html:18
 msgid "Ikke fundet skatteår for import"
 msgstr ""
 
-#: templates/worker/includes/status_only.html:5
+#: worker/templates/worker/includes/status_only.html:5
 msgid "Resultat"
 msgstr ""
 
-#: templates/worker/includes/status_only.html:6
+#: worker/templates/worker/includes/status_only.html:6
 msgid "Besked"
 msgstr ""
 
-#: templates/worker/job_create_form.html:23
+#: worker/templates/worker/job_create_form.html:13
+msgid "Vælg en fil"
+msgstr ""
+
+#: worker/templates/worker/job_create_form.html:37
 msgid "Start job"
 msgstr ""
 
-#: templates/worker/job_create_form.html:24
+#: worker/templates/worker/job_create_form.html:38
 msgid "Annullér"
 msgstr ""
 
-#: templates/worker/job_detail.html:7
+#: worker/templates/worker/job_detail.html:7
 msgid "Tilbage til liste"
 msgstr ""
 
-#: templates/worker/job_detail.html:12
+#: worker/templates/worker/job_detail.html:12
 msgid "Type"
 msgstr ""
 
-#: templates/worker/job_detail.html:16 templates/worker/job_list.html:29
+#: worker/templates/worker/job_detail.html:16
+#: worker/templates/worker/job_list.html:27
 msgid "Status"
 msgstr ""
 
-#: templates/worker/job_detail.html:21
+#: worker/templates/worker/job_detail.html:21
 msgid "Starttid"
 msgstr ""
 
-#: templates/worker/job_detail.html:27
+#: worker/templates/worker/job_detail.html:27
 msgid "Kørselstid"
 msgstr ""
 
-#: templates/worker/job_detail.html:33
+#: worker/templates/worker/job_detail.html:33
+msgid "Fejl"
+msgstr ""
+
+#: worker/templates/worker/job_detail.html:42
 msgid "Opsummering"
 msgstr ""
 
-#: templates/worker/job_detail.html:42 templates/worker/job_list.html:28
+#: worker/templates/worker/job_detail.html:51
+#: worker/templates/worker/job_list.html:26
 msgid "Fremskridt"
 msgstr ""
 
-#: templates/worker/job_list.html:5
+#: worker/templates/worker/job_list.html:5
 msgid "Start nyt job"
 msgstr ""
 
-#: templates/worker/job_list.html:14
+#: worker/templates/worker/job_list.html:14
 #, python-format
 msgid ""
 "På denne side oplistes kørende og kørte jobs, med relevant information om "
@@ -206,19 +212,19 @@ msgid ""
 "\">Overbliksmanualen</a>"
 msgstr ""
 
-#: templates/worker/job_list.html:26
+#: worker/templates/worker/job_list.html:24
 msgid "Oprettet af"
 msgstr ""
 
-#: templates/worker/job_list.html:27
+#: worker/templates/worker/job_list.html:25
 msgid "Oprettet"
 msgstr ""
 
-#: templates/worker/job_type_select.html:7
+#: worker/templates/worker/job_type_select.html:7
 msgid "Vælg"
 msgstr ""
 
-#: templates/worker/job_type_select.html:11
+#: worker/templates/worker/job_type_select.html:11
 msgid ""
 "\n"
 "    På denne side kan der vælges hvilket type job der skal køres.\n"

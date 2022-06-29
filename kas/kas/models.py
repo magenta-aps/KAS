@@ -776,6 +776,12 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         null=True
     )
 
+    agterskrivelse = models.ForeignKey(
+        'Agterskrivelse',
+        null=True,
+        on_delete=models.SET_NULL,
+    )
+
     @classmethod
     def perform_calculation(
         cls,
@@ -865,7 +871,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     @property
     def full_tax(self):
         """
-        Returns the full taxable amount.
+        Returns the full tax
         """
         calculation_result = self.perform_calculation(initial_amount=int(self.get_assessed_amount()),
                                                       taxable_days_in_year=int(self.person_tax_year.number_of_days or 0),
@@ -1702,6 +1708,16 @@ def delete_pdf(sender, instance, using, **kwargs):
 post_delete.connect(delete_pdf,
                     sender=FinalSettlement,
                     dispatch_uid='delete_final_settlement_pdf')
+
+
+def agterskrivelse_file_path(instance, filename):
+    return f"agterskrivelse/{instance.person_tax_year.tax_year.year}/{uuid.uuid4()}.pdf"
+
+
+class Agterskrivelse(EboksDispatch):
+    uuid = models.UUIDField(primary_key=True, default=uuid4)
+    person_tax_year = models.ForeignKey(PersonTaxYear, on_delete=models.CASCADE)
+    pdf = models.FileField(upload_to=agterskrivelse_file_path)
 
 
 class AddressFromDafo(models.Model):
