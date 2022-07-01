@@ -276,12 +276,9 @@ Release selvbetjening production image:
 
 Deploy test:
   extends:
+    - .rules:semver-all
     - .saltbert
   needs: ["Release kas dev image", "Release selvbetjenings dev image"]
-  only:
-    refs:
-      - master
-      - development
   when: manual
   variables:
     SALTBERT_ORCHESTRATION: kas.service-test
