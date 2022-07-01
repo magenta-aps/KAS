@@ -57,8 +57,9 @@ class HistoryMixin(object):
         status = HistoryMixin.UNCHANGED
         try:
             item = cls.objects.get(**{k: v for k, v in data.items() if k in keys})
-            existing_dict = model_to_dict(item)
-            del existing_dict['id']
+            existing_dict = {k: v for k, v in model_to_dict(item).items() if k in data}
+            if 'id' in existing_dict:
+                del existing_dict['id']
             new_dict = {
                 k: v.pk if isinstance(v, models.Model) else v
                 for k, v in data.items()
