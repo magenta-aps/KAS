@@ -15,6 +15,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.core.files import File
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models import UniqueConstraint, Q, Sum, Max
@@ -435,6 +436,39 @@ class EboksDispatch(models.Model):
     class Meta:
         abstract = True
         ordering = ('-created_at', )
+
+    def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator, file: File, cpr: str):
+        if self.status == 'send':
+            raise RuntimeError(f'This {self.__class__.__name__} has already been dispatched!')
+        file.open(mode='rb')
+        try:
+            resp = client.send_message(
+                message=generator.generate_dispatch(
+                    title=self.title,
+                    number=cpr,
+                    pdf_data=base64.b64encode(file.read())
+                ),
+                message_id=client.get_message_id()
+            )
+            jsonresponse = resp.json()
+        except RequestException:
+            self.status = 'failed'
+            self.save(update_fields=['status'])
+            raise
+        else:
+            self.message_id = jsonresponse['message_id']  # message_id might have changed so get it from the response
+            # we always only have 1 recipient
+            recipient = jsonresponse['recipients'][0]
+            self.recipient_status = recipient['status']
+            self.send_at = timezone.now()
+            if recipient['post_processing_status'] == '':
+                self.status = 'send'
+            else:
+                self.status = 'post_processing'
+            self.save(update_fields=['status', 'message_id', 'recipient_status', 'send_at'])
+        finally:
+            file.close()
+        return self
 
 
 class TaxSlipGenerated(EboksDispatch):
@@ -1493,32 +1527,7 @@ class FinalSettlement(EboksDispatch):
                                         decimal_places=2)
 
     def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
-        if self.status == 'send':
-            raise RuntimeError('This final settlement has already been dispatched!')
-        self.pdf.open(mode='rb')
-        try:
-            resp = client.send_message(message=generator.generate_dispatch(title=self.title,
-                                                                           number=self.person_tax_year.person.cpr,
-                                                                           pdf_data=base64.b64encode(self.pdf.read())),
-                                       message_id=client.get_message_id())
-        except RequestException:
-            self.status = 'failed'
-            self.save(update_fields=['status'])
-            raise
-        else:
-            self.message_id = resp.json()['message_id']  # message_id might have changed so get it from the response
-            # we always only have 1 recipient
-            recipient = resp.json()['recipients'][0]
-            self.recipient_status = recipient['status']
-            self.send_at = timezone.now()
-            if recipient['post_processing_status'] == '':
-                self.status = 'send'
-            else:
-                self.status = 'post_processing'
-            self.save(update_fields=['status', 'message_id', 'recipient_status', 'send_at'])
-        finally:
-            self.pdf.close()
-        return self
+        return super().dispatch_to_eboks(client, generator, self.pdf, self.person_tax_year.person.cpr)
 
     def get_calculation_amounts(self):
 
@@ -1719,6 +1728,9 @@ class Agterskrivelse(EboksDispatch):
     uuid = models.UUIDField(primary_key=True, default=uuid4)
     person_tax_year = models.ForeignKey(PersonTaxYear, on_delete=models.CASCADE)
     pdf = models.FileField(upload_to=agterskrivelse_file_path)
+
+    def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
+        return super().dispatch_to_eboks(client, generator, self.pdf, self.person_tax_year.person.cpr)
 
 
 class AddressFromDafo(models.Model):
