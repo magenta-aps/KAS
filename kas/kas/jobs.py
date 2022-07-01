@@ -564,6 +564,7 @@ def generate_agterskrivelser(job):
     job.save(update_fields=['status', 'progress', 'started_at'])
 
     for i, (person_tax_year, policy_tax_years) in enumerate(person_tax_years_map.items(), 1):
+        person_tax_year.agterskrivelse_set.all().delete()
         AgterskrivelsePDF.generate_pdf(person_tax_year, policy_tax_years)
         job.set_progress(i, total_count)
 
