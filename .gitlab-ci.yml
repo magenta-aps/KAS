@@ -226,9 +226,7 @@ Selvbetjening Unittest:
 Release kas dev image:
   extends:
     - .release-kas
-  only:
-    refs:
-      - master
+    - .rules:semver-all
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
@@ -239,9 +237,7 @@ Release kas dev image:
 Release selvbetjenings dev image:
   extends:
     - .release-self
-  only:
-    refs:
-      - master
+    - .rules:semver-all
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
