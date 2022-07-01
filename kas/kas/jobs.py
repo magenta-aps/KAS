@@ -702,7 +702,6 @@ def merge_pension_companies(job):
                                                                          'companies': deleted_count}}
 
 
-
 @job_decorator
 def import_spreadsheet_r75(job):
     file = R75SpreadsheetFile.objects.get(pk=job.arguments['pk']).file
