@@ -100,6 +100,11 @@ def get_job_types():
             'result_template': 'worker/includes/r75.html',
             'function': 'kas.jobs.import_spreadsheet_r75',
         },
+        'DispatchAgterskrivelser': {
+            'label': _('Afsendelse af Agterskrivelser for et givet år'),
+            'form_class': YearPkForm,
+            'function': 'kas.jobs.dispatch_agterskrivelser_for_year',
+        },
     }
     if settings.ENVIRONMENT in ('development', 'staging'):
         jobs.update({
