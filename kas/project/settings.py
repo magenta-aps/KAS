@@ -251,7 +251,7 @@ METRICS = {
 FEATURE_FLAGS = {
     'enable_feature_flag_list': False,
     'test_feature_flag': False,
-    'enable_dafo_override_of_address': False,
+    'enable_dafo_override_of_address': True,
 }
 for x in FEATURE_FLAGS:
     env_key = 'FEATURE_FLAG_' + x.upper()
