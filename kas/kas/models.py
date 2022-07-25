@@ -1745,12 +1745,14 @@ class AddressFromDafo(models.Model):
         if not self.name or not self.address or not self.postal_area:
             return False
         equal_name = self.name == person_item.name
-        equal_adress = re.sub('()_-,', '', self.address) == re.sub('()_-,', '', person_item.address_line_2)
-        equal_postal = self.postal_area == person_item.address_line_4
+        equal_adress = person_item.address_line_2 is not None \
+            and re.sub('()_-,', '', self.address) == re.sub('()_-,', '', person_item.address_line_2)
+        equal_postal = person_item.address_line_4 is not None \
+            and self.postal_area == person_item.address_line_4
         return not (equal_name and equal_adress and equal_postal)
 
     def __str__(self):
-        return '%s - %s' % (self.navn, self.fuld_adresse)
+        return '%s - %s' % (self.name, self.full_address)
 
 
 @receiver(post_save, sender=FinalSettlement)

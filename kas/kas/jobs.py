@@ -121,9 +121,15 @@ def import_mandtal(job):
 
     if settings.FEATURE_FLAGS.get('enable_dafo_override_of_address'):
         dafo_client = DatafordelerClient.from_settings()
+        do_mock = dafo_client.mock and not dafo_client.mock_data
         try:
             for chunk in chunks(cpr_updated_list, 100):
                 requested_cprs = chunk
+                if do_mock:
+                    dafo_client.set_mock_data({
+                        cpr: {"cprNummer": cpr}
+                        for cpr in chunk
+                    })
                 cpr_request_params = ",".join(chunk)
                 params = {'cpr': cpr_request_params}
                 result = dafo_client.get_person_information(params)
