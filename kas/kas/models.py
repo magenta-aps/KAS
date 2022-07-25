@@ -1638,14 +1638,6 @@ class FinalSettlement(EboksDispatch):
                 'source_object': None,
             })
 
-        # Fudge
-        if remainder_calculation['extra_payment_for_previous_missing']:
-            result.append({
-                'text': _('Ekstra beløb til betaling der dækker en delmængde af en tidligere ikke-betalt regning'),
-                'amount': remainder_calculation['extra_payment_for_previous_missing'],
-                'source_object': None,
-            })
-
         return result
 
     def get_transaction_summary(self):

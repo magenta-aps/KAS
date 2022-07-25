@@ -413,16 +413,16 @@ class TestCalculationMath(TestCase):
         calculation = final_statement.get_calculation_amounts()
         self.assertDictEqual(calculation, {
             'applicable_previous_statements_exist': True,
-            'previous_transactions_sum': 1930,  # What the previous statement ended up with
+            'previous_transactions_sum': 1430,  # What the previous statement ended up with  1430
             'total_tax': 1530,  # Tax based on current statement
             'prepayment': -100,
-            'remainder': -500,  # difference
+            'remainder': 0,  # difference
             'interest_percent': 20,
             'interest_factor': 0.2,
-            'interest_amount_on_remainder': -100,
-            'remainder_with_interest': -600,
+            'interest_amount_on_remainder': 0,
+            'remainder_with_interest': 0,
             'extra_payment_for_previous_missing': 200,
-            'total_payment': -400
+            'total_payment': 200
         })
 
     def test_prior_transactions(self):
