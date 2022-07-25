@@ -109,11 +109,15 @@ class BaseTransactionTestCase(TransactionTestCase):
 
 class MandtalImportJobsTest(BaseTransactionTestCase):
 
-    @patch.object(DatafordelerClient, '_get', return_value={
-        "0101570010": {"cprNummer": "0101570010", "fornavn": "Anders", "efternavn": "And",
-                       "adresse": "Testadresse 32A, 3.", "postnummer": 3900, "bynavn": "Nuuk", "civilstand": "D"},
-        "2512484916": {"cprNummer": "2512484916", "fornavn": "Andersine", "efternavn": "And",
-                       "adresse": "Imaneq 32A, 3.", "postnummer": 3900, "bynavn": "Nuuk"}})
+    @patch.object(DatafordelerClient, 'from_settings', return_value=DatafordelerClient(
+        mock=True,
+        mock_data={
+            "0101570010": {"cprNummer": "0101570010", "fornavn": "Anders", "efternavn": "And",
+                           "adresse": "Testadresse 32A, 3.", "postnummer": 3900, "bynavn": "Nuuk", "civilstand": "D"},
+            "2512484916": {"cprNummer": "2512484916", "fornavn": "Andersine", "efternavn": "And",
+                           "adresse": "Imaneq 32A, 3.", "postnummer": 3900, "bynavn": "Nuuk"}
+        }
+    ))
     @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
     def test_mandtal_import_and_merge_with_dafo(self, django_rq, _get):
         Job.schedule_job(

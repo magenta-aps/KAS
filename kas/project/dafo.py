@@ -7,9 +7,9 @@ class DatafordelerClient(object):
 
     def __init__(self, mock=None, client_header=None,
                  service_header_cpr=None, uxp_service_owned_by=None,
-                 certificate=None, private_key=None, url=None, root_ca=True, timeout=60):
+                 certificate=None, private_key=None, url=None, root_ca=True, timeout=60, mock_data=None):
 
-        self.mock_data = None
+        self.mock_data = mock_data
         self.mock = mock
         self.client_header = client_header
         self.service_header_cpr = service_header_cpr
