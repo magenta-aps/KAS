@@ -8,7 +8,7 @@ def get_job_types():
     :returns available jobs based on environment
     """
     from worker.forms import MandtalImportJobForm, R75ImportJobForm, YearAndTitleForm, ConfirmForm, YearPkForm, \
-        AutoligningsYearForm, LegacyYearsForm, R75ImportSpreadsheetJobForm
+        AutoligningsYearForm, LegacyYearsForm, R75ImportSpreadsheetJobForm  # noqa
     from prisme.forms import PrePaymentFileModelForm
 
     jobs = {
@@ -94,17 +94,17 @@ def get_job_types():
             'result_template': 'worker/includes/status_only.html',
             'function': 'kas.jobs.generate_pseudo_settlements_and_transactions_for_legacy_years'
         },
-        'ImportSpreadsheetR75Job': {
-            'label': _('Import af data fra R75 i regneark'),  # translated label
-            'form_class': R75ImportSpreadsheetJobForm,  # form class used in the start job workflow
-            'result_template': 'worker/includes/r75.html',
-            'function': 'kas.jobs.import_spreadsheet_r75',
-        },
-        'DispatchAgterskrivelser': {
-            'label': _('Afsendelse af Agterskrivelser for et givet år'),
-            'form_class': YearPkForm,
-            'function': 'kas.jobs.dispatch_agterskrivelser_for_year',
-        },
+        # 'ImportSpreadsheetR75Job': {
+        #    'label': _('Import af data fra R75 i regneark'),  # translated label
+        #    'form_class': R75ImportSpreadsheetJobForm,  # form class used in the start job workflow
+        #    'result_template': 'worker/includes/r75.html',
+        #    'function': 'kas.jobs.import_spreadsheet_r75',
+        # },
+        # 'DispatchAgterskrivelser': {
+        #     'label': _('Afsendelse af Agterskrivelser for et givet år'),
+        #     'form_class': YearPkForm,
+        #     'function': 'kas.jobs.dispatch_agterskrivelser_for_year',
+        # },
     }
     if settings.ENVIRONMENT in ('development', 'staging'):
         jobs.update({
