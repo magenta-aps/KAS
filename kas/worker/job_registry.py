@@ -8,7 +8,7 @@ def get_job_types():
     :returns available jobs based on environment
     """
     from worker.forms import MandtalImportJobForm, R75ImportJobForm, YearAndTitleForm, ConfirmForm, YearPkForm, \
-        AutoligningsYearForm, R75ImportSpreadsheetJobForm
+        AutoligningsYearForm
     from prisme.forms import PrePaymentFileModelForm
 
     jobs = {
