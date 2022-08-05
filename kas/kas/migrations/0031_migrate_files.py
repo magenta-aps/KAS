@@ -52,20 +52,23 @@ def prepaymentfile_file_path_new(instance, filename):
 def move_files(model, field, path_method):
     for item in model.objects.all():
         filefield = getattr(item, field, None)
-        if filefield is not None:
-            origin_path = filefield.path
-            if os.path.exists(origin_path):
-                dest_path = path_method(item, os.path.basename(origin_path))
-                dest_full_path = f"{settings.MEDIA_ROOT}/{dest_path}"
-                dest_full_path_dir = os.path.dirname(dest_full_path)
-                if not os.path.exists(dest_full_path_dir):
-                    os.makedirs(dest_full_path_dir)
-                os.rename(origin_path, dest_full_path)
-                print(f"Move file from {origin_path} to {dest_path}")
-                filefield.name = dest_path
-                item.save()
+        if filefield is not None and filefield.name is not None and filefield.name != '':
+            origin_full_path = os.path.join(settings.MEDIA_ROOT, filefield.name)
+            dest_path = path_method(item, os.path.basename(origin_full_path))
+            dest_full_path = os.path.join(settings.MEDIA_ROOT, dest_path)
+            dest_full_path_dir = os.path.dirname(dest_full_path)
+            if not os.path.exists(dest_full_path_dir):
+                os.makedirs(dest_full_path_dir)
+
+            if os.path.exists(origin_full_path):
+                os.rename(origin_full_path, dest_full_path)
+                print(f"Move file from {origin_full_path} to {dest_full_path}")
+            elif os.path.exists(dest_full_path):
+                print(f"File already exists at destination {dest_full_path}")
             else:
-                print(f"Would move file from {origin_path}, but it doesn't exist")
+                print(f"Would move file from {origin_full_path} to {dest_full_path}, but origin doesn't exist")
+            filefield.name = dest_path
+            item.save()
 
 
 def apply_migration(apps, schema_editor):
