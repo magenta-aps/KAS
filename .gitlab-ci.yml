@@ -155,7 +155,9 @@ KAS Unittest:
   coverage: '/^TOTAL.+?(\d+\%)$/'
   artifacts:
     reports:
-      cobertura: /app/coverage.xml
+      coverage_report:
+          coverage_format: cobertura
+          path: /app/coverage.xml
 
 Selvbetjening Unittest:
   <<: *test-default
@@ -195,7 +197,9 @@ Selvbetjening Unittest:
   coverage: '/^TOTAL.+?(\d+\%)$/'
   artifacts:
     reports:
-      cobertura: /app/coverage.xml
+      coverage_report:
+          coverage_format: cobertura
+          path: /app/coverage.xml
 
 # Release stage
 ###############
