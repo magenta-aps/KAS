@@ -9,7 +9,6 @@ from django.apps import apps
 
 
 class EskatModelsTestCase(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         generate_persons()
@@ -43,7 +42,7 @@ class EskatModelsTestCase(TestCase):
         person_tax_year = PersonTaxYear.objects.create(tax_year=tax_year, person=person)
         PolicyDocument.objects.create(person_tax_year=person_tax_year)
 
-        for model in apps.all_models.get('kas').values():
+        for model in apps.all_models.get("kas").values():
             delete_protected(model.objects.all())
 
         self.assertFalse(Person.objects.exists())

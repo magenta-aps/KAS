@@ -7,8 +7,10 @@ from kas.models import RepresentationToken
 
 class Command(BaseCommand):
 
-    help = 'Removes obsolete RepresentationTokens'
+    help = "Removes obsolete RepresentationTokens"
 
     def handle(self, *args, **options):
-        cutoff = timezone.now() - timedelta(seconds=settings.SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE)
+        cutoff = timezone.now() - timedelta(
+            seconds=settings.SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE
+        )
         RepresentationToken.objects.filter(created__lt=cutoff).delete()

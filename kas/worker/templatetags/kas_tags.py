@@ -13,13 +13,15 @@ def duration(td):
     minutes = int(remaining_minutes / 60)
     seconds = (remaining_minutes % 60) + (td.total_seconds() - total_seconds)
 
-    return ', '.join([
-        f"{value} {unit}"
-        for value, unit in [
-            (days, __('dag', 'dage', days)),
-            (hours, __('time', 'timer', hours)),
-            (minutes, __('minut', 'minutter', minutes)),
-            (seconds, __('sekund', 'sekunder', seconds))
+    return ", ".join(
+        [
+            f"{value} {unit}"
+            for value, unit in [
+                (days, __("dag", "dage", days)),
+                (hours, __("time", "timer", hours)),
+                (minutes, __("minut", "minutter", minutes)),
+                (seconds, __("sekund", "sekunder", seconds)),
+            ]
+            if value or unit == "s"
         ]
-        if value or unit == 's'
-    ])
+    )

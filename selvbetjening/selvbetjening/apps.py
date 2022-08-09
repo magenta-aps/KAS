@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class KasConfig(AppConfig):
-    name = 'selvbetjening'
+    name = "selvbetjening"

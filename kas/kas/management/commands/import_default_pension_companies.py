@@ -6,18 +6,18 @@ from kas.models import PensionCompany
 import csv
 import os
 
-KAS_DIR = os.path.join(settings.BASE_DIR, 'kas')
-DATA_DIR = os.path.join(KAS_DIR, 'data')
+KAS_DIR = os.path.join(settings.BASE_DIR, "kas")
+DATA_DIR = os.path.join(KAS_DIR, "data")
 
 INPUT_FILE = os.path.join(DATA_DIR, "Pensionsudbydere i eSkat.csv")
 
 
 class Command(BaseCommand):
-    help = 'Imports mockup data into the mockup tables for eSkat'
+    help = "Imports mockup data into the mockup tables for eSkat"
 
     companies_with_deals = (
-        '55143315',  # PFA
-        '34177104',  # PensionDanmark
+        "55143315",  # PFA
+        "34177104",  # PensionDanmark
     )
 
     def handle(self, *args, **kwargs):
@@ -34,10 +34,10 @@ class Command(BaseCommand):
 
                 PensionCompany.objects.update_or_create(
                     defaults={
-                        'res': res,
-                        'name': row[1],
-                        'address': row[2],
-                        'agreement_present': (row[0] in self.companies_with_deals)
+                        "res": res,
+                        "name": row[1],
+                        "address": row[2],
+                        "agreement_present": (row[0] in self.companies_with_deals),
                     },
                     res=res,
                 )

@@ -20,14 +20,23 @@ logger = logging.getLogger(__name__)
 open_id_settings = {}
 kc_rsa = None
 client_cert = None
-if getattr(settings, 'OPENID_CONNECT', None) and settings.OPENID_CONNECT.get('enabled', True):
+if getattr(settings, "OPENID_CONNECT", None) and settings.OPENID_CONNECT.get(
+    "enabled", True
+):
     # if openID is enabled setup the key bundle and client_cert
     open_id_settings = settings.OPENID_CONNECT
-    key = rsa_load(open_id_settings['private_key'])
-    kc_rsa = KeyBundle([{'key': key, 'kty': 'RSA', 'use': 'ver'},
-                        {'key': key, 'kty': 'RSA', 'use': 'sig'}])
+    key = rsa_load(open_id_settings["private_key"])
+    kc_rsa = KeyBundle(
+        [
+            {"key": key, "kty": "RSA", "use": "ver"},
+            {"key": key, "kty": "RSA", "use": "sig"},
+        ]
+    )
 
-    client_cert = (open_id_settings['client_certificate'], open_id_settings['private_key'])
+    client_cert = (
+        open_id_settings["client_certificate"],
+        open_id_settings["private_key"],
+    )
 
 
 class LoginView(View):
@@ -35,125 +44,159 @@ class LoginView(View):
     builds up the url with the correct GET parameters and redirects the browser to it.
     So the user can login to the external OpenId Provider
     """
-    http_method_names = ['get']
+
+    http_method_names = ["get"]
 
     def get(self, request, *args, **kwargs):
-        client = Client(client_authn_method=CLIENT_AUTHN_METHOD, client_cert=OpenId.client_cert)
-        provider_info = client.provider_config(OpenId.open_id_settings['issuer'])  # noqa
-        login_callback_uri = OpenId.open_id_settings['login_callback']
-        client_reg = RegistrationResponse(**{
-            'client_id': OpenId.open_id_settings['client_id'],
-            'redirect_uris': [login_callback_uri]
-        })
+        client = Client(
+            client_authn_method=CLIENT_AUTHN_METHOD, client_cert=OpenId.client_cert
+        )
+        provider_info = client.provider_config(  # noqa
+            OpenId.open_id_settings["issuer"]
+        )
+        login_callback_uri = OpenId.open_id_settings["login_callback"]
+        client_reg = RegistrationResponse(
+            **{
+                "client_id": OpenId.open_id_settings["client_id"],
+                "redirect_uris": [login_callback_uri],
+            }
+        )
         client.store_registration_info(client_reg)
 
         state = rndstr(32)
         nonce = rndstr(32)
         request_args = {
-            'response_type': 'code',
-            'scope': settings.OPENID_CONNECT['scope'],
-            'client_id': settings.OPENID_CONNECT['client_id'],
-            'redirect_uri': login_callback_uri,
-            'state': state,
-            'nonce': nonce
+            "response_type": "code",
+            "scope": settings.OPENID_CONNECT["scope"],
+            "client_id": settings.OPENID_CONNECT["client_id"],
+            "redirect_uri": login_callback_uri,
+            "state": state,
+            "nonce": nonce,
         }
 
-        request.session['oid_state'] = state
-        request.session['oid_nonce'] = nonce
-        request.session['login_method'] = 'openid'
+        request.session["oid_state"] = state
+        request.session["oid_nonce"] = nonce
+        request.session["login_method"] = "openid"
         auth_req = client.construct_AuthorizationRequest(request_args=request_args)
         login_url = auth_req.request(client.authorization_endpoint)
         return HttpResponseRedirect(login_url)
 
 
 class LoginCallback(TemplateView):
-    http_method_names = ['get']
-    template_name = 'openid/callback_errors.html'
+    http_method_names = ["get"]
+    template_name = "openid/callback_errors.html"
 
     def get(self, request, *args, **kwargs):
-        nonce = request.session.get('oid_nonce')
+        nonce = request.session.get("oid_nonce")
         if nonce:
             # Make sure that nonce is not used twice
-            del request.session['oid_nonce']
+            del request.session["oid_nonce"]
         else:
-            if 'oid_state' in request.session:
-                del request.session['oid_state']  # if nonce was missing ensure oid_state is too
-            logger.exception(SuspiciousOperation('Session `oid_nonce` does not exist!'))
-            return HttpResponseRedirect(reverse('sullissivik:openid:login'))
+            if "oid_state" in request.session:
+                del request.session[
+                    "oid_state"
+                ]  # if nonce was missing ensure oid_state is too
+            logger.exception(SuspiciousOperation("Session `oid_nonce` does not exist!"))
+            return HttpResponseRedirect(reverse("sullissivik:openid:login"))
 
-        if 'oid_state' not in request.session:
-            logger.exception(SuspiciousOperation('Session `oid_state` does not exist!'))
-            return HttpResponseRedirect(reverse('sullissivik:openid:login'))
+        if "oid_state" not in request.session:
+            logger.exception(SuspiciousOperation("Session `oid_state` does not exist!"))
+            return HttpResponseRedirect(reverse("sullissivik:openid:login"))
 
-        client = Client(client_authn_method=CLIENT_AUTHN_METHOD, client_cert=OpenId.client_cert)
+        client = Client(
+            client_authn_method=CLIENT_AUTHN_METHOD, client_cert=OpenId.client_cert
+        )
         client.keyjar[""] = OpenId.kc_rsa
 
         client_configuration = {
-            'client_id': settings.OPENID_CONNECT['client_id'],
-            'token_endpoint_auth_method': 'private_key_jwt'
+            "client_id": settings.OPENID_CONNECT["client_id"],
+            "token_endpoint_auth_method": "private_key_jwt",
         }
 
         client.store_registration_info(client_configuration)
 
-        aresp = client.parse_response(AuthorizationResponse, info=request.META['QUERY_STRING'], sformat="urlencoded")
+        aresp = client.parse_response(
+            AuthorizationResponse,
+            info=request.META["QUERY_STRING"],
+            sformat="urlencoded",
+        )
 
         if isinstance(aresp, ErrorResponse):
             # we got an error from the OP
-            del request.session['oid_state']
+            del request.session["oid_state"]
             logger.error(f"Got ErrorResponse {aresp}")
             context = self.get_context_data(errors=aresp.to_dict())
             return self.render_to_response(context)
 
         else:
             # we got a valid response
-            if not aresp.get('state', None):
-                del request.session['oid_state']
-                logger.error(f'did not receive state from OP: {aresp.to_dict()}')
+            if not aresp.get("state", None):
+                del request.session["oid_state"]
+                logger.error(f"did not receive state from OP: {aresp.to_dict()}")
                 context = self.get_context_data(errors=aresp.to_dict())
                 return self.render_to_response(context)
 
-            if aresp['state'] != request.session['oid_state']:
-                del request.session['oid_state']
-                logger.exception(SuspiciousOperation('Session `oid_state` does not match the OID callback state'))
-                return HttpResponseRedirect(reverse('sullissivik:openid:login'))
+            if aresp["state"] != request.session["oid_state"]:
+                del request.session["oid_state"]
+                logger.exception(
+                    SuspiciousOperation(
+                        "Session `oid_state` does not match the OID callback state"
+                    )
+                )
+                return HttpResponseRedirect(reverse("sullissivik:openid:login"))
 
-            provider_info = client.provider_config(settings.OPENID_CONNECT['issuer'])  # noqa
-            logger.info(f'provider info: {client.provider_info}')
+            provider_info = client.provider_config(  # noqa
+                settings.OPENID_CONNECT["issuer"]
+            )  # noqa
+            logger.info(f"provider info: {client.provider_info}")
 
             resp = client.do_access_token_request(
-                state=aresp['state'],
-                scope=settings.OPENID_CONNECT['scope'],
+                state=aresp["state"],
+                scope=settings.OPENID_CONNECT["scope"],
                 request_args={
-                    'code': aresp['code'],
-                    'redirect_uri': settings.OPENID_CONNECT['login_callback']
+                    "code": aresp["code"],
+                    "redirect_uri": settings.OPENID_CONNECT["login_callback"],
                 },
                 authn_method="private_key_jwt",
-                authn_endpoint='token'
+                authn_endpoint="token",
             )
 
             if isinstance(resp, ErrorResponse):
-                del request.session['oid_state']
-                logger.error(f'Error received from headnet: {resp}')
+                del request.session["oid_state"]
+                logger.error(f"Error received from headnet: {resp}")
                 context = self.get_context_data(errors=resp.to_dict())
                 return self.render_to_response(context)
             else:
                 respdict = resp.to_dict()
-                their_nonce = respdict['id_token']['nonce']
+                their_nonce = respdict["id_token"]["nonce"]
                 if their_nonce != nonce:
-                    del request.session['oid_state']
-                    logger.error("Nonce mismatch: Token service responded with incorrect nonce (expected %s, got %s)" % (nonce, their_nonce))
-                    context = self.get_context_data(errors={'Nonce mismatch': 'Got incorrect nonce from token server'})
+                    del request.session["oid_state"]
+                    logger.error(
+                        "Nonce mismatch: Token service responded with incorrect nonce (expected %s, got %s)"
+                        % (nonce, their_nonce)
+                    )
+                    context = self.get_context_data(
+                        errors={
+                            "Nonce mismatch": "Got incorrect nonce from token server"
+                        }
+                    )
                     return self.render_to_response(context)
-                request.session['access_token_data'] = respdict
-                userinfo = client.do_user_info_request(state=request.session['oid_state'])
+                request.session["access_token_data"] = respdict
+                userinfo = client.do_user_info_request(
+                    state=request.session["oid_state"]
+                )
                 user_info_dict = userinfo.to_dict()
-                request.session['user_info'] = user_info_dict
+                request.session["user_info"] = user_info_dict
                 print(f"user_info_dict: {user_info_dict}")
-                request.session['raw_id_token'] = resp["id_token"].jwt
+                request.session["raw_id_token"] = resp["id_token"].jwt
                 # always delete the state so it is not reused
-                del request.session['oid_state']
+                del request.session["oid_state"]
                 # after the oauth flow is done and we have the user_info redirect to the original page or the frontpage
-                return HttpResponseRedirect(request.session.get('backpage', reverse(settings.LOGIN_DEFAULT_REDIRECT)))
+                return HttpResponseRedirect(
+                    request.session.get(
+                        "backpage", reverse(settings.LOGIN_DEFAULT_REDIRECT)
+                    )
+                )
 
 
 class LogoutView(View):
@@ -162,14 +205,15 @@ class LogoutView(View):
 
 
 class LogoutCallback(View):
-
     @xframe_options_exempt
     def get(self, request):
-        their_sid = request.GET.get('sid')
+        their_sid = request.GET.get("sid")
         try:
-            our_sid = request.session['access_token_data']['id_token']['sid']
+            our_sid = request.session["access_token_data"]["id_token"]["sid"]
             if their_sid != our_sid:
-                print("Logout SID mismatch (ours: %s, theirs: %s)" % (our_sid, their_sid))
+                print(
+                    "Logout SID mismatch (ours: %s, theirs: %s)" % (our_sid, their_sid)
+                )
         except KeyError:
             pass
 

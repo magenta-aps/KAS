@@ -7,17 +7,19 @@ from django.contrib.auth.hashers import make_password
 
 
 class Command(BaseCommand):
-    help = 'Creates dummy users'
+    help = "Creates dummy users"
 
     def handle(self, *args, **options):
-        if settings.ENVIRONMENT in ("production", 'staging'):
+        if settings.ENVIRONMENT in ("production", "staging"):
             raise Exception(f"Will not create dummy users in {settings.ENVIRONMENT}")
 
         User.objects.update_or_create(
-            defaults={'is_superuser': True,
-                      'is_staff': True,
-                      'password': make_password('super')},
-            username='super'
+            defaults={
+                "is_superuser": True,
+                "is_staff": True,
+                "password": make_password("super"),
+            },
+            username="super",
         )
         admin, created = User.objects.update_or_create(
             # Admin user
@@ -25,22 +27,26 @@ class Command(BaseCommand):
                 "first_name": "Admin",
                 "last_name": "User",
                 "email": "",
-                "password": make_password(os.environ.get('ADMIN_PASSWORD', 'admin')),
+                "password": make_password(os.environ.get("ADMIN_PASSWORD", "admin")),
                 "is_active": True,
                 "is_staff": False,
                 "is_superuser": False,
             },
-            username="admin"
+            username="admin",
         )
         if created:
-            admin.groups.add(Group.objects.get(name='administrator'))
+            admin.groups.add(Group.objects.get(name="administrator"))
 
-        for name in ('Sagsbehandler', 'Borgerservice', 'Regnskab', 'Skatteråd'):
-            user, created = User.objects.update_or_create(username=name.lower(),
-                                                          defaults={'password': make_password(name.lower()),
-                                                                    'first_name': name.capitalize(),
-                                                                    'last_name': name.capitalize(),
-                                                                    'is_active': True})
+        for name in ("Sagsbehandler", "Borgerservice", "Regnskab", "Skatteråd"):
+            user, created = User.objects.update_or_create(
+                username=name.lower(),
+                defaults={
+                    "password": make_password(name.lower()),
+                    "first_name": name.capitalize(),
+                    "last_name": name.capitalize(),
+                    "is_active": True,
+                },
+            )
             if created:
                 # if the user was created add the user to the group
                 user.groups.add(Group.objects.get(name=name))

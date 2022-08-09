@@ -5,14 +5,14 @@ from kas.forms_mixin import BootstrapForm
 
 
 class PensionCompanyFilterSet(FilterSet):
-    search = CharFilter(method='search_name_and_res')
-    agreement = CharFilter(method='agreement_present')
+    search = CharFilter(method="search_name_and_res")
+    agreement = CharFilter(method="agreement_present")
 
     def agreement_present(self, queryset, name, value):
-        if value and value == 'agreement':
-            return queryset.filter(Q(agreement_present=True) | ~Q(agreement=''))
-        elif value and value == 'no_agreement':
-            return queryset.filter(agreement_present=False).filter(agreement='')
+        if value and value == "agreement":
+            return queryset.filter(Q(agreement_present=True) | ~Q(agreement=""))
+        elif value and value == "no_agreement":
+            return queryset.filter(agreement_present=False).filter(agreement="")
 
     def search_name_and_res(self, queryset, name, value):
         if value:
@@ -23,10 +23,11 @@ class PensionCompanyFilterSet(FilterSet):
 
 
 class LockFilterSet(FilterSet):
-    taxyear = ModelChoiceFilter(queryset=TaxYear.objects.all(),
-                                empty_label=None)
+    taxyear = ModelChoiceFilter(queryset=TaxYear.objects.all(), empty_label=None)
 
     class Meta:
         model = Lock
-        fields = ['taxyear', ]
+        fields = [
+            "taxyear",
+        ]
         form = BootstrapForm

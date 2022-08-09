@@ -12,16 +12,30 @@ from django.utils.decorators import method_decorator
 from django.utils import timezone
 
 
-from kas.models import PensionCompany, Person, PersonTaxYear, PolicyDocument, \
-    PolicyTaxYear, TaxYear, FinalSettlement, RepresentationToken
-from kas.serializers import PensionCompanySerializer, PersonSerializer, PersonTaxYearSerializer, \
-    PolicyDocumentSerializer, PolicyTaxYearSerializer, TaxYearSerializer
+from kas.models import (
+    PensionCompany,
+    Person,
+    PersonTaxYear,
+    PolicyDocument,
+    PolicyTaxYear,
+    TaxYear,
+    FinalSettlement,
+    RepresentationToken,
+)
+from kas.serializers import (
+    PensionCompanySerializer,
+    PersonSerializer,
+    PersonTaxYearSerializer,
+    PolicyDocumentSerializer,
+    PolicyTaxYearSerializer,
+    TaxYearSerializer,
+)
 from project.renders import PdfProxyRender
 
 
 class TaxYearFilter(filters.FilterSet):
     year = filters.NumberFilter(field_name="year")
-    year_lt = filters.NumberFilter(field_name="year", lookup_expr='lt')
+    year_lt = filters.NumberFilter(field_name="year", lookup_expr="lt")
 
 
 class TaxYearViewSet(viewsets.ModelViewSet):
@@ -44,7 +58,7 @@ class PersonViewSet(viewsets.ModelViewSet):
 
 class PersonTaxYearFilter(filters.FilterSet):
     year = filters.NumberFilter(field_name="tax_year__year")
-    year_lt = filters.NumberFilter(field_name="tax_year__year", lookup_expr='lt')
+    year_lt = filters.NumberFilter(field_name="tax_year__year", lookup_expr="lt")
     cpr = filters.CharFilter(field_name="person__cpr")
 
 
@@ -57,7 +71,9 @@ class PersonTaxYearViewSet(viewsets.ModelViewSet):
 
 class PolicyTaxYearFilter(filters.FilterSet):
     year = filters.NumberFilter(field_name="person_tax_year__tax_year__year")
-    year_lt = filters.NumberFilter(field_name="person_tax_year__tax_year__year", lookup_expr='lt')
+    year_lt = filters.NumberFilter(
+        field_name="person_tax_year__tax_year__year", lookup_expr="lt"
+    )
     cpr = filters.CharFilter(field_name="person_tax_year__person__cpr")
     active = filters.BooleanFilter(field_name="active")
     person_tax_year = filters.ModelChoiceFilter(queryset=PersonTaxYear.objects.all())
@@ -67,9 +83,9 @@ class PolicyTaxYearFilter(filters.FilterSet):
 class PolicyTaxYearViewSet(viewsets.ModelViewSet):
     queryset = PolicyTaxYear.objects.all().prefetch_related(
         Prefetch(
-            lookup='policy_documents',
-            to_attr='documents',
-            queryset=PolicyDocument.objects.filter(uploaded_by__isnull=True)
+            lookup="policy_documents",
+            to_attr="documents",
+            queryset=PolicyDocument.objects.filter(uploaded_by__isnull=True),
         )
     )
     serializer_class = PolicyTaxYearSerializer
@@ -101,23 +117,22 @@ class PolicyDocumentViewSet(viewsets.ModelViewSet):
 
 
 router = routers.DefaultRouter()
-router.register(r'pension_company', PensionCompanyViewSet)
-router.register(r'tax_year', TaxYearViewSet)
-router.register(r'person', PersonViewSet)
-router.register(r'person_tax_year', PersonTaxYearViewSet)
-router.register(r'policy_tax_year', PolicyTaxYearViewSet)
-router.register(r'policy_document', PolicyDocumentViewSet)
+router.register(r"pension_company", PensionCompanyViewSet)
+router.register(r"tax_year", TaxYearViewSet)
+router.register(r"person", PersonViewSet)
+router.register(r"person_tax_year", PersonTaxYearViewSet)
+router.register(r"policy_tax_year", PolicyTaxYearViewSet)
+router.register(r"policy_document", PolicyDocumentViewSet)
 
 
 class CurrentFinalSettlementExistsView(APIView):
-
     def get_object(self):
         try:
             return FinalSettlement.objects.filter(
-                person_tax_year__person__cpr=self.kwargs['cpr'],
-                person_tax_year__tax_year__year=self.kwargs['year'],
-                status='send'
-            ).order_by('-send_at')[0]
+                person_tax_year__person__cpr=self.kwargs["cpr"],
+                person_tax_year__tax_year__year=self.kwargs["year"],
+                status="send",
+            ).order_by("-send_at")[0]
         except IndexError:
             raise Http404()
 
@@ -128,31 +143,40 @@ class CurrentFinalSettlementExistsView(APIView):
                 raise Http404()
         except FileNotFoundError:
             raise Http404()
-        return HttpResponse('')
+        return HttpResponse("")
 
 
 class CurrentFinalSettlementDownloadView(CurrentFinalSettlementExistsView):
-    renderer_classes = [PdfProxyRender, ]
+    renderer_classes = [
+        PdfProxyRender,
+    ]
 
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
-        return FileResponse(instance.pdf, as_attachment=False,
-                            content_type='application/pdf',
-                            filename='{year}_{cpr}.pdf'.format(year=instance.person_tax_year.tax_year.year,
-                                                               cpr=instance.person_tax_year.person.cpr))
+        return FileResponse(
+            instance.pdf,
+            as_attachment=False,
+            content_type="application/pdf",
+            filename="{year}_{cpr}.pdf".format(
+                year=instance.person_tax_year.tax_year.year,
+                cpr=instance.person_tax_year.person.cpr,
+            ),
+        )
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name="dispatch")
 class TokenValidationView(APIView):
     def post(self, request, *args, **kwargs):
         try:
-            tokenstring = request.POST['token']
+            tokenstring = request.POST["token"]
             token = RepresentationToken.objects.get(token=tokenstring)
         except KeyError:
             return HttpResponseBadRequest("Token not set")
         except RepresentationToken.DoesNotExist:
             return HttpResponseBadRequest("Invalid token")
-        if token.created < timezone.now() - timedelta(seconds=settings.SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE):
+        if token.created < timezone.now() - timedelta(
+            seconds=settings.SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE
+        ):
             return HttpResponseBadRequest("Token expired")
         if token.consumed:
             return HttpResponseBadRequest("Token already used")
@@ -161,9 +185,11 @@ class TokenValidationView(APIView):
 
         token.consumed = True
         token.save()
-        return JsonResponse({
-            'CPR': token.person.cpr,
-            'PersonName': token.person.name,
-            'AdminUsername': token.user.username,
-            'AdminUserID': token.user.id,
-        })
+        return JsonResponse(
+            {
+                "CPR": token.person.cpr,
+                "PersonName": token.person.name,
+                "AdminUsername": token.user.username,
+                "AdminUserID": token.user.id,
+            }
+        )

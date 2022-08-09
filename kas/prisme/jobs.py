@@ -14,77 +14,112 @@ from tenQ.client import put_file_in_prisme_folder
 
 @job_decorator
 def import_pre_payment_file(job):
-    pre_payment_file = PrePaymentFile.objects.get(pk=job.arguments['pk'])
-    fields = [None, 'cpr_number', None, 'payment_year', 'amount', None, None, 'unique_id']
-    with pre_payment_file.file.open(mode='rb'):
-        with io.TextIOWrapper(pre_payment_file.file, encoding='ISO-8859-1') as text_file:
-            reader = DictReader((line.replace('\0', '') for line in text_file), delimiter=';', fieldnames=fields)
+    pre_payment_file = PrePaymentFile.objects.get(pk=job.arguments["pk"])
+    fields = [
+        None,
+        "cpr_number",
+        None,
+        "payment_year",
+        "amount",
+        None,
+        None,
+        "unique_id",
+    ]
+    with pre_payment_file.file.open(mode="rb"):
+        with io.TextIOWrapper(
+            pre_payment_file.file, encoding="ISO-8859-1"
+        ) as text_file:
+            reader = DictReader(
+                (line.replace("\0", "") for line in text_file),
+                delimiter=";",
+                fieldnames=fields,
+            )
             errors = []
             created_transactions = []
             rows = list(reader)
             row_count = len(rows)
             for i, row in enumerate(rows, start=0):
                 # Make sure CPR number has leading zeroes
-                cpr = str(row['cpr_number']).rjust(10, '0')
+                cpr = str(row["cpr_number"]).rjust(10, "0")
                 try:
-                    person_tax_year = PersonTaxYear.objects.get(person__cpr=cpr,
-                                                                tax_year__year=row['payment_year'])
+                    person_tax_year = PersonTaxYear.objects.get(
+                        person__cpr=cpr, tax_year__year=row["payment_year"]
+                    )
                 except PersonTaxYear.DoesNotExist:
-                    errors.append('Personskatteår eksisterer ikke for {cpr} i år {year}'.format(cpr=cpr,
-                                                                                                year=row['payment_year']))
+                    errors.append(
+                        "Personskatteår eksisterer ikke for {cpr} i år {year}".format(
+                            cpr=cpr, year=row["payment_year"]
+                        )
+                    )
                 else:
                     transaction = Transaction.objects.create(
                         person_tax_year=person_tax_year,
-                        amount=-int(row['amount']),
-                        type='prepayment',
+                        amount=-int(row["amount"]),
+                        type="prepayment",
                         source_object=pre_payment_file,
-                        status='transferred',
+                        status="transferred",
                     )
-                    created_transactions.append({'transaction': str(transaction),
-                                                 'person': transaction.person_tax_year.person.pk,
-                                                 'year': transaction.person_tax_year.year})
+                    created_transactions.append(
+                        {
+                            "transaction": str(transaction),
+                            "person": transaction.person_tax_year.person.pk,
+                            "year": transaction.person_tax_year.year,
+                        }
+                    )
                 finally:
                     job.set_progress(i, row_count)
-            job.result = {'created_transactions': created_transactions, 'errors': errors}
+            job.result = {
+                "created_transactions": created_transactions,
+                "errors": errors,
+            }
 
 
 @job_decorator
 def send_batch(job):
-    batch = Prisme10QBatch.objects.get(pk=job.arguments['pk'])
-    destination = job.arguments['destination']
+    batch = Prisme10QBatch.objects.get(pk=job.arguments["pk"])
+    destination = job.arguments["destination"]
     completion_statuses = {
-        '10q_production': Prisme10QBatch.STATUS_DELIVERED,
-        '10q_development': Prisme10QBatch.STATUS_CREATED,
-        '10q_mocking': Prisme10QBatch.STATUS_DELIVERED
+        "10q_production": Prisme10QBatch.STATUS_DELIVERED,
+        "10q_development": Prisme10QBatch.STATUS_CREATED,
+        "10q_mocking": Prisme10QBatch.STATUS_DELIVERED,
     }
     try:
 
         # Extra check for chosen destination
-        available = {destination_id for destination_id, _ in batch_destinations_available}
+        available = {
+            destination_id for destination_id, _ in batch_destinations_available
+        }
         if destination not in available:
             raise ValueError(
                 "Kan ikke sende batch til {destination}, det er kun {available} der er tilgængelig på dette system".format(
-                    destination=destination,
-                    available=', '.join(available)
+                    destination=destination, available=", ".join(available)
                 )
             )
 
         # When sending to development environment, only send 100 entries
-        if destination == '10q_development':
+        if destination == "10q_development":
             content = batch.get_content(max_entries=100)
         else:
             content = batch.get_content()
 
-        filename = "KAS_10Q_export_{}.10q".format(datetime.now().strftime('%Y-%m-%dT%H-%M-%S'))
+        filename = "KAS_10Q_export_{}.10q".format(
+            datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+        )
 
-        with tempfile.NamedTemporaryFile(mode='w') as batchfile:
+        with tempfile.NamedTemporaryFile(mode="w") as batchfile:
             batchfile.write(content)
             batchfile.flush()
-            if destination == '10q_mocking':
+            if destination == "10q_mocking":
                 job.set_progress(1, 1)
             else:
-                destination_folder = settings.TENQ['dirs'][destination]
-                put_file_in_prisme_folder(settings.TENQ, batchfile.name, destination_folder, filename, job.set_progress)
+                destination_folder = settings.TENQ["dirs"][destination]
+                put_file_in_prisme_folder(
+                    settings.TENQ,
+                    batchfile.name,
+                    destination_folder,
+                    filename,
+                    job.set_progress,
+                )
         batch.status = completion_statuses[destination]
         batch.delivered_by = job.created_by
         batch.delivered = timezone.now()
@@ -97,5 +132,5 @@ def send_batch(job):
 
         # If batch was delivered, mark all the related transactions as delivered
         if batch.status == Prisme10QBatch.STATUS_DELIVERED:
-            batch.active_transactions_qs.update(status='transferred')
-            batch.transactions_below_abs100_qs.update(status='indifferent')
+            batch.active_transactions_qs.update(status="transferred")
+            batch.transactions_below_abs100_qs.update(status="indifferent")

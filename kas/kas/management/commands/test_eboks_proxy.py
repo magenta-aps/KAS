@@ -3,7 +3,7 @@ from kas.eboks import EboksClient
 
 
 class Command(BaseCommand):
-    help = 'Connects to the E-boks proxy using the current settings and prints the client configuration'
+    help = "Connects to the E-boks proxy using the current settings and prints the client configuration"
 
     def handle(self, *args, **options):
         client = EboksClient.from_settings()

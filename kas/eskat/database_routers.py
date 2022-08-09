@@ -4,17 +4,16 @@
 # Makes all non managed models in the eskat app use the actual eskat database.
 # Disallows migrations for the eskat database.
 class ESkatRouter:
-
     def db_for_read(self, model, **hints):
         # All eskat tables should use the eskat database
         if model._meta.app_label and not model._meta.managed:
-            return 'eskat'
+            return "eskat"
         return None
 
     def db_for_write(self, model, **hints):
         # All eskat tables should use the eskat database
         if model._meta.app_label and not model._meta.managed:
-            return 'eskat'
+            return "eskat"
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
