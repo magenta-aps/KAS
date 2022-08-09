@@ -2,7 +2,7 @@
 {% load i18n %}
 {% block content %}
     <h1>{% trans 'Låsesystem' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
-    {% blocktrans asvar top_help %} Fra denne side er der mulighed for at administrere låse på et skatteår. Hvis der oprettes en ny lås, så tilknyttes eksisterende slutopgørelser automatisk til teil den nuværende åbne lås for skatteåret{% endblocktrans %}
+    {% blocktrans asvar top_help %} Fra denne side er der mulighed for at administrere låse på et skatteår. Hvis der oprettes en ny lås, så tilknyttes eksisterende slutopgørelser automatisk til den nuværende åbne lås for skatteåret{% endblocktrans %}
     {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
         <div class="form-inline mt-2" id="js-filters">
             <label class="mr-2">{% translate 'Skatteår' %}:</label>
