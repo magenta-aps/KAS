@@ -11,20 +11,19 @@ class TransActionForm(BootstrapForm, ModelForm):
 
     class Meta:
         model = Transaction
-        fields = ('amount', 'type')
+        fields = ("amount", "type")
 
 
 class PrePaymentFileModelForm(BootstrapForm, ModelForm):
-    file = FileField(widget=FileInput(attrs={'accept': 'text/csv'}))
+    file = FileField(widget=FileInput(attrs={"accept": "text/csv"}))
 
     class Meta:
         model = PrePaymentFile
-        fields = ('file', )
+        fields = ("file",)
 
 
 class BatchSendForm(BootstrapForm, Form):
 
     destination = ChoiceField(
-        label=_('Destination'),
-        choices=batch_destinations_available
+        label=_("Destination"), choices=batch_destinations_available
     )

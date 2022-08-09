@@ -9,172 +9,177 @@ import django.conf.locale
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
-DEBUG = bool(strtobool(os.environ.get('DJANGO_DEBUG', 'False')))
-ALLOWED_HOSTS = ['*']
-TIME_ZONE = os.environ['DJANGO_TIMEZONE']
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+DEBUG = bool(strtobool(os.environ.get("DJANGO_DEBUG", "False")))
+ALLOWED_HOSTS = ["*"]
+TIME_ZONE = os.environ["DJANGO_TIMEZONE"]
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.sessions',
-    'django.contrib.staticfiles',
-    'selvbetjening',
-    'sullissivik.login',
-    'watchman',
+    "django.contrib.sessions",
+    "django.contrib.staticfiles",
+    "selvbetjening",
+    "sullissivik.login",
+    "watchman",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'sullissivik.login.middleware.LoginManager',
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "sullissivik.login.middleware.LoginManager",
 ]
 
-ROOT_URLCONF = 'project.urls'
+ROOT_URLCONF = "project.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'project.context_processors.feature_flag_processor',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "project.context_processors.feature_flag_processor",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'project.wsgi.application'
+WSGI_APPLICATION = "project.wsgi.application"
 
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ['POSTGRES_DB'],
-        'USER': os.environ['POSTGRES_USER'],
-        'PASSWORD': os.environ['POSTGRES_PASSWORD'],
-        'HOST': os.environ['POSTGRES_HOST'],
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": os.environ["POSTGRES_DB"],
+        "USER": os.environ["POSTGRES_USER"],
+        "PASSWORD": os.environ["POSTGRES_PASSWORD"],
+        "HOST": os.environ["POSTGRES_HOST"],
     }
 }
 
-LANGUAGE_CODE = 'da-DK'
+LANGUAGE_CODE = "da-DK"
 
 USE_I18N = True
 USE_L10N = False
 USE_TZ = True
 USE_THOUSAND_SEPARATOR = True
-LANGUAGE_COOKIE_NAME = 'Sullissivik.Portal.Lang'
-LANGUAGE_COOKIE_DOMAIN = os.environ['DJANGO_LANGUAGE_COOKIE_DOMAIN']
-LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
-LOCALE_MAP = {
-    'da': 'da-DK',
-    'kl': 'kl-GL'
-}
+LANGUAGE_COOKIE_NAME = "Sullissivik.Portal.Lang"
+LANGUAGE_COOKIE_DOMAIN = os.environ["DJANGO_LANGUAGE_COOKIE_DOMAIN"]
+LOCALE_PATHS = [os.path.join(BASE_DIR, "locale")]
+LOCALE_MAP = {"da": "da-DK", "kl": "kl-GL"}
 
 LANGUAGES = [
-    ('da', ('Dansk')),
-    ('kl', ('Kalaallisut')),
+    ("da", ("Dansk")),
+    ("kl", ("Kalaallisut")),
 ]
 
 # Add custom languages not provided by Django
-django.conf.locale.LANG_INFO['kl'] = {
-    'bidi': False,
-    'code': 'kl',
-    'name': 'Greenlandic',
-    'name_local': u'Kalaallisut',
+django.conf.locale.LANG_INFO["kl"] = {
+    "bidi": False,
+    "code": "kl",
+    "name": "Greenlandic",
+    "name_local": "Kalaallisut",
 }
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 900
 
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 
-UPLOAD_PATH = '/uploads'
+UPLOAD_PATH = "/uploads"
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'gunicorn': {
-            'class': 'logging.StreamHandler',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "gunicorn": {
+            "class": "logging.StreamHandler",
         },
     },
-    'root': {
-        'handlers': ['gunicorn'],
-        'level': 'INFO',
+    "root": {
+        "handlers": ["gunicorn"],
+        "level": "INFO",
     },
-    'loggers': {
-        'django': {
-            'handlers': ['gunicorn'],
-            'level': 'INFO',
-            'propagate': False,
+    "loggers": {
+        "django": {
+            "handlers": ["gunicorn"],
+            "level": "INFO",
+            "propagate": False,
         },
     },
 }
 
-LOGOUT_REDIRECT = 'sullissivik:openid:login'  # url reverse name to redirect to when logged out
-LOGIN_UNAUTH_REDIRECT = 'sullissivik:openid:login'  # url reverse name to redirect to when not logged in
-LOGIN_DEFAULT_REDIRECT = 'selvbetjening:policy-edit'  # url reverse name to redirect to when logged in (unless another is explicitly specified in params)
-LOGIN_REQUIREMENT_WHITELIST = ['/favicon.ico']
+LOGOUT_REDIRECT = (
+    "sullissivik:openid:login"  # url reverse name to redirect to when logged out
+)
+LOGIN_UNAUTH_REDIRECT = (
+    "sullissivik:openid:login"  # url reverse name to redirect to when not logged in
+)
+LOGIN_DEFAULT_REDIRECT = "selvbetjening:policy-edit"  # url reverse name to redirect to when logged in (unless another is explicitly specified in params)
+LOGIN_REQUIREMENT_WHITELIST = ["/favicon.ico"]
 
-REST_HOST = os.environ['REST_HOST']
-REST_TOKEN = os.environ['REST_TOKEN']
+REST_HOST = os.environ["REST_HOST"]
+REST_TOKEN = os.environ["REST_TOKEN"]
 # REST_CA_CERT = os.environ['REST_CA_CERT']
-KAS_REPRESENTATION_STOP = os.environ['KAS_REPRESENTATION_STOP']
+KAS_REPRESENTATION_STOP = os.environ["KAS_REPRESENTATION_STOP"]
 
-DEFAULT_CPR = os.environ.get('DEFAULT_CPR', None)
+DEFAULT_CPR = os.environ.get("DEFAULT_CPR", None)
 
 OPENID_CONNECT = {
-    'enabled': bool(strtobool(os.environ['OPENID_ENABLED'])),
-    'issuer': os.environ['OPENID_ISSUER'],
-    'scope': os.environ['OPENID_SCOPE'],
-    'client_id': os.environ['OPENID_CLIENT_ID'],
-    'client_certificate': os.environ['OPENID_CLIENT_CERTIFICATE_FILE'],
-    'private_key': os.environ['OPENID_PRIVATE_KEY_FILE'],
-    'login_callback': os.environ['OPENID_LOGIN_CALLBACK'],  # This must be equal to fqdn + reverse('sullissivik:openid:login-callback')
-    'front_channel_logout_uri': os.environ['OPENID_FRONT_CHANNEL_LOGOUT_URI'],  # This must be equal to fqdn + reverse('sullissivik:openid:logout-callback')
-    'logout_uri': os.environ['OPENID_LOGOUT_URI'],
-    'post_logout_redirect_uri': os.environ['OPENID_POST_LOGOUT_REDIRECT_URI']
+    "enabled": bool(strtobool(os.environ["OPENID_ENABLED"])),
+    "issuer": os.environ["OPENID_ISSUER"],
+    "scope": os.environ["OPENID_SCOPE"],
+    "client_id": os.environ["OPENID_CLIENT_ID"],
+    "client_certificate": os.environ["OPENID_CLIENT_CERTIFICATE_FILE"],
+    "private_key": os.environ["OPENID_PRIVATE_KEY_FILE"],
+    "login_callback": os.environ[
+        "OPENID_LOGIN_CALLBACK"
+    ],  # This must be equal to fqdn + reverse('sullissivik:openid:login-callback')
+    "front_channel_logout_uri": os.environ[
+        "OPENID_FRONT_CHANNEL_LOGOUT_URI"
+    ],  # This must be equal to fqdn + reverse('sullissivik:openid:logout-callback')
+    "logout_uri": os.environ["OPENID_LOGOUT_URI"],
+    "post_logout_redirect_uri": os.environ["OPENID_POST_LOGOUT_REDIRECT_URI"],
 }
 
 NEMID_CONNECT = {
-    'enabled': False,
-    'federation_service': '""',
-    'cookie_name': '""',
-    'cookie_path': '""',
-    'cookie_domain': '""',
-    'login_url': '""',
-    'redirect_field': '""',
-    'client_certificate': '""',
-    'private_key': '""',
-    'get_user_service': '""',
+    "enabled": False,
+    "federation_service": '""',
+    "cookie_name": '""',
+    "cookie_path": '""',
+    "cookie_domain": '""',
+    "login_url": '""',
+    "redirect_field": '""',
+    "client_certificate": '""',
+    "private_key": '""',
+    "get_user_service": '""',
 }
 
 # Month and day where the interface should be closed
 CLOSE_AT = {
-    'month': int(os.environ['CLOSE_AT_MONTH']),
-    'date': int(os.environ['CLOSE_AT_DATE']),
+    "month": int(os.environ["CLOSE_AT_MONTH"]),
+    "date": int(os.environ["CLOSE_AT_DATE"]),
 }
 # Skip health_check for cache layer and storage since we are not using it
-WATCHMAN_CHECKS = ('watchman.checks.databases', )
+WATCHMAN_CHECKS = ("watchman.checks.databases",)
 
 # Feature flags and their defaults can be specified here. Once specified
 # a feature flag can be overriden using the environment by specifying
 # the environment variable FEATURE_FLAG_<name_of_flag_uppercased>.
 FEATURE_FLAGS = {
-    'test_feature_flag': False,
+    "test_feature_flag": False,
 }
 for x in FEATURE_FLAGS:
-    env_key = 'FEATURE_FLAG_' + x.upper()
+    env_key = "FEATURE_FLAG_" + x.upper()
     if env_key in os.environ:
         value = os.environ[env_key]
         FEATURE_FLAGS[x] = bool(strtobool(value))

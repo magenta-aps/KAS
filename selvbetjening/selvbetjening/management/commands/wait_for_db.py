@@ -6,16 +6,16 @@ from time import sleep
 
 
 class Command(BaseCommand):
-    help = 'reverse geocode positions'
+    help = "reverse geocode positions"
 
     def handle(self, *args, **options):
         while True:
             try:
-                conn = connections['default']
+                conn = connections["default"]
             except (OperationalError, PsycopgOpError):
-                print('waiting for database to come online!')
+                print("waiting for database to come online!")
                 sleep(1)
             else:
                 conn.close()
-                print('database online')
+                print("database online")
                 break

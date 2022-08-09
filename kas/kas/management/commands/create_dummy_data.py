@@ -7,18 +7,16 @@ from django.conf import settings
 
 
 class Command(BaseCommand):
-    help = 'Populates database with some dummy data'
+    help = "Populates database with some dummy data"
 
     def handle(self, *args, **options):
-        if settings.ENVIRONMENT in ("production", 'staging'):
+        if settings.ENVIRONMENT in ("production", "staging"):
             raise Exception(f"Will not create dummy data in {settings.ENVIRONMENT}")
 
-        admin_user, _ = get_user_model().objects.get_or_create(
-            username='admin'
-        )
+        admin_user, _ = get_user_model().objects.get_or_create(username="admin")
 
         Job.schedule_job(
             generate_sample_data,
-            'GenerateSampleData',
+            "GenerateSampleData",
             admin_user,
         )

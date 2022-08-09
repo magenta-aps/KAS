@@ -10,7 +10,7 @@ from django.utils.translation import gettext
 trans_re = re.compile("_\\((.*)\\)")
 format_re = re.compile("{(.*)}")
 
-locale.setlocale(locale.LC_ALL, '')
+locale.setlocale(locale.LC_ALL, "")
 
 
 @register.filter
@@ -23,7 +23,7 @@ def json(data):
     return jsonlib.dumps(data)
 
 
-@register.filter(name='max')
+@register.filter(name="max")
 def max_int(text, filter):
     try:
         return max(int(text), int(filter))
@@ -68,7 +68,7 @@ def startswith(text, prefix):
 def after(text, prefix):
     if type(text) == str:
         try:
-            return text[text.index(prefix)+len(prefix):]
+            return text[text.index(prefix) + len(prefix) :]
         except ValueError:
             pass
     return text
@@ -76,18 +76,13 @@ def after(text, prefix):
 
 @register.filter
 def addstr(arg1, arg2):
-    return ''.join([str(a) if a is not None else '' for a in [arg1, arg2]])
+    return "".join([str(a) if a is not None else "" for a in [arg1, arg2]])
 
 
 @register.filter
 def back(url, backurl):
     if backurl:
-        return ''.join([
-            url,
-            '&' if '?' in url else '?',
-            'back=',
-            urlquote(backurl)
-        ])
+        return "".join([url, "&" if "?" in url else "?", "back=", urlquote(backurl)])
     return url
 
 
@@ -95,13 +90,7 @@ def back(url, backurl):
 def urlparam(url, param):
     if param:
         (key, value) = param.split("=")
-        return ''.join([
-            url,
-            '&' if '?' in url else '?',
-            key,
-            '=',
-            urlquote(value)
-        ])
+        return "".join([url, "&" if "?" in url else "?", key, "=", urlquote(value)])
     return url
 
 
@@ -111,7 +100,7 @@ def get(item, attribute):
         if type(attribute) == str:
             if hasattr(item, attribute):
                 return getattr(item, attribute)
-            if hasattr(item, 'get'):
+            if hasattr(item, "get"):
                 return item.get(attribute)
         if isinstance(item, (tuple, list)):
             return item[int(attribute)]
@@ -130,9 +119,6 @@ def validation_class(field, class_name):
     if field.errors:
         classes.append(class_name)
     existing_attrs = field.field.widget.attrs or {}
-    if 'class' in existing_attrs:
-        classes.append(existing_attrs['class'])
-    return field.as_widget(attrs={
-        **existing_attrs,
-        "class": " ".join(classes)
-    })
+    if "class" in existing_attrs:
+        classes.append(existing_attrs["class"])
+    return field.as_widget(attrs={**existing_attrs, "class": " ".join(classes)})

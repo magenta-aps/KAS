@@ -4,15 +4,15 @@ from rest_framework.authtoken.models import Token
 
 
 class Command(BaseCommand):
-    help = 'Creates or updates user for REST communication from selvbetjening'
+    help = "Creates or updates user for REST communication from selvbetjening"
 
     def add_arguments(self, parser):
-        parser.add_argument('token_value', type=str)
+        parser.add_argument("token_value", type=str)
 
     def handle(self, *args, **options):
-        token_value = options['token_value']
+        token_value = options["token_value"]
         print(f"Create/update rest user with token {token_value}")
-        user, c = User.objects.get_or_create(username='rest')
+        user, c = User.objects.get_or_create(username="rest")
         try:
             # 'key' is the pk of the Token model, so we cannot update it
             token = Token.objects.get(user=user)

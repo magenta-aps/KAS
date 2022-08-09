@@ -15,13 +15,12 @@ from kas.models import PersonTaxYear, PolicyTaxYear
 
 
 class BootstrapTableMixin:
-
     def get_context_data(self, **kwargs):
         ctx = super(BootstrapTableMixin, self).get_context_data(**kwargs)
         lang = get_language()
-        ctx['table_locale'] = to_locale(lang).replace('_', '-')  # da-DK
-        ctx['lang_locale'] = ctx['table_locale'].split('-')[0]  # da, de etc
-        ctx['date_format'] = formats.get_format('SHORT_DATE_FORMAT', lang=lang)
+        ctx["table_locale"] = to_locale(lang).replace("_", "-")  # da-DK
+        ctx["lang_locale"] = ctx["table_locale"].split("-")[0]  # da, de etc
+        ctx["date_format"] = formats.get_format("SHORT_DATE_FORMAT", lang=lang)
         return ctx
 
 
@@ -45,24 +44,30 @@ class CreateOrUpdateViewWithNotesAndDocuments:
         Could be used to lookup related instances if the PK passed in related to another model.
         Override as needed.
         """
-        if not hasattr(self, 'person_tax_year'):
-            self.person_tax_year = get_object_or_404(PersonTaxYear, id=self.kwargs['pk'])
+        if not hasattr(self, "person_tax_year"):
+            self.person_tax_year = get_object_or_404(
+                PersonTaxYear, id=self.kwargs["pk"]
+            )
         return self.person_tax_year
 
     def get_policy_tax_year(self):
         return None
 
     def get_context_data(self, **kwargs):
-        context = super(CreateOrUpdateViewWithNotesAndDocuments, self).get_context_data(**kwargs)
-        context.update({
-            'notes_formset': self.NoteFormSet(prefix='notes'),
-            'upload_formset': self.UploadFormSet(prefix='uploads'),
-            'person_tax_year': self.get_person_tax_year()
-        })
+        context = super(CreateOrUpdateViewWithNotesAndDocuments, self).get_context_data(
+            **kwargs
+        )
+        context.update(
+            {
+                "notes_formset": self.NoteFormSet(prefix="notes"),
+                "upload_formset": self.UploadFormSet(prefix="uploads"),
+                "person_tax_year": self.get_person_tax_year(),
+            }
+        )
         return context
 
     def form_valid(self, form):
-        note_form_set = self.NoteFormSet(self.request.POST, prefix='notes')
+        note_form_set = self.NoteFormSet(self.request.POST, prefix="notes")
         for note_form in note_form_set:
             if note_form.has_changed():
                 note = note_form.save(commit=False)
@@ -72,7 +77,9 @@ class CreateOrUpdateViewWithNotesAndDocuments:
                 note.save()
                 self.has_changes = True
 
-        upload_form_set = self.UploadFormSet(self.request.POST, self.request.FILES, prefix='uploads')
+        upload_form_set = self.UploadFormSet(
+            self.request.POST, self.request.FILES, prefix="uploads"
+        )
         for upload_form in upload_form_set:
             if upload_form.has_changed():  # no file no upload
                 document = upload_form.save(commit=False)
@@ -89,12 +96,18 @@ class CreateOrUpdateViewWithNotesAndDocuments:
         """
         return to the person detail page.
         """
-        return reverse('kas:person_in_year', kwargs={'year': self.get_person_tax_year().year,
-                                                     'person_id': self.get_person_tax_year().person_id})
+        return reverse(
+            "kas:person_in_year",
+            kwargs={
+                "year": self.get_person_tax_year().year,
+                "person_id": self.get_person_tax_year().person_id,
+            },
+        )
 
 
-class CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear(CreateOrUpdateViewWithNotesAndDocuments):
-
+class CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear(
+    CreateOrUpdateViewWithNotesAndDocuments
+):
     def get_policy_tax_year(self):
         """
         Should always return a PolicyTaxYear.
@@ -102,8 +115,10 @@ class CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear(CreateOrUpdateView
         Could be used to lookup related instances if the PK passed in related to another model.
         Override as needed.
         """
-        if not hasattr(self, 'policy_tax_year'):
-            self.policy_tax_year = get_object_or_404(PolicyTaxYear, id=self.kwargs['pk'])
+        if not hasattr(self, "policy_tax_year"):
+            self.policy_tax_year = get_object_or_404(
+                PolicyTaxYear, id=self.kwargs["pk"]
+            )
         return self.policy_tax_year
 
     def get_person_tax_year(self):
@@ -114,15 +129,19 @@ class CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear(CreateOrUpdateView
         return self.get_policy_tax_year().person_tax_year
 
     def get_context_data(self, **kwargs):
-        context = {'policy_tax_year': self.get_policy_tax_year()}
-        context.update(super(CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, self).get_context_data(**kwargs))
+        context = {"policy_tax_year": self.get_policy_tax_year()}
+        context.update(
+            super(
+                CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear, self
+            ).get_context_data(**kwargs)
+        )
         return context
 
     def get_success_url(self):
         """
         By default return to the policy-detail page
         """
-        return reverse('kas:policy_detail', args=[self.get_policy_tax_year().pk])
+        return reverse("kas:policy_detail", args=[self.get_policy_tax_year().pk])
 
 
 class HighestSingleObjectMixin(SingleObjectMixin):
@@ -134,23 +153,23 @@ class HighestSingleObjectMixin(SingleObjectMixin):
                 queryset = self.get_queryset()
             item = queryset.order_by(f"-{self.slug_field}").first()
             if item is None:
-                raise Http404(_("No %(verbose_name)s found matching the query") %
-                              {'verbose_name': queryset.model._meta.verbose_name})
+                raise Http404(
+                    _("No %(verbose_name)s found matching the query")
+                    % {"verbose_name": queryset.model._meta.verbose_name}
+                )
             return item
 
 
 class SpecialExcelMixin(object):
     excel_headers = []
     values = []
-    filename = 'spreadsheet.xlsx'
+    filename = "spreadsheet.xlsx"
 
     def get_context_data(self, *args, **kwargs):
         ctx = super(SpecialExcelMixin, self).get_context_data(*args, **kwargs)
         params = self.request.GET.copy()
-        params['format'] = 'excel'
-        ctx.update({
-            'excel_link': '?{}'.format(params.urlencode())
-        })
+        params["format"] = "excel"
+        ctx.update({"excel_link": "?{}".format(params.urlencode())})
         return ctx
 
     def render_excel_file(self, queryset):
@@ -161,15 +180,23 @@ class SpecialExcelMixin(object):
             row = list(row)
             for i, value in enumerate(row):
                 if isinstance(value, date):
-                    row[i] = date_format(value, format='SHORT_DATE_FORMAT', use_l10n=True)
+                    row[i] = date_format(
+                        value, format="SHORT_DATE_FORMAT", use_l10n=True
+                    )
             ws.append(row)
 
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename={}'.format(self.filename)
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = "attachment; filename={}".format(
+            self.filename
+        )
         wb.save(response)
         return response
 
     def render_to_response(self, context, **response_kwargs):
-        if self.request.GET.get('format') == 'excel':
+        if self.request.GET.get("format") == "excel":
             return self.render_excel_file(self.get_queryset())
-        return super(SpecialExcelMixin, self).render_to_response(context, **response_kwargs)
+        return super(SpecialExcelMixin, self).render_to_response(
+            context, **response_kwargs
+        )
