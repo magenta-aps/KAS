@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear
 
-from prisme.models import Prisme10QBatch
+from prisme.models import Prisme10QBatch, Transaction
 
 from kas.models import FinalSettlement
 
@@ -35,6 +35,12 @@ class BaseTestCase(TestCase):
                                                             prefilled_amount=35,
                                                             policy_number='1234',
                                                             )
+
+    def self_report_policy_tax_year(self):
+        self.policy_tax_year.self_reported_amount = 1000
+        self.policy_tax_year.active_amount = PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED
+        self.policy_tax_year.recalculate()
+        self.policy_tax_year.save()
 
 
 class SelfReportedAmountUpdateViewTestCase(BaseTestCase):
@@ -100,7 +106,7 @@ class SelfReportedAmountUpdateViewTestCase(BaseTestCase):
                                    'notes-INITIAL_FORMS': 0,
                                    'uploads-TOTAL_FORMS': 1,
                                    'uploads-0-description': 'test_description',
-                                   'uploads-0-file': SimpleUploadedFile(name='test', content=b'test'),
+                                   'uploads-0-file': SimpleUploadedFile(name='test', content=b'test_submit_document'),
                                    'uploads-INITIAL_FORMS': 0})
         self.assertEqual(r.status_code, 200)
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
@@ -123,7 +129,7 @@ class SelfReportedAmountUpdateViewTestCase(BaseTestCase):
                                    'notes-0-content': 'test',
                                    'uploads-TOTAL_FORMS': 1,
                                    'uploads-0-description': 'test_description',
-                                   'uploads-0-file': SimpleUploadedFile(name='test', content=b'test'),
+                                   'uploads-0-file': SimpleUploadedFile(name='test', content=b'test_submit_note_and_document'),
                                    'uploads-INITIAL_FORMS': 0})
         self.assertEqual(r.status_code, 200)
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
@@ -207,7 +213,7 @@ class EditAmountsUpdateViewTestCase(BaseTestCase):
                                    'uploads-TOTAL_FORMS': 1,
                                    'uploads-INITIAL_FORMS': 0,
                                    'uploads-0-description': 'test_description',
-                                   'uploads-0-file': SimpleUploadedFile(name='test', content=b'test')})
+                                   'uploads-0-file': SimpleUploadedFile(name='test', content=b'test_set_efterbehandling_by_attachment')})
         self.assertEqual(r.status_code, 200)
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
         self.assertTrue(policy_tax_year.efterbehandling)
@@ -262,7 +268,7 @@ class PolicyNotesAndAttachmentsViewTestCase(BaseTestCase):
         attachment_description = 'this is a test file'
         self.client.post(reverse('kas:policy_add_notes_or_attachement', args=[self.policy_tax_year.pk]),
                          follow=True,
-                         data={'attachment': SimpleUploadedFile(name='test', content=b'test'),
+                         data={'attachment': SimpleUploadedFile(name='test', content=b'test_save_attachment'),
                                'attachment_description': attachment_description})
         policy_tax_year = PolicyTaxYear.objects.get(pk=self.policy_tax_year.pk)
         self.assertEqual(policy_tax_year.policy_documents.count(), 1)
@@ -316,7 +322,7 @@ class PersonNotesAndAttachmentsViewTestCase(BaseTestCase):
         attachment_description = 'this is a test file 1531253'
         self.client.post(reverse('kas:person_add_notes_or_attachement', args=[self.person_tax_year.pk]),
                          follow=True,
-                         data={'attachment': SimpleUploadedFile(name='test', content=b'test'),
+                         data={'attachment': SimpleUploadedFile(name='test', content=b'test_save_attachment'),
                                'attachment_description': attachment_description})
 
         person_tax_year = PersonTaxYear.objects.get(pk=self.person_tax_year.pk)
@@ -330,7 +336,7 @@ class PersonNotesAndAttachmentsViewTestCase(BaseTestCase):
         attachment_description = 'this is a test file 1531253'
         self.client.post(reverse('kas:person_add_notes_or_attachement', args=[self.person_tax_year.pk]),
                          follow=True,
-                         data={'attachment': SimpleUploadedFile(name='test', content=b'test'),
+                         data={'attachment': SimpleUploadedFile(name='test', content=b'test_save_attachment_and_note'),
                                'attachment_description': attachment_description,
                                'note': note_string})
         person_tax_year = PersonTaxYear.objects.get(pk=self.person_tax_year.pk)
@@ -419,11 +425,7 @@ class PaymentOverrideTestCase(BaseTestCase):
         self.assertTrue(policy_tax_year.efterbehandling)
 
     def test_generate_final_taxslip(self):
-
-        self.policy_tax_year.self_reported_amount = 1000
-        self.policy_tax_year.active_amount = PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED
-        self.policy_tax_year.recalculate()
-        self.policy_tax_year.save()
+        self.self_report_policy_tax_year()
         # Tested function wants the tax_year to be in 'genoptagelsesperiode'
         self.tax_year.year_part = 'genoptagelsesperiode'
         self.tax_year.save()
@@ -465,3 +467,47 @@ class PaymentOverrideTestCase(BaseTestCase):
         self.assertEqual(transaction.type, 'prisme10q')
         self.assertEqual(transaction.status, 'created')
         self.assertEqual(transaction.prisme10Q_batch, batch)
+
+
+class CreateLockForYearTestCase(BaseTestCase):
+    def setUp(self) -> None:
+        super(CreateLockForYearTestCase, self).setUp()
+        self.client.login(username=self.username, password=self.password)
+
+    def test_allow_closing(self):
+        r = self.client.get(reverse('kas:lock-create')+f'?taxyear={self.tax_year.pk}')
+        self.assertEqual(r.status_code, 200)
+        # object is the taxyear
+        self.assertFalse(self.tax_year.locks.exclude(interval_to__isnull=True).exists())
+        self.assertTrue(r.context['object'].get_current_lock.allow_closing)
+
+    def test_create_new_lock(self):
+        self.assertFalse(self.tax_year.locks.exclude(interval_to__isnull=True).exists())
+        r = self.client.post(reverse('kas:lock-create'), data={'taxyear': self.tax_year.pk}, follow=True)
+        self.assertEqual(r.status_code, 200)
+        # one open and one locked
+        self.assertEqual(self.tax_year.locks.count(), 2)
+        # 1 open lock
+        self.assertEqual(self.tax_year.locks.filter(interval_to__isnull=True).count(), 1)
+        # 1 closed lock
+        self.assertEqual(self.tax_year.locks.exclude(interval_to__isnull=True).count(), 1)
+
+    def test_new_open_lock_is_disallowed(self):
+        self.self_report_policy_tax_year()
+        settlement = FinalSettlement.objects.create(person_tax_year=self.person_tax_year,
+                                                    lock=self.tax_year.get_current_lock)
+        # Create pending transaction
+        Transaction.objects.create(
+            person_tax_year=self.person_tax_year,
+            amount=100,
+            type='prisme10q',
+            source_object=settlement,
+            summary=settlement.get_transaction_summary(),
+        )
+        self.assertFalse(self.tax_year.get_current_lock.allow_closing)
+        r = self.client.post(reverse('kas:lock-create'),
+                             data={'taxyear': self.tax_year.pk},
+                             follow=True)
+        self.assertEqual(r.status_code, 200)
+        # No lock was create
+        self.assertEqual(self.tax_year.locks.count(), 1)

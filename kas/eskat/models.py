@@ -1,8 +1,12 @@
-# -*- coding: utf-8 -*-
-from django.db import models
+# -*- coding: utf-8 -*-b
+
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core.validators import FileExtensionValidator
+from django.db import models
 from django.db.models.functions import Length
 from django.forms.models import model_to_dict
+from django.utils.formats import date_format
 from simple_history.models import HistoricalRecords
 
 """
@@ -23,6 +27,73 @@ models.
 """
 
 
+class AbstractKasBeregningerX(models.Model):
+    pension_crt_calc_guid = models.UUIDField(primary_key=True)
+    pt_census_guid = models.UUIDField()
+    cpr = models.TextField()
+    bank_reg_nr = models.TextField(blank=True, null=True)
+    bank_konto_nr = models.TextField(blank=True, null=True)
+    kommune_no = models.IntegerField(blank=True, null=True)
+    kommune = models.TextField(blank=True, null=True)
+    skatteaar = models.IntegerField()
+    navn = models.TextField(blank=True, null=True)
+    adresselinje1 = models.TextField(blank=True, null=True)
+    adresselinje2 = models.TextField(blank=True, null=True)
+    adresselinje3 = models.TextField(blank=True, null=True)
+    adresselinje4 = models.TextField(blank=True, null=True)
+    adresselinje5 = models.TextField(blank=True, null=True)
+    fuld_adresse = models.TextField(blank=True, null=True)
+    cpr_dashed = models.TextField(blank=True, null=True)
+    pension_crt_lock_batch_guid = models.UUIDField(blank=True, null=True)
+    reg_date = models.DateTimeField()
+    is_locked = models.CharField(max_length=1, blank=True, null=True)
+    no = models.IntegerField(blank=True, null=True)
+    capital_return = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    sum_negative_capital_return = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    used_negative_capital_return = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    capital_return_base = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    capital_return_tax = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    crt_payment = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    police_payment = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    deficit_crt = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    surplus_crt_payment = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    surplus_police_payment = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    total_surplus = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    result_surplus_crt_payment = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    annotation = models.TextField(blank=True, null=True)
+    is_locking_allowed = models.CharField(max_length=4, blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+
+class KasBeregningerX(AbstractKasBeregningerX):
+    # Kas beregninger i eskat.
+    class Meta:
+        managed = False
+        db_table = 'kas_beregninger_x'
+
+
+class MockKasBeregningerX(AbstractKasBeregningerX):
+    pass
+
+
+class ImportedKasBeregningerX(models.Model):
+    pension_crt_calc_guid = models.UUIDField(primary_key=True)
+    cpr = models.TextField()
+    skatteaar = models.IntegerField()
+    # Dette er det eneste felt der er relevant for 2018/2019 data
+    capital_return_tax = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    history = HistoricalRecords()
+
+
+def get_kas_beregninger_x_model():
+    if settings.ENVIRONMENT in ('production', 'staging'):
+        return KasBeregningerX
+    elif settings.ENVIRONMENT == 'development':
+        return MockKasBeregningerX
+
+
 class AbstractModels:
 
     # This is only here because we got it from the eSkat integration. It is not used as all
@@ -30,45 +101,6 @@ class AbstractModels:
     class KasBeregninger(models.Model):
         pt_census_guid = models.UUIDField(primary_key=True)
         pension_crt_calc_guid = models.UUIDField()
-        pension_crt_lock_batch_guid = models.UUIDField(blank=True, null=True)
-        reg_date = models.DateTimeField()
-        is_locked = models.CharField(max_length=1, blank=True, null=True)
-        no = models.IntegerField(blank=True, null=True)
-        capital_return = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-        sum_negative_capital_return = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-        used_negative_capital_return = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-        capital_return_base = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-        capital_return_tax = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-        crt_payment = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-        police_payment = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-        deficit_crt = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-        surplus_crt_payment = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-        surplus_police_payment = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-        total_surplus = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-        result_surplus_crt_payment = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-        annotation = models.TextField(blank=True, null=True)
-        is_locking_allowed = models.CharField(max_length=4, blank=True, null=True)
-
-        class Meta:
-            abstract = True
-
-    class KasBeregningerX(models.Model):
-        pt_census_guid = models.UUIDField()
-        cpr = models.TextField()
-        bank_reg_nr = models.TextField(blank=True, null=True)
-        bank_konto_nr = models.TextField(blank=True, null=True)
-        kommune_no = models.IntegerField(blank=True, null=True)
-        kommune = models.TextField(blank=True, null=True)
-        skatteaar = models.IntegerField()
-        navn = models.TextField(blank=True, null=True)
-        adresselinje1 = models.TextField(blank=True, null=True)
-        adresselinje2 = models.TextField(blank=True, null=True)
-        adresselinje3 = models.TextField(blank=True, null=True)
-        adresselinje4 = models.TextField(blank=True, null=True)
-        adresselinje5 = models.TextField(blank=True, null=True)
-        fuld_adresse = models.TextField(blank=True, null=True)
-        cpr_dashed = models.TextField(blank=True, null=True)
-        pension_crt_calc_guid = models.UUIDField(primary_key=True)
         pension_crt_lock_batch_guid = models.UUIDField(blank=True, null=True)
         reg_date = models.DateTimeField()
         is_locked = models.CharField(max_length=1, blank=True, null=True)
@@ -152,12 +184,6 @@ class EskatModels:
             managed = False  # Created from a view. Don't remove.
             db_table = 'kas_beregninger'
 
-    class KasBeregningerX(AbstractModels.KasBeregningerX):
-
-        class Meta:
-            managed = False  # Created from a view. Don't remove.
-            db_table = 'kas_beregninger_x'
-
     class KasMandtal(AbstractModels.KasMandtal):
 
         class Meta:
@@ -171,11 +197,18 @@ class EskatModels:
             managed = False  # Created from a view. Don't remove.
             db_table = 'r75_idx_4500230'
 
+    class R75SpreadsheetImport(AbstractModels.R75Idx4500230):
+        file = models.ForeignKey(
+            'R75SpreadsheetFile',
+            on_delete=models.SET_NULL,
+            null=True,
+        )
+        company_pay_override = models.BooleanField(
+            default=False
+        )
+
 
 class MockModels:
-
-    class MockKasBeregningerX(AbstractModels.KasBeregningerX):
-        pass
 
     class MockKasMandtal(AbstractModels.KasMandtal):
         pass
@@ -187,13 +220,6 @@ class MockModels:
 
 # Add methods that can be used to access correct source data models
 # in both production and test/development.
-def get_kas_beregninger_x_model():
-    if settings.ENVIRONMENT in ('production', 'staging'):
-        return EskatModels.KasBeregningerX
-    elif settings.ENVIRONMENT == 'development':
-        return MockModels.MockKasBeregningerX
-
-
 def get_kas_mandtal_model():
     if settings.ENVIRONMENT in ('production', 'staging'):
         return EskatModels.KasMandtal
@@ -206,30 +232,6 @@ def get_r75_private_pension_model():
         return EskatModels.R75Idx4500230
     elif settings.ENVIRONMENT == 'development':
         return MockModels.MockR75Idx4500230
-
-
-class ImportedKasBeregningerX(AbstractModels.KasBeregningerX):
-
-    history = HistoricalRecords()
-
-    @classmethod
-    def import_year(cls, year):
-        qs = get_kas_beregninger_x_model().objects.filter(
-            skatteaar=year
-        )
-        for x in qs:
-            try:
-                existing = cls.objects.get(pk=x.pk)
-                if existing.reg_date != x.reg_date:
-                    for k, v in model_to_dict(x).items():
-                        setattr(existing, k, v)
-                    existing._change_reason = "Updated by import"
-                    existing.save()
-
-            except cls.DoesNotExist:
-                new_obj = cls(**model_to_dict(x))
-                new_obj._change_reason = "Created by import"
-                new_obj.save()
 
 
 class ImportedKasMandtal(AbstractModels.KasMandtal):
@@ -284,6 +286,8 @@ class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
 
     history = HistoricalRecords()
 
+    company_pay_override = models.BooleanField(default=False)
+
     @classmethod
     def import_year(cls, year, job=None, progress_factor=1, progress_start=0, source_model=None):
         if source_model is None:
@@ -297,17 +301,22 @@ class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
         created, updated = (0, 0)
 
         for i, x in enumerate(qs.iterator()):
+
+            # Get dict from model instance x, but only fields we have in our current model
+            modelfield_names = {field.name for field in cls._meta.get_fields()}
+            data = {k: v for k, v in model_to_dict(x).items() if k in modelfield_names}
+
             try:
                 existing = cls.objects.get(pk=x.pk)
                 if existing.r75_dato != x.r75_dato:
-                    for k, v in model_to_dict(x).items():
+                    for k, v in data.items():
                         setattr(existing, k, v)
                     existing._change_reason = "Updated by import"
                     existing.save()
                     updated += 1
 
             except cls.DoesNotExist:
-                new_obj = cls(**model_to_dict(x))
+                new_obj = cls(**data)
                 new_obj._change_reason = "Created by import"
                 new_obj.save()
                 created += 1
@@ -320,3 +329,22 @@ class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
             job.set_progress_pct(progress_start + (100 * progress_factor))
 
         return created, updated
+
+
+def r75_spreadsheet_file_path(instance, filename):
+    return f"r75_spreadsheets/{instance.uploaded_at.year}/{filename}.xlsx"
+
+
+class R75SpreadsheetFile(models.Model):
+    uploaded_by = models.ForeignKey(get_user_model(), on_delete=models.PROTECT)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    file = models.FileField(
+        upload_to=r75_spreadsheet_file_path,
+        validators=[FileExtensionValidator(allowed_extensions=['xlsx'])]
+    )
+
+    def __str__(self):
+        return 'R75 regneark uploadet {date} af {by}'.format(
+            date=date_format(self.uploaded_at, 'SHORT_DATETIME_FORMAT'),
+            by=self.uploaded_by
+        )

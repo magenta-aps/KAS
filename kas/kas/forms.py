@@ -207,6 +207,15 @@ class FinalStatementForm(forms.ModelForm, BootstrapForm):
         ]
 
 
+class UploadExistingFinalSettlementForm(forms.ModelForm, BootstrapForm):
+    class Meta:
+        model = FinalSettlement
+        fields = ['pdf', 'pseudo_amount']
+        widgets = {
+            'pdf': forms.FileInput(attrs={'class': 'custom-file-input'})
+        }
+
+
 class NoteForm(forms.ModelForm, BootstrapForm):
     content = forms.CharField(required=False,
                               label=_('Notat'),

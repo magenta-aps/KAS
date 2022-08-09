@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-06 15:10+0100\n"
+"POT-Creation-Date: 2022-06-29 10:42+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,73 +21,81 @@ msgstr ""
 msgid "Destination"
 msgstr ""
 
-#: prisme/models.py:18 prisme/templates/prisme/batch_detail.html:9
+#: prisme/models.py:22 prisme/templates/prisme/batch_detail.html:9
 #: prisme/templates/prisme/batch_detail.html:53
 #: prisme/templates/prisme/batch_list.html:19
 msgid "Oprettet"
 msgstr ""
 
-#: prisme/models.py:19
+#: prisme/models.py:23
 msgid "Klar til overførsel"
 msgstr ""
 
-#: prisme/models.py:20
+#: prisme/models.py:24
 msgid "Overført"
 msgstr ""
 
-#: prisme/models.py:21 prisme/models.py:156
+#: prisme/models.py:25 prisme/models.py:161
 msgid "Annulleret"
 msgstr ""
 
-#: prisme/models.py:24
+#: prisme/models.py:26
+msgid "Afregnes ikke"
+msgstr ""
+
+#: prisme/models.py:29
 msgid "Prisme opkrævning / tilbagebetaling"
 msgstr ""
 
-#: prisme/models.py:25
+#: prisme/models.py:30
 msgid "Forudindbetaling"
 msgstr ""
 
-#: prisme/models.py:32
+#: prisme/models.py:37
 msgid "transaktion"
 msgstr ""
 
-#: prisme/models.py:33
+#: prisme/models.py:38
 msgid "transaktioner"
 msgstr ""
 
-#: prisme/models.py:99
+#: prisme/models.py:103
 msgid "Undervisningssystem"
 msgstr ""
 
-#: prisme/models.py:100
+#: prisme/models.py:104
 msgid "Produktionssystem"
 msgstr ""
 
-#: prisme/models.py:114
+#: prisme/models.py:105
+msgid "Mocking"
+msgstr ""
+
+#: prisme/models.py:119
 msgid "prisme 10Q batch"
 msgstr ""
 
-#: prisme/models.py:115
+#: prisme/models.py:120
 msgid "prisme 10Q batches"
 msgstr ""
 
-#: prisme/models.py:152
+#: prisme/models.py:157
 msgid "Ikke afsendt"
 msgstr ""
 
-#: prisme/models.py:153
+#: prisme/models.py:158
 msgid "Afsender"
 msgstr ""
 
-#: prisme/models.py:154
+#: prisme/models.py:159
 msgid "Afsendelse fejlet"
 msgstr ""
 
-#: prisme/models.py:155
+#: prisme/models.py:160
 msgid "Afsendt"
 msgstr ""
 
-#: prisme/models.py:213
+#: prisme/models.py:241
 #, python-brace-format
 msgid "Prisme 10Q bunke {tidsstempel} ({status})"
 msgstr ""

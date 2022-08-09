@@ -1,8 +1,10 @@
+import os
 from builtins import len
 from django.test import TestCase
 from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear, TaxSlipGenerated
 from kas.reportgeneration.kas_report import TaxSlipHandling
 import tempfile
+from django.conf import settings
 
 
 class DeductionTest(TestCase):
@@ -190,23 +192,18 @@ class DeductionTest(TestCase):
         list_of_tax_slips = TaxSlipGenerated.objects.all()
         self.assertEqual(3, len(list_of_tax_slips))
 
-        filelist = ''
         for tax_slip in list_of_tax_slips:
-            filelist += tax_slip.file.name
             self.assertEqual('created', tax_slip.status)
-
-        self.assertEqual(True, 'Y_2020_1234567890' in filelist)
-        self.assertEqual(True, 'Y_2020_1234567890' in filelist)
-        self.assertEqual(True, 'Y_2020_1234567897' in filelist)
+            self.assertTrue(os.path.exists(f"{settings.MEDIA_ROOT}/{tax_slip.file.name}"))
 
         self.test_dir = tempfile.mkdtemp()+'/'
         pdf_documen.perform_complete_write_of_one_tax_year(tax_year=2019, title='test')
         list_of_tax_slips = TaxSlipGenerated.objects.all()
         self.assertEqual(4, len(list_of_tax_slips))
 
-        filelist = ''
         for tax_slip in list_of_tax_slips:
-            filelist += tax_slip.file.name
             self.assertEqual('created', tax_slip.status)
 
-        self.assertEqual(True, 'Y_2019_1234567890' in filelist)
+    def tearDown(self):
+        for tax_slip in TaxSlipGenerated.objects.all():
+            os.remove(f"{settings.MEDIA_ROOT}/{tax_slip.file.name}")

@@ -1,40 +1,40 @@
 import base64
 import calendar
-import math
 import csv
+import math
+import random
+import re
+import string
+import uuid
+from functools import cached_property
 from io import StringIO
 from time import sleep
 from uuid import uuid4
-import random
-import string
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.core.files import File
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
-from django.db.models import Sum, Max
+from django.db.models import UniqueConstraint, Q, Sum, Max
 from django.db.models.signals import post_save, post_delete
 from django.db.transaction import atomic
 from django.dispatch import receiver
 from django.forms import model_to_dict
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from requests.exceptions import RequestException
-from simple_history.models import HistoricalRecords
-
 from eskat.models import ImportedR75PrivatePension
 from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.managers import PolicyTaxYearManager
-
-from prisme.models import Prisme10QBatch
-from prisme.models import Transaction
-import re
+from prisme.models import Prisme10QBatch, Transaction
+from requests.exceptions import RequestException
+from simple_history.models import HistoricalRecords
 
 
 def filefield_path(instance, filename):
-    return instance.file_path(filename)
+    return filename
 
 
 def get_admin_user():
@@ -58,8 +58,9 @@ class HistoryMixin(object):
         status = HistoryMixin.UNCHANGED
         try:
             item = cls.objects.get(**{k: v for k, v in data.items() if k in keys})
-            existing_dict = model_to_dict(item)
-            del existing_dict['id']
+            existing_dict = {k: v for k, v in model_to_dict(item).items() if k in data}
+            if 'id' in existing_dict:
+                del existing_dict['id']
             new_dict = {
                 k: v.pk if isinstance(v, models.Model) else v
                 for k, v in data.items()
@@ -188,8 +189,16 @@ class TaxYear(models.Model):
     def days_in_year(self):
         return 366 if self.is_leap_year else 365
 
+    @cached_property
+    def get_current_lock(self):
+        """
+        There should always be at least one "active" lock for each year.
+        So this should never raise an IndexError if it does this would be a serious problem and should result in a 500.
+        """
+        return self.locks.filter(interval_to__isnull=True).order_by('-interval_from')[0]
+
     def __str__(self):
-        return f"{self.__class__.__name__}(year={self.year})"
+        return str(self.year)
 
 
 # If a person has the status undefined, it means that we have not tryed finding a status in Dafo, und we do not show a statustekst in UI
@@ -200,6 +209,68 @@ recipient_recieve_statuses = (
     ('Alive', _('')),
     ('Dead', _('Afdød'))
 )
+
+
+class Lock(models.Model):
+
+    class Meta:
+        ordering = ('interval_from', )
+
+    interval_from = models.DateField()
+
+    interval_to = models.DateField(null=True, blank=True)
+
+    taxyear = models.ForeignKey(
+        TaxYear,
+        db_index=True,
+        on_delete=models.PROTECT,
+        related_name='locks'
+    )
+
+    @cached_property
+    def total_tax_sum(self):
+        return sum([settlement.total_tax for settlement in self.settlements.all()])
+
+    @cached_property
+    def previous_transactions_sum(self):
+        return sum([settlement.previous_transactions_sum for settlement in self.settlements.all()])
+
+    @property
+    def remainder_sum(self):
+        sum = 0
+        for stl in self.settlements.all():
+            sum += stl.get_calculation_amounts().get('remainder')
+
+        return sum
+
+    @property
+    def remaining_transaction_sum(self):
+        return self.total_tax_sum - self.previous_transactions_sum
+
+    @property
+    def allow_closing(self):
+        """
+        All transactions should have been transfered to prisme before we can close the lock
+        And you cannot close a lock that is all ready closed.
+        """
+        if not self.interval_to and self.remaining_transaction_sum == 0:
+            return True
+        return False
+
+    def __str__(self):
+        if self.interval_to:
+            return _('%(year)s (Låst)' % {'year': self.taxyear.year})
+        else:
+            return _('%(year)s (Åben)' % {'year': self.taxyear.year})
+
+
+@receiver(post_save, sender=TaxYear, dispatch_uid='create_lock_for_year')
+def create_lock_for_year(sender, instance, created, **kwargs):
+    """
+    Always create a new open lock when a taxyear is created.
+    """
+    if created:
+        Lock.objects.create(taxyear=instance, interval_from=timezone.now().date())
 
 
 class Person(HistoryMixin, models.Model):
@@ -306,7 +377,7 @@ recipient_statuses = (
 
 
 def taxslip_path_by_year(instance, filename):
-    return 'reports/{filename}'.format(filename=filename)
+    return f"taxslip/{instance.persontaxyear.year}/{uuid.uuid4()}.pdf"
 
 
 class EboksDispatch(models.Model):
@@ -366,13 +437,57 @@ class EboksDispatch(models.Model):
         abstract = True
         ordering = ('-created_at', )
 
+    def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator, file: File, cpr: str):
+        if self.status == 'send':
+            raise RuntimeError(f'This {self.__class__.__name__} has already been dispatched!')
+        file.open(mode='rb')
+        try:
+            resp = client.send_message(
+                message=generator.generate_dispatch(
+                    title=self.title,
+                    number=cpr,
+                    pdf_data=base64.b64encode(file.read())
+                ),
+                message_id=client.get_message_id()
+            )
+            jsonresponse = resp.json()
+        except RequestException:
+            self.status = 'failed'
+            self.save(update_fields=['status'])
+            raise
+        else:
+            self.message_id = jsonresponse['message_id']  # message_id might have changed so get it from the response
+            # we always only have 1 recipient
+            recipient = jsonresponse['recipients'][0]
+            self.recipient_status = recipient['status']
+            self.send_at = timezone.now()
+            if recipient['post_processing_status'] == '':
+                self.status = 'send'
+            else:
+                self.status = 'post_processing'
+            self.save(update_fields=['status', 'message_id', 'recipient_status', 'send_at'])
+        finally:
+            file.close()
+        return self
+
 
 class TaxSlipGenerated(EboksDispatch):
 
-    file = models.FileField(upload_to=filefield_path, null=True)
+    file = models.FileField(upload_to=taxslip_path_by_year, null=True)
 
-    def file_path(self, filename):
-        return f"reports/{self.persontaxyear.year}/{self.persontaxyear.person.cpr_formatted}/{filename}"
+
+def delete_file(sender, instance, using, **kwargs):
+    """
+    This method expect a model with a filefield named file.
+    """
+    if instance.file:
+        # delete the pdf file
+        instance.file.delete(save=False)
+
+
+post_delete.connect(delete_file,
+                    sender=TaxSlipGenerated,
+                    dispatch_uid='delete_tax_slip_file')
 
 
 class PersonTaxYear(HistoryMixin, models.Model):
@@ -683,9 +798,23 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         verbose_name=_('Borgeren betaler selvom der foreligger aftale med pensionsselskab')
     )
 
+    # Overstyring af pensionsselskabs-betaling; selskabet betaler selvom der ikke foreligger aftale med pensionsselskab
+    # citizen_pay_override tager præcedens over company_pay_override; hvis citizen_pay_override er True, betaler borgeren
+    # uanset hvad company_pay_override er sat til
+    company_pay_override = models.BooleanField(
+        default=False,
+        verbose_name=_('Pensionsselskabet betaler selvom der ikke foreligger aftale med pensionsselskab'),
+    )
+
     updated_by = models.CharField(
         max_length=150,
         null=True
+    )
+
+    agterskrivelse = models.ForeignKey(
+        'Agterskrivelse',
+        null=True,
+        on_delete=models.SET_NULL,
     )
 
     @classmethod
@@ -773,6 +902,17 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             "desired_deduction_data": desired_deduction_data,
             "adjust_for_days_in_year": adjust_for_days_in_year,
         }
+
+    @property
+    def full_tax(self):
+        """
+        Returns the full tax
+        """
+        calculation_result = self.perform_calculation(initial_amount=int(self.get_assessed_amount()),
+                                                      taxable_days_in_year=int(self.person_tax_year.number_of_days or 0),
+                                                      days_in_year=int(self.person_tax_year.tax_year.days_in_year or 0),
+                                                      available_deduction_data=self.calculate_available_yearly_deduction())
+        return calculation_result['full_tax']
 
     @property
     def initial_amount(self):
@@ -1020,7 +1160,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     @property
     def pension_company_pays(self):
-        return self.pension_company.agreement_present and not self.citizen_pay_override
+        return (self.pension_company.agreement_present or self.company_pay_override) and not self.citizen_pay_override
 
     def __str__(self):
         return f"{self.__class__.__name__}(policy_number={self.policy_number}, cpr={self.person.cpr}, " \
@@ -1068,6 +1208,10 @@ class PreviousYearNegativePayout(models.Model):
         return f'used from :{self.used_from} used for :{self.used_for} payout :{self.transferred_negative_payout}'
 
 
+def policydocument_file_path(instance, filename):
+    return f"policydocuments/{instance.person_tax_year.year}/{uuid.uuid4()}"
+
+
 class PolicyDocument(models.Model):
     person_tax_year = models.ForeignKey(PersonTaxYear, null=False, db_index=True, on_delete=models.PROTECT)
     uploaded_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.PROTECT)
@@ -1093,17 +1237,13 @@ class PolicyDocument(models.Model):
     file = models.FileField(
         verbose_name=_('Fil'),
         blank=False,
-        upload_to=filefield_path,
+        upload_to=policydocument_file_path,
     )
 
-    def file_path(self, filename):
-        path = ['policydocuments', str(self.person_tax_year.year), self.person_tax_year.person.cpr_formatted]
-        if self.policy_tax_year:
-            path.append(f"policy_{self.policy_tax_year.policy_number}")
-        else:
-            path.append("person")
-        path.append(filename)
-        return '/'.join(path)
+
+post_delete.connect(delete_file,
+                    sender=PolicyDocument,
+                    dispatch_uid='delete_policy_document')
 
 
 def set_all_documents_and_notes_handled(sender, instance, created, raw, using, update_fields, **kwargs):
@@ -1205,9 +1345,7 @@ post_save.connect(add_skatteaar_to_queue, TaxYear, dispatch_uid='Skatteaar.add_t
 
 
 def pensioncompanysummaryfile_path(instance, filename):
-    # settings.USE_TZ is True, so we get an aware datetime
-    return f"pensioncompany_summary/{instance.company.id}/" \
-           f"{instance.tax_year.year}/{timezone.now().strftime('%Y-%m-%d %H.%M.%S UTC')}.csv"
+    return f"pensioncompany_summary/{instance.tax_year.year}/{uuid.uuid4()}.csv"
 
 
 class PensionCompanySummaryFile(models.Model):
@@ -1225,7 +1363,7 @@ class PensionCompanySummaryFile(models.Model):
     )
 
     file = models.FileField(
-        upload_to=filefield_path,
+        upload_to=pensioncompanysummaryfile_path,
         null=False,
     )
 
@@ -1247,23 +1385,43 @@ class PensionCompanySummaryFile(models.Model):
             pension_company=pension_company,
             person_tax_year__tax_year=tax_year
         ).prefetch_related('person_tax_year', 'person_tax_year__person')
-        file_entry = PensionCompanySummaryFile(company=pension_company, tax_year=tax_year, creator=creator)
+        file_entry = PensionCompanySummaryFile.objects.create(company=pension_company, tax_year=tax_year, creator=creator)
 
         csvfile = StringIO()
         writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+        headers = [
+            'Skatteår',
+            'Reg.nr.',
+            'Cpr.nr.',
+            'Aftalenr.',
+            'Afkast',
+            'Modregnet negativt afkast tidl. år',
+            'Beregningsgrundlag',
+            'Forudbetaling',
+            'Kapitalafkastskat',
+            f"Afregnet af {pension_company.name}",
+            'Bemærkninger'
+        ]
+        writer.writerow(headers)
+
         for policy_tax_year in qs.iterator():
             calculation = policy_tax_year.get_calculation()
+            note = ''
+            if calculation['year_adjusted_amount'] != calculation['initial_amount']:
+                note = 'Afkast reduceret pga. af delvis skattepligt i året'
             line = [
                 policy_tax_year.tax_year.year,  # TaxYear (Integer, 4 digits, positive. XXXX eg. 2013)
                 pension_company.res,  # Reg_se_nr (Integer, positive)
                 policy_tax_year.cpr,  # Cpr: The CPR on the person
                 policy_tax_year.policy_number,  # Police_no (Integer, positive)
-                calculation['initial_amount'],  # Tax base 1 per police (Return)(Integer)
+                calculation['year_adjusted_amount'],  # Tax base 1 per police (Return)(Integer)  # Årets justerede afkast
                 calculation['used_negative_return'],  # The previous year's negative return (Integer)
                 calculation['taxable_amount'],  # Tax base 2 (Tax base 1 minus the previous year's negative return)(Integer, 10 digits)
                 policy_tax_year.preliminary_paid_amount or 0,  # Provisional tax paid (Integer, 10 digits, positive)
                 calculation['tax_with_deductions'],  # Wanted cash tax (Integer)
                 None,  # Actual settlement pension company (Empty column)
+                note
             ]
             writer.writerow(line)
 
@@ -1272,8 +1430,10 @@ class PensionCompanySummaryFile(models.Model):
         csvfile.close()
         return file_entry
 
-    def file_path(self, filename):
-        return f"pensioncompany_summary/{self.tax_year.year}/{self.company.res}/{filename}"
+
+post_delete.connect(delete_file,
+                    sender=PensionCompanySummaryFile,
+                    dispatch_uid='delete_pension_file')
 
 
 class PensionCompanySummaryFileDownload(models.Model):
@@ -1300,14 +1460,24 @@ class PensionCompanySummaryFileDownload(models.Model):
     )
 
 
+def final_settlement_file_path(instance, filename):
+    return f"settlements/{instance.person_tax_year.tax_year.year}/{uuid.uuid4()}.pdf"
+
+
 class FinalSettlement(EboksDispatch):
     """
     Slutopgørelse
     """
     uuid = models.UUIDField(primary_key=True, default=uuid4)
     person_tax_year = models.ForeignKey(PersonTaxYear, null=False, db_index=True, on_delete=models.PROTECT)
-    pdf = models.FileField(upload_to=filefield_path)
+    pdf = models.FileField(upload_to=final_settlement_file_path)
     invalid = models.BooleanField(default=False, verbose_name=_('Slutopgørelse er ikke gyldig'))
+
+    lock = models.ForeignKey(
+        Lock,
+        on_delete=models.PROTECT,
+        related_name='settlements'
+    )
 
     interest_on_remainder = models.DecimalField(
         default='0.0',
@@ -1347,37 +1517,17 @@ class FinalSettlement(EboksDispatch):
         null=False,
         default=PAYMENT_TEXT_BULK
     )
-
-    def file_path(self, filename):
-        return f"settlements/{self.person_tax_year.year}/{self.person_tax_year.person.cpr}/{self.uuid.hex}.pdf"
+    # pseudo final settlement original exists in eskat for 2018/2019
+    # Being "pseudo" means that the FinalSettlement is not actually dispatched,
+    # but only used for comparison to our own calculations, flagging the user if there are differences
+    pseudo = models.BooleanField(default=False)
+    # Final settlement ammount provided by the user when uploading the pdf.
+    pseudo_amount = models.DecimalField(null=True,
+                                        max_digits=5,
+                                        decimal_places=2)
 
     def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
-        if self.status == 'send':
-            raise RuntimeError('This final settlement has already been dispatched!')
-        self.pdf.open(mode='rb')
-        try:
-            resp = client.send_message(message=generator.generate_dispatch(title=self.title,
-                                                                           number=self.person_tax_year.person.cpr,
-                                                                           pdf_data=base64.b64encode(self.pdf.read())),
-                                       message_id=client.get_message_id())
-        except RequestException:
-            self.status = 'failed'
-            self.save(update_fields=['status'])
-            raise
-        else:
-            self.message_id = resp.json()['message_id']  # message_id might have changed so get it from the response
-            # we always only have 1 recipient
-            recipient = resp.json()['recipients'][0]
-            self.recipient_status = recipient['status']
-            self.send_at = timezone.now()
-            if recipient['post_processing_status'] == '':
-                self.status = 'send'
-            else:
-                self.status = 'post_processing'
-            self.save(update_fields=['status', 'message_id', 'recipient_status', 'send_at'])
-        finally:
-            self.pdf.close()
-        return self
+        return super().dispatch_to_eboks(client, generator, self.pdf, self.person_tax_year.person.cpr)
 
     def get_calculation_amounts(self):
 
@@ -1488,17 +1638,13 @@ class FinalSettlement(EboksDispatch):
                 'source_object': None,
             })
 
-        # Fudge
-        if remainder_calculation['extra_payment_for_previous_missing']:
-            result.append({
-                'text': _('Ekstra beløb til betaling der dækker en delmængde af en tidligere ikke-betalt regning'),
-                'amount': remainder_calculation['extra_payment_for_previous_missing'],
-                'source_object': None,
-            })
-
         return result
 
     def get_transaction_summary(self):
+        if self.pseudo:
+            # TODO: Hvilken tekst skal stå ved transaktion for uploadet slutopgørelse?
+            return _('Importeret:') + ' ' + str(self.pseudo_amount)
+
         payment_info = self.get_payment_info()
 
         summary = ''
@@ -1512,6 +1658,9 @@ class FinalSettlement(EboksDispatch):
         return summary
 
     def get_transaction_amount(self):
+        if self.pseudo:
+            return self.pseudo_amount
+
         payment_info = self.get_payment_info()
 
         amount = 0
@@ -1527,6 +1676,54 @@ class FinalSettlement(EboksDispatch):
             object_id=self.pk
         ).first()
 
+    @property
+    def allow_dispatch(self):
+        return super().allow_dispatch and not self.pseudo
+
+    @cached_property
+    def total_tax(self):
+        return self.get_calculation_amounts().get('total_tax')
+
+    @cached_property
+    def previous_transactions_sum(self):
+        return self.get_calculation_amounts().get('previous_transactions_sum')
+
+    @property
+    def remaining_transaction_sum(self):
+        return self.total_tax - self.previous_transactions_sum
+
+    class Meta:
+        constraints = [
+            # Ensure there can only by a single pseudo final settlement per person_tax_year
+            UniqueConstraint(name='idx_pseudo_true',
+                             fields=['person_tax_year', 'pseudo'],
+                             condition=Q(pseudo=True))
+        ]
+
+
+def delete_pdf(sender, instance, using, **kwargs):
+    if instance.pdf:
+        # delete the pdf file
+        instance.pdf.delete(save=False)
+
+
+post_delete.connect(delete_pdf,
+                    sender=FinalSettlement,
+                    dispatch_uid='delete_final_settlement_pdf')
+
+
+def agterskrivelse_file_path(instance, filename):
+    return f"agterskrivelse/{instance.person_tax_year.tax_year.year}/{uuid.uuid4()}.pdf"
+
+
+class Agterskrivelse(EboksDispatch):
+    uuid = models.UUIDField(primary_key=True, default=uuid4)
+    person_tax_year = models.ForeignKey(PersonTaxYear, on_delete=models.CASCADE)
+    pdf = models.FileField(upload_to=agterskrivelse_file_path)
+
+    def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
+        return super().dispatch_to_eboks(client, generator, self.pdf, self.person_tax_year.person.cpr)
+
 
 class AddressFromDafo(models.Model):
     cpr = models.TextField(unique=True, null=False)
@@ -1540,21 +1737,14 @@ class AddressFromDafo(models.Model):
         if not self.name or not self.address or not self.postal_area:
             return False
         equal_name = self.name == person_item.name
-        equal_adress = re.sub('()_-,', '', self.address) == re.sub('()_-,', '', person_item.address_line_2)
-        equal_postal = self.postal_area == person_item.address_line_4
+        equal_adress = person_item.address_line_2 is not None \
+            and re.sub('()_-,', '', self.address) == re.sub('()_-,', '', person_item.address_line_2)
+        equal_postal = person_item.address_line_4 is not None \
+            and self.postal_area == person_item.address_line_4
         return not (equal_name and equal_adress and equal_postal)
 
     def __str__(self):
-        return '%s - %s' % (self.navn, self.fuld_adresse)
-
-
-def delete_pdf(sender, instance, using, **kwargs):
-    if instance.pdf:
-        # delete the pdf file
-        instance.pdf.delete(save=False)
-
-
-post_delete.connect(delete_pdf, sender=FinalSettlement, dispatch_uid='delete_pdf')
+        return '%s - %s' % (self.name, self.full_address)
 
 
 @receiver(post_save, sender=FinalSettlement)

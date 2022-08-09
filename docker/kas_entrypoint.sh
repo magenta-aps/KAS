@@ -6,8 +6,9 @@ TEST=${TEST:=false}
 CREATE_USERS=${CREATE_USERS:=false}
 DUMMYDATA=${DUMMYDATA:=false}
 DJANGO_DEBUG=${DJANGO_DEBUG:=false}
+COMPILEMESSAGES=${COMPILEMESSAGES:=true}
 
-if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] || [ "$TEST" = true ] || [ "$CREATE_USERS" = true ] || [ "$CREATE_DUMMY_USERS" = true ] || [ "$DUMMYDATA" = true ]; then
+if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] || [ "$TEST" = true ] || [ "$CREATE_USERS" = true ] || [ "$CREATE_DUMMY_USERS" = true ] || [ "$DUMMYDATA" = true ] || [ "$COMPILEMESSAGES" == true ]; then
   python manage.py wait_for_db
   if [ "$MAKE_MIGRATIONS" = true ]; then
     echo 'generating migrations'
@@ -32,6 +33,10 @@ if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] || [ "$TEST" = true ] 
   if [ "$DUMMYDATA" = true ]; then
     echo 'creating dummy data!'
     python manage.py create_dummy_data
+  fi
+  if [ "$COMPILEMESSAGES" = true ]; then
+    echo 'compiling messages!'
+    python manage.py compilemessages
   fi
 fi
 

@@ -131,14 +131,14 @@ admin.site.register(PersonTaxYear, PersonTaxYearAdmin)
 
 
 class PolicyTaxYearAdmin(admin.ModelAdmin):
-    pass
+    raw_id_fields = ('person_tax_year',)
 
 
 admin.site.register(PolicyTaxYear, PolicyTaxYearAdmin)
 
 
 class PolicyDocumentAdmin(admin.ModelAdmin):
-    pass
+    raw_id_fields = ('person_tax_year', 'policy_tax_year',)
 
 
 admin.site.register(PolicyDocument, PolicyDocumentAdmin)
@@ -152,4 +152,8 @@ class TaxSlipGeneratedAdmin(admin.ModelAdmin):
 admin.site.register(TaxSlipGenerated, TaxSlipGeneratedAdmin)
 
 
-admin.site.register(FinalSettlement)
+class FinalSettlementAdmin(admin.ModelAdmin):
+    raw_id_fields = ('person_tax_year',)
+
+
+admin.site.register(FinalSettlement, FinalSettlementAdmin)

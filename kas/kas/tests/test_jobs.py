@@ -6,17 +6,19 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.test import override_settings, TransactionTestCase
-from fakeredis import FakeStrictRedis
-from rq import Queue
-
 from eskat.jobs import generate_sample_data
+from fakeredis import FakeStrictRedis
 from kas.eboks import EboksClient
-from kas.jobs import dispatch_tax_year, generate_batch_and_transactions_for_year, merge_pension_companies, \
-    import_mandtal
-from kas.models import TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany, TaxSlipGenerated, FinalSettlement
+from kas.models import Agterskrivelse, TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany, TaxSlipGenerated, \
+    FinalSettlement
 from prisme.models import Prisme10QBatch
-from worker.models import Job
 from project.dafo import DatafordelerClient
+from rq import Queue
+from worker.models import Job
+
+from kas.jobs import dispatch_agterskrivelser_for_year
+from kas.jobs import dispatch_tax_year, generate_batch_and_transactions_for_year, merge_pension_companies, \
+    import_mandtal, generate_pseudo_settlements_and_transactions_for_legacy_years
 
 test_settings = dict(settings.EBOKS)
 test_settings['dispatch_bulk_size'] = 2
@@ -90,7 +92,9 @@ class BaseTransactionTestCase(TransactionTestCase):
 
     def setUp(self) -> None:
         self.tax_year = TaxYear.objects.create(year=2021)
-        self.pension_company = PensionCompany.objects.create(name='test', res=2)
+        self.pension_company = PensionCompany.objects.create(name='test',
+                                                             res=2)
+
         self.person = Person.objects.create(
             cpr='0102031234',
             name='Test Testperson',
@@ -105,11 +109,15 @@ class BaseTransactionTestCase(TransactionTestCase):
 
 class MandtalImportJobsTest(BaseTransactionTestCase):
 
-    @patch.object(DatafordelerClient, '_get', return_value={
-        "0101570010": {"cprNummer": "0101570010", "fornavn": "Anders", "efternavn": "And",
-                       "adresse": "Testadresse 32A, 3.", "postnummer": 3900, "bynavn": "Nuuk", "civilstand": "D"},
-        "2512484916": {"cprNummer": "2512484916", "fornavn": "Andersine", "efternavn": "And",
-                       "adresse": "Imaneq 32A, 3.", "postnummer": 3900, "bynavn": "Nuuk"}})
+    @patch.object(DatafordelerClient, 'from_settings', return_value=DatafordelerClient(
+        mock=True,
+        mock_data={
+            "0101570010": {"cprNummer": "0101570010", "fornavn": "Anders", "efternavn": "And",
+                           "adresse": "Testadresse 32A, 3.", "postnummer": 3900, "bynavn": "Nuuk", "civilstand": "D"},
+            "2512484916": {"cprNummer": "2512484916", "fornavn": "Andersine", "efternavn": "And",
+                           "adresse": "Imaneq 32A, 3.", "postnummer": 3900, "bynavn": "Nuuk"}
+        }
+    ))
     @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
     def test_mandtal_import_and_merge_with_dafo(self, django_rq, _get):
         Job.schedule_job(
@@ -235,7 +243,8 @@ class GenerateBatchAndTransactionsForYearJobsTest(BaseTransactionTestCase):
             foreign_paid_amount_actual=0,
             slutlignet=True
         )
-        self.settlement = FinalSettlement.objects.create(person_tax_year=person_tax_year)
+        self.settlement = FinalSettlement.objects.create(person_tax_year=person_tax_year,
+                                                         lock=person_tax_year.tax_year.get_current_lock)
         self.user = get_user_model().objects.create(username='test')
 
         self.job_kwargs = {
@@ -310,3 +319,103 @@ class MergeCompanyJobsTest(BaseTransactionTestCase):
         policies = PolicyTaxYear.objects.filter(pension_company=self.pension_company,
                                                 person_tax_year=self.person_tax_year)
         self.assertEqual(policies.count(), 2)
+
+
+class TestPseudoFinalSettlement(BaseTransactionTestCase):
+
+    def setUp(self) -> None:
+        super(TestPseudoFinalSettlement, self).setUp()
+        pension_company_with_agreement = PensionCompany.objects.create(name='with_agreement',
+                                                                       res=3,
+                                                                       agreement_present=True)
+
+        pension_company_without_agreement = PensionCompany.objects.create(name='without_agreement',
+                                                                          res=4,
+                                                                          agreement_present=False)
+
+        self.tax_years = [TaxYear.objects.create(year=2018), TaxYear.objects.create(year=2019)]
+
+        for i, tax_year in enumerate(self.tax_years, start=1):
+            person_tax_year = PersonTaxYear.objects.create(tax_year=tax_year,
+                                                           person=self.person,
+                                                           number_of_days=365)
+            for company in (self.pension_company, pension_company_with_agreement, pension_company_without_agreement):
+                PolicyTaxYear.objects.create(person_tax_year=person_tax_year,
+                                             pension_company=company,
+                                             prefilled_amount=i*100)
+
+    @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
+    def test_generate_pseudo_final_settlements(self, django_rq):
+        self.assertEqual(PersonTaxYear.objects.count(), 2)
+        self.assertEqual(PolicyTaxYear.objects.count(), 6)
+        Job.schedule_job(generate_pseudo_settlements_and_transactions_for_legacy_years,
+                         job_type='GeneratePseudoFinalSettlements',
+                         created_by=self.user)
+        pseudo_settlements = FinalSettlement.objects.filter(pseudo=True)
+        self.assertEqual(pseudo_settlements.count(), 2)
+        self.assertEqual(pseudo_settlements.get(person_tax_year__tax_year__year=2018).pseudo_amount, 30)
+        self.assertEqual(pseudo_settlements.get(person_tax_year__tax_year__year=2019).pseudo_amount, 60)
+
+
+class DispatchAgterskrivelseJobsTest(BaseTransactionTestCase):
+    def setUp(self) -> None:
+        super(DispatchAgterskrivelseJobsTest, self).setUp()
+        report_file = ContentFile("test_report")
+        for i in range(1, 8):
+            if i == 3:
+                person = Person.objects.create(cpr=f'111111111{i}', status='Dead')
+            elif i == 4:
+                person = Person.objects.create(cpr=f'111111111{i}', status='Invalid')
+            else:
+                person = Person.objects.create(cpr=f'111111111{i}')
+
+            person_tax_year = PersonTaxYear.objects.create(
+                tax_year=self.tax_year,
+                person=person
+            )
+            policy_tax_year = PolicyTaxYear.objects.create(
+                person_tax_year=person_tax_year,
+                pension_company=self.pension_company,
+                policy_number=f'0000{i}'
+            )
+            agterskrivelse = Agterskrivelse.objects.create(
+                person_tax_year=person_tax_year,
+            )
+            agterskrivelse.pdf.save('test', report_file)
+            policy_tax_year.agterskrivelse = agterskrivelse
+            policy_tax_year.save()
+
+        self.user = get_user_model().objects.create(username='test')
+
+        self.job_kwargs = {
+            'year_pk': self.tax_year.pk,
+            'title': f'test af eboks: {str(self.tax_year.year)}'
+        }
+
+        self.mock_message = {'0112947728': '',
+                             '1256874212': '',
+                             '1256842143': '',
+                             '125742u568': '',
+                             '2505811057': 'pending',
+                             '2505636811': 'pending',
+                             '8111245036': 'pending'}
+
+    @patch.object(EboksClient, 'get_recipient_status')
+    @patch.object(EboksClient, 'send_message')
+    @patch.object(EboksClient, 'get_message_id')
+    @patch.object(django_rq, 'get_queue', return_value=Queue(is_async=False, connection=FakeStrictRedis()))
+    def test_successful(self, django_rq, get_message_id_mock, send_message, get_recipient_mock):
+        get_message_id_mock.side_effect = self.mock_message.keys()
+        send_message.return_value = send_message_mock(self.mock_message)
+        get_recipient_mock.return_value = get_recipient_status_mock()
+
+        parent_job = Job.schedule_job(
+            dispatch_agterskrivelser_for_year,
+            job_type='dispatch_agterskrivelser_for_year',
+            job_kwargs=self.job_kwargs,
+            created_by=self.user
+        )
+
+        self.assertEqual(Job.objects.filter(parent=parent_job).count(), 1)
+        # all slips were marked as send
+        self.assertEqual(Agterskrivelse.objects.filter(status='send').count(), 5)  # 5 persons is not dead or invalid

@@ -8,7 +8,7 @@ def get_job_types():
     :returns available jobs based on environment
     """
     from worker.forms import MandtalImportJobForm, R75ImportJobForm, YearAndTitleForm, ConfirmForm, YearPkForm, \
-        AutoligningsYearForm
+        AutoligningsYearForm, LegacyYearsForm, R75ImportSpreadsheetJobForm  # noqa
     from prisme.forms import PrePaymentFileModelForm
 
     jobs = {
@@ -81,8 +81,41 @@ def get_job_types():
             'label': _('Flet pensionsselskaber'),
             'not_in_dropdown': True,
             'result_template': 'worker/includes/status_only.html',
-        }
+        },
+        'ImportLegacyCalculations': {
+            'label': _('Importere kas beregninger for tidligere år (2018/2019)'),
+            'form_class': LegacyYearsForm,
+            'result_template': 'worker/includes/status_only.html',
+            'function': 'eskat.jobs.importere_kas_beregninger_for_legacy_years'
+        },
+        'GeneratePseudoFinalSettlements': {
+            'label': _('Generering af pseudo slutopgørelser (2018/2019)'),
+            'form_class': ConfirmForm,
+            'result_template': 'worker/includes/status_only.html',
+            'function': 'kas.jobs.generate_pseudo_settlements_and_transactions_for_legacy_years'
+        },
+        # 'ImportSpreadsheetR75Job': {
+        #    'label': _('Import af data fra R75 i regneark'),  # translated label
+        #    'form_class': R75ImportSpreadsheetJobForm,  # form class used in the start job workflow
+        #    'result_template': 'worker/includes/r75.html',
+        #    'function': 'kas.jobs.import_spreadsheet_r75',
+        # },
+        # 'DispatchAgterskrivelser': {
+        #     'label': _('Afsendelse af Agterskrivelser for et givet år'),
+        #     'form_class': YearPkForm,
+        #     'function': 'kas.jobs.dispatch_agterskrivelser_for_year',
+        # },
     }
+    if settings.ENVIRONMENT in ('development', 'staging'):
+        jobs.update({
+            'ResetTaxYear': {
+                'label': _('Reset data for skatteår'),  # translated label
+                'form_class': YearPkForm,  # form class used in the start job workflow
+                'result_template': 'worker/includes/status_only.html',
+                'function': 'kas.jobs.reset_tax_year',
+            },
+        })
+
     if settings.ENVIRONMENT == 'development':
         # include jobs to generate mock data
         jobs.update({

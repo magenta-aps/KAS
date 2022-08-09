@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 import base64
+import importlib
+import re
 import traceback
-from datetime import date
+import uuid
+from datetime import date, datetime
+from decimal import Decimal
 from time import sleep
 
 from django.conf import settings
@@ -10,18 +14,22 @@ from django.db import transaction
 from django.db.models import IntegerField, Sum, Q, Count
 from django.db.models.functions import Cast
 from django.utils import timezone
-from requests.exceptions import HTTPError, ConnectionError
-from rq import get_current_job
-
+from eskat.jobs import delete_protected
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, get_kas_mandtal_model, \
     get_r75_private_pension_model
+from eskat.models import R75SpreadsheetFile, EskatModels
 from kas.eboks import EboksClient, EboksDispatchGenerator
-from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, TaxSlipGenerated, \
-    FinalSettlement, AddressFromDafo, PersonTaxYearCensus, HistoryMixin
+from kas.models import Person, PersonTaxYear, TaxYear, PolicyTaxYear, PensionCompany, FinalSettlement, AddressFromDafo, \
+    PersonTaxYearCensus, HistoryMixin, TaxSlipGenerated, PensionCompanySummaryFile, Agterskrivelse
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.reportgeneration.kas_report import TaxPDF
+from kas.reportgeneration.kas_topdanmark_agterskrivelse import AgterskrivelsePDF
+from openpyxl import load_workbook
 from prisme.models import Prisme10QBatch
 from project.dafo import DatafordelerClient
+from requests.exceptions import HTTPError, ConnectionError
+from rq import get_current_job
+from worker.job_registry import resolve_job_function
 from worker.models import job_decorator, Job
 
 
@@ -113,9 +121,15 @@ def import_mandtal(job):
 
     if settings.FEATURE_FLAGS.get('enable_dafo_override_of_address'):
         dafo_client = DatafordelerClient.from_settings()
+        do_mock = dafo_client.mock and not dafo_client.mock_data
         try:
             for chunk in chunks(cpr_updated_list, 100):
                 requested_cprs = chunk
+                if do_mock:
+                    dafo_client.set_mock_data({
+                        cpr: {"cprNummer": cpr}
+                        for cpr in chunk
+                    })
                 cpr_request_params = ",".join(chunk)
                 params = {'cpr': cpr_request_params}
                 result = dafo_client.get_person_information(params)
@@ -190,10 +204,14 @@ def import_r75(job):
     tax_year = TaxYear.objects.get(year=year)
     number_of_progress_segments = 2
     progress_factor = 1 / number_of_progress_segments
+    if 'source_model' in job.arguments:
+        source_model = resolve_class(job.arguments['source_model'])
+    else:
+        source_model = get_r75_private_pension_model()
 
     (r75_created, r75_updated) = ImportedR75PrivatePension.import_year(
         year, job, progress_factor, 0,
-        source_model=get_r75_private_pension_model()
+        source_model=source_model
     )
 
     progress_start = 50
@@ -204,7 +222,7 @@ def import_r75(job):
     # It must be constructed with the calss in this order to generate
     # the correct SELECT .. GROUP BY .. query-
     qs = ImportedR75PrivatePension.objects.values(
-        'cpr', 'res', 'ktd'
+        'cpr', 'res', 'ktd', 'company_pay_override'
     ).filter(
         tax_year=year
     ).annotate(
@@ -230,6 +248,7 @@ def import_r75(job):
                     'pension_company': pension_company,
                     'policy_number': item['ktd'],
                     'prefilled_amount': item['indtaegter_sum'],
+                    'company_pay_override': item.get('company_pay_override', False),
                 }
                 (policy_tax_year, status) = PolicyTaxYear.update_or_create(policy_data, 'person_tax_year', 'pension_company', 'policy_number')
                 if status in (PersonTaxYear.CREATED, PersonTaxYear.UPDATED):
@@ -529,6 +548,33 @@ def generate_batch_and_transactions_for_year(job):
                                                                                                             settlements=settlements_count)}
 
 
+@job_decorator
+def generate_agterskrivelser(job):
+    policy_tax_year_idents = job.arguments['policy_tax_year_idents']
+    policies = [
+        PolicyTaxYear.objects.filter(**policy_tax_year_ident).first()
+        for policy_tax_year_ident in policy_tax_year_idents
+    ]
+    policies = list(filter(None, policies))
+
+    person_tax_years_map = {}
+    for policy_tax_year in policies:
+        person_tax_year = policy_tax_year.person_tax_year
+        if person_tax_year not in person_tax_years_map:
+            person_tax_years_map[person_tax_year] = []
+        person_tax_years_map[person_tax_year].append(policy_tax_year)
+
+    job.progress = 0
+    total_count = len(policies)
+    job.started_at = timezone.now()
+    job.save(update_fields=['status', 'progress', 'started_at'])
+
+    for i, (person_tax_year, policy_tax_years) in enumerate(person_tax_years_map.items(), 1):
+        person_tax_year.agterskrivelse_set.all().delete()
+        AgterskrivelsePDF.generate_pdf(person_tax_year, policy_tax_years)
+        job.set_progress(i, total_count)
+
+
 def dispatch_final_settlements_for_year():
     rq_job = get_current_job()
     with transaction.atomic():
@@ -661,3 +707,271 @@ def merge_pension_companies(job):
                       'message': '''Flyttede %(policer)s policer
                       og flettede %(companies)s pensionsselskaber.''' % {'policer': moved_policies,
                                                                          'companies': deleted_count}}
+
+
+@job_decorator
+def reset_tax_year(job):
+    if settings.ENVIRONMENT not in ('development', 'staging'):
+        # Only allow this job to be executed in development og staging
+        # the job is also hidden in the UI for production so this is just a safeguard.
+        return
+
+    with transaction.atomic():
+        tax_year = TaxYear.objects.get(pk=job.arguments['year_pk'])
+        TaxSlipGenerated.objects.filter(persontaxyear__tax_year=tax_year).delete()
+        PensionCompanySummaryFile.objects.filter(tax_year=tax_year).delete()
+        AddressFromDafo.objects.all().delete()
+        delete_protected(tax_year)
+
+
+@job_decorator
+def generate_pseudo_settlements_and_transactions_for_legacy_years(job):
+    created_final_settlements = 0
+    updated_final_settlements = 0
+    for tax_year in TaxYear.objects.filter(year__in=[2018, 2019]).order_by('year'):
+        for person_tax_year in PersonTaxYear.objects.filter(tax_year=tax_year):
+            sum_tax_after_foreign_paid_deduction = 0
+            for policy in person_tax_year.policytaxyear_set.filter(active=True,
+                                                                   pension_company__agreement_present=False):
+                sum_tax_after_foreign_paid_deduction += policy.full_tax - policy.foreign_paid_amount_actual
+
+            # Generate pseudo final settlement
+            final_settlement, created = FinalSettlement.objects.update_or_create(person_tax_year=person_tax_year,
+                                                                                 pseudo=True,
+                                                                                 defaults={'title': 'Pseudo opgørelse',
+                                                                                           'pseudo': True,
+                                                                                           'pseudo_amount': sum_tax_after_foreign_paid_deduction,
+                                                                                           'person_tax_year': person_tax_year,
+                                                                                           'lock': person_tax_year.tax_year.get_current_lock})
+            if created:
+                created_final_settlements += 1
+            else:
+                updated_final_settlements += 1
+
+    job.result = {'message': 'Generering af pseudo slutopgørelser',
+                  'status': {'Oprettet': created_final_settlements,
+                             'Opdateret': updated_final_settlements,
+                             }}
+
+
+@job_decorator
+def import_spreadsheet_r75(job):
+    file = R75SpreadsheetFile.objects.get(pk=job.arguments['pk']).file
+    company_pay_override = job.arguments['company_pay_override']
+    company = PensionCompany.objects.get(res=19625087)  # Topdanmark
+    cvr = str(company.res)
+
+    # Used to generate uuids from input data, DO NOT CHANGE!
+    uuid_namespace = uuid.UUID('93874238-461b-4e7a-9989-788a3d8b46e5')
+
+    spreadsheet_fields = {
+        'Navn': (str,),
+        'PoliceNr': (str, int),
+        'KontoStart': (datetime,),
+        'KontoOphør': (datetime,),
+        'Land': (str,),
+        'Adresse': (str,),
+        'PensionsOrdningBeløb': (Decimal,),
+        'PensionKapitalværdi': (Decimal,),
+        'Kontotype': (int,),
+        'År': (int,),
+        'TIN Land': (str,),
+        'TIN Nummer': (int,),
+    }
+
+    years = set()
+    workbook = load_workbook(filename=file.path)
+    policy_tax_year_idents = []
+    for sheetname in workbook.sheetnames:
+        sheet = workbook.get_sheet_by_name(sheetname)
+        if sheet.max_row > 1:
+            title_fields = []
+            for rowindex, row in enumerate(sheet.iter_rows()):
+                if rowindex == 0:
+                    title_fields = [cell.value for cell in row]
+                else:
+                    rowdata = {}
+                    for colindex, cell in enumerate(row):
+                        value = get_formatted_cell_value(cell)
+                        if colindex < len(title_fields):
+                            fieldname = title_fields[colindex]
+                            if type(value) == str and value.strip() == '':
+                                value = None
+                            if value is not None:
+                                expected_type = spreadsheet_fields.get(fieldname)
+                                if expected_type:
+                                    if Decimal in expected_type and type(value) in (str, int, float):
+                                        value = Decimal(value)
+                                    if type(value) not in expected_type:
+                                        raise Exception(
+                                            f"Expected type {expected_type} in column {colindex+1}, "
+                                            f"row {rowindex+1}, got type {type(value)} "
+                                            f"for value {str(value)}"
+                                        )
+                            rowdata[fieldname] = value
+
+                    if any(rowdata.values()):
+                        model = EskatModels.R75SpreadsheetImport
+                        year = rowdata['År']
+                        policy_number = rowdata['PoliceNr']
+                        cpr = str(rowdata['TIN Nummer']).zfill(10)
+                        years.add(year)
+
+                        identifying_data = {
+                            'ktd': policy_number,
+                            'res': cvr,
+                            'cpr': cpr,
+                            'tax_year': year,
+                        }
+                        policy_tax_year_idents.append({
+                            'pension_company__pk': company.pk,
+                            'person_tax_year__tax_year__year': year,
+                            'policy_number': policy_number,
+                        })
+
+                        model.objects.update_or_create(
+                            # Identificerende; skal være den samme for en given importeret entry (ikke autogen)
+                            r75_ctl_sekvens_guid=uuid.uuid5(
+                                namespace=uuid_namespace,
+                                name=str(identifying_data)
+                            ),
+                            **identifying_data,
+                            defaults={
+                                'renteindtaegt': int(rowdata['PensionsOrdningBeløb']),
+                                'company_pay_override': company_pay_override,
+                                # Dummydata, not used in calculations
+                                'pt_census_guid': uuid.uuid4(),
+                                'r75_ctl_indeks_guid': uuid.uuid4(),
+                                'idx_nr': 1,
+                            }
+                        )
+
+    for year in years:
+        Job.schedule_job(
+            function=resolve_job_function('kas.jobs.import_r75'),
+            job_type='ImportR75Job',
+            created_by=job.created_by,
+            parent=job,
+            job_kwargs={'year': year, 'source_model': 'eskat.models:EskatModels.R75SpreadsheetImport'}
+        )
+
+    Job.schedule_job(
+        function=generate_agterskrivelser,
+        job_type='generate_agterskrivelser',
+        created_by=job.created_by,
+        parent=job,
+        job_kwargs={
+            'policy_tax_year_idents': policy_tax_year_idents
+        }
+    )
+
+
+@job_decorator
+def dispatch_agterskrivelser_for_year(job):
+    rq_job = get_current_job()
+    with transaction.atomic():
+        job = Job.objects.select_for_update().filter(uuid=rq_job.meta['job_uuid'])[0]
+        job.status = rq_job.get_status()
+        job.progress = 0
+        job.started_at = timezone.now()
+        job.arguments['total_count'] = Agterskrivelse.objects.filter(
+            status='created',
+            person_tax_year__tax_year__pk=job.arguments['year_pk']
+        ).count()
+        job.arguments['current_count'] = 0
+        job.save(update_fields=['status', 'progress', 'started_at', 'arguments'])
+    if job.arguments['total_count'] > 0:
+        Job.schedule_job(dispatch_agterskrivelser, 'dispatch_agterskrivelser_child', job.created_by, parent=job)
+    else:
+        job.finish()
+
+
+@job_decorator
+def dispatch_agterskrivelser(job):
+    # Mostly a copy of dispatch_final_settlements
+
+    dispatch_page_size = settings.EBOKS['dispatch_bulk_size']
+    generator = EboksDispatchGenerator.from_settings()
+    client = EboksClient.from_settings()
+    has_more = False
+
+    agterskrivelser = Agterskrivelse.objects.exclude(
+        person_tax_year__person__status__in=['Dead', 'Invalid']
+    ).filter(
+        status='created',
+        person_tax_year__tax_year__pk=job.parent.arguments['year_pk']
+    )[:dispatch_page_size+1]
+
+    pending_messages = {}
+    current_number_of_items = 0
+    for i, agterskrivelse in enumerate(agterskrivelser, start=1):
+        if i == dispatch_page_size+1:
+            has_more = True
+            # we have more so we need to spawn a new job
+            break
+        try:
+            sent_agterskrivelse = agterskrivelse.dispatch_to_eboks(client, generator)
+        except (ConnectionError, HTTPError) as e:
+            job.status = 'failed'
+            job.result = client.parse_exception(e)
+            job.traceback = repr(traceback.format_exception(type(e), e, e.__traceback__))
+            job.save(update_fields=['status', 'result', 'traceback'])
+            mark_parent_job_as_failed(job)
+            break
+        else:
+            if sent_agterskrivelse.status == 'post_processing':
+                pending_messages[sent_agterskrivelse.message_id] = sent_agterskrivelse
+            current_number_of_items = i
+
+    while pending_messages:
+        update_status_for_pending_dispatches(client, pending_messages)
+        pending_messages = {
+            settlement.message_id: settlement
+            for settlement in Agterskrivelse.objects.filter(
+                status='post_processing',
+                person_tax_year__tax_year__pk=job.parent.arguments['year_pk']
+            )[:50]
+        }
+        if pending_messages:
+            sleep(10)
+
+    with transaction.atomic():
+        parent = Job.objects.filter(pk=job.parent.pk).select_for_update()[0]
+        current_count = parent.arguments['current_count'] + min(current_number_of_items, dispatch_page_size)
+        job.set_progress(current_count, parent.arguments['total_count'])
+        if not has_more:
+            # mark the parent job as finished
+            parent.result = {'dispatched_items': current_count}
+            parent.finish()
+
+    if has_more:
+        # start a new child job to handle the next hundred
+        Job.schedule_job(
+            dispatch_agterskrivelser,
+            'dispatch_agterskrivelser_child',
+            job.parent.created_by,
+            parent=job.parent
+        )
+
+
+def resolve_class(string):
+    module_string, class_name = string.rsplit(':', 1)
+    item = importlib.import_module(module_string)
+    for itempath in class_name.split('.'):
+        item = getattr(item, itempath)
+    return item
+
+
+number_formatters = [
+    (re.compile('^(0+)$'), lambda value, match: str(value).zfill(len(match.group(1)))),
+    # Add more if needed
+]
+
+
+def get_formatted_cell_value(cell):
+    value = cell.value
+    for matcher, formatter in number_formatters:
+        match = matcher.fullmatch(cell.number_format)
+        if match:
+            return formatter(value, match)
+    return value

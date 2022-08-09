@@ -1,21 +1,27 @@
 from django.conf import settings
 from django.urls import path
 
-from kas.views import StatisticsView, PersonTaxYearListView, PersonTaxYearDetailView, PolicyTaxYearTabView, \
-    PolicyTaxYearDetailView, PdfDownloadView, PolicyDocumentDownloadView, SelfReportedAmountUpdateView, \
-    FinalSettlementDownloadView, \
-    PersonNotesAndAttachmentsView, PolicyNotesAndAttachmentsView, \
-    EditAmountsUpdateView, PensionCompanySummaryFileView, PensionCompanySummaryFileDownloadView, \
-    PolicyTaxYearCreateView, ActivatePolicyTaxYearView, PersonTaxYearHistoryListView, PersonTaxYearHistoryDetailView, \
-    PolicyTaxYearHistoryDetailView, PolicyTaxYearHistoryListView, PersonTaxYearUnfinishedListView, \
-    PersonTaxYearFailSendListView, PolicyTaxYearUnfinishedListView, PersonTaxYearDocumentsAndNotesUpdateView, \
-    PolicyPaymentOverrideView, \
-    PersonTaxYearUnhandledDocumentsAndNotes, FinalSettlementGenerateView, MarkFinalSettlementAsInvalid, \
-    DispatchFinalSettlement, PersonTaxYearGeneralAndForeignNotesListView, UpdateSingleMandtal, WaitForSingleMandtal, \
-    PolicyTaxYearCompanyUpdateView, \
-    PensionCompanyFormView, PensionCompanyHtmxView, PensionCompanyUpdateView, AgreementDownloadView, \
-    FeatureFlagView, PersonRepresentStartView, PersonRepresentStopView, NoteUpdateView
+from kas.views import (
+    StatisticsView, PersonTaxYearListView, PersonTaxYearDetailView, PolicyTaxYearTabView,
+    PolicyTaxYearDetailView, PdfDownloadView, PolicyDocumentDownloadView, SelfReportedAmountUpdateView,
+    FinalSettlementDownloadView,
+    PersonNotesAndAttachmentsView, PolicyNotesAndAttachmentsView,
+    EditAmountsUpdateView, PensionCompanySummaryFileView, PensionCompanySummaryFileDownloadView,
+    PolicyTaxYearCreateView, ActivatePolicyTaxYearView, PersonTaxYearHistoryListView, PersonTaxYearHistoryDetailView,
+    PolicyTaxYearHistoryDetailView, PolicyTaxYearHistoryListView, PersonTaxYearUnfinishedListView,
+    PersonTaxYearFailSendListView, PolicyTaxYearUnfinishedListView, PersonTaxYearDocumentsAndNotesUpdateView,
+    PolicyPaymentOverrideView,
+    PersonTaxYearUnhandledDocumentsAndNotes, FinalSettlementGenerateView, MarkFinalSettlementAsInvalid,
+    DispatchFinalSettlement, PersonTaxYearGeneralAndForeignNotesListView, UpdateSingleMandtal, WaitForSingleMandtal,
+    PolicyTaxYearCompanyUpdateView,
+    PensionCompanyFormView, PensionCompanyHtmxView, PensionCompanyUpdateView, AgreementDownloadView,
+    FeatureFlagView, PersonRepresentStartView, PersonRepresentStopView, NoteUpdateView,
+    LocksHtmxView, LockFilterView, LockDetailView,
+    UploadExistingFinalSettlementView, CreateLockForYearTemplateView
+)
 from kas.viewsets import CurrentFinalSettlementDownloadView, CurrentFinalSettlementExistsView, TokenValidationView
+
+from kas.views import AgterskrivelseView
 
 app_name = 'kas'
 
@@ -31,6 +37,7 @@ urlpatterns = [
 
     path('statistics', StatisticsView.as_view(), name='statistics'),
     path('tax_year/<int:year>/persons/<int:person_id>/', PersonTaxYearDetailView.as_view(), name='person_in_year'),
+
     path('tax_year/<int:year>/persons/<int:person_id>/pdf/', PdfDownloadView.as_view(), name='get_pdf'),
     path('tax_year/<int:year>/persons/<int:person_id>/policy/', PolicyTaxYearCreateView.as_view(), name='policy_create'),
     path('tax_year/<int:year>/persons/<int:person_id>/policies/', PolicyTaxYearTabView.as_view(), name='policy_tabs'),
@@ -41,7 +48,6 @@ urlpatterns = [
     path('policy/unfinished', PolicyTaxYearUnfinishedListView.as_view(), name='policy_search_unfinished'),
     path('policy/<int:pk>/paymentoverride/', PolicyPaymentOverrideView.as_view(), name='policy_payment_override'),
     path('policy_document/<int:pk>/', PolicyDocumentDownloadView.as_view(), name='policy_document_download'),
-    path('finalsettlement/<uuid:uuid>/', FinalSettlementDownloadView.as_view(), name='final_settlement_download'),
     path('change/selfreportedamount/<int:pk>/', SelfReportedAmountUpdateView.as_view(),
          name='change-self-reported-amount'),
     path('change/editamounts/<int:pk>/', EditAmountsUpdateView.as_view(),
@@ -61,13 +67,16 @@ urlpatterns = [
          name='policy_history_list'),
     path('policytaxyear/history/<int:pk>', PolicyTaxYearHistoryDetailView.as_view(),
          name='policy_history_detail'),
+
+    path('final_settlement/<uuid:uuid>/', FinalSettlementDownloadView.as_view(), name='final_settlement_download'),
     path('final_settlement/generate/<int:pk>/', FinalSettlementGenerateView.as_view(), name='generate-final-settlement'),
-    path('final_settlement/invalid/<uuid:pk>/', MarkFinalSettlementAsInvalid.as_view(), name='invalid-final-settlement'),
-    path('final_settlement/dispatch/<uuid:pk>/', DispatchFinalSettlement.as_view(), name='dispatch-final-settlement'),
-    path('final_settlement/<int:year>/<str:cpr>/', CurrentFinalSettlementDownloadView.as_view(),
-         name='current-final-settlement'),
+    path('final_settlement/<uuid:pk>/invalid/', MarkFinalSettlementAsInvalid.as_view(), name='invalid-final-settlement'),
+    path('final_settlement/<uuid:pk>/dispatch/', DispatchFinalSettlement.as_view(), name='dispatch-final-settlement'),
+    path('final_settlement/<int:year>/<str:cpr>/', CurrentFinalSettlementDownloadView.as_view(), name='current-final-settlement'),
     path('final_settlement/<int:year>/<str:cpr>/exists', CurrentFinalSettlementExistsView.as_view(), name='current-final-settlement-exists'),
-    path('persontaxyear/<int:pk>//update_mandtal/', UpdateSingleMandtal.as_view(), name='update_persontaxyear_mandtal'),
+    path('final_settlement/<uuid:pk>/pseudo-update/', UploadExistingFinalSettlementView.as_view(), name='update-pseudo-final-settlement'),
+
+    path('persontaxyear/<int:pk>/update_mandtal/', UpdateSingleMandtal.as_view(), name='update_persontaxyear_mandtal'),
     path('wait_for_mandtal_update/<uuid:pk>/', WaitForSingleMandtal.as_view(), name='wait_for_mandtal_update'),
 
     path('pensioncompany/', PensionCompanyFormView.as_view(), name='pensioncompany-listview'),
@@ -76,7 +85,15 @@ urlpatterns = [
     path('pensioncompany/<int:pk>/edit/', PensionCompanyUpdateView.as_view(), name='pensioncompany-updateview'),
     path('pensioncompany/<int:pk>/agreement/', AgreementDownloadView.as_view(), name='pensioncompany-agreementdownload'),
 
+    path('locks/', LockFilterView.as_view(), name='locks'),
+    path('locks/htmx/', LocksHtmxView.as_view(), name='locks-htmxview'),
+    path('lockdetail/<int:pk>/', LockDetailView.as_view(), name='lock-details'),
+    path('lockdetail/<int:pk>/<str:format>/', LockDetailView.as_view(), name='lock-details'),
+    path('locks/create/', CreateLockForYearTemplateView.as_view(), name='lock-create'),
+
     path('note/<int:pk>/', NoteUpdateView.as_view(), name='note-update'),
+
+    path('agterskrivelse/<uuid:pk>/', AgterskrivelseView.as_view(), name='agterskrivelse'),
 ]
 
 if settings.FEATURE_FLAGS.get('enable_feature_flag_list'):
