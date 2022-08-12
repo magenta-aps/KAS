@@ -2,15 +2,15 @@
 {% load i18n %}
 
 {% block content %}
-  <h1>{% trans 'Søgning efter personer' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
+  <h1>{% translate 'Søgning efter personer' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
 
-{% blocktrans asvar top_help %}Fremsøg borger ved at benytte nedenstående formular til at begrænse søgningen.
+{% blocktranslate asvar top_help %}Fremsøg borger ved at benytte nedenstående formular til at begrænse søgningen.
 
     I feltet <b>CPR</b> kan der angives et fuldt CPR-nummer eller en del af CPR-nummer. Et fuldt CPR-nummer kan angives med eller uden bindestreg.
 
     I feltet <b>Navn</b> kan der angives en del af navnet på en person eller det fulde navn på personen. Der skelnes ikke mellem store og små bogstaver.
 
-    Klik på en borger i listen for at få vist detaljer for borgeren og for at få vist borgerens policer for det valgte år.{% endblocktrans %}
+    Klik på en borger i listen for at få vist detaljer for borgeren og for at få vist borgerens policer for det valgte år.{% endblocktranslate %}
 
   {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
 
@@ -19,7 +19,7 @@
       <table>
       {{ view.form.as_table }}
       </table>
-      <input type="submit" value="{% trans 'Søg' %}" class="btn btn-primary" />
+      <input type="submit" value="{% translate 'Søg' %}" class="btn btn-primary" />
     </form>
   </div>
 
@@ -31,27 +31,27 @@
       <thead>
       <tr>
         <th>
-          {% trans 'Personnummer' as cpr %}
+          {% translate 'Personnummer' as cpr %}
           {% include 'includes/order_by_link.html' with key="order_by" value="person__cpr" text=cpr %}
         </th>
         <th>
-          {% trans 'Navn' as name %}
+          {% translate 'Navn' as name %}
           {% include 'includes/order_by_link.html' with key="order_by" value="person__name" text=name %}
         </th>
         <th>
-          {% trans 'Adresse' as address %}
+          {% translate 'Adresse' as address %}
           {% include 'includes/order_by_link.html' with key="order_by" value="person__full_address_nulllast" text=address %}
         </th>
         <th>
-          {% trans 'Kommune' as municipality %}
+          {% translate 'Kommune' as municipality %}
           {% include 'includes/order_by_link.html' with key="order_by" value="person__municipality_name_nulllast" text=municipality %}
         </th>
         <th>
-          {% trans 'Antal policer' as antal_policer %}
+          {% translate 'Antal policer' as antal_policer %}
           {% include 'includes/order_by_link.html' with key="order_by" value="policy_count" text=antal_policer %}
         </th>
         <th>
-          {% trans 'Næste behandlingsdato' as processing_date %}
+          {% translate 'Næste behandlingsdato' as processing_date %}
           {% include 'includes/order_by_link.html' with key="order_by" value="next_processing_date_nulllast" text=processing_date %}
         </th>
       </tr>
@@ -73,12 +73,12 @@
       </tbody>
     </table>
     {% else %}
-      <p>{% blocktrans with year=view.year %}Ingen personer fundet for {{year}} med søgekriterierne{% endblocktrans %}</p>
+      <p>{% blocktranslate with year=view.year %}Ingen personer fundet for {{year}} med søgekriterierne{% endblocktranslate %}</p>
     {% endif %}
     <hr/>
     {% include 'includes/pager.html' %}
   {% else %}
-    <p>{% trans 'Udfyld mindst ét søgefelt' %}</p>
+    <p>{% translate 'Udfyld mindst ét søgefelt' %}</p>
   {% endif %}
 
 {% endblock %}

@@ -2,6 +2,6 @@
 {% load i18n %}
 
 {% block content %}
-    {% blocktrans asvar title %}Personer med fejlet afsendelse af selvangivelse{% endblocktrans %}
+    {% blocktranslate asvar title %}Personer med fejlet afsendelse af selvangivelse{% endblocktranslate %}
     {% include 'includes/persontaxyear_speciallist.html' with title=title %}
 {% endblock %}

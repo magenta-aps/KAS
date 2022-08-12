@@ -2,37 +2,37 @@
 <ul class="nav nav-tabs border-0" role="tablist">
     {% if policy_col %}
     <li class="nav-item">
-        <a class="nav-link active border border-secondary border-bottom-0" id="{{prefix}}policer-tab" data-toggle="tab" href="#{{prefix}}policer" role="tab" aria-selected="true">{% trans 'Policer' %}</a>
+        <a class="nav-link active border border-secondary border-bottom-0" id="{{prefix}}policer-tab" data-toggle="tab" href="#{{prefix}}policer" role="tab" aria-selected="true">{% translate 'Policer' %}</a>
     </li>
     {% else %}
     {% if not historical %}
     <li class="nav-item">
-        <a class="nav-link active border border-secondary border-bottom-0" id="{{prefix}}beregnings-tab" data-toggle="tab" href="#{{prefix}}beregning" role="tab" aria-selected="true">{% trans ' Beregningsdetaljer' %}</a>
+        <a class="nav-link active border border-secondary border-bottom-0" id="{{prefix}}beregnings-tab" data-toggle="tab" href="#{{prefix}}beregning" role="tab" aria-selected="true">{% translate ' Beregningsdetaljer' %}</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}negativ-tab" data-toggle="tab" href="#{{prefix}}negativ" role="tab" aria-selected="true">{% trans 'Anvendt negativt afkast' %}</a>
+        <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}negativ-tab" data-toggle="tab" href="#{{prefix}}negativ" role="tab" aria-selected="true">{% translate 'Anvendt negativt afkast' %}</a>
     </li>
     {% endif %}
     {% endif %}
     {% if not historical %}
         <li class="nav-item">
-            <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}notes-tab" data-toggle="tab" href="#{{prefix}}notes" role="tab" aria-selected="true">{% trans 'Notater' %}</a>
+            <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}notes-tab" data-toggle="tab" href="#{{prefix}}notes" role="tab" aria-selected="true">{% translate 'Notater' %}</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}bilag-tab" data-toggle="tab" href="#{{prefix}}bilag" role="tab" aria-selected="false">{% trans 'Bilag' %}</a>
+            <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}bilag-tab" data-toggle="tab" href="#{{prefix}}bilag" role="tab" aria-selected="false">{% translate 'Bilag' %}</a>
         </li>
         {% if policy_col %}
             <li class="nav-item">
-                <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}udlandsnoter-tab" data-toggle="tab" href="#{{prefix}}udlandsnoter" role="tab" aria-selected="false">{% trans 'Notater om betaling i udlandet' %}</a>
+                <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}udlandsnoter-tab" data-toggle="tab" href="#{{prefix}}udlandsnoter" role="tab" aria-selected="false">{% translate 'Notater om betaling i udlandet' %}</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}generellenoter-tab" data-toggle="tab" href="#{{prefix}}generellenoter" role="tab" aria-selected="false">{% trans 'Generelle notater fra borger' %}</a>
+                <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}generellenoter-tab" data-toggle="tab" href="#{{prefix}}generellenoter" role="tab" aria-selected="false">{% translate 'Generelle notater fra borger' %}</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}settlement-tab" data-toggle="tab" href="#{{prefix}}settlement" role="tab" aria-selected="false">{% trans 'Slutopgørelser' %}</a>
+                <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}settlement-tab" data-toggle="tab" href="#{{prefix}}settlement" role="tab" aria-selected="false">{% translate 'Slutopgørelser' %}</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}transaction-tab" data-toggle="tab" href="#{{prefix}}transaction" role="tab" aria-selected="false">{% trans 'Transaktioner' %}</a>
+                <a class="nav-link border border-secondary border-bottom-0" id="{{prefix}}transaction-tab" data-toggle="tab" href="#{{prefix}}transaction" role="tab" aria-selected="false">{% translate 'Transaktioner' %}</a>
             </li>
         {% endif %}
     {% endif %}

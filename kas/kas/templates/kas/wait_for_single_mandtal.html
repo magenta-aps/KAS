@@ -3,11 +3,11 @@
 
 {% block content %}
 {% if timed_out %}
-<h1>{% trans 'Tidsfrist udløbet' %}</h1>
-<p>{% trans 'Det lykkedes ikke at opdatere mandtal inden for 60 sekunder.' %}</p>
-<p><a href="{% url 'kas:person_in_year' year=person_tax_year.year person_id=person_tax_year.person.pk %}">{% trans 'Klik her for at vende tilbage til personskatteåret.' %}</a></p>
+<h1>{% translate 'Tidsfrist udløbet' %}</h1>
+<p>{% translate 'Det lykkedes ikke at opdatere mandtal inden for 60 sekunder.' %}</p>
+<p><a href="{% url 'kas:person_in_year' year=person_tax_year.year person_id=person_tax_year.person.pk %}">{% translate 'Klik her for at vende tilbage til personskatteåret.' %}</a></p>
 {% else %}
-<p>{% trans 'Venter på opdatering af mandtal' %}, {{ elapsed }} {% trans 'sekunder siden import blev sat i gang.'%}</p>
+<p>{% translate 'Venter på opdatering af mandtal' %}, {{ elapsed }} {% translate 'sekunder siden import blev sat i gang.'%}</p>
 <script type="text/javascript">
     // reload page every two seconds
     setTimeout(function() {

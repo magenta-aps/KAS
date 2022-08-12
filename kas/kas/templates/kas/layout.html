@@ -24,45 +24,45 @@
         {% if back_url %}
         <a class="p-2 btn btn-secondary" href="{{ back_url }}">
             <span class="fas fa-chevron-left"></span>
-            {% if back_text %}{{ back_text }}{% else %}{% trans 'Tilbage' %}{% endif %}
+            {% if back_text %}{{ back_text }}{% else %}{% translate 'Tilbage' %}{% endif %}
         </a>
         {% endif %}
 
-        <a class="p-2 text-muted" href="{% url 'kas:person_search' %}">{% trans 'Find person' %}</a>
+        <a class="p-2 text-muted" href="{% url 'kas:person_search' %}">{% translate 'Find person' %}</a>
 
         {% if perms.kas.list_persontaxyear %}
         <a class="p-2 text-muted dropdown-toggle" href="#" role="button" id="searchMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            {% trans 'Udtrækslister' %}
+            {% translate 'Udtrækslister' %}
         </a>
         <ul class="dropdown-menu" aria-labelledby="searchMenuLink">
-            <li><a class="dropdown-item" href="{% url 'kas:person_search_failsend' %}">{% trans 'Personer med fejlet afsendelse af selvangivelse' %}</a></li>
-            <li><a class="dropdown-item" href="{% url 'kas:policy_search_unfinished' %}">{% trans 'Policer der kræver efterbehandling' %}</a></li>
-            <li><a class="dropdown-item" href="{% url 'kas:person_search_unfinished' %}">{% trans 'Personer med policer der kræver efterbehandling' %}</a></li>
-            <li><a class="dropdown-item" href="{% url 'kas:person_search_unhandled' %}">{% trans 'Personer med nye dokumenter eller notater' %}</a></li>
-            <li><a class="dropdown-item" href="{% url 'kas:person_search_foreign' %}">{% trans 'Personer med udenlandsk pensionsnotat' %}</a></li>
+            <li><a class="dropdown-item" href="{% url 'kas:person_search_failsend' %}">{% translate 'Personer med fejlet afsendelse af selvangivelse' %}</a></li>
+            <li><a class="dropdown-item" href="{% url 'kas:policy_search_unfinished' %}">{% translate 'Policer der kræver efterbehandling' %}</a></li>
+            <li><a class="dropdown-item" href="{% url 'kas:person_search_unfinished' %}">{% translate 'Personer med policer der kræver efterbehandling' %}</a></li>
+            <li><a class="dropdown-item" href="{% url 'kas:person_search_unhandled' %}">{% translate 'Personer med nye dokumenter eller notater' %}</a></li>
+            <li><a class="dropdown-item" href="{% url 'kas:person_search_foreign' %}">{% translate 'Personer med udenlandsk pensionsnotat' %}</a></li>
         </ul>
         {% endif %}
             {% if perms.worker.view_job or perms.kas.change_pensioncompany %}
             <div class="p-2">
                 <a class="p-2 text-muted dropdown-toggle" href="#" role="button" id="adminMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    {% trans 'Administration' %}
+                    {% translate 'Administration' %}
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="adminMenuLink">
                     {% if perms.kas.change_pensioncompany %}
-                        <li><a class="dropdown-item" href="{% url 'kas:pensioncompany-listview' %}">{% trans 'Pensionsselskaber' %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'kas:pensioncompany-listview' %}">{% translate 'Pensionsselskaber' %}</a></li>
                     {% endif %}
                     {% if perms.worker.view_job %}
-                        <li><a class="dropdown-item" href="{% url 'worker:job_list' %}">{% trans 'Jobadministration' %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'worker:job_list' %}">{% translate 'Jobadministration' %}</a></li>
                     {% endif %}
-                    <li><a class="dropdown-item" href="{% url 'kas:locks' %}">{% trans 'Låse' %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'kas:locks' %}">{% translate 'Låse' %}</a></li>
                 </ul>
             </div>
             {% endif %}
         {% if perms.kas.view_pensioncompanysummaryfile %}
-            <a class="p-2 text-muted" href="{% url 'kas:policy_summary_list_latest' %}">{% trans 'Policeopsummering' %}</a>
+            <a class="p-2 text-muted" href="{% url 'kas:policy_summary_list_latest' %}">{% translate 'Policeopsummering' %}</a>
         {% endif %}
         {% if perms.prisme.add_prisme10qbatch %}
-            <a class="p-2 text-muted" href="{% url 'prisme:batch-list' %}">{% trans '10Q Batches' %}</a>
+            <a class="p-2 text-muted" href="{% url 'prisme:batch-list' %}">{% translate '10Q Batches' %}</a>
         {% endif %}
         {% get_current_language as language_code %}
         {% if language_code == 'kl-GL' %}
@@ -70,21 +70,21 @@
         {% else %}
             {% static 'doc/da/Manual for system til skat af visse kapitalafkast (KAS).pdf' as manual_url %}
         {% endif %}
-        <a class="p-2 text-muted" href="{{ manual_url }}" target="_blank">{% trans 'Manual' %}</a>
+        <a class="p-2 text-muted" href="{{ manual_url }}" target="_blank">{% translate 'Manual' %}</a>
 
         {% if representing %}
             <span class="ml-auto">
-            {% blocktrans with cpr=representing.person.cpr %}Du er logget ind i selvbetjening på vegne af {{cpr}}{% endblocktrans %}
-            <a href="{{ representation_stop }}" class="btn btn-outline-primary">{% trans 'Afslut repræsentation' %}</a>
+            {% blocktranslate with cpr=representing.person.cpr %}Du er logget ind i selvbetjening på vegne af {{cpr}}{% endblocktranslate %}
+            <a href="{{ representation_stop }}" class="btn btn-outline-primary">{% translate 'Afslut repræsentation' %}</a>
 
             </span>
         {% endif %}
 
         <span class="ml-auto">
-            <span class="p-2">{% blocktrans with username=user.username %}Du er logget ind som {{username}}{% endblocktrans %}</span>
-            <a class="btn btn-secondary" href="{% url 'logout' %}">{% trans 'Log ud' %}</a>
+            <span class="p-2">{% blocktranslate with username=user.username %}Du er logget ind som {{username}}{% endblocktranslate %}</span>
+            <a class="btn btn-secondary" href="{% url 'logout' %}">{% translate 'Log ud' %}</a>
             {% if perms.auth.view_user or perms.kas.add_taxyear %}
-                <a class="btn btn-primary" href="{% url 'kasadmin:index' %}">{% trans 'Admin' %}</a>
+                <a class="btn btn-primary" href="{% url 'kasadmin:index' %}">{% translate 'Admin' %}</a>
             {% endif %}
         </span>
     </nav>

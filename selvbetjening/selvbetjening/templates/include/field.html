@@ -1,7 +1,7 @@
 {% load kas_tags %}
 {% load i18n %}
 {% if label %}
-<label for="{{field.id_for_label}}">{% trans label %}</label>
+<label for="{{field.id_for_label}}">{% translate label %}</label>
 {% endif %}
 {{ field|validation_class:'is-invalid' }}
 {% if field.errors %}

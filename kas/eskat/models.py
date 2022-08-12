@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-b
+# -*- coding: utf-8 -*-
 
 from django.conf import settings
 from django.contrib.auth import get_user_model

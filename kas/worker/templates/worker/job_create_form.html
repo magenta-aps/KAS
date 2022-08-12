@@ -10,7 +10,7 @@
                 {# special DOM for file inputs #}
                 <div class="col custom-file">
                     {{ form.file }}
-                    <label class="custom-file-label" for="{{ form.file.id_for_label }}">{% trans 'Vælg en fil' %}</label>
+                    <label class="custom-file-label" for="{{ form.file.id_for_label }}">{% translate 'Vælg en fil' %}</label>
                 </div>
                 <script>
                     $(".custom-file-input").on("change", function() {
@@ -34,7 +34,7 @@
                 {% endif %}
             </div>
         {% endfor %}
-        <input class="form-control btn btn-success" type="submit" value="{% trans 'Start job' %}">
-        <a class="btn btn-primary btn-danger" href="{% url 'worker:job_list' %}" role="button">{% trans 'Annullér'%}</a>
+        <input class="form-control btn btn-success" type="submit" value="{% translate 'Start job' %}">
+        <a class="btn btn-primary btn-danger" href="{% url 'worker:job_list' %}" role="button">{% translate 'Annullér'%}</a>
     </form>
 {% endblock %}

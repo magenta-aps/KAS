@@ -3,7 +3,7 @@
     {% for key, value in result.items %}
         <tr>
         {% if key == 'post_processing' %}
-            <td class="col-sm-3">{% trans 'Kræver efterbehandling' %}</td>
+            <td class="col-sm-3">{% translate 'Kræver efterbehandling' %}</td>
         {% else %}
             <td class="col-sm-3">{{ key }}</td>
         {% endif %}

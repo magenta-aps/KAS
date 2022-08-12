@@ -4,9 +4,9 @@
         <div class="form-row">
             <div class="col-1 ml-auto">
                 {% if policy_tax_year %}
-                    <a href="{% url 'kas:policy_detail' policy_tax_year.pk %}">{% trans 'Tilbage til police' %}</a>
+                    <a href="{% url 'kas:policy_detail' policy_tax_year.pk %}">{% translate 'Tilbage til police' %}</a>
                 {% else %}
-                    <a href="{% url 'kas:person_in_year' person_tax_year.year person_tax_year.person_id %}">{% trans 'Tilbage til person' %}</a>
+                    <a href="{% url 'kas:person_in_year' person_tax_year.year person_tax_year.person_id %}">{% translate 'Tilbage til person' %}</a>
                 {% endif %}
             </div>
         </div>
@@ -49,7 +49,7 @@
         <div class="form-row">
             <div>
                 <button id="collapseButtonNextProcessingDate" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseNextProcessingDate" aria-expanded="false"  aria-controls="collapseNextProcessingDate">
-                    {% trans 'Opdatér næste behandlingsdato' %}
+                    {% translate 'Opdatér næste behandlingsdato' %}
                 </button>
                 <div id="collapseNextProcessingDate" class="collapse">
                     {{ form.next_processing_date }}
@@ -74,20 +74,20 @@
                 </div>
                 <div class="col custom-file">
                     {{ upload_form.file }}
-                    <label class="custom-file-label" for="{{ upload_form.file.id_for_label }}">{% trans 'Vælg en fil' %}</label>
+                    <label class="custom-file-label" for="{{ upload_form.file.id_for_label }}">{% translate 'Vælg en fil' %}</label>
                 </div>
             </div>
         {% endfor %}
         </div>
     <div class="form-row mt-5">
         <div class="col">
-            <input id="add-attachments" class="btn btn-primary" type="button" value="{% trans 'Tilføj flere bilag' %}"/>
+            <input id="add-attachments" class="btn btn-primary" type="button" value="{% translate 'Tilføj flere bilag' %}"/>
         </div>
     </div>
     {% endif %}
     <div class="form-row mt-5">
         <div class="col">
-            <input class="btn btn-success float-right" type="submit" value="{% if create %}{% trans 'Opret' %}{% else %}{% trans 'Gem' %}{% endif %}"/>
+            <input class="btn btn-success float-right" type="submit" value="{% if create %}{% translate 'Opret' %}{% else %}{% translate 'Gem' %}{% endif %}"/>
         </div>
     </div>
 </form>
@@ -103,7 +103,7 @@
                 </div>
                 <div class="col custom-file">
                     <input type="file" name="uploads-${count}-file" class="form-control mr-2 custom-file-input" id="id_uploads-${count}-file">
-                    <label class="custom-file-label" for="id_uploads-${count}-file">{% trans 'Vælg en fil' %}</label>
+                    <label class="custom-file-label" for="id_uploads-${count}-file">{% translate 'Vælg en fil' %}</label>
                 </div>
             </div>`);
             $("#upload-form-container").append(row);
@@ -132,7 +132,7 @@
     });
 </script>
 <style>
-    .custom-file-label::after { content: "{% trans 'Gennemse...' %}" !important; }
+    .custom-file-label::after { content: "{% translate 'Gennemse...' %}" !important; }
 </style>
 
 {% include 'includes/processing_date_scripts.html' with modal_id='processingWarningModal' checkbox_id=form.slutlignet.id_for_label %}

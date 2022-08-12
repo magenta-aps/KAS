@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<a href="{% url 'kas:person_in_year' view.year view.person_id %}">{% trans 'Tilbage til personskatteåret' %}</a>
+<a href="{% url 'kas:person_in_year' view.year view.person_id %}">{% translate 'Tilbage til personskatteåret' %}</a>
 
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
@@ -12,14 +12,14 @@
     <table class="table table-bordered table-hover table-striped" style="width: auto;">
       <thead>
         <tr class="table-info">
-          <th>{% trans 'Beskrivelse' %}</th>
-          <th>{% trans 'Værdi / beløb' %}</th>
-          <th>{% trans 'Enhed' %}</th>
+          <th>{% translate 'Beskrivelse' %}</th>
+          <th>{% translate 'Værdi / beløb' %}</th>
+          <th>{% translate 'Enhed' %}</th>
         </tr>
       </thead>
       <tbody>
       <tr>
-        <th>{% trans 'Pensionsselskab' %}</th>
+        <th>{% translate 'Pensionsselskab' %}</th>
         <td>
           {{ form.pension_company.errors }}
           {{ form.pension_company }}
@@ -27,7 +27,7 @@
         <td></td>
       </tr>
       <tr>
-        <th>{% trans 'Policenummer' %}</th>
+        <th>{% translate 'Policenummer' %}</th>
         <td>
           {{ form.policy_number.errors }}
           {{ form.policy_number }}
@@ -35,28 +35,28 @@
         <td></td>
       </tr>
       <tr>
-        <th>{% trans 'Selvangivet beløb' %}</th>
+        <th>{% translate 'Selvangivet beløb' %}</th>
         <td>
           {{ form.self_reported_amount.errors }}
           {{ form.self_reported_amount }}
         </td>
-        <td>{% trans 'kr' %}</td>
+        <td>{% translate 'kr' %}</td>
       </tr>
       </tbody>
     </table>
   </div>
 
 
-  <h2 id="notes">{% trans 'Notat' %}</h2>
+  <h2 id="notes">{% translate 'Notat' %}</h2>
   {{ notes_formset }}
 
-  <h2 id="Bilag">{% trans 'Bilag' %}{% include 'includes/help_text/question_mark.html' with target_id='js-billag-collapse' only %}</h2>
-    {% blocktrans asvar bilag_helptext %}For at tilføje et bilag udfyldes felterne for beskrivelse og valg af
+  <h2 id="Bilag">{% translate 'Bilag' %}{% include 'includes/help_text/question_mark.html' with target_id='js-billag-collapse' only %}</h2>
+    {% blocktranslate asvar bilag_helptext %}For at tilføje et bilag udfyldes felterne for beskrivelse og valg af
     fil og der klikkes på <b>Gem</b> knappen nederst på siden.
 
     Borgeren vil kunne se beskrivelser og filnavne på bilag som borgeren
     selv har uploadet ved selvangivelse via web. Borgeren kan ikke se bilag vedhæftet
-    under sagsbehandlingen via nedenstående formular.{% endblocktrans %}
+    under sagsbehandlingen via nedenstående formular.{% endblocktranslate %}
     {% include 'includes/help_text/collapse.html' with help_text=bilag_helptext target_id='js-billag-collapse' %}
   {{ upload_formset.management_form }}
   {% for upload_form in upload_formset  %}
@@ -71,7 +71,7 @@
   {% endfor %}
     <div class="form-row">
         <div class="ml-auto">
-            <button type="submit" class="btn btn-success mt-2 mb-5">{% trans 'Gem' %}</button>
+            <button type="submit" class="btn btn-success mt-2 mb-5">{% translate 'Gem' %}</button>
         </div>
     </div>
 </form>

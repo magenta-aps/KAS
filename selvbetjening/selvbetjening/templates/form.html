@@ -9,7 +9,7 @@
 
 <div class="container">
 
-    <a href="{% url 'selvbetjening:policy-view' year=year %}">{% trans 'Tilbage' %}</a>
+    <a href="{% url 'selvbetjening:policy-view' year=year %}">{% translate 'Tilbage' %}</a>
 
     <p>{% blocktrans with number_of_days=person_tax_year.number_of_days %}Antal skattepligtige dage i skatteår: {{number_of_days}}{% endblocktrans %}</p>
 
@@ -32,7 +32,7 @@
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="false" aria-controls="collapse{{ forloop.counter }}">
                     {% endif %}
                         {% if policyform.id.value is None %}
-                        {% trans 'Angiv ny police' %}
+                        {% translate 'Angiv ny police' %}
                         {% else %}
                         {% blocktrans with company=policydata.pension_company.name policy=policyform.policy_number.value %}{{ company }}, Police nr {{ policy }}{% endblocktrans %}
                         {% endif %}
@@ -43,15 +43,15 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th class="col-2-sm">{% trans 'Feltnavn' %}</th>
-                                    <th class="col-6-sm">{% trans 'Beskrivelse' %}</th>
-                                    <th class="col-4-sm">{% trans 'Felt' %}</th>
+                                    <th class="col-2-sm">{% translate 'Feltnavn' %}</th>
+                                    <th class="col-6-sm">{% translate 'Beskrivelse' %}</th>
+                                    <th class="col-4-sm">{% translate 'Felt' %}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% if policyform.id.value is None %}
                                 <tr>
-                                    <td class="col-2-sm">{% trans 'Pensionsselskab' %}</td>
+                                    <td class="col-2-sm">{% translate 'Pensionsselskab' %}</td>
                                     <td class="col-6-sm"></td>
                                     <td class="col-4-sm">
                                         {% include 'include/field.html' with field=policyform.pension_company_id %}
@@ -59,7 +59,7 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="col-2-sm">{% trans 'Policenummer' %}</td>
+                                    <td class="col-2-sm">{% translate 'Policenummer' %}</td>
                                     <td class="col-6-sm"></td>
                                     <td class="col-4-sm">
                                         {% include 'include/field.html' with field=policyform.policy_number_new %}
@@ -68,7 +68,7 @@
                                 {% endif %}
 
                                 <tr>
-                                    <td class="col-2-sm">{% trans 'Kapitalafkast PBL (DK) § 53 A' %}</td>
+                                    <td class="col-2-sm">{% translate 'Kapitalafkast PBL (DK) § 53 A' %}</td>
                                     <td class="col-6-sm">
                                         {% if policyform.prefilled_amount.value is not None %}
                                         {% blocktrans with value=policyform.prefilled_amount.value|localize %}Vores beregning: {{value}}{% endblocktrans %}
@@ -76,7 +76,7 @@
                                         {% endif %}
                                     </td>
                                     <td class="col-4-sm">
-                                        <label for="{{policyform.self_reported_amount.id_for_label}}">{% if policyform.prefilled_amount.value is None %}{% trans 'Beløb:' %}{% else %}{% trans 'Deres rettelse:' %}{% endif %}</label>
+                                        <label for="{{policyform.self_reported_amount.id_for_label}}">{% if policyform.prefilled_amount.value is None %}{% translate 'Beløb:' %}{% else %}{% translate 'Deres rettelse:' %}{% endif %}</label>
                                         {% include 'include/field.html' with field=policyform.self_reported_amount %}
                                     </td>
                                 </tr>
@@ -84,17 +84,17 @@
 
                                 {% if policydata.pension_company.agreement %}
                                 <tr>
-                                    <td class="col-12-sm" colspan="4">{% trans 'Skatten for denne pensionsordning betales automatisk af pensionsselskabet' %}</td>
+                                    <td class="col-12-sm" colspan="4">{% translate 'Skatten for denne pensionsordning betales automatisk af pensionsselskabet' %}</td>
                                 </tr>
                                 {% endif %}
 
                                 <tr>
-                                    <td class="col-2-sm">{% trans 'Dokumentation for betalt kapitalafkastskat' %}</td>
+                                    <td class="col-2-sm">{% translate 'Dokumentation for betalt kapitalafkastskat' %}</td>
                                     <td class="col-6-sm">
                                         {% if policydata.pension_company.agreement %}
-                                        {% trans 'Vedhæft dokumentation for betalt kapitalafkastskat i udlandet.' %}
+                                        {% translate 'Vedhæft dokumentation for betalt kapitalafkastskat i udlandet.' %}
                                         {% else %}
-                                        {% trans 'Vedhæft dokumentation for betalt kapitalafkastskat. Dokumentation for betaling både i Grønland og i udlandet kan vedhæftes her.' %}
+                                        {% translate 'Vedhæft dokumentation for betalt kapitalafkastskat. Dokumentation for betaling både i Grønland og i udlandet kan vedhæftes her.' %}
                                         {% endif %}
                                     </td>
                                     <td class="col-4-sm file_container">
@@ -113,7 +113,7 @@
 
                                         <div class="doc_file prototype" style="display:none">
                                             {{ policyform.file_file_0 }}
-                                            <button type="button" class="close" title="{% trans 'Fjern' %}"></button>
+                                            <button type="button" class="close" title="{% translate 'Fjern' %}"></button>
                                             {{ policyform.file_description_0 }}
                                         </div>
                                         {% for field in policyform %}
@@ -157,7 +157,7 @@
         </div>
 
 
-        <button class="btn-primary">{% trans 'Indsend' %}</button>
+        <button class="btn-primary">{% translate 'Indsend' %}</button>
         </form>
     <script>
         $(function(){

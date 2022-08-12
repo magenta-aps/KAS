@@ -2,6 +2,6 @@
 {% load i18n %}
 
 {% block content %}
-    {% blocktrans asvar title %}Personer med udenlandsk pensions notat{% endblocktrans %}
+    {% blocktranslate asvar title %}Personer med udenlandsk pensions notat{% endblocktranslate %}
     {% include 'includes/persontaxyear_speciallist.html' with title=title %}
 {% endblock %}

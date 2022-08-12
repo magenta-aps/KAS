@@ -2,14 +2,14 @@
 <table class="table table-bordered table-sm">
     <thead>
     <tr>
-        <th>{% trans 'Oprettet af' %}</th>
-        <th>{% trans 'Tidspunkt' %}</th>
-        <th>{% trans 'Redigeret af' %}</th>
-        <th>{% trans 'Tidspunkt' %}</th>
+        <th>{% translate 'Oprettet af' %}</th>
+        <th>{% translate 'Tidspunkt' %}</th>
+        <th>{% translate 'Redigeret af' %}</th>
+        <th>{% translate 'Tidspunkt' %}</th>
         {% if policy_col %}
-        <th>{% trans 'Police' %}</th>
+        <th>{% translate 'Police' %}</th>
         {% endif %}
-        <th class="w-50">{% trans 'Tekst' %}</th>
+        <th class="w-50">{% translate 'Tekst' %}</th>
         <th></th>
     </tr>
     </thead>
@@ -39,11 +39,11 @@
         </td>
         {% endif %}
         <td><pre class="p-0 m-0">{{ note.content.strip }}</pre></td>
-        <td><a class="btn btn-sm btn-info" href="{% url 'kas:note-update' pk=note.pk %}">{% trans 'Redigér' %}</a></td>
+        <td><a class="btn btn-sm btn-info" href="{% url 'kas:note-update' pk=note.pk %}">{% translate 'Redigér' %}</a></td>
     </tr>
     {% empty %}
     <tr>
-        <td colspan="{% if policy_col %}7{% else %}6{% endif %}">{% trans 'Ingen notater fundet' %}</td>
+        <td colspan="{% if policy_col %}7{% else %}6{% endif %}">{% translate 'Ingen notater fundet' %}</td>
     </tr>
     {% endfor %}
     </tbody>

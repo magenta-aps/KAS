@@ -5,7 +5,7 @@
     {% csrf_token %}
     <div class="form-row form-group">
         <div class="col-1">
-            <label>{% trans 'Beløb:' %}</label>
+            <label>{% translate 'Beløb:' %}</label>
         </div>
         <div class="col-5 custom-file">
             {{ form.pseudo_amount }}
@@ -13,14 +13,14 @@
     </div>
     <div class="form-row form-group">
         <div class="col-1">
-            {% trans 'PDF-fil:' %}
+            {% translate 'PDF-fil:' %}
         </div>
         <div class="col-5 custom-file">
             {{ form.pdf }}
-            <label class="custom-file-label" for="{{ form.pdf.id_for_label }}">{% trans 'Vælg en fil' %}</label>
+            <label class="custom-file-label" for="{{ form.pdf.id_for_label }}">{% translate 'Vælg en fil' %}</label>
         </div>
     </div>
-    <input type="submit" value="{% trans 'Opdatér' %}" class="btn btn-success" />
+    <input type="submit" value="{% translate 'Opdatér' %}" class="btn btn-success" />
 </form>
 <script>
     $(".custom-file-input").on("change", function() {

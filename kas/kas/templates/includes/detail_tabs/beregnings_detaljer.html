@@ -6,7 +6,7 @@
     <tr>
         <td>
             {{ pension_company_amount_label }}
-            {% trans 'Udfyldes fra R75' as help_text_prefilled %}
+            {% translate 'Udfyldes fra R75' as help_text_prefilled %}
             {% include 'includes/help_text/question_mark.html' with target_id='prefilled' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_prefilled target_id='prefilled' %}
         </td>
@@ -14,8 +14,8 @@
     </tr>
     <tr>
         <td>
-            {% trans  'Justeret beløb fra pensionsselskab' %}
-            {% trans 'Justeret beløb fra pensionsselskab, ændret i forhold til de oprindelige R75 data' as help_text_r75_adjusted %}
+            {% translate  'Justeret beløb fra pensionsselskab' %}
+            {% translate 'Justeret beløb fra pensionsselskab, ændret i forhold til de oprindelige R75 data' as help_text_r75_adjusted %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_r75_adjusted target_id='adjusted_r75_amount' %}
         </td>
         <td>{{ policy.adjusted_r75_amount|default_if_none:'' }}</td>
@@ -23,7 +23,7 @@
     <tr>
         <td>
             {{ self_reported_amount_label }}
-            {% trans 'Selvangivet beløb fra borgeren' as help_text_self_reported %}
+            {% translate 'Selvangivet beløb fra borgeren' as help_text_self_reported %}
             {% include 'includes/help_text/question_mark.html' with target_id='self_reported' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_self_reported target_id='self_reported' %}
         </td>
@@ -31,14 +31,14 @@
     </tr>
     <tr>
         <td>
-            {% trans  'Ansat beløb' %}
-            {% trans 'Beløb angivet af ansat under sagsbehandling eller autoligning' as help_text_assessed %}
+            {% translate  'Ansat beløb' %}
+            {% translate 'Beløb angivet af ansat under sagsbehandling eller autoligning' as help_text_assessed %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_assessed target_id='assessed_amount' %}
         </td>
         <td>{{ policy.assessed_amount|default_if_none:'' }}</td>
     </tr>
     <tr>
-        <td>{% trans 'Kapitalafkast' %}</td>
+        <td>{% translate 'Kapitalafkast' %}</td>
         <th>{{ policy.get_assessed_amount }}</th>
     </tr>
     <tr>
@@ -98,7 +98,7 @@
 
     <tr>
         <td>
-            {% trans 'Beskatningsgrundlag (kapitalafkast efter modregning)' %}
+            {% translate 'Beskatningsgrundlag (kapitalafkast efter modregning)' %}
             {% blocktrans asvar help_text_taxable with amount=calculation.year_adjusted_amount return=calculation.used_negative_return %}
                 Beløb justeret for dage ({{ amount }}) - anvendt negativt afkast ({{ return }})
             {% endblocktrans %}
@@ -109,7 +109,7 @@
     </tr>
     <tr>
         <td>
-            {% trans 'Kapitalafkastskat (15,3% af beskatningsgrundlag)' %}
+            {% translate 'Kapitalafkastskat (15,3% af beskatningsgrundlag)' %}
             {% blocktrans asvar help_text_full_tax with amount=calculation.taxable_amount %}
                 15,3% af beskatningsgrundlag efter justering for negativt afkast (0,153 &times; {{ amount }})
             {% endblocktrans %}
@@ -119,12 +119,12 @@
         <td>{{ calculation.full_tax }}</td>
     </tr>
     <tr>
-        <td>{% trans 'Nedslag for betalt skat i udlandet' %}</td>
+        <td>{% translate 'Nedslag for betalt skat i udlandet' %}</td>
         <td>{{ calculation.foreign_paid_amount|negative }}</td>
     </tr>
     <tr>
         <td>
-            {% trans 'Kapitalafkastskat' %}
+            {% translate 'Kapitalafkastskat' %}
             {% blocktrans asvar help_text_with_deductions with tax=calculation.full_tax paid=calculation.foreign_paid_amount %}
                 Skat før fraregning af skat betalt i udlandet ({{ tax }}) - Skat betalt i udlandet ({{ paid }})
             {% endblocktrans %}

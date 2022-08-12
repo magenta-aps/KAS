@@ -2,10 +2,10 @@
 {% load i18n %}
 
 {% block content %}
-<h2>{% trans 'Personer og policer' %}</h2>
-<p>{% blocktrans %}
+<h2>{% translate 'Personer og policer' %}</h2>
+<p>{% blocktranslate %}
     Velkommen til KAS. Klik på årstallet for det skatteår du vil arbejde med i tabellen herunder.
-{% endblocktrans %}</p>
+{% endblocktranslate %}</p>
 <table class="table">
     <thead>
         <tr>
@@ -17,13 +17,13 @@
     </thead>
     <tbody>
         <tr>
-            <th>{% trans 'Personer' %}</th>
+            <th>{% translate 'Personer' %}</th>
             {% for count in persons %}
             <td>{{ count }}</td>
             {% endfor %}
         </tr>
         <tr>
-            <th>{% trans 'Policer' %}</th>
+            <th>{% translate 'Policer' %}</th>
             {% for count in policies %}
             <td>{{ count }}</td>
             {% endfor %}
@@ -31,9 +31,9 @@
     </tbody>
 </table>
 
-<h2>{% trans 'Kildedata' %}</h2>
+<h2>{% translate 'Kildedata' %}</h2>
 
-<p>{% trans 'Data kopieret fra kildesystemer, der er klar til at blive konverteret til arbejdsdata' %}</p>
+<p>{% translate 'Data kopieret fra kildesystemer, der er klar til at blive konverteret til arbejdsdata' %}</p>
 
 <table class="table">
     <thead>
@@ -46,13 +46,13 @@
     </thead>
     <tbody>
         <tr>
-            <th>{% trans 'Mandtal' %}</th>
+            <th>{% translate 'Mandtal' %}</th>
             {% for count in imported_mandtal %}
             <td>{{ count }}</td>
             {% endfor %}
         </tr>
         <tr>
-            <th>{% trans 'R75' %}</th>
+            <th>{% translate 'R75' %}</th>
             {% for count in imported_r75 %}
             <td>{{ count }}</td>
             {% endfor %}
@@ -62,9 +62,9 @@
 
 {% if show_mockup %}
 
-<h2>{% trans 'Mockup data' %}</h2>
+<h2>{% translate 'Mockup data' %}</h2>
 
-<p>{% trans 'Mockup data der er klar til at blive importeret' %}</p>
+<p>{% translate 'Mockup data der er klar til at blive importeret' %}</p>
 
 <table class="table">
     <thead>
@@ -77,13 +77,13 @@
     </thead>
     <tbody>
         <tr>
-            <th>{% trans 'Mandtal' %}</th>
+            <th>{% translate 'Mandtal' %}</th>
             {% for count in mockup_mandtal %}
             <td>{{ count }}</td>
             {% endfor %}
         </tr>
         <tr>
-            <th>{% trans 'R75' %}</th>
+            <th>{% translate 'R75' %}</th>
             {% for count in mockup_r75 %}
             <td>{{ count }}</td>
             {% endfor %}

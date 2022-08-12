@@ -444,7 +444,7 @@ class TestCalculationMath(TestCase):
             calculation,
             {
                 "applicable_previous_statements_exist": True,
-                "previous_transactions_sum": 1430,  # What the previous statement ended up with  1430
+                "previous_transactions_sum": 1430,  # What the previous statement ended up with
                 "total_tax": 1530,  # Tax based on current statement
                 "prepayment": -100,
                 "remainder": 0,  # difference

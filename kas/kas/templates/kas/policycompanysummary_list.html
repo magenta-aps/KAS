@@ -19,13 +19,13 @@
   {% endif %}
 
   <h1>
-    {% blocktrans with year=object.year %}Liste over Policeopsummeringer i år {{year}}{% endblocktrans %}
+    {% blocktranslate with year=object.year %}Liste over Policeopsummeringer i år {{year}}{% endblocktranslate %}
     {% include 'includes/help_text/question_mark.html' with target_id='help_text' %}
   </h1>
 
-  {% blocktrans asvar summary_help_text %}På denne side kan der genereres opsummeringer pr. pensionsselskab, samt oplistes og hentes allerede genererede opsummeringer.
+  {% blocktranslate asvar summary_help_text %}På denne side kan der genereres opsummeringer pr. pensionsselskab, samt oplistes og hentes allerede genererede opsummeringer.
   For at generere en ny opsummering for et selskab, vælg selskabet i boksen til højre, og tryk på "Generér og hent"
-  For at downloade en eksisterende opsummering, tryk på "Download"-linket i den relevante række i tabellen.{% endblocktrans %}
+  For at downloade en eksisterende opsummering, tryk på "Download"-linket i den relevante række i tabellen.{% endblocktranslate %}
 
   {% include 'includes/help_text/collapse.html' with help_text=summary_help_text target_id='help_text' %}
 
@@ -35,7 +35,7 @@
 
       <div class="dropdown">
         <button class="btn btn-primary dropdown-toggle" role="button" id="yearMenuLink" data-toggle="dropdown" aria-expanded="false">
-          {% trans 'Skift år' %}
+          {% translate 'Skift år' %}
         </button>
 
         <ul class="dropdown-menu" aria-labelledby="yearMenuLink">
@@ -48,7 +48,7 @@
       <div class="ml-auto col-2">
         {{ form.pension_company }}
       </div>
-      <button type="submit" class="btn btn-primary">{% trans 'Generér og hent' %}</button>
+      <button type="submit" class="btn btn-primary">{% translate 'Generér og hent' %}</button>
 
       </div>
   </form>
@@ -58,11 +58,11 @@
   <table class="table">
     <thead>
     <tr>
-      <th>{% trans 'Pensionsselskab' %}</th>
-      <th>{% trans 'År' %}</th>
-      <th>{% trans 'Oprettet af' %}</th>
-      <th>{% trans 'Oprettet tidspunkt' %}</th>
-      <th>{% trans 'Fil' %}</th>
+      <th>{% translate 'Pensionsselskab' %}</th>
+      <th>{% translate 'År' %}</th>
+      <th>{% translate 'Oprettet af' %}</th>
+      <th>{% translate 'Oprettet tidspunkt' %}</th>
+      <th>{% translate 'Fil' %}</th>
     </tr>
     </thead>
     <tbody>
@@ -72,12 +72,12 @@
       <td>{{file.tax_year.year}}</td>
       <td>{{file.creator.username}}</td>
       <td>{{file.created}}</td>
-      <td><a href="{% url 'kas:policy_summary' object.year file.id %}">{% trans 'Download' %}</a></td>
+      <td><a href="{% url 'kas:policy_summary' object.year file.id %}">{% translate 'Download' %}</a></td>
     </tr>
     {% empty %}
     <tr>
       <td colspan="4">
-        {% trans 'Ingen filer' %}
+        {% translate 'Ingen filer' %}
       </td>
     </tr>
     {% endfor %}

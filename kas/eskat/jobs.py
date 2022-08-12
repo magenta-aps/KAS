@@ -130,15 +130,15 @@ def importere_kas_beregninger_for_legacy_years(job):
     try:
         year = TaxYear.objects.get(pk=job.arguments["year_pk"])
     except TaxYear.DoesNotExist:
-        raise Exception("skatteår eksistere ikke")
+        raise Exception("skatteår eksisterer ikke")
 
     if year.year not in settings.LEGACY_YEARS:
         raise Exception("Kun import af tidligere år (2018/219) er understøttet")
 
-    SourceModel = get_kas_beregninger_x_model().objects.filter(skatteaar=year.year)
-    fundet_beregninger = SourceModel.count()
+    source_model = get_kas_beregninger_x_model().objects.filter(skatteaar=year.year)
+    fundet_beregninger = source_model.count()
     gemte_beregninger = 0
-    for beregning in SourceModel.values(
+    for beregning in source_model.values(
         "cpr", "pension_crt_calc_guid", "capital_return_tax", "skatteaar"
     ):
         try:
@@ -157,7 +157,5 @@ def importere_kas_beregninger_for_legacy_years(job):
         gemte_beregninger += 1
 
     job.result = {
-        "message": "Fandt {found} beregninger og gemte {saved} beregninger".format(
-            found=fundet_beregninger, saved=gemte_beregninger
-        )
+        "message": f"Fandt {fundet_beregninger} beregninger og gemte {gemte_beregninger} beregninger"
     }
