@@ -4,18 +4,18 @@
     <thead>
     <tr class="table-info">
         <th colspan="2"></th>
-        <th colspan="{{ used_negativ_table|length|add:-1 }}" class="text-center">{% trans 'Anvendt i år' %}</th>
+        <th colspan="{{ used_negativ_table|length|add:-1 }}" class="text-center">{% translate 'Anvendt i år' %}</th>
         <th></th>
     </tr>
     <tr>
-        <th class="table-info">{% trans 'År' %}</th>
-        <th class="table-info">{% trans 'Negativt afkast' %}</th>
+        <th class="table-info">{% translate 'År' %}</th>
+        <th class="table-info">{% translate 'Negativt afkast' %}</th>
         {% for year in used_negativ_table.keys %}
             {% if not forloop.first %}
                 <th class="table-{% if marked_year == year %}primary{% else %}info{% endif %}">{{ year }}</th>
             {% endif %}
         {% endfor %}
-        <th class="table-info">{% trans 'Resterende' %}</th>
+        <th class="table-info">{% translate 'Resterende' %}</th>
     </tr>
     </thead>
     <tbody>
@@ -38,7 +38,7 @@
         {% endif %}
     {% endfor %}
     <tr>
-        <th colspan="2">{% trans 'Totalt anvendt' %}</th>
+        <th colspan="2">{% translate 'Totalt anvendt' %}</th>
         {% for year, data in used_negativ_table.items %}
             {% if not forloop.first %}
                 <td class="text-right{% if marked_year == year %} table-success{% endif %}">{{ data.used_total }}</td>

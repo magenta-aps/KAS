@@ -3,13 +3,13 @@
 
 {% block content %}
 
-    {% blocktrans asvar header with name=object.person.name %}Tilføj notat og eller bilag til {{ name }}{% endblocktrans %}
+    {% blocktranslate asvar header with name=object.person.name %}Tilføj notat og eller bilag til {{ name }}{% endblocktranslate %}
 
-    {% blocktrans asvar notes_helptext %}For at tilføje et nyt notat udfyldes feltet <b>Nyt notat</b>. Tryk derefter på knappen <b>Gem</b> for at gemme notatet for personen.{% endblocktrans %}
+    {% blocktranslate asvar notes_helptext %}For at tilføje et nyt notat udfyldes feltet <b>Nyt notat</b>. Tryk derefter på knappen <b>Gem</b> for at gemme notatet for personen.{% endblocktranslate %}
 
-    {% blocktrans asvar bilag_helptext %}For at tilføje et nyt bilag bruges <b>filfeltet</b> til højre.
+    {% blocktranslate asvar bilag_helptext %}For at tilføje et nyt bilag bruges <b>filfeltet</b> til højre.
         Der er mulighed for at angive en beskrivelse af filen i feltet <b>Fil-beskrivelse</b>.
-        Efterfølgende klikkes på knappen <b>Gem</b> for at vedhæfte filen.{% endblocktrans %}
+        Efterfølgende klikkes på knappen <b>Gem</b> for at vedhæfte filen.{% endblocktranslate %}
     {% include 'includes/single_notes_and_attachment_form.html' with notes_helptext=notes_helptext bilag_helptext=bilag_helptext %}
 
 {% endblock %}

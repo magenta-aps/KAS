@@ -1,8 +1,8 @@
 {% extends 'kas/layout.html' %}
 {% load i18n %}
 {% block content %}
-    <h1>{% trans 'Låsesystem' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
-    {% blocktrans asvar top_help %} Fra denne side er der mulighed for at administrere låse på et skatteår. Hvis der oprettes en ny lås, så tilknyttes eksisterende slutopgørelser automatisk til den nuværende åbne lås for skatteåret{% endblocktrans %}
+    <h1>{% translate 'Låsesystem' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
+    {% blocktranslate asvar top_help %} Fra denne side er der mulighed for at administrere låse på et skatteår. Hvis der oprettes en ny lås, så tilknyttes eksisterende slutopgørelser automatisk til den nuværende åbne lås for skatteåret{% endblocktranslate %}
     {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
         <div class="form-inline mt-2" id="js-filters">
             <label class="mr-2">{% translate 'Skatteår' %}:</label>
@@ -17,13 +17,13 @@
             <table class="table table-striped mt-4">
                 <thead>
                 <tr>
-                    <th class="text-center">{% trans 'År' %}</th>
-                    <th class="text-center">{% trans 'Åben' %}</th>
-                    <th class="text-center">{% trans 'Interval fra' %}</th>
-                    <th class="text-center">{% trans 'Interval til' %}</th>
-                    <th class="text-center">{% trans 'Antal slutopgørelser' %}</th>
-                    <th class="text-center">{% trans 'Samlet beregnet skat' %}</th>
-                    <th class="text-center">{% trans 'Sendt til Prisme' %}</th>
+                    <th class="text-center">{% translate 'År' %}</th>
+                    <th class="text-center">{% translate 'Åben' %}</th>
+                    <th class="text-center">{% translate 'Interval fra' %}</th>
+                    <th class="text-center">{% translate 'Interval til' %}</th>
+                    <th class="text-center">{% translate 'Antal slutopgørelser' %}</th>
+                    <th class="text-center">{% translate 'Samlet beregnet skat' %}</th>
+                    <th class="text-center">{% translate 'Sendt til Prisme' %}</th>
                 </tr>
                 </thead>
                 <tbody id="js-locks-tr" hx-get="{% url 'kas:locks-htmxview' %}" hx-trigger="load, change from:div#js-filters" hx-include="div#js-filters"/>
@@ -33,14 +33,13 @@
     </div>
     <script>
         function closeModal() {
-            let container = document.getElementById("modal-container")
-            let backdrop = document.getElementById("modal-backdrop")
-            let modal = document.getElementById("modal")
-            modal.classList.remove("show")
-            backdrop.classList.remove("show")
+            const backdrop = $("#modal-backdrop");
+            const modal = $("#modal");
+            modal.removeClass("show");
+            backdrop.removeClass("show");
             setTimeout(function() {
-                container.removeChild(backdrop)
-                container.removeChild(modal)
+                backdrop.remove();
+                modal.remove();
             }, 200)
         }
     </script>

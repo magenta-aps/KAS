@@ -2,13 +2,13 @@
 <table class="table table-bordered table-sm">
     <thead>
     <tr>
-        <th class="w-10 text-center">{% trans 'Oprettet' %}</th>
-        <th class="w-10 text-center">{% trans 'Sendt' %}</th>
-        <th class="text-center">{% trans 'Emne i E-boks' %}</th>
-        <th class="w-5 text-center">{% trans 'Status' %}</th>
-        <th class="w-10 text-center">{% trans 'Afsendelses status' %}</th>
-        <th class="w-5 text-center">{% trans 'Prisme 10Q beløb' %}</th>
-        <th class="w-25 text-center">{% trans 'Handlinger' %}</th>
+        <th class="w-10 text-center">{% translate 'Oprettet' %}</th>
+        <th class="w-10 text-center">{% translate 'Sendt' %}</th>
+        <th class="text-center">{% translate 'Emne i E-boks' %}</th>
+        <th class="w-5 text-center">{% translate 'Status' %}</th>
+        <th class="w-10 text-center">{% translate 'Afsendelses status' %}</th>
+        <th class="w-5 text-center">{% translate 'Prisme 10Q beløb' %}</th>
+        <th class="w-25 text-center">{% translate 'Handlinger' %}</th>
     </tr>
     </thead>
     <tbody>
@@ -17,7 +17,7 @@
             <td class="text-center">{{ settlement.created_at|date:"SHORT_DATETIME_FORMAT" }}</td>
             <td class="text-center">{{ settlement.send_at|date:"SHORT_DATETIME_FORMAT" }}</td>
             <td>{{ settlement.title }}</td>
-            <td class="text-center">{% if settlement.invalid %}{% trans 'Ugyldig'%}{% else %}{{ settlement.get_status_display }}{% endif %}</td>
+            <td class="text-center">{% if settlement.invalid %}{% translate 'Ugyldig'%}{% else %}{{ settlement.get_status_display }}{% endif %}</td>
             <td class="text-center">{{ settlement.delivery_status }}</td>
             <td>
                 {% with transaction=settlement.get_transaction %}
@@ -29,29 +29,29 @@
             <td>
                 {% if settlement.pdf %}
                 <a class="btn btn-primary" href="{% url 'kas:final_settlement_download' settlement.uuid %}">
-                    {% trans 'Vis' %}
+                    {% translate 'Vis' %}
                 </a>
                 {% endif %}
                 {% if settlement.pseudo %}
                 <a class="btn btn-primary" href="{% url 'kas:update-pseudo-final-settlement' settlement.uuid %}">
-                    {% trans 'Upload PDF' %}
+                    {% translate 'Upload PDF' %}
                 </a>
                 {% endif %}
                 {% if perms.kas.change_finalsettlement %}
                     <button {% if settlement.invalid or settlement.status != 'created' %}disabled {% endif %} data-url="{% url 'kas:invalid-final-settlement' settlement.uuid %}" type="button" class="btn btn-danger ml-3" data-toggle="modal" data-target="#invalidFinalSettlementModal">
-                        {% trans 'Markér som ugyldig' %}
+                        {% translate 'Markér som ugyldig' %}
                     </button>
                 {% endif %}
                 {% if perms.kas.change_finalsettlement and settlement.allow_dispatch is True and settlement.person_tax_year.tax_year.year_part == 'genoptagelsesperiode' %}
                 <button {% if settlement.invalid %}disabled {% endif %} data-url="{% url 'kas:dispatch-final-settlement' settlement.uuid %}" type="button" class="btn btn-success ml-3" data-toggle="modal" data-target="#finalSettlementModal">
-                    {% trans 'Afsend slutopgørelse' %}
+                    {% translate 'Afsend slutopgørelse' %}
                 </button>
                 {% endif %}
             </td>
         </tr>
     {% empty %}
         <tr>
-            <td colspan="7">{% trans 'Ingen slutopgørelser fundet' %}</td>
+            <td colspan="7">{% translate 'Ingen slutopgørelser fundet' %}</td>
         </tr>
     {% endfor %}
     </tbody>
@@ -62,19 +62,19 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="invalidFinalSettlementModalLabel">{% trans 'Markér slutopgørelse som ugyldig' %}</h5>
+                <h5 class="modal-title" id="invalidFinalSettlementModalLabel">{% translate 'Markér slutopgørelse som ugyldig' %}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                {% trans 'Her du sikker du vil markere slutopgørelse som ugyldig?' %}
+                {% translate 'Her du sikker du vil markere slutopgørelse som ugyldig?' %}
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans 'Luk' %}</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{% translate 'Luk' %}</button>
                 <form style="display: inline" method="POST">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">{% trans 'Ja' %}</button>
+                    <button type="submit" class="btn btn-danger">{% translate 'Ja' %}</button>
                 </form>
             </div>
         </div>
@@ -85,7 +85,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="finalSettlementModalLabel">{% if person_tax_year.latest_processing_date %}<i style="color:red" class="fa fa-exclamation-triangle" aria-hidden="true"></i>{% endif %} {% trans 'Afsend slutopgørelse' %}</h5>
+                <h5 class="modal-title" id="finalSettlementModalLabel">{% if person_tax_year.latest_processing_date %}<i style="color:red" class="fa fa-exclamation-triangle" aria-hidden="true"></i>{% endif %} {% translate 'Afsend slutopgørelse' %}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -96,12 +96,12 @@
                     {% if person_tax_year.latest_processing_date %}
                         <h5 class="modal-title" id="finalSettlementModalLabel">{% blocktrans with date=person_tax_year.latest_processing_date|date:'SHORT_DATE_FORMAT'%} Afsend slutopgørelse og ignorer tidsfristen d.{{ date }}{% endblocktrans %}</h5>
                     {% endif %}
-                    <label class="mt-3">{% trans 'Eboks titel' %}</label>
+                    <label class="mt-3">{% translate 'Eboks titel' %}</label>
                     <input class="form-control" type="text" name="title" autocomplete="off" required>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans 'Luk' %}</button>
-                    <button type="submit" class="btn btn-success">{% trans 'Afsend slutopgørelse' %}</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{% translate 'Luk' %}</button>
+                    <button type="submit" class="btn btn-success">{% translate 'Afsend slutopgørelse' %}</button>
                 </div>
             </form>
         </div>

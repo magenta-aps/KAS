@@ -3,14 +3,14 @@
 {% block content %}
   {% if historical %}
     <div class="row float-right">
-        <a href="{% url 'kas:policy_history_list' policy.id %}">{% trans 'Tilbage til historik oversigt' %}</a>
+        <a href="{% url 'kas:policy_history_list' policy.id %}">{% translate 'Tilbage til historik oversigt' %}</a>
     </div>
-  <h1>{% blocktrans with name=policy.person_tax_year.person.name year=policy.person_tax_year.tax_year.year history_date=policy.history_date|date:'SHORT_DATETIME_FORMAT' %}{{ name }} i år {{year}} fra <b>{{ history_date }}</b>{% endblocktrans %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only %}</h1>
-  {% blocktrans asvar top_help with history_date=policy.history_date|date:'SHORT_DATETIME_FORMAT' %} Denne side viser en tidligere version af policen fra <b>{{ history_date }}</b> {% endblocktrans %}
+  <h1>{% blocktranslate with name=policy.person_tax_year.person.name year=policy.person_tax_year.tax_year.year history_date=policy.history_date|date:'SHORT_DATETIME_FORMAT' %}{{ name }} i år {{year}} fra <b>{{ history_date }}</b>{% endblocktranslate %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only %}</h1>
+  {% blocktranslate asvar top_help with history_date=policy.history_date|date:'SHORT_DATETIME_FORMAT' %} Denne side viser en tidligere version af policen fra <b>{{ history_date }}</b> {% endblocktranslate %}
   {% else %}
-  <h1>{% blocktrans with number=policy.policy_number company=policy.pension_company.name name=policy.person.name year=policy.year %}Police {{ number }} ved {{ company }} for '{{ name }}' år {{ year}}{% endblocktrans %}</h1>
-    <h2 id="Stamdata">{% trans 'Stamdata' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h2>
-      {% blocktrans asvar top_help %}<b>Cpr og navn</b> Klik for at gå til borger.
+  <h1>{% blocktranslate with number=policy.policy_number company=policy.pension_company.name name=policy.person.name year=policy.year %}Police {{ number }} ved {{ company }} for '{{ name }}' år {{ year}}{% endblocktranslate %}</h1>
+    <h2 id="Stamdata">{% translate 'Stamdata' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h2>
+      {% blocktranslate asvar top_help %}<b>Cpr og navn</b> Klik for at gå til borger.
 
           <b>År</b> Viste år for police.
 
@@ -26,18 +26,18 @@
 
           <b>Kræver efterbehandling</b> Er policen markeret til efterbehandling.
 
-          <b>Aktiv</b> Policen er aktiv og gældende.{% endblocktrans %}
+          <b>Aktiv</b> Policen er aktiv og gældende.{% endblocktranslate %}
       {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
   {% endif %}
     <table class="table table-bordered table-sm" style="width: auto;">
         {% with person=policy.person_tax_year.person %}
             <tbody>
             <tr>
-                <th>{% trans 'Policenummer' %}</th>
+                <th>{% translate 'Policenummer' %}</th>
                 <td><b>{{ policy.policy_number }}</b></td>
             </tr>
             <tr>
-                <th>{% trans 'Cpr nr og navn' %}</th>
+                <th>{% translate 'Cpr nr og navn' %}</th>
                 <td>
                     {% if historical %}
                         {{ person.cpr }} / {{ person.name }}
@@ -47,7 +47,7 @@
                 </td>
             </tr>
             <tr>
-                <th>{% trans 'År' %}</th>
+                <th>{% translate 'År' %}</th>
                 <td>
                     {% if historical %}
                         {{ policy.person_tax_year.tax_year.year }}
@@ -61,11 +61,11 @@
                 </td>
             </tr>
             <tr>
-                <th>{% trans 'Pensionsselskab' %}</th>
+                <th>{% translate 'Pensionsselskab' %}</th>
                 <td>{{ policy.pension_company.name }}</td>
             </tr>
             <tr>
-                <th>{% trans 'R75 beløb' %}</th>
+                <th>{% translate 'R75 beløb' %}</th>
                 <td>{% if policy.adjusted_r75_amount %}
                         {{ policy.adjusted_r75_amount }}
                     {% else %}
@@ -74,51 +74,51 @@
                 </td>
             </tr>
             <tr>
-                <th>{% trans 'Selvangivet beløb' %}</th>
+                <th>{% translate 'Selvangivet beløb' %}</th>
                 <td>{{ policy.self_reported_amount|default_if_none:'' }}</td>
             </tr>
             <tr>
-                <th>{% trans 'Lignet beløb' %}</th>
+                <th>{% translate 'Lignet beløb' %}</th>
                 <td>{{ policy.get_assessed_amount|default_if_none:'' }}</td>
             </tr>
             <tr>
-                <th>{% trans 'Beregnet skat' %}</th>
+                <th>{% translate 'Beregnet skat' %}</th>
                 {% if historical %}
-                <td>{{ policy.calculated_result }} {% trans 'kr' %}</td>
+                <td>{{ policy.calculated_result }} {% translate 'kr' %}</td>
                 {% else %}
-                <td><a href="#beregnings-tab">{{ policy.calculated_result }} {% trans 'kr' %}</a></td>
+                <td><a href="#beregnings-tab">{{ policy.calculated_result }} {% translate 'kr' %}</a></td>
                 {% endif %}
             </tr>
             <tr>
-                <th>{% trans 'Betales af' %}</th>
+                <th>{% translate 'Betales af' %}</th>
                 <td>
                     {% if policy.pension_company_pays %}
-                        {% trans 'Pensionsselskab' %}
+                        {% translate 'Pensionsselskab' %}
                     {% else %}
-                        {% trans 'Borger' %}
+                        {% translate 'Borger' %}
                     {% endif %}
                 </td>
             </tr>
             <tr>
-                <th>{% trans 'Næste behandlingsdato' %}</th>
+                <th>{% translate 'Næste behandlingsdato' %}</th>
                 <td>{{ policy.next_processing_date|default_if_none:'' }}</td>
             </tr>
             <tr>
-                <th>{% trans 'Slutlignet' %}</th>
+                <th>{% translate 'Slutlignet' %}</th>
                 <td>
-                    {% if policy.slutlignet %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}
+                    {% if policy.slutlignet %}<span>{% translate 'Ja' %}</span>{% else %}<span>{% translate 'Nej' %}</span>{% endif %}
                 </td>
             </tr>
             <tr>
-                <th>{% trans 'Kræver efterbehandling' %}</th>
+                <th>{% translate 'Kræver efterbehandling' %}</th>
                 <td>
-                    {% if policy.efterbehandling %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}
+                    {% if policy.efterbehandling %}<span>{% translate 'Ja' %}</span>{% else %}<span>{% translate 'Nej' %}</span>{% endif %}
                 </td>
             </tr>
             <tr>
-                <th>{% trans 'Aktiv' %}</th>
+                <th>{% translate 'Aktiv' %}</th>
                 <td>
-                    {% if policy.active %}<span>{% trans 'Ja' %}</span>{% else %}<span style="color:red">{% trans 'Nej' %}</span>{% endif %}
+                    {% if policy.active %}<span>{% translate 'Ja' %}</span>{% else %}<span style="color:red">{% translate 'Nej' %}</span>{% endif %}
                 </td>
             </tr>
             </tbody>
@@ -127,43 +127,43 @@
     {% if policy.pension_company.agreement_present %}
         <p class="bg-secondary p-2">
             {% if policy.citizen_pay_override %}
-                {% trans 'Pensionsselskabet har aftale med Skattestyrelsen om automatisk betaling, men borgeren skal selv betale' %}
+                {% translate 'Pensionsselskabet har aftale med Skattestyrelsen om automatisk betaling, men borgeren skal selv betale' %}
             {% else %}
-                {% trans 'Pensionsselskabet har aftale med Skattestyrelsen om automatisk betaling' %}
+                {% translate 'Pensionsselskabet har aftale med Skattestyrelsen om automatisk betaling' %}
             {% endif %}
         </p>
     {% endif %}
     {% if not historical %}
         <fieldset class="border pl-4 pb-4 mb-4">
-            <legend  class="w-auto">{% trans 'Handlinger' %}</legend>
+            <legend  class="w-auto">{% translate 'Handlinger' %}</legend>
             {% if policy.active %}
-                <a class="btn btn-info" href="{% url 'kas:policy_add_notes_or_attachement' policy.pk %}">{% trans 'Tilføj bilag/notater' %}</a>
+                <a class="btn btn-info" href="{% url 'kas:policy_add_notes_or_attachement' policy.pk %}">{% translate 'Tilføj bilag/notater' %}</a>
                 {% if policy.person_tax_year.tax_year.year_part == 'selvangivelse' %}
-                    <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% trans 'Ret selvangivet beløb' %}</a>
+                    <a class="btn btn-warning" href="{% url 'kas:change-self-reported-amount' policy.pk %}">{% translate 'Ret selvangivet beløb' %}</a>
                 {% else %}
-                    <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% trans 'Ret beløb' %}</a>
+                    <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% translate 'Ret beløb' %}</a>
                 {% endif %}
-                <a class="btn btn-warning" href="{% url 'kas:policy_company' policy.pk %}">{% trans 'Skift pensionsselskab' %}</a>
+                <a class="btn btn-warning" href="{% url 'kas:policy_company' policy.pk %}">{% translate 'Skift pensionsselskab' %}</a>
                 {% if policy.pension_company.agreement_present %}
-                    <a class="btn btn-warning" href="{% url 'kas:policy_payment_override' policy.pk %}">{% trans 'Ret borgerbetaling' %}</a>
+                    <a class="btn btn-warning" href="{% url 'kas:policy_payment_override' policy.pk %}">{% translate 'Ret borgerbetaling' %}</a>
                 {% endif %}
-            <button type="button" class="btn btn-danger" id="deactivate" data-toggle="modal" data-target="#deactivateModal">{% trans 'Afregistrer' %}</button>
+            <button type="button" class="btn btn-danger" id="deactivate" data-toggle="modal" data-target="#deactivateModal">{% translate 'Afregistrer' %}</button>
             {% else %}
-                <button type="button" class="btn btn-info" disabled="disabled" aria-disabled="true" title="{% trans 'Policen er afregistreret' %}">{% trans 'Tilføj bilag/notater' %}</button>
+                <button type="button" class="btn btn-info" disabled="disabled" aria-disabled="true" title="{% translate 'Policen er afregistreret' %}">{% translate 'Tilføj bilag/notater' %}</button>
                 {% if policy.person_tax_year.tax_year.year_part == 'selvangivelse' %}
-                    <button type="button" class="btn btn-warning" disabled="disabled" aria-disabled="true" title="{% trans 'Policen er afregistreret' %}">{% trans 'Ret selvangivet beløb' %}</button>
+                    <button type="button" class="btn btn-warning" disabled="disabled" aria-disabled="true" title="{% translate 'Policen er afregistreret' %}">{% translate 'Ret selvangivet beløb' %}</button>
                 {% else %}
-                    <button type="button" class="btn btn-warning"  disabled="disabled" aria-disabled="true" title="{% trans 'Policen er afregistreret' %}">{% trans 'Ret beløb' %}</button>
+                    <button type="button" class="btn btn-warning"  disabled="disabled" aria-disabled="true" title="{% translate 'Policen er afregistreret' %}">{% translate 'Ret beløb' %}</button>
                 {% endif %}
                 <form style="display: inline" method="POST" action="{% url 'kas:policy_activate' policy.pk %}">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-primary">{% trans 'Aktivér' %}</button>
+                    <button type="submit" class="btn btn-primary">{% translate 'Aktivér' %}</button>
                     <input type="hidden" name="active" value="true"/>
                 </form>
             {% endif %}
-            <a href="{% url 'kas:policy_history_list' policy.pk %}" class="btn btn-secondary">{% trans 'Vis historik' %}</a>
+            <a href="{% url 'kas:policy_history_list' policy.pk %}" class="btn btn-secondary">{% translate 'Vis historik' %}</a>
             {% include 'includes/help_text/question_mark.html' with target_id='actions_help_texts' %}
-            {% blocktrans asvar actions_help_text %}<b>Tilføj bilag/notater</b> Vedhæfter en tekst og/eller en fil til denne police for skatteåret.
+            {% blocktranslate asvar actions_help_text %}<b>Tilføj bilag/notater</b> Vedhæfter en tekst og/eller en fil til denne police for skatteåret.
 
             <b>Ret selvangivet beløb</b> Kun tilgængelig når skatteåret er i perioden "Selvangivelse". Her kan beløbet korrigeres, f.eks. ud fra henvendelse fra borger. I samme arbejdsgang kan der tilføjes notat og/eller bilag som dokumenterer korrektionen.
 
@@ -173,19 +173,19 @@
 
             <b>Afregistrer</b> Kun tilgængelig hvis policen ikke allerede er afregistreret. Deaktiverer policen, så den ikke indgår i beregningen af borgerens kapitalafkastskat
 
-            <b>Aktivér</b> Kun tilgængelig hvis policen er afregistreret. Aktiverer policen, så den indgår i beregningen af borgerens kapitalafkastskat{% endblocktrans %}
+            <b>Aktivér</b> Kun tilgængelig hvis policen er afregistreret. Aktiverer policen, så den indgår i beregningen af borgerens kapitalafkastskat{% endblocktranslate %}
             {% include 'includes/help_text/collapse.html' with help_text=actions_help_text target_id='actions_help_texts' %}
         </fieldset>
     {% endif %}
     <div class="mb-2">
         {% include 'includes/help_text/question_mark.html' with target_id='js-bottom-collapse' only%}
-        {% blocktrans asvar bottom_help %}<b>Beregningsdetaljer</b> Beregningsgrundlag for negativ afkast.
+        {% blocktranslate asvar bottom_help %}<b>Beregningsdetaljer</b> Beregningsgrundlag for negativ afkast.
 
             <b>Anvendt negativt afkast</b> Oversigt over anvendt negativt afkast fra tidligere år.
 
             <b>Notat</b> Liste af notater tilknyttet police.
 
-            <b>Bilag</b> Liste af bilag tilknyttet police.{% endblocktrans %}
+            <b>Bilag</b> Liste af bilag tilknyttet police.{% endblocktranslate %}
         {% include 'includes/help_text/collapse.html' with help_text=bottom_help target_id='js-bottom-collapse' %}
     </div>
     {% include 'includes/detail_tabs.html' with notes=policy.notes.all attachments=policy.policy_documents.all %}
@@ -195,19 +195,19 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="deactivateModalLabel">{% trans 'Afregistrer' %}</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="{% trans 'Luk' %}">
+            <h5 class="modal-title" id="deactivateModalLabel">{% translate 'Afregistrer' %}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="{% translate 'Luk' %}">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
-            <p>{% trans 'Er du sikker på at du vil afregistrere policen for dette skatteår?' %}</p>
+            <p>{% translate 'Er du sikker på at du vil afregistrere policen for dette skatteår?' %}</p>
           </div>
           <div class="modal-footer">
             <form method="POST" action="{% url 'kas:policy_activate' policy.pk %}">
               {% csrf_token %}
-              <button type="submit" class="btn btn-danger">{% trans 'Afregistrer' %}</button>
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans 'Annullér' %}</button>
+              <button type="submit" class="btn btn-danger">{% translate 'Afregistrer' %}</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">{% translate 'Annullér' %}</button>
               <input type="hidden" name="active" value="false"/>
             </form>
           </div>

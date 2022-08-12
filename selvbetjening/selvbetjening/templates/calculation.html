@@ -1,47 +1,47 @@
 {% load i18n %}
 
-<h3>{% trans 'Beregning' %}</h3>
+<h3>{% translate 'Beregning' %}</h3>
 <table class="table">
     <thead>
     <tr>
-        <th class="col-3-sm">{% trans 'Feltnavn' %}</th>
-        <th class="col-8-sm">{% trans 'Beskrivelse' %}</th>
-        <th class="col-1-sm">{% trans 'Værdi' %}</th>
+        <th class="col-3-sm">{% translate 'Feltnavn' %}</th>
+        <th class="col-8-sm">{% translate 'Beskrivelse' %}</th>
+        <th class="col-1-sm">{% translate 'Værdi' %}</th>
     </tr>
     </thead>
     <tbody>
     <tr>
-        <td>{% trans 'Antal skattepligtige dage i skatteår' %}</td>
+        <td>{% translate 'Antal skattepligtige dage i skatteår' %}</td>
         <td></td>
         <td>{{ policy.person_tax_year.number_of_days }}</td>
     </tr>
     <tr>
-        <td>{% trans 'Justeringsfaktor dage i skatteår' %}</td>
+        <td>{% translate 'Justeringsfaktor dage i skatteår' %}</td>
         <td></td>
         <td>{{ policy.person_tax_year.days_in_year_factor }}</td>
     </tr>
     <tr>
-        <td>{% trans 'Beløb justeret for skatteår' %}</td>
+        <td>{% translate 'Beløb justeret for skatteår' %}</td>
         <td></td>
         <td>{{ policy.year_adjusted_amount }}</td>
     </tr>
     <tr>
-        <td>{% trans 'Skattegrundlag før eventuelt negativt afkast.' %}</td>
+        <td>{% translate 'Skattegrundlag før eventuelt negativt afkast.' %}</td>
         <td></td>
         <td>{{ policy.year_adjusted_amount|max:0 }}</td>
     </tr>
     <tr>
-        <td>{% trans 'Sum ikke anvendt negativt afkast' %}</td>
+        <td>{% translate 'Sum ikke anvendt negativt afkast' %}</td>
         <td></td>
         <td>{{ policy.available_deduction_from_previous_years }}</td>
     </tr>
     <tr>
-        <td>{% trans 'Anvendt negativt afkast' %}</td>
+        <td>{% translate 'Anvendt negativt afkast' %}</td>
         <td></td>
         <td>{{ policy.applied_deduction_from_previous_years }}</td>
     </tr>
     <tr>
-        <td>{% trans 'Skattepligtigt beløb / skattegrundlag' %}</td>
+        <td>{% translate 'Skattepligtigt beløb / skattegrundlag' %}</td>
         <td></td>
         <td>{{ policy.calculated_result }}</td>
     </tr>

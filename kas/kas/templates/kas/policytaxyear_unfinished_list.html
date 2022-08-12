@@ -2,8 +2,8 @@
 {% load i18n %}
 
 {% block content %}
-  <h1>{% trans 'Policer der kræver efterbehandling' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
-    {% blocktrans asvar top_help %} En police bliver markeret til efterbehandling som en del af autoligning
+  <h1>{% translate 'Policer der kræver efterbehandling' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
+    {% blocktranslate asvar top_help %} En police bliver markeret til efterbehandling som en del af autoligning
         hvis policen opfylder et eller flere af følgende kriterier:
         <ul>
             <li>Policen er blevet <b>oprettet af en borger</b> via selvbetjening.</li>
@@ -12,7 +12,7 @@
         </ul>
         Fremsøg en enkelt police eller begræns søgningen til et angivet pensionsselskab ved at benytte nedenstående formular.
 
-        Indholdet af tabellen kan sorteres ved at klikke på de enkelte overskrifter.{% endblocktrans %}
+        Indholdet af tabellen kan sorteres ved at klikke på de enkelte overskrifter.{% endblocktranslate %}
     {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
 
   <div>
@@ -20,45 +20,45 @@
       <table>
         {{ view.form.as_table }}
       </table>
-      <input type="submit" value="{% trans 'Søg' %}" class="btn btn-primary" />
+      <input type="submit" value="{% translate 'Søg' %}" class="btn btn-primary" />
     </form>
   </div>
 
   {% if policytaxyears %}
-  <a class="float-right" href="{{ excel_link }}">{% trans 'Download excel fil'%}</a>
+  <a class="float-right" href="{{ excel_link }}">{% translate 'Download excel fil'%}</a>
   <table class="table table-striped">
     <thead>
     <tr>
       <th>
-        {% trans 'Person' as person %}
+        {% translate 'Person' as person %}
         {% include 'includes/order_by_link.html' with key="order_by" value="person_tax_year__person__name" text=person %}
       </th>
       <th>
-        {% trans 'Pensionsselskab' as pensionsselskab %}
+        {% translate 'Pensionsselskab' as pensionsselskab %}
         {% include 'includes/order_by_link.html' with key="order_by" value="pension_company__name" text=pensionsselskab %}
       </th>
       <th>
-        {% trans 'Policenummer' as policenummer %}
+        {% translate 'Policenummer' as policenummer %}
         {% include 'includes/order_by_link.html' with key="order_by" value="policy_number" text=policenummer %}
       </th>
       <th>
-        {% trans 'Næste behandlingsdato' as behandlingsdato %}
+        {% translate 'Næste behandlingsdato' as behandlingsdato %}
         {% include 'includes/order_by_link.html' with key="order_by" value="next_processing_date_nulllast" text=behandlingsdato %}
       </th>
       <th class="text-right">
-        {% trans 'Fortrykt beløb' as fortrykt %}
+        {% translate 'Fortrykt beløb' as fortrykt %}
         {% include 'includes/order_by_link.html' with key="order_by" value="prefilled_amount_nulllast" text=fortrykt %}
       </th>
       <th class="text-right">
-        {% trans 'Selvangivet beløb' as selvangivet %}
+        {% translate 'Selvangivet beløb' as selvangivet %}
         {% include 'includes/order_by_link.html' with key="order_by" value="self_reported_amount_nulllast" text=selvangivet %}
       </th>
       <th class="text-right">
-        {% trans 'Forskel' as forskel %}
+        {% translate 'Forskel' as forskel %}
         {% include 'includes/order_by_link.html' with key="order_by" value="difference_nulllast" text=forskel %}
       </th>
       <th class="text-right">
-        {% trans 'Forskel i procent' as forskel_pct %}
+        {% translate 'Forskel i procent' as forskel_pct %}
         {% include 'includes/order_by_link.html' with key="order_by" value="difference_pct_nulllast" text=forskel_pct %}
       </th>
     </tr>
@@ -85,7 +85,7 @@
     </tbody>
   </table>
   {% else %}
-    <p>{% blocktrans with year=view.year %}Ingen policer fundet{% endblocktrans %}</p>
+    <p>{% blocktranslate with year=view.year %}Ingen policer fundet{% endblocktranslate %}</p>
   {% endif %}
 
   <hr/>

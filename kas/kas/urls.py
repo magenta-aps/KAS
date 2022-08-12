@@ -269,15 +269,15 @@ urlpatterns = [
         AgreementDownloadView.as_view(),
         name="pensioncompany-agreementdownload",
     ),
-    path("locks/", LockFilterView.as_view(), name="locks"),
-    path("locks/htmx/", LocksHtmxView.as_view(), name="locks-htmxview"),
-    path("lockdetail/<int:pk>/", LockDetailView.as_view(), name="lock-details"),
+    path("lock/", LockFilterView.as_view(), name="locks"),
+    path("lock/htmx/", LocksHtmxView.as_view(), name="locks-htmxview"),
+    path("lock/<int:pk>/", LockDetailView.as_view(), name="lock-details"),
     path(
-        "lockdetail/<int:pk>/<str:format>/",
+        "lock/<int:pk>/<str:format>/",
         LockDetailView.as_view(),
         name="lock-details",
     ),
-    path("locks/create/", CreateLockForYearTemplateView.as_view(), name="lock-create"),
+    path("lock/create/", CreateLockForYearTemplateView.as_view(), name="lock-create"),
     path("note/<int:pk>/", NoteUpdateView.as_view(), name="note-update"),
     path(
         "agterskrivelse/<uuid:pk>/", AgterskrivelseView.as_view(), name="agterskrivelse"

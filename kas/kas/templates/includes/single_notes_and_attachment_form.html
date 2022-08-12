@@ -4,18 +4,18 @@
     <div class="form-row">
         <div class="col-1 ml-auto">
             {% if person_tax_year %}
-                <a href="{% url 'kas:person_in_year' object.year object.person.id %}">{% trans 'Tilbage til person' %}</a>
+                <a href="{% url 'kas:person_in_year' object.year object.person.id %}">{% translate 'Tilbage til person' %}</a>
             {% else %}
-                <a href="{% url 'kas:policy_detail' object.pk %}">{% trans 'Tilbage til police' %}</a>
+                <a href="{% url 'kas:policy_detail' object.pk %}">{% translate 'Tilbage til police' %}</a>
             {% endif %}
         </div>
     </div>
     <h1>{{ header }}</h1>
-    <h2 id="Note">{% trans 'Notat' %} {% include 'includes/help_text/question_mark.html' with target_id='js-note-collapse' only %}</h2>
+    <h2 id="Note">{% translate 'Notat' %} {% include 'includes/help_text/question_mark.html' with target_id='js-note-collapse' only %}</h2>
     {% include 'includes/help_text/collapse.html' with help_text=notes_helptext target_id='js-note-collapse' only %}
     {{ form.note }}
     {% if form.attachment %}
-    <h2 id="Bilag">{% trans 'Bilag' %} {% include 'includes/help_text/question_mark.html' with target_id='js-billag-collapse' only %}</h2>
+    <h2 id="Bilag">{% translate 'Bilag' %} {% include 'includes/help_text/question_mark.html' with target_id='js-billag-collapse' only %}</h2>
     {% include 'includes/help_text/collapse.html' with help_text=bilag_helptext target_id='js-billag-collapse' %}
     <div class="form-row form-group">
         <div class="col">
@@ -23,7 +23,7 @@
         </div>
         <div class="col custom-file">
             {{ form.attachment }}
-            <label class="custom-file-label" for="{{ form.attachment.id_for_label }}">{% trans 'Vælg en fil' %}</label>
+            <label class="custom-file-label" for="{{ form.attachment.id_for_label }}">{% translate 'Vælg en fil' %}</label>
         </div>
     </div>
     <script>
@@ -53,7 +53,7 @@
         <div class="form-row">
             <div class="mt-3 ml-auto">
                 <button id="collapseButtonNextProcessingDate" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseNextProcessingDate" aria-expanded="false"  aria-controls="collapseNextProcessingDate">
-                    {% trans 'Opdatér næste behandlingsdato' %}
+                    {% translate 'Opdatér næste behandlingsdato' %}
                 </button>
                 <div id="collapseNextProcessingDate" class="collapse">
                     {{ form.next_processing_date }}
@@ -63,12 +63,12 @@
     {% endif %}
     <div class="form-row">
         <div class="ml-auto">
-            <button type="submit" class="btn btn-success mt-2 mb-5">{% trans 'Gem' %}</button>
+            <button type="submit" class="btn btn-success mt-2 mb-5">{% translate 'Gem' %}</button>
         </div>
     </div>
 </form>
 <style>
-    .custom-file-label::after { content: "{% trans 'Gennemse...' %}"; }
+    .custom-file-label::after { content: "{% translate 'Gennemse...' %}"; }
 </style>
 
 {% include 'includes/processing_date_scripts.html' with modal_id='processingWarningModal' checkbox_id=form.slutlignet.id_for_label %}

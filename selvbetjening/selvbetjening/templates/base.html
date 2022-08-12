@@ -63,7 +63,7 @@
                             {% elif cpr_x %}
                             <span>{% blocktrans with cpr=cpr_x %}Logget ind som {{ admin_name }} på vegne af {{ cpr }}{% endblocktrans %}</span>
                             {% endif %}
-                            <a href="{% url 'selvbetjening:representation-stop' %}">{% trans 'Afslut repræsentation' %}</a>
+                            <a href="{% url 'selvbetjening:representation-stop' %}">{% translate 'Afslut repræsentation' %}</a>
                         {% else %}
                             {% if name %}
                                 <span>{% blocktrans %}Logget ind som {{ name }}{% endblocktrans %}</span>
@@ -71,7 +71,7 @@
                                 <span>{% blocktrans with cpr=cpr_x %}Logget ind som {{ cpr }}{% endblocktrans %}</span>
                             {% endif %}
                             {% if cpr %}
-                                <a href="{% url 'sullissivik:openid:logout' %}">{% trans 'Log ud' %}</a>
+                                <a href="{% url 'sullissivik:openid:logout' %}">{% translate 'Log ud' %}</a>
                             {% endif %}
                         {% endif %}
 

@@ -2,18 +2,18 @@
 <table class="table table-bordered table-sm">
     <thead>
     <tr>
-        <th>{% trans 'År' %}</th>
-        <th>{% trans 'Pensionsselskab' %}</th>
-        <th>{% trans 'Police nr.' %}</th>
-        <th>{% trans 'Slutlignet' %}</th>
-        <th>{% trans 'Kræver efterbehandling' %}</th>
-        <th>{% trans 'Næste behandlingsdato'%}</th>
-        <th class="text-right">{% trans 'Fortrykt beløb'%}</th>
-        <th class="text-right">{% trans 'Justeret R75 beløb'%}</th>
-        <th class="text-right">{% trans 'Selvangivet beløb'%}</th>
-        <th class="text-right">{% trans 'Ansat beløb'%}</th>
-        <th class="text-right">{% trans 'Anvendt beløb'%}</th>
-        <th class="text-right">{% trans 'Selvangivet forskel'%}</th>
+        <th>{% translate 'År' %}</th>
+        <th>{% translate 'Pensionsselskab' %}</th>
+        <th>{% translate 'Police nr.' %}</th>
+        <th>{% translate 'Slutlignet' %}</th>
+        <th>{% translate 'Kræver efterbehandling' %}</th>
+        <th>{% translate 'Næste behandlingsdato'%}</th>
+        <th class="text-right">{% translate 'Fortrykt beløb'%}</th>
+        <th class="text-right">{% translate 'Justeret R75 beløb'%}</th>
+        <th class="text-right">{% translate 'Selvangivet beløb'%}</th>
+        <th class="text-right">{% translate 'Ansat beløb'%}</th>
+        <th class="text-right">{% translate 'Anvendt beløb'%}</th>
+        <th class="text-right">{% translate 'Selvangivet forskel'%}</th>
     </tr>
     </thead>
     <tbody>
@@ -22,8 +22,8 @@
             <td>{{ policy.person_tax_year.year }}</td>
             <td>{{ policy.pension_company.name }}</td>
             <td><a href="{% url 'kas:policy_detail' policy.pk %}">{{ policy.policy_number }}</a></td>
-            <td>{% if policy.slutlignet %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}</td>
-            <td>{% if policy.efterbehandling %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}</td>
+            <td>{% if policy.slutlignet %}<span>{% translate 'Ja' %}</span>{% else %}<span>{% translate 'Nej' %}</span>{% endif %}</td>
+            <td>{% if policy.efterbehandling %}<span>{% translate 'Ja' %}</span>{% else %}<span>{% translate 'Nej' %}</span>{% endif %}</td>
             <td>{{ policy.next_processing_date|date:'SHORT_DATE_FORMAT'|default_if_none:"" }}</td>
             <td class="text-right">{{ policy.prefilled_amount|default_if_none:"" }}</td>
             <td class="text-right">{{ policy.adjusted_r75_amount|default_if_none:"" }}</td>
@@ -34,7 +34,7 @@
         </tr>
     {% empty %}
         <tr>
-            <td colspan="12">{% trans 'Ingen policer fundet' %}</td>
+            <td colspan="12">{% translate 'Ingen policer fundet' %}</td>
         </tr>
     {% endfor %}
     </tbody>

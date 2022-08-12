@@ -4,43 +4,43 @@
 {% block content %}
     {% if historical %}
         <div class="row float-right">
-            <a href="{% url 'kas:person_history_list' person_tax_year.id %}">{% trans 'Tilbage til historik oversigt' %}</a>
+            <a href="{% url 'kas:person_history_list' person_tax_year.id %}">{% translate 'Tilbage til historik oversigt' %}</a>
         </div>
-        <h1>{% blocktrans with name=person_tax_year.person.name year=person_tax_year.tax_year.year history_date=person_tax_year.history_date|date:'SHORT_DATETIME_FORMAT' %}{{ name }} i år {{year}} fra <b>{{ history_date }}</b>{% endblocktrans %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only %}</h1>
-        {% blocktrans asvar help_text with history_date=person_tax_year.history_date|date:'SHORT_DATETIME_FORMAT' %} Denne side viser en tidligere version af personskatteåret fra <b>{{ history_date }}</b> {% endblocktrans %}
+        <h1>{% blocktranslate with name=person_tax_year.person.name year=person_tax_year.tax_year.year history_date=person_tax_year.history_date|date:'SHORT_DATETIME_FORMAT' %}{{ name }} i år {{year}} fra <b>{{ history_date }}</b>{% endblocktranslate %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only %}</h1>
+        {% blocktranslate asvar help_text with history_date=person_tax_year.history_date|date:'SHORT_DATETIME_FORMAT' %} Denne side viser en tidligere version af personskatteåret fra <b>{{ history_date }}</b> {% endblocktranslate %}
     {% else %}
-        <h1>{% blocktrans with name=person_tax_year.person.name year=person_tax_year.year %}{{ name }} i år {{year}}{% endblocktrans %}</h1>
+        <h1>{% blocktranslate with name=person_tax_year.person.name year=person_tax_year.year %}{{ name }} i år {{year}}{% endblocktranslate %}</h1>
         {% if person_tax_year.tax_slip %}
-            <h2 id="Selvangivelse">{% trans 'Selvangivelse' %}</h2>
-            <p><a href="{% url 'kas:get_pdf' view.year person_tax_year.person.pk %}">{% trans 'Hent selvangivelse PDF' %}</a></p>
+            <h2 id="Selvangivelse">{% translate 'Selvangivelse' %}</h2>
+            <p><a href="{% url 'kas:get_pdf' view.year person_tax_year.person.pk %}">{% translate 'Hent selvangivelse PDF' %}</a></p>
         {% endif %}
-        <h2 id="Stamdata">{% trans 'Stamdata' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only %}</h2>
-        {% blocktrans asvar help_text %}<b>År</b> Viste år for borger.
+        <h2 id="Stamdata">{% translate 'Stamdata' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only %}</h2>
+        {% blocktranslate asvar help_text %}<b>År</b> Viste år for borger.
 
             <b>Slutlignet</b> Er alle policer for borger i det givne år slutlignede.
 
-            <b>Kræver efterbehandling</b> Er en eller flere policer for borgeren i det givne år markeret til efterbehandling.{% endblocktrans %}
+            <b>Kræver efterbehandling</b> Er en eller flere policer for borgeren i det givne år markeret til efterbehandling.{% endblocktranslate %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text target_id="js-top-collapse" %}
     {% endif %}
   <table class="table table-bordered table-sm" style="width: auto;">
     {% with person=person_tax_year.person %}
     <tbody>
       <tr>
-        <th>{% trans 'Cpr-nummer' %}{% include 'includes/help_text/question_mark.html' with target_id='cpr_help' right=True %}</th>
+        <th>{% translate 'Cpr-nummer' %}{% include 'includes/help_text/question_mark.html' with target_id='cpr_help' right=True %}</th>
         <td>{{ person.cpr }}</td>
       </tr>
       <tr id="cpr_help" class="collapse">
-          <td colspan="2">{% trans 'Cpr-nummer importeret fra mandtal' %}</td>
+          <td colspan="2">{% translate 'Cpr-nummer importeret fra mandtal' %}</td>
       </tr>
       <tr>
-        <th>{% trans 'Navn' %}{% include 'includes/help_text/question_mark.html' with target_id='name_help' right=True %}</th>
+        <th>{% translate 'Navn' %}{% include 'includes/help_text/question_mark.html' with target_id='name_help' right=True %}</th>
         <td>{{ person.name }}</td>
       </tr>
       <tr id="name_help" class="collapse">
-          <td colspan="2">{% trans 'Personnavn importeret fra mandtal' %}</td>
+          <td colspan="2">{% translate 'Personnavn importeret fra mandtal' %}</td>
       </tr>
       <tr>
-          <th>{% trans 'År' %}{% include 'includes/help_text/question_mark.html' with target_id='year_select_help' right=True %}</th>
+          <th>{% translate 'År' %}{% include 'includes/help_text/question_mark.html' with target_id='year_select_help' right=True %}</th>
           <td>
               {% if historical %}
                   {{ person_tax_year.tax_year.year }}
@@ -54,58 +54,58 @@
           </td>
       </tr>
       <tr id="year_select_help" class="collapse">
-          <td colspan="2">{% trans 'Skatteåret der vises informationer for' %}</td>
+          <td colspan="2">{% translate 'Skatteåret der vises informationer for' %}</td>
       </tr>
       <tr>
-        <th>{% trans 'Kommunekode' %}{% include 'includes/help_text/question_mark.html' with target_id='municipality_code_help' right=True %}</th>
+        <th>{% translate 'Kommunekode' %}{% include 'includes/help_text/question_mark.html' with target_id='municipality_code_help' right=True %}</th>
         <td>{{ person.municipality_code }}</td>
       </tr>
       <tr id="municipality_code_help" class="collapse">
-          <td colspan="2">{% trans 'Kommunekode importeret fra mandtal' %}</td>
+          <td colspan="2">{% translate 'Kommunekode importeret fra mandtal' %}</td>
       </tr>
       <tr>
-        <th>{% trans 'Kommunenavn' %}{% include 'includes/help_text/question_mark.html' with target_id='municipality_name_help' right=True %}</th>
+        <th>{% translate 'Kommunenavn' %}{% include 'includes/help_text/question_mark.html' with target_id='municipality_name_help' right=True %}</th>
         <td>{{ person.municipality_name }}</td>
       </tr>
       <tr id="municipality_name_help" class="collapse">
-          <td colspan="2">{% trans 'Kommunenavn importeret fra mandtal' %}</td>
+          <td colspan="2">{% translate 'Kommunenavn importeret fra mandtal' %}</td>
       </tr>
       <tr>
-        <th>{% trans 'Adresse' %}{% include 'includes/help_text/question_mark.html' with target_id='joined_address_help' right=True %}</th>
+        <th>{% translate 'Adresse' %}{% include 'includes/help_text/question_mark.html' with target_id='joined_address_help' right=True %}</th>
         <td><pre>{{ joined_address }}</pre></td>
       </tr>
       <tr id="joined_address_help" class="collapse">
-          <td colspan="2">{% trans 'Personadresse importeret fra mandtal' %}</td>
+          <td colspan="2">{% translate 'Personadresse importeret fra mandtal' %}</td>
       </tr>
       <tr>
-        <th>{% trans 'Adresse på én linje' %}{% include 'includes/help_text/question_mark.html' with target_id='full_address_help' right=True %}</th>
+        <th>{% translate 'Adresse på én linje' %}{% include 'includes/help_text/question_mark.html' with target_id='full_address_help' right=True %}</th>
         <td>{{ person.full_address|default:"" }}</td>
       </tr>
       <tr id="full_address_help" class="collapse">
-          <td colspan="2">{% trans 'Personadresse (i én linje) importeret fra mandtal' %}</td>
+          <td colspan="2">{% translate 'Personadresse (i én linje) importeret fra mandtal' %}</td>
       </tr>
       <tr>
-          <th>{% trans 'Personstatus' %}{% include 'includes/help_text/question_mark.html' with target_id='personstatus_help' right=True %}</th>
+          <th>{% translate 'Personstatus' %}{% include 'includes/help_text/question_mark.html' with target_id='personstatus_help' right=True %}</th>
           <td>{{ person.get_status_display }}</td>
       </tr>
       <tr id="personstatus_help" class="collapse">
-          <td colspan="2">{% trans 'Er der specielle omstændigheder omkring denne person. Her markeres det hvis personen er afdød, eller CPR-nummeret er ugyldigt' %}</td>
+          <td colspan="2">{% translate 'Er der specielle omstændigheder omkring denne person. Her markeres det hvis personen er afdød, eller CPR-nummeret er ugyldigt' %}</td>
       </tr>
       <tr>
-        <th>{% trans 'Skatteomfang' %}{% include 'includes/help_text/question_mark.html' with target_id='fully_tax_liable_help' right=True %}</th>
-        <td>{% if person_tax_year.fully_tax_liable %}{% trans 'Fuldt skattepligtig' %}{% else %}{% trans 'Ikke fuldt skattepligtig' %}{% endif%}</td>
+        <th>{% translate 'Skatteomfang' %}{% include 'includes/help_text/question_mark.html' with target_id='fully_tax_liable_help' right=True %}</th>
+        <td>{% if person_tax_year.fully_tax_liable %}{% translate 'Fuldt skattepligtig' %}{% else %}{% translate 'Ikke fuldt skattepligtig' %}{% endif%}</td>
       </tr>
       <tr id="fully_tax_liable_help" class="collapse">
-          <td colspan="2">{% trans 'Personens skatteomfang importeret fra mandtal, personen kan være "Fuldt skattepligtig" eller "Ikke fuldt skattepligtig"' %}</td>
+          <td colspan="2">{% translate 'Personens skatteomfang importeret fra mandtal, personen kan være "Fuldt skattepligtig" eller "Ikke fuldt skattepligtig"' %}</td>
       </tr>
       <tr>
-        <th>{% blocktrans with year=view.year %}Skattedage i {{ year }}{% endblocktrans %}{% include 'includes/help_text/question_mark.html' with target_id='number_of_days_help' right=True %}</th>
+        <th>{% blocktranslate with year=view.year %}Skattedage i {{ year }}{% endblocktranslate %}{% include 'includes/help_text/question_mark.html' with target_id='number_of_days_help' right=True %}</th>
         <td>
             {% if perms.kas.change_persontaxyear %}
             <form action="{% url 'kas:update_persontaxyear_mandtal' person_tax_year.pk %}" method="POST">
                 {% csrf_token %}
                 {{ person_tax_year.number_of_days }}
-                <input type="submit" class="btn btn-sm btn-info" role="button" value="{% trans 'Opdater data fra mandtal' %}" />
+                <input type="submit" class="btn btn-sm btn-info" role="button" value="{% translate 'Opdater data fra mandtal' %}" />
             </form>
             {% else %}
                 {{ person_tax_year.number_of_days }}
@@ -113,67 +113,67 @@
         </td>
       </tr>
       <tr id="number_of_days_help" class="collapse">
-          <td colspan="2">{% trans 'Personens antal af skattepligtige dage i skatteåret importeret fra mandtal. Der kan være op til 366 dage, og skatteberegningen fastsættes ud fra forholdet mellem antallet af dage og samlede dage i dette skatteår' %}</td>
+          <td colspan="2">{% translate 'Personens antal af skattepligtige dage i skatteåret importeret fra mandtal. Der kan være op til 366 dage, og skatteberegningen fastsættes ud fra forholdet mellem antallet af dage og samlede dage i dette skatteår' %}</td>
       </tr>
       <tr>
-          <th>{% trans 'Alle bilag og notater behandlet' %}{% include 'includes/help_text/question_mark.html' with target_id='all_documents_and_notes_handled_help' right=True %}</th>
+          <th>{% translate 'Alle bilag og notater behandlet' %}{% include 'includes/help_text/question_mark.html' with target_id='all_documents_and_notes_handled_help' right=True %}</th>
           <td>
               {% if person_tax_year.all_documents_and_notes_handled %}
-                  <span>{% trans 'Ja' %}</span>
+                  <span>{% translate 'Ja' %}</span>
               {% else %}
                   <form method="POST" action="{% url 'kas:person_in_year_handled' person_tax_year.pk %}">
                   {% csrf_token %}
-                  <span>{% trans 'Nej' %} </span><button class="btn btn-sm btn-success" type="submit">{% trans 'Sæt alle bilag og notater som behandlet' %}</button>
+                  <span>{% translate 'Nej' %} </span><button class="btn btn-sm btn-success" type="submit">{% translate 'Sæt alle bilag og notater som behandlet' %}</button>
                   </form>
 
               {% endif %}
           </td>
       </tr>
       <tr id="all_documents_and_notes_handled_help" class="collapse">
-          <td colspan="2">{% trans 'Er alle bilag og notater på denne person behandlet' %}</td>
+          <td colspan="2">{% translate 'Er alle bilag og notater på denne person behandlet' %}</td>
       </tr>
       <tr>
-          <th>{% trans 'Slutlignet' %}{% include 'includes/help_text/question_mark.html' with target_id='slutlignet_help' right=True %}</th>
-          <td>{% if person_tax_year.slutlignet %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}</td>
+          <th>{% translate 'Slutlignet' %}{% include 'includes/help_text/question_mark.html' with target_id='slutlignet_help' right=True %}</th>
+          <td>{% if person_tax_year.slutlignet %}<span>{% translate 'Ja' %}</span>{% else %}<span>{% translate 'Nej' %}</span>{% endif %}</td>
       </tr>
       <tr id="slutlignet_help" class="collapse">
-          <td colspan="2">{% trans 'Er der lavet slutligning på denne person' %}</td>
+          <td colspan="2">{% translate 'Er der lavet slutligning på denne person' %}</td>
       </tr>
       <tr>
-          <th>{% trans 'Kræver efterbehandling' %}{% include 'includes/help_text/question_mark.html' with target_id='efterbehandling_help' right=True %}</th>
-          <td>{% if person_tax_year.efterbehandling %}<span>{% trans 'Ja' %}</span>{% else %}<span>{% trans 'Nej' %}</span>{% endif %}</td>
+          <th>{% translate 'Kræver efterbehandling' %}{% include 'includes/help_text/question_mark.html' with target_id='efterbehandling_help' right=True %}</th>
+          <td>{% if person_tax_year.efterbehandling %}<span>{% translate 'Ja' %}</span>{% else %}<span>{% translate 'Nej' %}</span>{% endif %}</td>
       </tr>
       <tr id="efterbehandling_help" class="collapse">
-          <td colspan="2">{% trans 'Er der behov for at udføre efterbehandling på denne person' %}</td>
+          <td colspan="2">{% translate 'Er der behov for at udføre efterbehandling på denne person' %}</td>
       </tr>
       <tr>
-          <th>{% trans 'Opdateret fra grunddata' %}{% include 'includes/help_text/question_mark.html' with target_id='updated_from_dafo_help' right=True %}</th>
-          <td><span>{% if person.updated_from_dafo %}{% trans 'Ja' %}{% else %}{% trans 'Nej' %}{% endif %}</span></td>
+          <th>{% translate 'Opdateret fra grunddata' %}{% include 'includes/help_text/question_mark.html' with target_id='updated_from_dafo_help' right=True %}</th>
+          <td><span>{% if person.updated_from_dafo %}{% translate 'Ja' %}{% else %}{% translate 'Nej' %}{% endif %}</span></td>
       </tr>
       <tr id="updated_from_dafo_help" class="collapse">
-          <td colspan="2">{% trans 'Er data blevet opdateret fra Grunddata (datafordeleren)' %}</td>
+          <td colspan="2">{% translate 'Er data blevet opdateret fra Grunddata (datafordeleren)' %}</td>
       </tr>
     </tbody>
     {% endwith %}
   </table>
     {% if not historical %}
     <fieldset class="border pl-4 pb-4 mb-4">
-        <legend class="w-auto">{% trans 'Handlinger' %}</legend>
+        <legend class="w-auto">{% translate 'Handlinger' %}</legend>
         {% if perms.kas.add_policytaxyear %}
-            <a class="btn btn-success" href="{% url 'kas:policy_create' view.year view.person_id %}">{% trans 'Opret ny police' %}</a>
+            <a class="btn btn-success" href="{% url 'kas:policy_create' view.year view.person_id %}">{% translate 'Opret ny police' %}</a>
         {% endif %}
         {% if perms.kas.add_policydocument and perms.kas.add_note %}
-            <a class="btn btn-info" href="{% url 'kas:person_add_notes_or_attachement' person_tax_year.pk %}" >{% trans 'Tilføj bilag/notater' %}</a>
+            <a class="btn btn-info" href="{% url 'kas:person_add_notes_or_attachement' person_tax_year.pk %}" >{% translate 'Tilføj bilag/notater' %}</a>
         {% endif %}
         {% if perms.kas.add_finalsettlement and person_tax_year.tax_year.year_part == 'genoptagelsesperiode' and person_tax_year.policytaxyear_set.exists %}
-        <a class="btn btn-warning" href="{% url 'kas:generate-final-settlement' person_tax_year.pk %}">{% trans 'Generer ny slutopgørelse' %}</a>
+        <a class="btn btn-warning" href="{% url 'kas:generate-final-settlement' person_tax_year.pk %}">{% translate 'Generer ny slutopgørelse' %}</a>
         {% endif %}
-        <a href="{% url 'kas:person_history_list' person_tax_year.pk %}" class="btn btn-secondary">{% trans 'Vis historik' %}</a>
+        <a href="{% url 'kas:person_history_list' person_tax_year.pk %}" class="btn btn-secondary">{% translate 'Vis historik' %}</a>
         {% if perms.kas.add_persontaxyear %}
         {% if representing %}
-            <a href="{{ representation_stop }}" class="btn btn-outline-primary">{% trans 'Afslut repræsentation' %}</a>
+            <a href="{{ representation_stop }}" class="btn btn-outline-primary">{% translate 'Afslut repræsentation' %}</a>
             {% else %}
-            <a href="{% url 'kas:person_represent_start' person_tax_year.person.id %}" class="btn btn-primary">{% trans 'Repræsentér borger' %}</a>
+            <a href="{% url 'kas:person_represent_start' person_tax_year.person.id %}" class="btn btn-primary">{% translate 'Repræsentér borger' %}</a>
             {% endif %}
         {% endif %}
 
@@ -184,7 +184,7 @@
         {% endif %}
 
         {% include 'includes/help_text/question_mark.html' with target_id='actions_help_texts' %}
-        {% blocktrans asvar actions_help_text %}<b>Opret ny police</b> Opretter en ny police for personen for dette skatteår. Dette er praktisk hvis der eksisterer en police, men hverken borgeren eller R75-dataene har angivet policen
+        {% blocktranslate asvar actions_help_text %}<b>Opret ny police</b> Opretter en ny police for personen for dette skatteår. Dette er praktisk hvis der eksisterer en police, men hverken borgeren eller R75-dataene har angivet policen
 
         <b>Tilføj bilag/notater</b> Vedhæfter en tekst og/eller en fil til dette personskatteår
 
@@ -193,13 +193,13 @@
         <b>Vis historik</b> Viser tidligere udgaver af dette personskatteår, hvor gamle stamdata kan inspiceres.
 
         <b>Repræsentér borger</b> Åbner selvbetjeningssiden, så der kan indberettes på vegne af borgeren.
-        {% endblocktrans %}
+        {% endblocktranslate %}
 
         {% include 'includes/help_text/collapse.html' with help_text=actions_help_text target_id='actions_help_texts' %}
     </fieldset>
     <div class="mb-2">
         {% include 'includes/help_text/question_mark.html' with target_id='js-nav-collapse' only %}
-        {% blocktrans asvar help_text_nav %}<b>Policer</b> Borgerens police for det valgte år. Klik på <b>Police nr.</b> for at gå til police.
+        {% blocktranslate asvar help_text_nav %}<b>Policer</b> Borgerens police for det valgte år. Klik på <b>Police nr.</b> for at gå til police.
 
             <b>Notater</b> Liste af notater tilknyttet borger eller police
 
@@ -209,7 +209,7 @@
 
             <b>Slutopgørelse</b> Genererede og afsendte slutopgørelser.
 
-            <b>Transaktioner</b> Forudindbetalinger og opkrævninger.{% endblocktrans %}
+            <b>Transaktioner</b> Forudindbetalinger og opkrævninger.{% endblocktranslate %}
         {% include 'includes/help_text/collapse.html' with help_text=help_text_nav target_id="js-nav-collapse" %}
     </div>
     {% include 'includes/detail_tabs.html' with policy_col=True policies=person_tax_year.policytaxyear_set.all notes=person_tax_year.notes.all attachments=person_tax_year.policydocument_set.all transactions=transactions settlements=person_tax_year.finalsettlement_set.all person_tax_year=person_tax_year %}

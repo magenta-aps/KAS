@@ -2,11 +2,11 @@
 <table class="table table-bordered table-sm">
     <thead>
     <tr>
-        <th>{% trans 'Status' %}</th>
-        <th>{% trans 'Type' %}</th>
-        <th>{% trans 'Oprettet' %}</th>
-        <th>{% trans 'Prisme bunke' %}</th>
-        <th>{% trans 'Beløb' %}</th>
+        <th>{% translate 'Status' %}</th>
+        <th>{% translate 'Type' %}</th>
+        <th>{% translate 'Oprettet' %}</th>
+        <th>{% translate 'Prisme bunke' %}</th>
+        <th>{% translate 'Beløb' %}</th>
     </tr>
     </thead>
     <tbody>
@@ -24,7 +24,7 @@
         </tr>
     {% empty %}
         <tr>
-            <td colspan="{% if policy_col %}6{% else %}5{% endif %}">{% trans 'Ingen transaktioner fundet' %}</td>
+            <td colspan="{% if policy_col %}6{% else %}5{% endif %}">{% translate 'Ingen transaktioner fundet' %}</td>
         </tr>
     {% endfor %}
     </tbody>

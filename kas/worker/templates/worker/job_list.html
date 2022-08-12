@@ -2,7 +2,7 @@
 {% load static %}
 {% load i18n %}
 {% block content %}
-    <a class="btn btn-success" href="{% url 'worker:job_type_select' %}">{% trans 'Start nyt job' %}</a>
+    <a class="btn btn-success" href="{% url 'worker:job_type_select' %}">{% translate 'Start nyt job' %}</a>
 
     {% get_current_language as language_code %}
     {% if language_code == 'kl-GL' %}
@@ -20,11 +20,11 @@
     <table class="table table-striped mt-4">
         <thead>
             <tr>
-                <th>{% trans 'Job type' %}</th>
-                <th>{% trans 'Oprettet af' %}</th>
-                <th>{% trans 'Oprettet' %}</th>
-                <th>{% trans 'Fremskridt' %}</th>
-                <th>{% trans 'Status' %}</th>
+                <th>{% translate 'Job type' %}</th>
+                <th>{% translate 'Oprettet af' %}</th>
+                <th>{% translate 'Oprettet' %}</th>
+                <th>{% translate 'Fremskridt' %}</th>
+                <th>{% translate 'Status' %}</th>
             </tr>
         </thead>
         <tbody hx-get="{% url 'worker:joblist_htmx' %}" hx-trigger="load"/>

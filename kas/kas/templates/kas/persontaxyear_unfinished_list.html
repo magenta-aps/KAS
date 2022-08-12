@@ -2,49 +2,49 @@
 {% load i18n %}
 
 {% block content %}
-  <h1>{% trans 'Personer med policer der kræver efterbehandling' %}</h1>
+  <h1>{% translate 'Personer med policer der kræver efterbehandling' %}</h1>
 
   <div>
     <form action="" method="GET">
       <table>
         {{ view.form.as_table }}
       </table>
-      <input type="submit" value="{% trans 'Søg' %}" class="btn btn-primary" />
+      <input type="submit" value="{% translate 'Søg' %}" class="btn btn-primary" />
     </form>
   </div>
 
 
   {% if personstaxyears %}
-  <a class="float-right" href="{{ excel_link }}">{% trans 'Download excel fil'%}</a>
+  <a class="float-right" href="{{ excel_link }}">{% translate 'Download excel fil'%}</a>
   <table class="table table-striped">
     <thead>
     <tr>
       <th>
-        {% trans 'Personnummer' as personnummer %}
+        {% translate 'Personnummer' as personnummer %}
         {% include 'includes/order_by_link.html' with key="order_by" value="person__cpr" text=personnummer %}
       </th>
       <th>
-        {% trans 'Navn' as navn %}
+        {% translate 'Navn' as navn %}
         {% include 'includes/order_by_link.html' with key="order_by" value="person__name" text=navn %}
       </th>
       <th>
-        {% trans 'Adresse' as adresse %}
+        {% translate 'Adresse' as adresse %}
         {% include 'includes/order_by_link.html' with key="order_by" value="person__full_address_nulllast" text=adresse %}
       </th>
       <th>
-        {% trans 'Kommune' as kommune %}
+        {% translate 'Kommune' as kommune %}
         {% include 'includes/order_by_link.html' with key="order_by" value="person__municipality_name_nulllast" text=kommune %}
       </th>
       <th>
-        {% trans 'Antal policer der kræver efterbehandling' as antal_efterbehandling %}
+        {% translate 'Antal policer der kræver efterbehandling' as antal_efterbehandling %}
         {% include 'includes/order_by_link.html' with key="order_by" value="efterbehandling_count" text=antal_efterbehandling %}
       </th>
       <th>
-        {% trans 'Antal policer' as antal_policer %}
+        {% translate 'Antal policer' as antal_policer %}
         {% include 'includes/order_by_link.html' with key="order_by" value="policy_count" text=antal_policer %}
       </th>
       <th>
-        {% trans 'Næste behandlingsdato' as processing_date %}
+        {% translate 'Næste behandlingsdato' as processing_date %}
         {% include 'includes/order_by_link.html' with key="order_by" value="next_processing_date_nulllast" text=processing_date %}
       </th>
     </tr>
@@ -67,7 +67,7 @@
     </tbody>
   </table>
   {% else %}
-    <p>{% blocktrans with year=view.year %}Ingen personer fundet{% endblocktrans %}</p>
+    <p>{% blocktranslate with year=view.year %}Ingen personer fundet{% endblocktranslate %}</p>
   {% endif %}
 
   <hr/>

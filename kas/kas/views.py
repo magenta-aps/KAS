@@ -1631,7 +1631,7 @@ class LockFilterView(PermissionRequiredWithMessage, FilterView):
 
 class LocksHtmxView(PermissionRequiredWithMessage, FilterView):
     """
-    Returns a  list of Locks, rendered as TR`s used by htmx.
+    Returns a list of Locks, rendered as TR`s used by htmx.
     """
 
     filterset_class = LockFilterSet
@@ -1692,7 +1692,7 @@ class LockDetailView(PermissionRequiredWithMessage, DetailView):
     model = Lock
     excel_headers = [
         "Personnummer",
-        "navn",
+        "Navn",
         "Samlet beregnet skat",
         "Samlede overførsler til Prisme",
         "Udestående",

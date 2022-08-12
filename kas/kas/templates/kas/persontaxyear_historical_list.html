@@ -1,24 +1,24 @@
 {% extends 'kas/layout.html' %}
 {% load i18n %}
 {% block content %}
-    <h1>{% blocktrans with name=object.person.name year=object.tax_year.year %} Historik for {{ name }} i år {{ year }}{% endblocktrans%}</h1>
+    <h1>{% blocktranslate with name=object.person.name year=object.tax_year.year %} Historik for {{ name }} i år {{ year }}{% endblocktrans%}</h1>
     <table class="table table-bordered table-sm" style="width: auto;">
         <tbody>
         <tr>
-            <td>{% trans 'Personskatteår' %}</td>
-            <td><a href="{% url 'kas:person_in_year' object.tax_year.year object.person.pk %}">{% blocktrans with cpr=object.person.cpr name=object.person.name year=object.tax_year.year %} {{ cpr }} / {{ name }} i {{ year }}{% endblocktrans %}</a></td>
+            <td>{% translate 'Personskatteår' %}</td>
+            <td><a href="{% url 'kas:person_in_year' object.tax_year.year object.person.pk %}">{% blocktranslate with cpr=object.person.cpr name=object.person.name year=object.tax_year.year %} {{ cpr }} / {{ name }} i {{ year }}{% endblocktranslate %}</a></td>
         </tr>
         </tbody>
     </table>
 <table class="table table-bordered table-hover table-striped">
     <thead>
         <tr>
-            <td>{% trans 'Dato' %}</td>
-            <td>{% trans 'Type' %}</td>
-            <td>{% trans 'Hændelse' %}</td>
-            <td>{% trans 'Af' %}</td>
-            <td>{% trans 'Årsag/indhold' %}</td>
-            <td>{% trans 'Link' %}</td>
+            <td>{% translate 'Dato' %}</td>
+            <td>{% translate 'Type' %}</td>
+            <td>{% translate 'Hændelse' %}</td>
+            <td>{% translate 'Af' %}</td>
+            <td>{% translate 'Årsag/indhold' %}</td>
+            <td>{% translate 'Link' %}</td>
         </tr>
     </thead>
     <tbody>
@@ -27,30 +27,30 @@
             <td>{{ entry.history_date|date:'SHORT_DATETIME_FORMAT' }}</td>
             <td>
                 {% if  entry.klass == 'PersonTaxYear' %}
-                    {% trans 'Personskatteår' %}
+                    {% translate 'Personskatteår' %}
                 {% elif  entry.klass == 'Person' %}
-                    {% trans 'Person' %}
+                    {% translate 'Person' %}
                 {% elif  entry.klass == 'Policy' %}
-                    {% trans 'Police' %}
+                    {% translate 'Police' %}
                 {% elif  entry.klass == 'Note' %}
-                    {% trans 'Notat' %}
+                    {% translate 'Notat' %}
                 {% elif  entry.klass == 'PolicyDocument' %}
-                    {% trans 'Bilag' %}
+                    {% translate 'Bilag' %}
                 {% elif  entry.klass == 'TaxSlipGenerated' %}
-                    {% trans 'Selvangivelse' %}
+                    {% translate 'Selvangivelse' %}
                 {% elif  entry.klass == 'FinalSettlement' %}
-                    {% trans 'Slutopgørelse' %}
+                    {% translate 'Slutopgørelse' %}
                 {% else %}
                     {{ entry }}
                 {% endif %}
             </td>
             <td>
                 {% if entry.history_type == '+' %}
-                    {% trans 'Oprettet' %}
+                    {% translate 'Oprettet' %}
                 {% elif entry.history_type == '~' %}
-                    {% trans 'Ændret' %}
+                    {% translate 'Ændret' %}
                 {% elif entry.history_type == '-' %}
-                    {% trans 'Slettet' %}
+                    {% translate 'Slettet' %}
                 {% endif %}
             </td>
             <td>
@@ -64,11 +64,11 @@
                 {{ entry.history_change_reason|default_if_none:'' }}
             </td>
             <td>{% if  entry.klass == 'PersonTaxYear' %}
-                    <a href="{% url 'kas:person_history_detail' entry.history_id %}">{% trans 'Gå til version' %}</a>
+                    <a href="{% url 'kas:person_history_detail' entry.history_id %}">{% translate 'Gå til version' %}</a>
                 {% elif  entry.klass == 'Policy' %}
-                    <a href="{% url 'kas:policy_history_list' entry.history_id %}">{% trans 'Gå til historik' %}</a>
+                    <a href="{% url 'kas:policy_history_list' entry.history_id %}">{% translate 'Gå til historik' %}</a>
                 {% elif  entry.klass == 'PolicyDocument' %}
-                    <a href="{% url 'kas:policy_document_download' entry.history_id %}">{% trans 'Vis bilag' %}</a>
+                    <a href="{% url 'kas:policy_document_download' entry.history_id %}">{% translate 'Vis bilag' %}</a>
                 {% endif %}
             </td>
         </tr>
