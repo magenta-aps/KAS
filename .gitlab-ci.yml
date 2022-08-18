@@ -3,6 +3,7 @@ stages:
   - build
   - test
   - release
+  - configure
   - deploy
 
 include:
@@ -249,6 +250,29 @@ Release selvbetjening image:
       "docker://${SELF_IMAGE_SHA}"
       "docker://${SELF_IMAGE_TAG}"
 
+# Configure stage
+#################
+
+Configure test:
+  stage: configure
+  extends:
+    - .rules:semver-all
+    - .config:endpoint-with-tag
+  needs: ["Release kas image", "Release selvbetjening image"]
+  variables:
+    # Matches routing in config-updater/config_updater/kas/main.py in salt repo
+    ENDPOINT: kas/salt/update-test
+
+Configure production:
+  stage: configure
+  extends:
+    - .rules:semver-core
+    - .config:endpoint-with-tag
+  needs: ["Release kas image", "Release selvbetjening image"]
+  variables:
+    # Matches routing in config-updater/config_updater/kas/main.py in salt repo
+    ENDPOINT: kas/salt/update-production
+
 # Deploy stage
 ##############
 
@@ -257,7 +281,7 @@ Deploy to Staging:
   extends:
     - .rules:semver-all
     - .saltbert
-  needs: ["Release selvbetjening image", "Release kas image"]
+  needs: ["Release selvbetjening image", "Release kas image", "Configure test"]
   variables:
     SALTBERT_ORCHESTRATION: kas.service-test
     SALTBERT_URL: https://ctrldev1.magenta-aps.dk
@@ -266,12 +290,12 @@ Deploy to Staging:
     name: test
     url: "https://test.kas.aka.nanoq.gl"
 
-Deploy prod:
+Deploy production:
   stage: deploy
   extends:
     - .rules:semver-core
     - .saltbert
-  needs: ["Release selvbetjening image", "Release kas image"]
+  needs: ["Release selvbetjening image", "Release kas image", "Configure production"]
   variables:
     SALTBERT_ORCHESTRATION: kas.service-prod
     SALTBERT_URL: https://ctrl1.magenta-aps.dk
