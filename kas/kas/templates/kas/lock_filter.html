@@ -38,8 +38,8 @@
             modal.removeClass("show");
             backdrop.removeClass("show");
             setTimeout(function() {
-                backdrop.remove();
-                modal.remove();
+                container.removeChild(backdrop)
+                container.removeChild(modal)
             }, 200)
         }
     </script>

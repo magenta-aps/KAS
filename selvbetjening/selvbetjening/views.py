@@ -122,7 +122,7 @@ class CloseMixin(object):
                 today.year, settings.CLOSE_AT["month"], settings.CLOSE_AT["date"]
             )
             if today >= close_date:
-                return redirect(reverse("selvbetjening:policy-view"))
+                return redirect(reverse("selvbetjening:policy-view", kwargs={"year": today.year}))
 
     def dispatch(self, request, *args, **kwargs):
         redir = self.redirect_if_close_time()
