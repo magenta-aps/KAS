@@ -77,6 +77,13 @@ def get_job_types():
             "function": "kas.jobs.dispatch_final_settlements_for_year",
             "result_template": "worker/includes/status_only.html",
         },
+        "DispatchFinalSettlement": {
+            "label": _("Afsendelse af KAS slutopgørelse"),
+            "form_class": ConfirmForm,
+            "function": "kas.jobs.dispatch_final_settlement",
+            "result_template": "worker/includes/status_only.html",
+            "not_in_dropdown": True,
+        },
         "SendBatch": {
             "label": _("Sender et Q10 batch"),
             "form_class": ConfirmForm,
