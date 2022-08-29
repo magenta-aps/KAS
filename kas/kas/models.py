@@ -296,6 +296,9 @@ class Person(HistoryMixin, models.Model):
     )
     status = models.TextField(choices=recipient_recieve_statuses, default="Undefined")
 
+    # testpersons should not be included in prisme data
+    is_test_person = models.BooleanField(default=False)
+
     @property
     def postal_address(self):
         return "\n".join(
