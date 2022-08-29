@@ -407,7 +407,10 @@ def dispatch_tax_year():
         job.started_at = timezone.now()
         total = (
             TaxSlipGenerated.objects.filter(status="created")
-            .filter(persontaxyear__tax_year__pk=job.arguments["year_pk"])
+            .filter(
+                persontaxyear__tax_year__pk=job.arguments["year_pk"],
+                persontaxyear__person__is_test_person=False,
+            )
             .count()
         )
         job.arguments["total_count"] = total
@@ -447,10 +450,13 @@ def dispatch_eboks_tax_slips(job):
     has_more = False
     slips = (
         TaxSlipGenerated.objects.filter(status="created")
-        .filter(persontaxyear__tax_year__pk=job.parent.arguments["year_pk"])
-        .exclude(persontaxyear__person__status__in=["Dead", "Invalid"])[
-            : dispatch_page_size + 1
-        ]
+        .filter(
+            persontaxyear__tax_year__pk=job.parent.arguments["year_pk"],
+            persontaxyear__person__is_test_person=False,
+        )
+        .exclude(
+            persontaxyear__person__status__in=["Dead", "Invalid"],
+        )[: dispatch_page_size + 1]
     )
     try:
         for slip in slips:
@@ -682,7 +688,9 @@ def generate_batch_and_transactions_for_year(job):
     prisme10Q_batch.save()
 
     settlements = FinalSettlement.objects.filter(
-        person_tax_year__tax_year=tax_year, invalid=False
+        person_tax_year__tax_year=tax_year,
+        invalid=False,
+        person_tax_year__person__is_test_person=False,
     )
     settlements_count = 0
     new_transactions = 0
@@ -768,7 +776,9 @@ def dispatch_final_settlements(job):
     settlements = FinalSettlement.objects.exclude(
         invalid=True, person_tax_year__person__status__in=["Dead", "Invalid"]
     ).filter(
-        status="created", person_tax_year__tax_year__pk=job.parent.arguments["year_pk"]
+        status="created",
+        person_tax_year__tax_year__pk=job.parent.arguments["year_pk"],
+        person_tax_year__person__is_test_person=False,
     )[
         : dispatch_page_size + 1
     ]
@@ -1102,7 +1112,9 @@ def dispatch_agterskrivelser(job):
     agterskrivelser = Agterskrivelse.objects.exclude(
         person_tax_year__person__status__in=["Dead", "Invalid"]
     ).filter(
-        status="created", person_tax_year__tax_year__pk=job.parent.arguments["year_pk"]
+        status="created",
+        person_tax_year__tax_year__pk=job.parent.arguments["year_pk"],
+        person_tax_year__person__is_test_person=False,
     )[
         : dispatch_page_size + 1
     ]

@@ -225,6 +225,11 @@ class TaxslipGeneratedJobsTest(BaseTransactionTestCase):
                 person = Person.objects.create(
                     cpr="111111111{}".format(i), status="Invalid"
                 )
+            elif i == 5:
+                person = Person.objects.create(
+                    cpr="111111111{}".format(i),
+                    is_test_person=True,
+                )
             else:
                 person = Person.objects.create(cpr="111111111{}".format(i))
 
@@ -286,8 +291,8 @@ class TaxslipGeneratedJobsTest(BaseTransactionTestCase):
         self.assertEqual(Job.objects.filter(parent=parent_job).count(), 1)
         # all slips where marked as send
         self.assertEqual(
-            TaxSlipGenerated.objects.filter(status="send").count(), 5
-        )  # 5 persons is not dead or invalid
+            TaxSlipGenerated.objects.filter(status="send").count(), 4
+        )  # 4 persons is not dead or invalid
 
     @patch.object(EboksClient, "get_recipient_status")
     @patch.object(EboksClient, "send_message")
@@ -311,9 +316,9 @@ class TaxslipGeneratedJobsTest(BaseTransactionTestCase):
             created_by=self.user,
         )
         self.assertEqual(
-            Job.objects.filter(parent=parent_job).count(), 3
+            Job.objects.filter(parent=parent_job).count(), 2
         )  # 4 jobs should have been started
-        self.assertEqual(TaxSlipGenerated.objects.filter(status="send").count(), 5)
+        self.assertEqual(TaxSlipGenerated.objects.filter(status="send").count(), 4)
 
 
 class GenerateBatchAndTransactionsForYearJobsTest(BaseTransactionTestCase):
@@ -393,6 +398,31 @@ class GenerateBatchAndTransactionsForYearJobsTest(BaseTransactionTestCase):
         self.assertEqual(FinalSettlement.objects.count(), 1)
         self.assertEqual(FinalSettlement.objects.first().get_transaction_amount(), 1)
         self.assertEqual(batch.transaction_set.count(), 1)
+
+    @patch.object(
+        django_rq,
+        "get_queue",
+        return_value=Queue(is_async=False, connection=FakeStrictRedis()),
+    )
+    def test_testpersons(self, django_rq):
+        self.person.is_test_person = True
+        self.person.save()
+
+        Job.schedule_job(
+            generate_batch_and_transactions_for_year,
+            job_type="generate_batch_and_transactions_for_year",
+            job_kwargs=self.job_kwargs,
+            created_by=self.user,
+        )
+
+        qs = Prisme10QBatch.objects.filter(tax_year__pk=self.job_kwargs["year_pk"])
+        self.assertEqual(qs.count(), 1)
+        self.assertEqual(FinalSettlement.objects.count(), 1)
+        self.assertEqual(qs.first().transaction_set.count(), 0)
+        self.assertIsNone(FinalSettlement.objects.first().get_transaction())
+
+        self.person.is_test_person = False
+        self.person.save()
 
 
 class MergeCompanyJobsTest(BaseTransactionTestCase):
@@ -505,6 +535,8 @@ class DispatchAgterskrivelseJobsTest(BaseTransactionTestCase):
                 person = Person.objects.create(cpr=f"111111111{i}", status="Dead")
             elif i == 4:
                 person = Person.objects.create(cpr=f"111111111{i}", status="Invalid")
+            elif i == 5:
+                person = Person.objects.create(cpr=f"111111111{i}", is_test_person=True)
             else:
                 person = Person.objects.create(cpr=f"111111111{i}")
 
@@ -565,5 +597,5 @@ class DispatchAgterskrivelseJobsTest(BaseTransactionTestCase):
         self.assertEqual(Job.objects.filter(parent=parent_job).count(), 1)
         # all slips were marked as send
         self.assertEqual(
-            Agterskrivelse.objects.filter(status="send").count(), 5
-        )  # 5 persons is not dead or invalid
+            Agterskrivelse.objects.filter(status="send").count(), 4
+        )  # 5 persons is not dead or invalid or testpersons
