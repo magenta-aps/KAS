@@ -68,7 +68,7 @@ Lint REUSE compliance:
 # Build stage
 #############
 
-Build kas image:
+Build KAS image:
   stage: build
   needs: ["Lint Python", "Lint Dockerfiles", "Lint REUSE compliance"]
   dependencies: []
@@ -86,7 +86,7 @@ Build kas image:
       --dockerfile=$CI_PROJECT_DIR/docker/Dockerfile.kas
       --destination=${KAS_IMAGE_SHA}
 
-Build selvbetjenings image:
+Build Selvbetjening image:
   stage: build
   needs: ["Lint Python", "Lint Dockerfiles", "Lint REUSE compliance"]
   dependencies: []
@@ -114,7 +114,7 @@ Build selvbetjenings image:
 
 KAS Unittest:
   <<: *test-default
-  needs: ["Build kas image"]
+  needs: ["Build KAS image"]
   image: ${KAS_IMAGE_SHA}
   services:
    - name: postgres:13
@@ -165,7 +165,7 @@ KAS Unittest:
 
 Selvbetjening Unittest:
   <<: *test-default
-  needs: ["Build selvbetjenings image"]
+  needs: ["Build Selvbetjening image"]
   image: ${SELF_IMAGE_SHA}
   services:
     - name: postgres:13
@@ -227,7 +227,7 @@ Selvbetjening Unittest:
   needs: ["Selvbetjening Unittest"]
 
 
-Release kas image:
+Release KAS image:
   # Releases both stable and RC releases.
   extends:
     - .rules:semver-all
@@ -239,7 +239,7 @@ Release kas image:
       "docker://${KAS_IMAGE_SHA}"
       "docker://${KAS_IMAGE_TAG}"
 
-Release selvbetjening image:
+Release Selvbetjening image:
   extends:
     - .rules:semver-all
     - .release-self
@@ -253,22 +253,22 @@ Release selvbetjening image:
 # Configure stage
 #################
 
-Configure test:
+Configure Test:
   stage: configure
   extends:
     - .rules:semver-all
     - .config:endpoint-with-tag
-  needs: ["Release kas image", "Release selvbetjening image"]
+  needs: ["Release KAS image", "Release Selvbetjening image"]
   variables:
     # Matches routing in config-updater/config_updater/kas/main.py in salt repo
     ENDPOINT: kas/salt/update-test
 
-Configure production:
+Configure Production:
   stage: configure
   extends:
     - .rules:semver-core
     - .config:endpoint-with-tag
-  needs: ["Release kas image", "Release selvbetjening image"]
+  needs: ["Release KAS image", "Release Selvbetjening image"]
   variables:
     # Matches routing in config-updater/config_updater/kas/main.py in salt repo
     ENDPOINT: kas/salt/update-production
@@ -281,7 +281,7 @@ Deploy to Staging:
   extends:
     - .rules:semver-all
     - .saltbert
-  needs: ["Release selvbetjening image", "Release kas image", "Configure test"]
+  needs: ["Release KAS image", "Release Selvbetjening image", "Configure Test"]
   variables:
     SALTBERT_ORCHESTRATION: kas.service-test
     SALTBERT_URL: https://ctrldev1.magenta-aps.dk
@@ -290,12 +290,12 @@ Deploy to Staging:
     name: test
     url: "https://test.kas.aka.nanoq.gl"
 
-Deploy production:
+Deploy to Production:
   stage: deploy
   extends:
     - .rules:semver-core
     - .saltbert
-  needs: ["Release selvbetjening image", "Release kas image", "Configure production"]
+  needs: ["Release KAS image", "Release Selvbetjening image", "Configure Production"]
   variables:
     SALTBERT_ORCHESTRATION: kas.service-prod
     SALTBERT_URL: https://ctrl1.magenta-aps.dk
