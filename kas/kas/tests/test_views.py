@@ -636,3 +636,48 @@ class CreateLockForYearTestCase(BaseTestCase):
         self.assertEqual(r.status_code, 200)
         # No lock was create
         self.assertEqual(self.tax_year.locks.count(), 1)
+
+
+class PolicyUpdateNumberTestCase(BaseTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.client.login(username=self.username, password=self.password)
+
+    def test_update_policy_number(self):
+        self.client.post(
+            reverse("kas:policy_number", kwargs={"pk": self.policy_tax_year.pk}),
+            data={"policy_number": "abcd"},
+            follow=True,
+        )
+        self.policy_tax_year.refresh_from_db()
+        self.assertEqual(self.policy_tax_year.policy_number, "abcd")
+
+    def test_update_policy_number_siblings(self):
+        other_tax_year = TaxYear.objects.create(year=2022)
+        other_person_tax_year = PersonTaxYear.objects.create(
+            tax_year=other_tax_year, person=self.person
+        )
+        other_policy_tax_year = PolicyTaxYear.objects.create(
+            person_tax_year=other_person_tax_year,
+            pension_company=self.pension_company,
+            prefilled_amount=35,
+            policy_number=self.policy_tax_year.policy_number,
+        )
+
+        self.client.post(
+            reverse("kas:policy_number", kwargs={"pk": self.policy_tax_year.pk}),
+            data={"policy_number": "abcd", "change_related": "True"},
+        )
+        self.policy_tax_year.refresh_from_db()
+        other_policy_tax_year.refresh_from_db()
+        self.assertEqual(self.policy_tax_year.policy_number, "abcd")
+        self.assertEqual(other_policy_tax_year.policy_number, "abcd")
+
+        self.client.post(
+            reverse("kas:policy_number", kwargs={"pk": self.policy_tax_year.pk}),
+            data={"policy_number": "efgh", "change_related": "False"},
+        )
+        self.policy_tax_year.refresh_from_db()
+        other_policy_tax_year.refresh_from_db()
+        self.assertEqual(self.policy_tax_year.policy_number, "efgh")
+        self.assertEqual(other_policy_tax_year.policy_number, "abcd")
