@@ -1,9 +1,10 @@
 from django.conf import settings
 from django.urls import path
-
 from kas.views import (
     StatisticsView,
     PersonTaxYearListView,
+    AgterskrivelseView,
+    PolicyTaxYearNumberUpdateView,
     PersonTaxYearDetailView,
     PolicyTaxYearTabView,
     PolicyTaxYearDetailView,
@@ -54,8 +55,6 @@ from kas.viewsets import (
     CurrentFinalSettlementExistsView,
     TokenValidationView,
 )
-
-from kas.views import AgterskrivelseView
 
 app_name = "kas"
 
@@ -128,6 +127,11 @@ urlpatterns = [
         "policy/<int:pk>/company/",
         PolicyTaxYearCompanyUpdateView.as_view(),
         name="policy_company",
+    ),
+    path(
+        "policy/<int:pk>/number/",
+        PolicyTaxYearNumberUpdateView.as_view(),
+        name="policy_number",
     ),
     path(
         "policy/unfinished/",

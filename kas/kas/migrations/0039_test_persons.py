@@ -19,6 +19,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('kas', '0038_auto_20220829_0858'),
+        ('kas', '0038_auto_20220810_1012')
     ]
 
     operations = [

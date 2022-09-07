@@ -42,6 +42,7 @@ from kas.forms import (
     PolicyListFilterForm,
     FinalStatementForm,
     PolicyTaxYearCompanyForm,
+    PolicyTaxYearNumberForm,
     PensionCompanyModelForm,
     PensionCompanyMergeForm,
     NoteUpdateForm,
@@ -865,6 +866,28 @@ class PolicyTaxYearCompanyUpdateView(
     def form_valid(self, form):
         if self.has_changes or form.changed_data:
             self.object = form.save(False)
+        return super().form_valid(form)
+
+
+class PolicyTaxYearNumberUpdateView(
+    PermissionRequiredWithMessage,
+    CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear,
+    UpdateView,
+):
+    permission_required = "kas.change_policytaxyear"
+    permission_denied_message = sagsbehandler_or_administrator_required
+    model = PolicyTaxYear
+    form_class = PolicyTaxYearNumberForm
+    template_name = "kas/form_with_notes.html"
+
+    def form_valid(self, form):
+        if self.has_changes or form.changed_data:
+            self.object = form.save(False)
+            if form.cleaned_data["change_related"]:
+                # Opdatér andre policer med samme nummer
+                old_instance = self.model.objects.get(pk=form.instance.pk)
+                siblings = old_instance.same_policy_qs.exclude(pk=form.instance.pk)
+                siblings.update(policy_number=self.object.policy_number)
         return super().form_valid(form)
 
 

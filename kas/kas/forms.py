@@ -215,6 +215,33 @@ class PolicyTaxYearCompanyForm(forms.ModelForm, BootstrapForm):
         fields = ("pension_company",)
 
 
+class PolicyTaxYearNumberForm(forms.ModelForm, BootstrapForm):
+    class Meta:
+        model = PolicyTaxYear
+        fields = ("policy_number",)
+
+    change_related = forms.BooleanField(
+        label=_("Opdatér policer med samme nummer på andre skatteår"),
+        required=False,
+        widget=forms.Select(choices=((False, _("Nej")), (True, _("Ja")))),
+    )
+
+    def clean_policy_number(self):
+        policy_number = self.cleaned_data["policy_number"]
+        if (
+            policy_number
+            and self.instance.person_tax_year.policytaxyear_set.exclude(
+                pk=self.instance.pk
+            )
+            .filter(policy_number=policy_number)
+            .exists()
+        ):
+            raise ValidationError(
+                _("Policenummeret er allerede brugt af en anden police")
+            )
+        return policy_number
+
+
 class FinalStatementForm(forms.ModelForm, BootstrapForm):
     class Meta:
         model = FinalSettlement

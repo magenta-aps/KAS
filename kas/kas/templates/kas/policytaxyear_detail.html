@@ -144,6 +144,7 @@
                     <a class="btn btn-warning" href="{% url 'kas:change-edit-amounts' policy.pk %}">{% translate 'Ret beløb' %}</a>
                 {% endif %}
                 <a class="btn btn-warning" href="{% url 'kas:policy_company' policy.pk %}">{% translate 'Skift pensionsselskab' %}</a>
+                <a class="btn btn-warning" href="{% url 'kas:policy_number' policy.pk %}">{% translate 'Skift policenummer' %}</a>
                 {% if policy.pension_company.agreement_present %}
                     <a class="btn btn-warning" href="{% url 'kas:policy_payment_override' policy.pk %}">{% translate 'Ret borgerbetaling' %}</a>
                 {% endif %}

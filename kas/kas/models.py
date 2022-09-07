@@ -666,6 +666,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     policy_number = models.CharField(
         max_length=40,
         blank=False,
+        verbose_name=_("Policenummer"),
     )
 
     prefilled_amount = models.BigIntegerField(
