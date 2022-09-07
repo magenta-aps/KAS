@@ -62,12 +62,12 @@ app_name = "kas"
 urlpatterns = [
     path("", PersonTaxYearListView.as_view(), name="person_search"),
     path(
-        "person/unfinished",
+        "person/unfinished/",
         PersonTaxYearUnfinishedListView.as_view(),
         name="person_search_unfinished",
     ),
     path(
-        "person/failsend",
+        "person/failsend/",
         PersonTaxYearFailSendListView.as_view(),
         name="person_search_failsend",
     ),
@@ -82,7 +82,7 @@ urlpatterns = [
         name="person_search_foreign",
     ),
     path(
-        "person/<int:pk>/represent",
+        "person/<int:pk>/represent/",
         PersonRepresentStartView.as_view(),
         name="person_represent_start",
     ),
@@ -92,7 +92,7 @@ urlpatterns = [
         name="person_represent_stop",
     ),
     path("token/", TokenValidationView.as_view()),
-    path("statistics", StatisticsView.as_view(), name="statistics"),
+    path("statistics/", StatisticsView.as_view(), name="statistics"),
     path(
         "tax_year/<int:year>/persons/<int:person_id>/",
         PersonTaxYearDetailView.as_view(),
@@ -130,7 +130,7 @@ urlpatterns = [
         name="policy_company",
     ),
     path(
-        "policy/unfinished",
+        "policy/unfinished/",
         PolicyTaxYearUnfinishedListView.as_view(),
         name="policy_search_unfinished",
     ),
@@ -165,17 +165,17 @@ urlpatterns = [
         name="policy_add_notes_or_attachement",
     ),
     path(
-        r"tax_year/latest/company-summary/",
+        "tax_year/latest/company-summary/",
         PensionCompanySummaryFileView.as_view(),
         name="policy_summary_list_latest",
     ),
     path(
-        r"tax_year/<int:year>/company-summary/",
+        "tax_year/<int:year>/company-summary/",
         PensionCompanySummaryFileView.as_view(),
         name="policy_summary_list",
     ),
     path(
-        r"tax_year/<int:year>/company-summary/<int:pk>",
+        "tax_year/<int:year>/company-summary/<int:pk>/",
         PensionCompanySummaryFileDownloadView.as_view(),
         name="policy_summary",
     ),
@@ -185,7 +185,7 @@ urlpatterns = [
         name="person_history_list",
     ),
     path(
-        "persontaxyear/history/<int:pk>",
+        "persontaxyear/history/<int:pk>/",
         PersonTaxYearHistoryDetailView.as_view(),
         name="person_history_detail",
     ),
@@ -195,7 +195,7 @@ urlpatterns = [
         name="policy_history_list",
     ),
     path(
-        "policytaxyear/history/<int:pk>",
+        "policytaxyear/history/<int:pk>/",
         PolicyTaxYearHistoryDetailView.as_view(),
         name="policy_history_detail",
     ),
@@ -225,7 +225,7 @@ urlpatterns = [
         name="current-final-settlement",
     ),
     path(
-        "final_settlement/<int:year>/<str:cpr>/exists",
+        "final_settlement/<int:year>/<str:cpr>/exists/",
         CurrentFinalSettlementExistsView.as_view(),
         name="current-final-settlement-exists",
     ),

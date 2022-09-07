@@ -1,40 +1,40 @@
-from django.conf.urls import url, include
+from django.conf.urls import include
 from django.urls import path
 from django.views.generic import RedirectView, TemplateView
 from selvbetjening.views import CustomJavaScriptCatalog, SetLanguageView
 from selvbetjening.views import PolicyFormView, PolicyDetailView, PolicyDetailPriorView
-from selvbetjening.views import ViewFinalSettlementView
 from selvbetjening.views import RepresentationStartView, RepresentationStopView
+from selvbetjening.views import ViewFinalSettlementView
 
 app_name = "selvbetjening"
 
 urlpatterns = [
-    url(r"^$", RedirectView.as_view(url="/policy/edit/")),
-    url(r"^policy/(?P<year>[0-9]{4})$", PolicyDetailView.as_view(), name="policy-view"),
-    url(
-        r"^policy/prior/(?P<year>[0-9]{4})/?",
+    path("", RedirectView.as_view(url="/policy/edit/")),
+    path("policy/<int:year>/", PolicyDetailView.as_view(), name="policy-view"),
+    path(
+        "policy/prior/<int:year>/",
         PolicyDetailPriorView.as_view(),
         name="policy-prior-view",
     ),
-    url(r"^policy/edit/?", PolicyFormView.as_view(), name="policy-edit"),
-    url(
-        r"^policy/submitted/?",
+    path("policy/edit/", PolicyFormView.as_view(), name="policy-edit"),
+    path(
+        "policy/submitted/",
         TemplateView.as_view(template_name="submitted.html"),
         name="policy-submitted",
     ),
-    url(
-        r"^policy/no_person_data/?",
+    path(
+        "policy/no_person_data/",
         TemplateView.as_view(template_name="not_found.html"),
         name="person-not-found",
     ),
-    url(
-        r"^language/(?P<locale>[a-z]{2})",
+    path(
+        "language/<str:locale>/",
         CustomJavaScriptCatalog.as_view(domain="django", packages=["selvbetjening"]),
         name="javascript-language-catalog",
     ),
-    url(r"^language", SetLanguageView.as_view(), name="set-language"),
-    url(
-        r"^policy/closed/",
+    path("language/", SetLanguageView.as_view(), name="set-language"),
+    path(
+        "policy/closed/",
         TemplateView.as_view(template_name="closed.html"),
         name="closed",
     ),
@@ -44,12 +44,12 @@ urlpatterns = [
         name="final-settlement",
     ),
     path(
-        "represent-start",
+        "represent-start/",
         RepresentationStartView.as_view(),
         name="representation-start",
     ),
     path(
-        "represent-stop", RepresentationStopView.as_view(), name="representation-stop"
+        "represent-stop/", RepresentationStopView.as_view(), name="representation-stop"
     ),
     path("_ht/", include("watchman.urls")),
 ]
