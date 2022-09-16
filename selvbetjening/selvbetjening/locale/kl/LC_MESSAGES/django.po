@@ -163,6 +163,18 @@ msgstr "Policenormu"
 msgid "Kapitalafkast PBL (DK) § 53 A"
 msgstr "Pigisanit pissarsiat PBL (DK) § 53 A"
 
+msgid "Fortrykt"
+msgstr "Naqeriig aq"
+
+msgid "Selvangivet"
+msgstr "Nammineer luni nalunaarut iginineqrtoq"
+
+msgid "Antal skattepligtsdage"
+msgstr "Ullut akileraarfiit"
+
+msgid "Forholdsmæssigt i skattepligtsperioden"
+msgstr "Ullunut akileraarfinnut agguarneqarnera"
+
 #: templates/form.html:70
 #, python-format
 msgid "Vores beregning: %(value)s"
