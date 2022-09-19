@@ -190,12 +190,7 @@ class TaxPDF(FPDF):
     tax_return_date_limit = "-"
     person_number = "-"
     reciever_name = "-"
-    reciever_address_l1 = "-"
-    reciever_address_l2 = "-"
-    reciever_address_l3 = "-"
-    reciever_address_l4 = "-"
-    reciever_address_l5 = "-"
-    full_reciever_address = ""
+    reciever_postal_address = ""
     fully_tax_liable = True
     tax_days_adjust_factor = 1.0
     taxable_days_in_year = 365
@@ -210,11 +205,7 @@ class TaxPDF(FPDF):
         pay_date="",
         person_number="-",
         reciever_name="",
-        reciever_address_l1="",
-        reciever_address_l2="",
-        reciever_address_l3="",
-        reciever_address_l4="",
-        reciever_address_l5="",
+        reciever_postal_address="",
         fully_tax_liable=True,
         tax_days_adjust_factor=1.0,
         taxable_days_in_year=365,
@@ -225,24 +216,11 @@ class TaxPDF(FPDF):
         self.request_pay = request_pay
         self.pay_date = pay_date
         self.person_number = person_number
-        self.reciever_name = reciever_name
+        self.reciever_name = reciever_name or ""
         if policies is None:
             policies = []
 
-        self.full_reciever_address = "\n".join(
-            [
-                x
-                for x in (
-                    reciever_address_l1,
-                    reciever_address_l2,
-                    reciever_address_l3,
-                    reciever_address_l4,
-                    reciever_address_l5,
-                )
-                if x
-            ]
-        )
-
+        self.reciever_postal_address = reciever_postal_address or ""
         self.fully_tax_liable = fully_tax_liable
         self.tax_days_adjust_factor = tax_days_adjust_factor
         self.taxable_days_in_year = taxable_days_in_year
@@ -310,7 +288,7 @@ class TaxPDF(FPDF):
             3,
             align="L",
             border=0,
-            txt=self.reciever_name + "\n" + self.full_reciever_address,
+            txt=self.reciever_name + "\n" + self.reciever_postal_address,
         )
 
         # Adressing department
@@ -786,11 +764,7 @@ class TaxPDF(FPDF):
         pay_date = f"1. september {(person_tax_year.tax_year.year+1)}"
         person_number = person_tax_year.person.cpr
         reciever_name = person_tax_year.person.name
-        reciever_address_line_1 = person_tax_year.person.address_line_1
-        reciever_address_line_2 = person_tax_year.person.address_line_2
-        reciever_address_line_3 = person_tax_year.person.address_line_3
-        reciever_address_line_4 = person_tax_year.person.address_line_4
-        reciever_address_line_5 = person_tax_year.person.address_line_5
+        reciever_postal_address = person_tax_year.person.postal_address
         fully_tax_liable = person_tax_year.fully_tax_liable
         tax_days_adjust_factor = 1 if person_tax_year.fully_tax_liable else 0
         taxable_days_in_year = person_tax_year.number_of_days
@@ -831,11 +805,7 @@ class TaxPDF(FPDF):
             pay_date,
             person_number,
             reciever_name,
-            reciever_address_line_1,
-            reciever_address_line_2,
-            reciever_address_line_3,
-            reciever_address_line_4,
-            reciever_address_line_5,
+            reciever_postal_address,
             fully_tax_liable,
             tax_days_adjust_factor,
             taxable_days_in_year,
