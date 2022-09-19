@@ -49,6 +49,7 @@ from kas.views import (
     LockDetailView,
     UploadExistingFinalSettlementView,
     CreateLockForYearTemplateView,
+    KasLoginView,
 )
 from kas.viewsets import (
     CurrentFinalSettlementDownloadView,
@@ -286,6 +287,7 @@ urlpatterns = [
     path(
         "agterskrivelse/<uuid:pk>/", AgterskrivelseView.as_view(), name="agterskrivelse"
     ),
+    path("accounts/login/", KasLoginView.as_view(), name="login"),
 ]
 
 if settings.FEATURE_FLAGS.get("enable_feature_flag_list"):

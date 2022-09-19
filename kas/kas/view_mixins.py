@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.conf import settings
 from django.forms import formset_factory
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -200,3 +201,11 @@ class SpecialExcelMixin(object):
         return super(SpecialExcelMixin, self).render_to_response(
             context, **response_kwargs
         )
+
+
+class KasMixin(object):
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        if settings.ENVIRONMENT != "production":
+            ctx["TEST_ENVIRONMENT"] = True
+        return ctx

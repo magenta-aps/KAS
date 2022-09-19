@@ -13,9 +13,10 @@ from project.view_mixins import (
 )
 from worker.job_registry import resolve_job_function
 from worker.models import Job
+from kas.view_mixins import KasMixin
 
 
-class Prisme10QBatchListView(PermissionRequiredWithMessage, ListView):
+class Prisme10QBatchListView(KasMixin, PermissionRequiredWithMessage, ListView):
     permission_required = "prisme.view_prisme10qbatch"
     model = Prisme10QBatch
     template_name = "prisme/batch_list.html"
@@ -23,7 +24,9 @@ class Prisme10QBatchListView(PermissionRequiredWithMessage, ListView):
     paginate_by = 10
 
 
-class Prisme10QBatchView(PermissionRequiredWithMessage, SingleObjectMixin, ListView):
+class Prisme10QBatchView(
+    KasMixin, PermissionRequiredWithMessage, SingleObjectMixin, ListView
+):
     template_name = "prisme/batch_detail.html"
     permission_required = "prisme.view_prisme10qbatch"
     paginate_by = 10
@@ -45,7 +48,7 @@ class Prisme10QBatchView(PermissionRequiredWithMessage, SingleObjectMixin, ListV
         return self.object.active_transactions_qs
 
 
-class Prisme10QBatchDownloadView(PermissionRequiredWithMessage, View):
+class Prisme10QBatchDownloadView(KasMixin, PermissionRequiredWithMessage, View):
     permission_required = "prisme.view_prisme10qbatch"
 
     def get(self, *args, **kwargs):
@@ -59,7 +62,7 @@ class Prisme10QBatchDownloadView(PermissionRequiredWithMessage, View):
         return response
 
 
-class Prisme10QBatchSendView(PermissionRequiredWithMessage, FormView):
+class Prisme10QBatchSendView(KasMixin, PermissionRequiredWithMessage, FormView):
     permission_required = "prisme.add_prisme10qbatch"
     permission_denied_message = regnskab_or_administrator_required
     form_class = BatchSendForm
