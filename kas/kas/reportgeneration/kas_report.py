@@ -142,9 +142,9 @@ class TaxPDF(FPDF):
     text17D = {"gl": "Policenormu\n ", "dk": "Policenummer\n "}
     text17E = {"gl": "Nammineerluni nalunaarutigineqartoq", "dk": "Selvangivet\n "}
     text17F = {
-            "gl": "Ullunut akileraarfinnut agguarneqarnera",
-            "dk": "Forholdsmæssigt i skattepligtsperioden",
-            }
+        "gl": "Ullunut akileraarfinnut agguarneqarnera",
+        "dk": "Forholdsmæssigt i skattepligtsperioden",
+    }
 
     text18 = {"gl": "Immersugassap normua", "dk": "Felt nr.\n "}
     text25 = {"gl": "Aningaasat koruuninngorlugit", "dk": "Beløb i kroner"}
@@ -610,9 +610,7 @@ class TaxPDF(FPDF):
             self.set_xy(self.left_margin + d1w, self.yposition)
             actual_amount = policy.get("prefilled_amount")
             if not self.fully_tax_liable:
-                actual_amount = math.floor(
-                    float(actual_amount) * 0.8
-                )
+                actual_amount = math.floor(float(actual_amount) * 0.8)
             self.multi_cell(
                 h=rowheight,
                 align="C",
@@ -626,7 +624,7 @@ class TaxPDF(FPDF):
                 h=rowheight,
                 align="C",
                 w=d3w,
-                txt="{:,}".format(year_adjusted_amount).replace(",","."),
+                txt="{:,}".format(year_adjusted_amount).replace(",", "."),
                 border=1,
             )
 
