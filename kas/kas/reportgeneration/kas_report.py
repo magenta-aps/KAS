@@ -141,6 +141,10 @@ class TaxPDF(FPDF):
     }
     text17D = {"gl": "Policenormu\n ", "dk": "Policenummer\n "}
     text17E = {"gl": "Nammineerluni nalunaarutigineqartoq", "dk": "Selvangivet\n "}
+    text17F = {
+            "gl": "Ullunut akileraarfinnut agguarneqarnera",
+            "dk": "Forholdsmæssigt i skattepligtsperioden",
+            }
 
     text18 = {"gl": "Immersugassap normua", "dk": "Felt nr.\n "}
     text25 = {"gl": "Aningaasat koruuninngorlugit", "dk": "Beløb i kroner"}
@@ -527,9 +531,17 @@ class TaxPDF(FPDF):
 
         self.add_page()
 
-        c1w = 65
-        c2w = 50
-        c3w = 50
+        """
+        Spacing parameters dxw for 4 cells, and cx2 for 3 cells. Denotes cell width
+        """
+        d2w = 33
+        d3w = 43
+        d4w = 43
+        d1w = self.std_document_width - d2w - d3w - d4w
+
+        c2w = 52
+        c3w = 52
+        c1w = self.std_document_width - c2w - c3w
         policys_per_page = 4
         policy_index = 0
         any_policys_added = False
@@ -559,23 +571,31 @@ class TaxPDF(FPDF):
             self.multi_cell(
                 h=columnheaderheight,
                 align="C",
-                w=c1w,
+                w=d1w,
                 txt=self.text17A[language],
                 border=1,
             )
-            self.set_xy(self.left_margin + c1w, self.yposition)
+            self.set_xy(self.left_margin + d1w, self.yposition)
             self.multi_cell(
                 h=columnheaderheight,
                 align="C",
-                w=c2w,
+                w=d2w,
                 txt=self.text17B[language],
                 border=1,
             )
-            self.set_xy(self.left_margin + c1w + c2w, self.yposition)
+            self.set_xy(self.left_margin + d1w + d2w, self.yposition)
             self.multi_cell(
                 h=columnheaderheight,
                 align="C",
-                w=c3w,
+                w=d3w,
+                txt=self.text17F[language],
+                border=1,
+            )
+            self.set_xy(self.left_margin + d1w + d2w + d3w, self.yposition)
+            self.multi_cell(
+                h=columnheaderheight,
+                align="C",
+                w=d4w,
                 txt=self.text17E[language],
                 border=1,
             )
@@ -585,24 +605,33 @@ class TaxPDF(FPDF):
 
             self.set_xy(self.left_margin, self.yposition)
             self.multi_cell(
-                h=rowheight, align="L", w=c1w, txt=self.text15[language], border=1
+                h=rowheight, align="L", w=d1w, txt=self.text15[language], border=1
             )
-            self.set_xy(self.left_margin + c1w, self.yposition)
+            self.set_xy(self.left_margin + d1w, self.yposition)
             actual_amount = policy.get("prefilled_amount")
-            self.tax_days_adjust_factor = 0.8
             if not self.fully_tax_liable:
                 actual_amount = math.floor(
-                    float(actual_amount) * self.tax_days_adjust_factor
+                    float(actual_amount) * 0.8
                 )
             self.multi_cell(
                 h=rowheight,
                 align="C",
-                w=c2w,
+                w=d2w,
                 txt="{:,}".format(actual_amount).replace(",", "."),
                 border=1,
             )
-            self.set_xy(self.left_margin + c1w + c2w, self.yposition)
-            self.multi_cell(h=rowheight, align="L", w=c3w, txt="  ", border=1)
+            self.set_xy(self.left_margin + d1w + d2w, self.yposition)
+            year_adjusted_amount = policy.get("year_adjusted_amount")
+            self.multi_cell(
+                h=rowheight,
+                align="C",
+                w=d3w,
+                txt="{:,}".format(year_adjusted_amount).replace(",","."),
+                border=1,
+            )
+
+            self.set_xy(self.left_margin + d1w + d2w + d3w, self.yposition)
+            self.multi_cell(h=rowheight, align="L", w=d4w, txt="  ", border=1)
             self.yposition += rowheight
             self.set_xy(self.left_margin, self.yposition)
             if policy.get("pension_company_pays"):
