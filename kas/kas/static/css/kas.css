@@ -47,3 +47,30 @@ table.table tr td > a:only-child {
     margin-left: 5px;
     margin-right: 5px;
 }
+
+.dev_globalheader {
+    background-color: #FF6600;
+    position: top;
+    width: 100%;
+    z-index: 999;
+} 
+
+.dev_textheader {
+    position : absolute;
+    text-align: right;
+    font-size : 30px;
+    z-index : 9999;
+    right : 5px;
+    margin-top: -8px;
+}
+
+.dev_watermark {
+    position : fixed;
+    bottom : 5px;
+    right : 5px;
+    opacity : 0.5;
+    z-index : 99;
+    color : black;
+    font-size : 30px;
+    text-align : right;
+}

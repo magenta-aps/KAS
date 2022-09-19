@@ -25,7 +25,7 @@ class PermissionTestCase(TestCase):
     def test_job_list_not_logged_in(self):
         r = self.client.get(reverse("worker:job_list"), follow=True)
         # results in a redirect to the login page
-        self.assertRedirects(r, reverse("login") + "?next=/worker/jobs/", 302)
+        self.assertRedirects(r, reverse("kas:login") + "?next=/worker/jobs/", 302)
         self.assertEqual(r.status_code, 200)
 
     def test_job_list_none_admin_user(self):

@@ -20,6 +20,11 @@
 </head>
 <body>
 {% if user.is_authenticated %}
+    {% if TEST_ENVIRONMENT %}
+        <header class="dev_globalheader printhide">
+    {% else %}
+        <header >
+    {% endif %}
     <nav class="nav d-flex p-2">
         {% if back_url %}
         <a class="p-2 btn btn-secondary" href="{{ back_url }}">
@@ -88,7 +93,12 @@
             {% endif %}
         </span>
     </nav>
+    {% if TEST_ENVIRONMENT %}
+        <div class="dev_textheader">KAS 2.1.1 TEST VERSION</div>
+    {% endif %}
+    </header>
     <hr class="p-0 m-0">
+
 {% endif %}
 {% if messages %}
     {% for message in messages %}
@@ -102,6 +112,10 @@
     {% endfor %}
 {% endif %}
     <div class="p-4">
+
+{% if TEST_ENVIRONMENT %}
+<div class="dev_watermark">KAS 2.1.1<br>TEST VERSION</div>
+{% endif %}
 {% block content %}
 {% endblock %}
 
@@ -111,5 +125,6 @@
         $('[data-toggle="tooltip"]').tooltip();
     });
 </script>
+
 </body>
 </html>

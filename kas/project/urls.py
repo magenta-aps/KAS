@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LogoutView
 from django.urls import path, include, reverse_lazy
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.conf import settings
@@ -10,13 +10,8 @@ urlpatterns = [
     path("admin/", kasadmin.urls),
     path("django-admin/", admin.site.urls),
     path(
-        "accounts/login/",
-        LoginView.as_view(template_name="kas/login.html"),
-        name="login",
-    ),
-    path(
         "accounts/logout/",
-        LogoutView.as_view(next_page=reverse_lazy("login")),
+        LogoutView.as_view(next_page=reverse_lazy("kas:login")),
         name="logout",
     ),
     path("worker/", include("worker.urls", namespace="worker")),
