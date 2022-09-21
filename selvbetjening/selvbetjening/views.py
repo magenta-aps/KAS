@@ -90,15 +90,15 @@ class SetLanguageView(View):
 class HasUserMixin(object):
     @property
     def cpr(self):
-        return self.request.session["user_info"]["CPR"]
+        return self.request.session["user_info"]["cpr"]
 
     @property
     def name(self):
-        return self.request.session["user_info"].get("PersonName")
+        return self.request.session["user_info"].get("personname")
 
     @property
     def admin_name(self):
-        return self.request.session["user_info"].get("AdminUsername")
+        return self.request.session["user_info"].get("adminusername")
 
     def get_context_data(self, **kwargs):
         return super(HasUserMixin, self).get_context_data(
@@ -366,7 +366,7 @@ class RepresentationStartView(FormView):
                 return HttpResponse(
                     status=500, content=f"Missing {key} in token service response"
                 )
-            pruned_data[key] = data[key]
+            pruned_data[key.lower()] = data[key]
         self.request.session["user_info"] = pruned_data
         return redirect(reverse("selvbetjening:policy-edit"))
 

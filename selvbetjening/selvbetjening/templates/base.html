@@ -71,7 +71,8 @@
                                 <span>{% blocktrans with cpr=cpr_x %}Logget ind som {{ cpr }}{% endblocktrans %}</span>
                             {% endif %}
                             {% if cpr %}
-                                <a href="{% url 'sullissivik:openid:logout' %}">{% translate 'Log ud' %}</a>
+                                {# 'login' == settings.LOGIN_NAMESPACE #}
+                                <a href="{% url 'login:logout' %}">{% translate 'Log ud' %}</a>
                             {% endif %}
                         {% endif %}
 

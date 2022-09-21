@@ -59,8 +59,8 @@ class LoginManager:
             # For dev environment, use dummy CPR
             if "user_info" not in request.session:
                 request.session["user_info"] = {}
-            if "CPR" not in request.session["user_info"]:
-                request.session["user_info"]["CPR"] = settings.DEFAULT_CPR
+            if "cpr" not in request.session["user_info"]:
+                request.session["user_info"]["cpr"] = settings.DEFAULT_CPR
         return self.get_response(request)
 
     @staticmethod

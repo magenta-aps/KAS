@@ -5,6 +5,7 @@ from selvbetjening.views import CustomJavaScriptCatalog, SetLanguageView
 from selvbetjening.views import PolicyFormView, PolicyDetailView, PolicyDetailPriorView
 from selvbetjening.views import RepresentationStartView, RepresentationStopView
 from selvbetjening.views import ViewFinalSettlementView
+from django_mitid_auth.saml.views import AccessDeniedView
 
 app_name = "selvbetjening"
 
@@ -52,4 +53,21 @@ urlpatterns = [
         "represent-stop/", RepresentationStopView.as_view(), name="representation-stop"
     ),
     path("_ht/", include("watchman.urls")),
+    path(
+        "error/login-timeout/",
+        AccessDeniedView.as_view(
+            template_name="selvbetjening/error/login_timeout.html"
+        ),
+        name="login-timeout",
+    ),
+    path(
+        "error/login-repeat/",
+        AccessDeniedView.as_view(template_name="selvbetjening/error/login_repeat.html"),
+        name="login-repeat",
+    ),
+    path(
+        "error/login-nocpr/",
+        AccessDeniedView.as_view(template_name="selvbetjening/error/login_no_cpr.html"),
+        name="login-no-cpr",
+    ),
 ]

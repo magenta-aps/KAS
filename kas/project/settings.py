@@ -158,7 +158,7 @@ LOGGING = {
     },
 }
 REDIS = {
-    "HOST": "redis",
+    "HOST": os.environ.get("REDIS_HOST", "redis"),
     "PORT": 6379,
     "DB": 1,
     "DEFAULT_TIMEOUT": 360,

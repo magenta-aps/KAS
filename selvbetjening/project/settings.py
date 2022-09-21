@@ -7,6 +7,8 @@ from distutils.util import strtobool
 import django.conf.locale
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from django.urls import reverse_lazy
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
@@ -18,11 +20,14 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # Application definition
 
 INSTALLED_APPS = [
+    "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.staticfiles",
+    "django.contrib.auth",
     "selvbetjening",
-    "sullissivik.login",
     "watchman",
+    "django_mitid_auth",
+    "mitid_test",
 ]
 
 MIDDLEWARE = [
@@ -32,8 +37,9 @@ MIDDLEWARE = [
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "django_mitid_auth.middleware.LoginManager",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "sullissivik.login.middleware.LoginManager",
+    "django_session_timeout.middleware.SessionTimeoutMiddleware",
 ]
 
 ROOT_URLCONF = "project.urls"
@@ -183,3 +189,125 @@ for x in FEATURE_FLAGS:
     if env_key in os.environ:
         value = os.environ[env_key]
         FEATURE_FLAGS[x] = bool(strtobool(value))
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "default_cache",
+    },
+    "saml": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "saml_cache",
+        "TIMEOUT": 7200,
+    },
+}
+
+LOGIN_PROVIDER_CLASS = os.environ.get("LOGIN_PROVIDER_CLASS") or None
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"  # Where to go after logout
+LOGIN_URL = "/login/"
+LOGIN_NAMESPACE = (
+    "login"  # Must match namespace given to django_mitid_auth.urls in project/urls.py
+)
+LOGIN_WHITELISTED_URLS = [
+    "/favicon.ico",
+    reverse_lazy("selvbetjening:representation-start"),
+    reverse_lazy("selvbetjening:representation-stop"),
+    LOGIN_URL,
+]
+LOGIN_TIMEOUT_URL = reverse_lazy("selvbetjening:login-timeout")
+LOGIN_REPEATED_URL = reverse_lazy("selvbetjening:login-repeat")
+LOGIN_NO_CPRCVR_URL = reverse_lazy("selvbetjening:login-no-cpr")
+MITID_TEST_ENABLED = bool(strtobool(os.environ.get("MITID_TEST_ENABLED", "False")))
+SESSION_EXPIRE_SECONDS = int(os.environ.get("SESSION_EXPIRE_SECONDS") or 1800)
+SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
+SESSION_EXPIRE_CALLABLE = "selvbetjening.utils.session_timed_out"
+LOGIN_BYPASS_ENABLED = bool(strtobool(os.environ.get("LOGIN_BYPASS_ENABLED", "False")))
+
+
+SAML = {
+    "enabled": bool(strtobool(os.environ.get("SAML_ENABLED", "False"))),
+    "debug": 1,
+    "entityid": os.environ.get("SAML_SP_ENTITY_ID"),
+    "idp_entity_id": os.environ.get("SAML_IDP_ENTITY_ID"),
+    "name": "KAS Test",
+    "description": "KAS Test",
+    "verify_ssl_cert": False,
+    "metadata_remote": os.environ.get("SAML_IDP_METADATA"),
+    "metadata": {"local": ["/var/cache/kas/idp_metadata.xml"]},  # IdP Metadata
+    "service": {
+        "sp": {
+            "name": "KAS Test",
+            "hide_assertion_consumer_service": False,
+            "endpoints": {
+                "assertion_consumer_service": [
+                    (
+                        os.environ.get("SAML_SP_LOGIN_CALLBACK_URI"),
+                        "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST",
+                    )
+                ],
+                "single_logout_service": [
+                    (
+                        os.environ.get("SAML_SP_LOGOUT_CALLBACK_URI"),
+                        "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+                    ),
+                ],
+            },
+            "required_attributes": [
+                "https://data.gov.dk/model/core/specVersion",
+                "https://data.gov.dk/concept/core/nsis/loa",
+                "https://data.gov.dk/model/core/eid/professional/orgName",
+                "https://data.gov.dk/model/core/eid/cprNumber",
+                "https://data.gov.dk/model/core/eid/fullName",
+            ],
+            "optional_attributes": [
+                "https://data.gov.dk/model/core/eid/professional/cvr",
+            ],
+            "name_id_format": [
+                "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent",
+            ],
+            "signing_algorithm": "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
+            "authn_requests_signed": True,
+            "want_assertions_signed": True,
+            "want_response_signed": False,
+            "allow_unsolicited": True,
+            "logout_responses_signed": True,
+        }
+    },
+    "key_file": os.environ.get("SAML_SP_KEY"),
+    "cert_file": os.environ.get("SAML_SP_CERTIFICATE"),
+    "encryption_keypairs": [
+        {
+            "key_file": os.environ.get("SAML_SP_KEY"),
+            "cert_file": os.environ.get("SAML_SP_CERTIFICATE"),
+        },
+    ],
+    "xmlsec_binary": "/usr/bin/xmlsec1",
+    "delete_tmpfiles": True,
+    "organization": {
+        "name": [("KAS Test", "da")],
+        "display_name": ["KAS Test"],
+        "url": [("https://magenta.dk", "da")],
+    },
+    "contact_person": [
+        {
+            "given_name": os.environ["SAML_CONTACT_TECHNICAL_NAME"],
+            "email_address": os.environ["SAML_CONTACT_TECHNICAL_EMAIL"],
+            "type": "technical",
+        },
+        {
+            "given_name": os.environ["SAML_CONTACT_SUPPORT_NAME"],
+            "email_address": os.environ["SAML_CONTACT_SUPPORT_EMAIL"],
+            "type": "support",
+        },
+    ],
+    "preferred_binding": {
+        "attribute_consuming_service": [
+            "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST",
+        ],
+        "single_logout_service": [
+            "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+        ],
+    },
+}
