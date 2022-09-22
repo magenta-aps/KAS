@@ -56,21 +56,21 @@ table.table tr td > a:only-child {
 } 
 
 .dev_textheader {
-    position : absolute;
+    position: absolute;
     text-align: right;
-    font-size : 30px;
-    z-index : 9999;
-    right : 5px;
+    font-size: 30px;
+    z-index: 9999;
+    right: 5px;
     margin-top: -8px;
 }
 
 .dev_watermark {
-    position : fixed;
-    bottom : 5px;
-    right : 5px;
-    opacity : 0.5;
-    z-index : -1;
-    color : black;
-    font-size : 30px;
-    text-align : right;
+    position: fixed;
+    bottom: 5px;
+    right: 5px;
+    opacity: 0.5;
+    z-index: -1;
+    color: black;
+    font-size: 18pt;
+    text-align: right;
 }
