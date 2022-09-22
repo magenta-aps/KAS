@@ -26,6 +26,8 @@ variables:
   SELF_IMAGE_DEV: magentaaps/kas:dev-self
   SELF_IMAGE_TAG: magentaaps/kas:${CI_COMMIT_TAG}-self
 
+  VERSION: PIPELINE
+
 
 # Lint stage
 #############
