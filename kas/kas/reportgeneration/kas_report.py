@@ -241,21 +241,21 @@ class TaxPDF(FPDF):
         n_rows = 0
         for line in text.split("\n"):
             n_rows += 1
-            n_rows += int(self.get_string_width(line)/width)
+            n_rows += int(self.get_string_width(line) / width)
         return n_rows
 
     def write_multi_cell_row(
-            self,
-            col_texts,
-            col_widths=None,
-            fontsize=9,
-            align=None,
-            height=5,
-            border=None,
-            left_border=None,
-            top_border=None,
-            **kwargs,
-            ):
+        self,
+        col_texts,
+        col_widths=None,
+        fontsize=9,
+        align=None,
+        height=5,
+        border=None,
+        left_border=None,
+        top_border=None,
+        **kwargs,
+    ):
 
         # Makes sure defaults are set, and that arguments, which are iterated over, are lists
         if not col_widths:
@@ -268,12 +268,12 @@ class TaxPDF(FPDF):
             if not isinstance(i, list):
                 i = [i]
         if align is None:
-            align = len(col_widths)*["C"]
+            align = len(col_widths) * ["C"]
         if type(align) is str:
             align = [align]
             align = align[0] * len(col_widths)
         if border is None:
-            border = len(col_widths)*[1]
+            border = len(col_widths) * [1]
         if type(border) is not list:
             border = [border]
         if left_border is None:
@@ -285,7 +285,7 @@ class TaxPDF(FPDF):
 
         # Calculate no. of rows required for cells
         required_rows = 0
-        txt = [0]*len(col_widths)
+        txt = [0] * len(col_widths)
         for i, width in enumerate(col_widths):
             if isinstance(col_texts[i], int):
                 txt[i] = "{:,}".format(col_texts[i]).replace(",", ".")
@@ -306,9 +306,9 @@ class TaxPDF(FPDF):
                 txt = str(col_texts[i])
             """
             # There seems to be some sort of invisible padding, hence the "-2"
-            cell_rows = self.count_rows(txt[i], width-2)
+            cell_rows = self.count_rows(txt[i], width - 2)
             if cell_rows < required_rows:
-                txt[i] += "\n "*(required_rows - cell_rows)
+                txt[i] += "\n " * (required_rows - cell_rows)
             self.multi_cell(
                 h=height,
                 align=align[i],
@@ -316,11 +316,9 @@ class TaxPDF(FPDF):
                 txt=txt[i],
                 border=border[i],
             )
-            left_border+=width
-        self.yposition += height*required_rows
+            left_border += width
+        self.yposition += height * required_rows
         return None
-
-            
 
     def print_tax_slip(self, language):
         """
@@ -358,34 +356,32 @@ class TaxPDF(FPDF):
             align="L",
             border=0,
         )
-    
+
         self.set_font("arial", "", 8.5)
         # Adressing reciever
-        #self.set_xy(self.address_field.get("x"), self.address_field.get("y"))
         self.write_multi_cell_row(
             [self.reciever_name + "\n" + self.reciever_postal_address],
-            col_widths = self.address_field.get("w"),
+            col_widths=self.address_field.get("w"),
             height=3,
             align="L",
             border=0,
-            left_border = self.address_field.get("x"),
-            top_border = self.address_field.get("y"),
+            left_border=self.address_field.get("x"),
+            top_border=self.address_field.get("y"),
         )
 
         # Adressing department
-        #self.set_xy(self.address_field.get("x"), self.address_field.get("y") + 12)
         self.write_multi_cell_row(
             self.sender_name
-            + "\n" 
-            + self.sender_address 
-            + "\n" 
+            + "\n"
+            + self.sender_address
+            + "\n"
             + self.sender_postnumber,
-            col_widths = self.address_field.get("w"),
+            col_widths=self.address_field.get("w"),
             height=4,
             align="L",
             border=0,
-            left_border = self.address_field.get("x"),
-            top_border = self.address_field.get("y")+12,
+            left_border=self.address_field.get("x"),
+            top_border=self.address_field.get("y") + 12,
         )
 
         # Generates the cross over sender address
@@ -401,65 +397,90 @@ class TaxPDF(FPDF):
             self.address_field.get("x") + self.address_field.get("w") - 30,
             self.address_field.get("y") + 12,
         )
-        
+
         # Write the contact information box
         self.write_multi_cell_row(
-            [self.text5[language], self.person_number,],
-            col_widths = [self.contact_info_table_cell.get("w"),
-                self.contact_info_table_cell.get("w"),],
+            [
+                self.text5[language],
+                self.person_number,
+            ],
+            col_widths=[
+                self.contact_info_table_cell.get("w"),
+                self.contact_info_table_cell.get("w"),
+            ],
             align="L",
             height=self.contact_info_table_cell.get("h"),
-            left_border = self.contact_info_table.get("x"),
-            top_border = self.contact_info_table.get("y"),
+            left_border=self.contact_info_table.get("x"),
+            top_border=self.contact_info_table.get("y"),
         )
         self.write_multi_cell_row(
-            [self.text6[language], "{:.2%}".format(KAS_TAX_RATE).replace(",","."),],
-            col_widths = [self.contact_info_table_cell.get("w"),
-                self.contact_info_table_cell.get("w"),],
-            align = "L",
+            [
+                self.text6[language],
+                "{:.2%}".format(KAS_TAX_RATE).replace(",", "."),
+            ],
+            col_widths=[
+                self.contact_info_table_cell.get("w"),
+                self.contact_info_table_cell.get("w"),
+            ],
+            align="L",
             height=self.contact_info_table_cell.get("h"),
-            left_border = self.contact_info_table.get("x"),
+            left_border=self.contact_info_table.get("x"),
         )
 
         self.write_multi_cell_row(
             self.text7[language],
-            col_widths = 2*self.contact_info_table_cell.get("w"),
+            col_widths=2 * self.contact_info_table_cell.get("w"),
             align="L",
-            left_border = self.contact_info_table.get("x"),
+            left_border=self.contact_info_table.get("x"),
         )
         self.write_multi_cell_row(
-            [self.text8[language], "sullissivik.gl",],
-            col_widths = [self.contact_info_table_cell.get("w"),
-                self.contact_info_table_cell.get("w"),],
-            align = "L",
+            [
+                self.text8[language],
+                "sullissivik.gl",
+            ],
+            col_widths=[
+                self.contact_info_table_cell.get("w"),
+                self.contact_info_table_cell.get("w"),
+            ],
+            align="L",
             height=self.contact_info_table_cell.get("h"),
-            left_border = self.contact_info_table.get("x"),
+            left_border=self.contact_info_table.get("x"),
         )
         self.write_multi_cell_row(
-            [self.text8A[language], str(self.taxable_days_in_year),],
-            col_widths = [self.contact_info_table_cell.get("w"),
-                self.contact_info_table_cell.get("w"),],
-            align = "L",
+            [
+                self.text8A[language],
+                str(self.taxable_days_in_year),
+            ],
+            col_widths=[
+                self.contact_info_table_cell.get("w"),
+                self.contact_info_table_cell.get("w"),
+            ],
+            align="L",
             height=self.contact_info_table_cell.get("h"),
-            left_border = self.contact_info_table.get("x"),
+            left_border=self.contact_info_table.get("x"),
         )
-        
+
         # Set yposition for main text
         self.yposition = 80
 
         self.set_font("arial", "B", 8.5)
         self.write_multi_cell_row(self.text10[language], align="L", border=0)
         text_fields = [
-            self.text11[language], "   ",
-            self.text12[language], "   ",
+            self.text11[language],
+            "   ",
+            self.text12[language],
+            "   ",
             self.text13[language],
             self.text13A[language],
             self.text13B[language],
-            self.text13C[language].format(self.tax_return_date_limit), "   ",
-            self.text13D[language], "   ",
-            self.text13E[language].format(self.request_pay, self.pay_date), "   ",
+            self.text13C[language].format(self.tax_return_date_limit),
+            "   ",
+            self.text13D[language],
+            "   ",
+            self.text13E[language].format(self.request_pay, self.pay_date),
+            "   ",
             self.text14[language].format(self.tax_year, self.request_pay),
-            ]
+        ]
         self.set_font("arial", "", 8.5)
         for field in text_fields:
             self.write_multi_cell_row(field, align="L", border=0)
@@ -505,30 +526,32 @@ class TaxPDF(FPDF):
 
             # Create function, which, given widths and text, creates and write to cols
             self.write_multi_cell_row(
-                [self.text17A[language],
-                self.text17B[language],   
-                self.text8A[language],
-                self.text17F[language],
-                self.text17E[language],
+                [
+                    self.text17A[language],
+                    self.text17B[language],
+                    self.text8A[language],
+                    self.text17F[language],
+                    self.text17E[language],
                 ],
                 col_widths=five_cols,
                 height=columnheaderheight,
             )
 
             self.set_font("arial", "", 8.5)
-            
+
             self.write_multi_cell_row(
-                [self.text15[language],
-                policy.get('prefilled_amount'),   
-                self.taxable_days_in_year,
-                policy.get("year_adjusted_amount"),
-                "   ",
+                [
+                    self.text15[language],
+                    policy.get("prefilled_amount"),
+                    self.taxable_days_in_year,
+                    policy.get("year_adjusted_amount"),
+                    "   ",
                 ],
                 col_widths=five_cols,
-                align=['L', 'C', 'C', 'C', 'C'],
+                align=["L", "C", "C", "C", "C"],
                 height=rowheight,
             )
-            
+
             if policy.get("pension_company_pays"):
                 self.write_multi_cell_row(
                     self.text26D[language],
@@ -536,9 +559,9 @@ class TaxPDF(FPDF):
                     border=[0],
                     height=columnheaderheight,
                 )
-            
+
             # Space before next policy
-            self.yposition += 2*columnheaderheight
+            self.yposition += 2 * columnheaderheight
             any_policys_added = True
 
         if any_policys_added:
@@ -553,17 +576,22 @@ class TaxPDF(FPDF):
         self.yposition += columnheaderheight
         self.set_font("arial", "B", 9)
         self.write_multi_cell_row(
-            [self.text17C[language],
+            [
+                self.text17C[language],
                 self.text17D[language],
                 self.text17E[language],
-                ],
-            col_widths = three_cols,
+            ],
+            col_widths=three_cols,
         )
-        # Changes the number of blank rows for text17C/D/E. 
+        # Changes the number of blank rows for text17C/D/E.
         number_of_extra_taxslip_rows = 2
         for i in range(number_of_extra_taxslip_rows):
             self.write_multi_cell_row(
-                ["   ", "   ", "   ",],
+                [
+                    "   ",
+                    "   ",
+                    "   ",
+                ],
                 col_widths=three_cols,
                 height=rowheight,
             )
@@ -582,18 +610,19 @@ class TaxPDF(FPDF):
 
         self.write_multi_cell_row(self.text26[language], align="L")
         self.write_multi_cell_row(
-            [self.text27[language],
+            [
+                self.text27[language],
                 self.text28[language],
                 self.text29[language],
-                ],
-            col_widths = 3*[self.signature_table_cell.get("w")],
-            height = self.signature_table_cell.get("h"),
-            align = 3*["L"],
+            ],
+            col_widths=3 * [self.signature_table_cell.get("w")],
+            height=self.signature_table_cell.get("h"),
+            align=3 * ["L"],
         )
         self.write_multi_cell_row(
             ["   ", "   ", "   "],
-            col_widths = 3*[self.signature_table_cell.get("w")],
-            height = self.signature_table_cell.get("h"),
+            col_widths=3 * [self.signature_table_cell.get("w")],
+            height=self.signature_table_cell.get("h"),
         )
 
     def write_tax_slip_to_disk(self, path):
@@ -658,7 +687,7 @@ class TaxPDF(FPDF):
 
         self.print_tax_slip("gl")
         self.print_tax_slip("dk")
-        
+
         ts = TaxSlipGenerated.objects.create(persontaxyear=person_tax_year, title=title)
         ts.file.save(content=ContentFile(self.output()), name=policy_file_name)
         person_tax_year.tax_slip = ts

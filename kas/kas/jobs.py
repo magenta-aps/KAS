@@ -43,6 +43,7 @@ from kas.reportgeneration.kas_topdanmark_agterskrivelse import AgterskrivelsePDF
 from openpyxl import load_workbook
 from prisme.models import Prisme10QBatch
 from project.dafo import DatafordelerClient
+from project.settings import REPORT_EXCLUDE_ALREADY_GENERATED
 from requests.exceptions import HTTPError, ConnectionError
 from rq import get_current_job
 from worker.job_registry import resolve_job_function
@@ -360,8 +361,8 @@ def import_r75(job):
 @job_decorator
 def generate_reports_for_year(job):
     qs = PersonTaxYear.get_pdf_recipients_for_year_qs(
-        #job.arguments["year_pk"], exclude_already_generated=True
-        job.arguments["year_pk"], exclude_already_generated=False
+        job.arguments["year_pk"],
+        exclude_already_generated=REPORT_EXCLUDE_ALREADY_GENERATED
     )
     total_count = qs.count()
     for i, person_tax_year in enumerate(qs.iterator(), 1):
