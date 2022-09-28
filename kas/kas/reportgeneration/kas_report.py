@@ -642,9 +642,6 @@ class TaxPDF(FPDF):
         reciever_name = person_tax_year.person.name
         reciever_postal_address = person_tax_year.person.postal_address
         taxable_days_in_year = person_tax_year.number_of_days
-        tax_days_adjust_factor = (
-            taxable_days_in_year / person_tax_year.tax_year.days_in_year
-        )
         policies = []
 
         list_of_policies = PolicyTaxYear.objects.active().filter(
