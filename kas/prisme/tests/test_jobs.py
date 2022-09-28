@@ -38,13 +38,20 @@ class ImportPrePaymentFile(TestCase):
         ):  # same as in test file
             person = Person.objects.create(cpr=cpr, name="person {}".format(i))
             person_tax_year = PersonTaxYear.objects.create(
-                person=person, number_of_days=365, tax_year=self.tax_year
+                person=person,
+                number_of_days=365,  # year has 366 days
+                tax_year=self.tax_year,
             )
 
             PolicyTaxYear.objects.create(
                 person_tax_year=person_tax_year,
                 prefilled_amount=100000 * i,
-                self_reported_amount=100000 * i,
+                self_reported_amount=int(
+                    100000
+                    * i
+                    * person_tax_year.number_of_days
+                    / self.tax_year.days_in_year
+                ),  # self_reported_amount is adjusted for days
                 slutlignet=True,
                 pension_company=self.company,
                 policy_number="1234",
@@ -175,7 +182,12 @@ class MinimumAmountHandling(TestCase):
             PolicyTaxYear.objects.create(
                 person_tax_year=person_tax_year,
                 prefilled_amount=600 * i,
-                self_reported_amount=600 * i,
+                self_reported_amount=int(
+                    600
+                    * i
+                    * person_tax_year.number_of_days
+                    / self.tax_year.days_in_year
+                ),
                 slutlignet=True,
                 pension_company=self.company,
                 policy_number="1234",

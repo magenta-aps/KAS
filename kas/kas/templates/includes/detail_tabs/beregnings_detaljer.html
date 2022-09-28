@@ -14,12 +14,30 @@
     </tr>
     <tr>
         <td>
-            {% translate  'Justeret beløb fra pensionsselskab' %}
-            {% translate 'Justeret beløb fra pensionsselskab, ændret i forhold til de oprindelige R75 data' as help_text_r75_adjusted %}
-            {% include 'includes/help_text/collapse.html' with help_text=help_text_r75_adjusted target_id='adjusted_r75_amount' %}
+            {% translate 'Ændret beløb fra pensionsselskab' %}
+            {% translate 'Beløb fra pensionsselskab, ændret af administrator i forhold til de oprindelige R75 data' as help_text_r75_adjusted %}
+            {% include 'includes/help_text/question_mark.html' with target_id='prefilled_amount_edited' right=True %}
+            {% include 'includes/help_text/collapse.html' with help_text=help_text_r75_adjusted target_id='prefilled_amount_edited' %}
         </td>
-        <td>{{ policy.adjusted_r75_amount|default_if_none:'' }}</td>
+        <td>{{ policy.prefilled_amount_edited|default_if_none:'' }}</td>
     </tr>
+
+    {% if calculation.adjust_for_days_in_year %}
+    <tr>
+        <td>
+            {% blocktrans with taxable_days=calculation.taxable_days_in_year total_days=calculation.days_in_year factor=calculation.tax_days_adjust_factor|percent:1 %}
+            Justeret for antal skattepligtsdage i året ({{taxable_days}} af {{total_days}} dage = {{ factor }})
+            {% endblocktrans %}
+            {% blocktrans asvar help_text_year_adjusted with amount=calculation.initial_amount year=policy.year taxable_days=calculation.taxable_days_in_year days=calculation.days_in_year %}
+            Beløb for hele året ({{ amount }}) &times; skattepligtsdage ({{ taxable_days }}) / dage i {{ year }} ({{ days }})
+            {% endblocktrans %}
+            {% include 'includes/help_text/question_mark.html' with target_id='year_adjusted' right=True %}
+            {% include 'includes/help_text/collapse.html' with help_text=help_text_year_adjusted target_id='year_adjusted' %}
+        </td>
+        <td>{{ calculation.year_adjusted_amount }}</td>
+    </tr>
+    {% endif %}
+
     <tr>
         <td>
             {{ self_reported_amount_label }}
@@ -31,8 +49,9 @@
     </tr>
     <tr>
         <td>
-            {% translate  'Ansat beløb' %}
+            {% translate 'Ansat beløb' %}
             {% translate 'Beløb angivet af ansat under sagsbehandling eller autoligning' as help_text_assessed %}
+            {% include 'includes/help_text/question_mark.html' with target_id='assessed_amount' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_assessed target_id='assessed_amount' %}
         </td>
         <td>{{ policy.assessed_amount|default_if_none:'' }}</td>
@@ -41,19 +60,7 @@
         <td>{% translate 'Kapitalafkast' %}</td>
         <th>{{ policy.get_assessed_amount }}</th>
     </tr>
-    <tr>
-        <td>
-            {% blocktrans with taxable_days=calculation.taxable_days_in_year total_days=calculation.days_in_year factor=calculation.tax_days_adjust_factor|percent:1 %}
-                Justeret for antal skattepligtsdage i året ({{taxable_days}} af {{total_days}} dage = {{ factor }})
-            {% endblocktrans %}
-            {% blocktrans asvar help_text_year_adjusted with amount=calculation.initial_amount year=policy.year taxable_days=calculation.taxable_days_in_year days=calculation.days_in_year %}
-                Beløb for hele året ({{ amount }}) &times; skattepligtsdage ({{ taxable_days }}) / dage i {{ year }} ({{ days }})
-            {% endblocktrans %}
-            {% include 'includes/help_text/question_mark.html' with target_id='year_adjusted' right=True %}
-            {% include 'includes/help_text/collapse.html' with help_text=help_text_year_adjusted target_id='year_adjusted' %}
-        </td>
-        <td>{{ calculation.year_adjusted_amount }}</td>
-    </tr>
+
 
     {% if calculation.year_adjusted_amount <= 0 %}
     <tr>

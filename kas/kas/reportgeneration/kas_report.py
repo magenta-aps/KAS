@@ -767,7 +767,9 @@ class TaxPDF(FPDF):
         fully_tax_liable = person_tax_year.fully_tax_liable
         tax_days_adjust_factor = 1 if person_tax_year.fully_tax_liable else 0
         taxable_days_in_year = person_tax_year.number_of_days
-
+        tax_days_adjust_factor = (
+            taxable_days_in_year / person_tax_year.tax_year.days_in_year
+        )
         policies = []
 
         list_of_policies = PolicyTaxYear.objects.active().filter(
@@ -776,18 +778,7 @@ class TaxPDF(FPDF):
 
         policy_file_name = f"Y_{tax_year}_{person_number}.pdf"
 
-        firstPolicy = False
-
         for policy in list_of_policies:
-
-            if not firstPolicy:
-                calculation_result = policy.perform_calculation(
-                    initial_amount=policy.prefilled_amount
-                )
-                tax_days_adjust_factor = calculation_result.get(
-                    "tax_days_adjust_factor"
-                )
-                firstPolicy = True
 
             single_policy = {
                 "policy": (
@@ -796,7 +787,9 @@ class TaxPDF(FPDF):
                     + policy.policy_number
                 ),
                 "preliminary_paid_amount": policy.preliminary_paid_amount,
-                "prefilled_amount": policy.prefilled_amount,
+                "prefilled_amount": policy.prefilled_amount_edited
+                if policy.prefilled_amount_edited is not None
+                else policy.prefilled_amount,
                 "pension_company_pays": policy.pension_company_pays,
                 "year_adjusted_amount": policy.year_adjusted_amount,
                 "available_negative_return": policy.available_negative_return,

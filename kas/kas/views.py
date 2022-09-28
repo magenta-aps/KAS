@@ -819,13 +819,23 @@ class EditAmountsUpdateView(
             person_tax_year__tax_year__year_part__in=["ligning", "genoptagelsesperiode"]
         )
 
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(
+            **{
+                **kwargs,
+                "text_after_form": _(
+                    "Bemærk at Selvangivet beløb og Ansat beløb ikke bliver justeret for antal skattedage i året; det antages at beløbene allerede er justerede"
+                ),
+            }
+        )
+
     def get_form_kwargs(self):
         if self.object.assessed_amount is None:
             # if the assessed amount is not set prefill it
             self.object.assessed_amount = self.object.get_assessed_amount()
-        if self.object.adjusted_r75_amount is None:
-            # Fill out adjusted_r75_amount since we are not allowed to change prefilled_amount.
-            self.object.adjusted_r75_amount = self.object.prefilled_amount
+        if self.object.prefilled_amount_edited is None:
+            # Fill out prefilled_amount_edited since we are not allowed to change prefilled_amount.
+            self.object.prefilled_amount_edited = self.object.prefilled_amount
         return super(EditAmountsUpdateView, self).get_form_kwargs()
 
     def form_valid(self, form):
@@ -839,6 +849,14 @@ class EditAmountsUpdateView(
             else:
                 self.object.efterbehandling = True
                 # super handles saving of the object
+            # When selfreported amount is being used, make sure to set active_amount accordingly
+            if self.object.assessed_amount is None:
+                if self.object.self_reported_amount is not None:
+                    self.object.active_amount = (
+                        PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED
+                    )
+                elif self.object.prefilled_amount is not None:
+                    self.object.active_amount = PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED
         return super(EditAmountsUpdateView, self).form_valid(form)
 
 

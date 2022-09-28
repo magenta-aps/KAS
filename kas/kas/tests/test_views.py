@@ -27,7 +27,7 @@ class BaseTestCase(TestCase):
         self.tax_year = TaxYear.objects.create(year=2021)
         self.person = Person.objects.create(cpr="1234567890", name="TestPerson")
         self.person_tax_year = PersonTaxYear.objects.create(
-            tax_year=self.tax_year, person=self.person, number_of_days=1
+            tax_year=self.tax_year, person=self.person, number_of_days=200
         )
         self.pension_company = PensionCompany.objects.create()
         self.policy_tax_year = PolicyTaxYear.objects.create(
@@ -215,23 +215,31 @@ class EditAmountsUpdateViewTestCase(BaseTestCase):
             reverse("kas:change-edit-amounts", kwargs={"pk": self.policy_tax_year.pk})
         )
         self.assertEqual(r.context["form"]["assessed_amount"].value(), 924)
-        self.assertEqual(r.context["form"]["adjusted_r75_amount"].value(), 35)
+        self.assertEqual(r.context["form"]["prefilled_amount_edited"].value(), 35)
 
     def test_adjusted_r75_amount(self):
-        self.policy_tax_year.adjusted_r75_amount = 501
+        self.policy_tax_year.prefilled_amount_edited = 501
         self.policy_tax_year.save()
         r = self.client.get(
             reverse("kas:change-edit-amounts", kwargs={"pk": self.policy_tax_year.pk})
         )
-        self.assertEqual(r.context["form"]["assessed_amount"].value(), 501)
-        self.assertEqual(r.context["form"]["adjusted_r75_amount"].value(), 501)
+        self.assertEqual(
+            r.context["form"]["assessed_amount"].value(), 274
+        )  # Adjusted for 200 taxable days in year
+        self.assertEqual(
+            r.context["form"]["prefilled_amount_edited"].value(), 501
+        )  # Not adjusted
 
     def test_prefilled_amount(self):
         r = self.client.get(
             reverse("kas:change-edit-amounts", kwargs={"pk": self.policy_tax_year.pk})
         )
-        self.assertEqual(r.context["form"]["assessed_amount"].value(), 35)
-        self.assertEqual(r.context["form"]["adjusted_r75_amount"].value(), 35)
+        self.assertEqual(
+            r.context["form"]["assessed_amount"].value(), 19
+        )  # Adjusted for 200 taxable days in year
+        self.assertEqual(
+            r.context["form"]["prefilled_amount_edited"].value(), 35
+        )  # Not adjusted
 
     def test_set_efterbehandling_by_self_reported_amount(self):
         r = self.client.post(

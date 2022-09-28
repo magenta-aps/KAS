@@ -337,6 +337,23 @@ def generate_persons():
     )
 
     create_person(
+        "Borger med positivt afkast påvirket af antal dage",
+        cpr="0401570805",
+        adresselinje2="Imaneq 32A, 1. sal.",
+        adresselinje4="3900 Nuuk",
+        person_years={2020: {"skattedage": 73}},
+        policies=[
+            {
+                "res": 19676889,
+                "years": {
+                    2020: 5000,
+                    2021: 1000,
+                },
+            },
+        ],
+    )
+
+    create_person(
         "Borger med negativt afkast og nuværende år påvirket af antal dage",
         cpr="1105550193",
         adresselinje2="Imaneq 32A, 3. sal.",

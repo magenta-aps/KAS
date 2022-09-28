@@ -198,9 +198,9 @@ class TaxYear(models.Model):
 # If a person has the status undefined, it means that we have not tryed finding a status in Dafo, und we do not show a statustekst in UI
 # If a person has the status Alive, it is a standard status that we do nat want to show in the UI
 recipient_recieve_statuses = (
-    ("Undefined", _("")),
+    ("Undefined", ""),
     ("Invalid", _("Ugyldig")),
-    ("Alive", _("")),
+    ("Alive", ""),
     ("Dead", _("Afdød")),
 )
 
@@ -670,11 +670,17 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     )
 
     prefilled_amount = models.BigIntegerField(
-        verbose_name=_("Beløb rapporteret fra pensionsselskab"), blank=True, null=True
+        verbose_name=_("Beløb rapporteret fra pensionsselskab"),
+        blank=True,
+        null=True
+        # Ikke justeret for dage i skatteår
     )
 
     self_reported_amount = models.BigIntegerField(
-        verbose_name=_("Selvangivet beløb"), blank=True, null=True
+        verbose_name=_("Selvangivet beløb"),
+        blank=True,
+        null=True
+        # Justeret for dage i skatteår
     )
 
     ACTIVE_AMOUNT_PREFILLED = 1
@@ -691,15 +697,23 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         default=ACTIVE_AMOUNT_PREFILLED,
     )
 
-    adjusted_r75_amount = models.BigIntegerField(
-        verbose_name=_("Justeret R75 beløb"), blank=True, null=True
+    prefilled_amount_edited = models.BigIntegerField(
+        verbose_name=_("Justeret R75 beløb"),
+        blank=True,
+        null=True
+        # Ikke justeret for dage i skatteår
     )
     assessed_amount = models.BigIntegerField(
-        verbose_name=_("Ansat beløb"), blank=True, null=True
+        verbose_name=_("Ansat beløb"),
+        blank=True,
+        null=True
+        # Justeret for dage i skatteår
     )
 
     year_adjusted_amount = models.BigIntegerField(
-        verbose_name=_("Beløb justeret for dage i skatteår"), default=0
+        verbose_name=_("Beløb justeret for dage i skatteår"),
+        default=0
+        # Justeret for dage i skatteår (ved at gange faktor på efter behov)
     )
 
     CALCULATION_MODEL_DEFAULT = 1
@@ -906,11 +920,14 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         """
         Returns the full tax
         """
+        only_adjusted_amounts = False
         calculation_result = self.perform_calculation(
-            initial_amount=int(self.get_assessed_amount()),
+            initial_amount=int(self.get_assessed_amount(only_adjusted_amounts)),
             taxable_days_in_year=int(self.person_tax_year.number_of_days or 0),
             days_in_year=int(self.person_tax_year.tax_year.days_in_year or 0),
             available_deduction_data=self.calculate_available_yearly_deduction(),
+            adjust_for_days_in_year=(not only_adjusted_amounts)
+            and self.should_adjust_for_tax_days,
         )
         return calculation_result["full_tax"]
 
@@ -947,24 +964,22 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     @property
     def reported_difference(self):
-        if self.self_reported_amount is None or self.prefilled_amount is None:
+        if self.self_reported_amount is None or self.prefilled_adjusted_amount is None:
             return None
-        return self.self_reported_amount - self.prefilled_amount
+        return self.self_reported_amount - self.prefilled_adjusted_amount
 
     @property
     def reported_difference_pct(self):
         diff = self.reported_difference
-        if diff is None or self.prefilled_amount == 0:
+        if diff is None or self.prefilled_adjusted_amount == 0:
             return None
-
-        return diff / self.prefilled_amount * 100
+        return diff / self.prefilled_adjusted_amount * 100
 
     @property
     def used_from(self):
         return self.payouts_used.order_by("used_from__person_tax_year__tax_year__year")
 
     def previous_years_qs(self, years=10):
-
         # Finds posts for the last ten years with the same
         # cpr, pension company and policy number
         return self.same_policy_qs.filter(
@@ -978,14 +993,15 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         return self.same_policy_qs.filter(person_tax_year__tax_year__year__gt=self.year)
 
     def get_calculation(self):
+        only_adjusted_amounts = False
         return PolicyTaxYear.perform_calculation(
-            self.get_assessed_amount(),
+            self.get_assessed_amount(only_adjusted_amounts),
             days_in_year=self.tax_year.days_in_year,
             taxable_days_in_year=self.person_tax_year.number_of_days,
             available_deduction_data=self.calculate_available_yearly_deduction(),
             foreign_paid_amount=self.foreign_paid_amount_actual,
-            adjust_for_days_in_year=self.active_amount
-            != self.ACTIVE_AMOUNT_SELF_REPORTED,
+            adjust_for_days_in_year=(not only_adjusted_amounts)
+            and self.should_adjust_for_tax_days,
         )
 
     def calculate_available_yearly_deduction(self):
@@ -1170,20 +1186,48 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         )
         self.save()
 
-    def get_assessed_amount(self):
+    def get_assessed_amount(self, only_adjusted=True):
         """
         Return assessed_amount based on estimated_mount, self_reported_amount,
-        adjusted_r75_amount and prefilled_amount.
+        prefilled_amount_edited and prefilled_amount.
+        :param only_adjusted: Whether to use prefilled_adjusted_amount (adjusted) or prefilled_amount (not adjusted)
         :return: assessed_amount or None
         """
         amounts_list = [
             self.assessed_amount,
             self.self_reported_amount,
-            self.adjusted_r75_amount,
-            self.prefilled_amount,
-            0,
         ]
+        if only_adjusted:
+            amounts_list.append(self.prefilled_adjusted_amount)
+        else:
+            amounts_list += [
+                self.prefilled_amount_edited,
+                self.prefilled_amount,
+            ]
+        amounts_list.append(0)
         return next((item for item in amounts_list if item is not None), None)
+
+    @property
+    def should_adjust_for_tax_days(self):
+        # Do not adjust:
+        # * self.assessed_amount
+        # * self_reported_amount
+        # Do adjust:
+        # * prefilled_amount_edited
+        # * prefilled_amount
+        return self.assessed_amount is None and self.self_reported_amount is None
+
+    @property
+    def prefilled_adjusted_amount(self):
+        # The prefilled amount, but adjusted for tax days
+        amount = self.prefilled_amount_edited
+        if amount is None:
+            amount = self.prefilled_amount
+        factor = (
+            self.person_tax_year.number_of_days
+            / self.person_tax_year.tax_year.days_in_year
+        )
+        return int(amount * factor)
 
     @property
     def pension_company_pays(self):

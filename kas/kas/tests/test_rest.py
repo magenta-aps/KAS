@@ -702,6 +702,7 @@ class PolicyTaxYearTest(RestTest):
                     "calculated_result": policy_tax_year.calculated_result,
                     "foreign_paid_amount_actual": policy_tax_year.foreign_paid_amount_actual,
                     "updated_by": policy_tax_year.updated_by,
+                    "prefilled_adjusted_amount": policy_tax_year.prefilled_adjusted_amount,
                     **extra,
                 }
                 for policy_tax_year in PolicyTaxYear.objects.all()
@@ -760,6 +761,7 @@ class PolicyTaxYearTest(RestTest):
                 "year_adjusted_amount": policy_tax_year1.year_adjusted_amount,
                 "calculated_result": policy_tax_year1.calculated_result,
                 "foreign_paid_amount_actual": policy_tax_year1.foreign_paid_amount_actual,
+                "prefilled_adjusted_amount": policy_tax_year1.prefilled_adjusted_amount,
                 "updated_by": None,
             },
             response.json(),
@@ -782,9 +784,10 @@ class PolicyTaxYearTest(RestTest):
                 "applied_deduction_from_previous_years": policy_tax_year2.applied_deduction_from_previous_years,
                 "from_pension": policy_tax_year2.from_pension,
                 "documents": [],
-                "year_adjusted_amount": policy_tax_year1.year_adjusted_amount,
-                "calculated_result": policy_tax_year1.calculated_result,
-                "foreign_paid_amount_actual": policy_tax_year1.foreign_paid_amount_actual,
+                "year_adjusted_amount": policy_tax_year2.year_adjusted_amount,
+                "calculated_result": policy_tax_year2.calculated_result,
+                "foreign_paid_amount_actual": policy_tax_year2.foreign_paid_amount_actual,
+                "prefilled_adjusted_amount": policy_tax_year2.prefilled_adjusted_amount,
                 "updated_by": None,
             },
             response.json(),
@@ -847,6 +850,7 @@ class PolicyTaxYearTest(RestTest):
                     "year_adjusted_amount": policy_tax_year1.year_adjusted_amount,
                     "calculated_result": policy_tax_year1.calculated_result,
                     "foreign_paid_amount_actual": policy_tax_year1.foreign_paid_amount_actual,
+                    "prefilled_adjusted_amount": policy_tax_year1.prefilled_adjusted_amount,
                     "updated_by": None,
                 }
             ],
@@ -874,6 +878,7 @@ class PolicyTaxYearTest(RestTest):
                     "year_adjusted_amount": policy_tax_year1.year_adjusted_amount,
                     "calculated_result": policy_tax_year1.calculated_result,
                     "foreign_paid_amount_actual": policy_tax_year1.foreign_paid_amount_actual,
+                    "prefilled_adjusted_amount": policy_tax_year1.prefilled_adjusted_amount,
                     "updated_by": None,
                 }
             ],
@@ -901,6 +906,7 @@ class PolicyTaxYearTest(RestTest):
                     "year_adjusted_amount": policy_tax_year2.year_adjusted_amount,
                     "calculated_result": policy_tax_year2.calculated_result,
                     "foreign_paid_amount_actual": policy_tax_year2.foreign_paid_amount_actual,
+                    "prefilled_adjusted_amount": policy_tax_year2.prefilled_adjusted_amount,
                     "updated_by": None,
                 }
             ],
@@ -956,6 +962,7 @@ class PolicyTaxYearTest(RestTest):
                 "year_adjusted_amount": policy_tax_year.year_adjusted_amount,
                 "calculated_result": policy_tax_year.calculated_result,
                 "foreign_paid_amount_actual": policy_tax_year.foreign_paid_amount_actual,
+                "prefilled_adjusted_amount": policy_tax_year.prefilled_adjusted_amount,
             },
             self.strip_id(response.json()),
         )
