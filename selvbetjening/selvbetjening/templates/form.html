@@ -70,14 +70,28 @@
                                 <tr>
                                     <td class="col-2-sm">{% translate 'Kapitalafkast PBL (DK) § 53 A' %}</td>
                                     <td class="col-6-sm">
-                                        {% if policyform.prefilled_amount.value is not None %}
-                                        {% blocktrans with value=policyform.prefilled_amount.value|localize %}Vores beregning: {{value}}{% endblocktrans %}
+                                        {% if policyform.prefilled_adjusted_amount.value is not None %}
+                                        {% blocktrans with value=policyform.prefilled_adjusted_amount.value|localize %}Vores beregning: {{value}}{% endblocktrans %}
+                                        {% if person_tax_year.number_of_days != person_tax_year.tax_year.days_in_year %}
+                                        <br/>
+                                        {% trans 'Beløbet er justeret for antal skattepligtige dage i skatteåret' %}
+                                        {% endif %}
                                         {% else %}
                                         {% endif %}
                                     </td>
                                     <td class="col-4-sm">
-                                        <label for="{{policyform.self_reported_amount.id_for_label}}">{% if policyform.prefilled_amount.value is None %}{% translate 'Beløb:' %}{% else %}{% translate 'Deres rettelse:' %}{% endif %}</label>
+                                        <label for="{{policyform.self_reported_amount.id_for_label}}">
+                                            {% if policyform.prefilled_adjusted_amount.value is None %}
+                                            {% translate 'Beløb:' %}
+                                            {% else %}
+                                            {% translate 'Deres rettelse:' %}
+                                            {% endif %}
+                                        </label>
                                         {% include 'include/field.html' with field=policyform.self_reported_amount %}
+                                        {% if person_tax_year.number_of_days != person_tax_year.tax_year.days_in_year %}
+                                        <br/>
+                                        {% trans 'Beløbet skal være justeret for antal skattepligtige dage i skatteåret' %}
+                                        {% endif %}
                                     </td>
                                 </tr>
 

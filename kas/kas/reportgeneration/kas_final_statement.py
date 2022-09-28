@@ -264,13 +264,14 @@ class TaxFinalStatementPDF(FPDF):
             active=True, slutlignet=True
         ):
             available_deduction_data = policy.calculate_available_yearly_deduction()
-            assessed_amount = policy.get_assessed_amount()
+            assessed_amount = policy.get_assessed_amount(only_adjusted=False)
 
             calculation_result = policy.perform_calculation(
                 initial_amount=assessed_amount,
                 taxable_days_in_year=person_tax_year.number_of_days or 0,
                 days_in_year=self._person_tax_year.tax_year.days_in_year or 0,
                 available_deduction_data=available_deduction_data,
+                adjust_for_days_in_year=False,
             )
 
             self._pretty_policies.append(
@@ -280,6 +281,9 @@ class TaxFinalStatementPDF(FPDF):
                     "active_amount": policy.active_amount,
                     "taxable_days_in_year": calculation_result.get(
                         "taxable_days_in_year"
+                    ),
+                    "adjust_for_days_in_year": calculation_result.get(
+                        "adjust_for_days_in_year"
                     ),
                     "year_adjusted_amount": calculation_result.get(
                         "year_adjusted_amount"
@@ -293,10 +297,10 @@ class TaxFinalStatementPDF(FPDF):
                     "full_tax": calculation_result.get("full_tax"),
                     "available_reductions": available_deduction_data,
                     "foreign_paid_amount_actual": policy.foreign_paid_amount_actual,
-                    "tax_after_foreign_paid_deduction": calculation_result.get(
-                        "full_tax"
-                    )
-                    - policy.foreign_paid_amount_actual,
+                    "tax_after_foreign_paid_deduction": (
+                        calculation_result.get("full_tax")
+                        - policy.foreign_paid_amount_actual
+                    ),
                     "agreement_present": policy.pension_company_pays,
                 }
             )
@@ -607,27 +611,28 @@ class TaxFinalStatementPDF(FPDF):
             )
             self.yposition = self.get_y()
 
-            self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(
-                h=self.tablerowheight,
-                align="L",
-                w=c1w,
-                txt=self.policy_row_text_2[language].format(
-                    self._person_tax_year.number_of_days,
-                    self._person_tax_year.tax_year.days_in_year,
-                ),
-                border=1,
-            )
-            self.set_xy(self.left_margin + c1w, self.yposition)
             year_adjusted_amount = policy.get("year_adjusted_amount")
-            self.multi_cell(
-                h=self.tablerowheight,
-                align="R",
-                w=c2w,
-                txt="{:,}".format(year_adjusted_amount).replace(",", "."),
-                border=1,
-            )
-            self.yposition = self.get_y()
+            if policy.get("adjust_for_days_in_year"):
+                self.set_xy(self.left_margin, self.yposition)
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="L",
+                    w=c1w,
+                    txt=self.policy_row_text_2[language].format(
+                        self._person_tax_year.number_of_days,
+                        self._person_tax_year.tax_year.days_in_year,
+                    ),
+                    border=1,
+                )
+                self.set_xy(self.left_margin + c1w, self.yposition)
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="R",
+                    w=c2w,
+                    txt="{:,}".format(year_adjusted_amount).replace(",", "."),
+                    border=1,
+                )
+                self.yposition = self.get_y()
 
             if year_adjusted_amount < 0:
                 # If we got a negative amount this is the last row to write on a policy, this indicate the amount to be used in future years

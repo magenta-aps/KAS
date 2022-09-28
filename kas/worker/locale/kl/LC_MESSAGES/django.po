@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-29 10:42+0200\n"
+"POT-Creation-Date: 2022-09-15 09:19+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,91 +21,103 @@ msgstr ""
 msgid "Job type"
 msgstr ""
 
-#: worker/forms.py:22 worker/forms.py:39 worker/forms.py:84 worker/forms.py:100
+#: worker/forms.py:25 worker/forms.py:40 worker/forms.py:90 worker/forms.py:109
 msgid "År"
 msgstr ""
 
-#: worker/forms.py:52
+#: worker/forms.py:50
 msgid "Alle år"
 msgstr ""
 
-#: worker/forms.py:61
+#: worker/forms.py:58
 msgid "Fil"
 msgstr ""
 
-#: worker/forms.py:109
+#: worker/forms.py:83
+msgid "Selskabet betaler"
+msgstr ""
+
+#: worker/forms.py:84
+msgid "Nej"
+msgstr ""
+
+#: worker/forms.py:84
+msgid "Ja"
+msgstr ""
+
+#: worker/forms.py:121
 msgid "Titel"
 msgstr ""
 
-#: worker/forms.py:109
+#: worker/forms.py:121
 msgid "Vil blive brugt som titelfeltet i e-boks"
 msgstr ""
 
-#: worker/job_registry.py:16
+#: worker/job_registry.py:24
 msgid "Kør autoligning"
 msgstr ""
 
-#: worker/job_registry.py:23
+#: worker/job_registry.py:30
 msgid "Import af forudindbetalinger"
 msgstr ""
 
-#: worker/job_registry.py:29
+#: worker/job_registry.py:36
 msgid "Import af mandtal"
 msgstr ""
 
-#: worker/job_registry.py:35
+#: worker/job_registry.py:42
 msgid "Import af data fra R75"
 msgstr ""
 
-#: worker/job_registry.py:41
+#: worker/job_registry.py:48
 msgid "Forcering af slutligning på alle udestående policer"
 msgstr ""
 
-#: worker/job_registry.py:46
+#: worker/job_registry.py:53
 msgid "Generering af KAS selvangivelser for et givet år"
 msgstr ""
 
-#: worker/job_registry.py:51
+#: worker/job_registry.py:58
 msgid "Afsendelse af KAS selvangivelser for et givet år"
 msgstr ""
 
-#: worker/job_registry.py:56
+#: worker/job_registry.py:63
 msgid "Generering af KAS slutopgørelser for et givet år"
 msgstr ""
 
-#: worker/job_registry.py:62
+#: worker/job_registry.py:69
 msgid "Generering af Transaktioner og batch for et givent år"
 msgstr ""
 
-#: worker/job_registry.py:68
+#: worker/job_registry.py:75
 msgid "Afsendelse af KAS slutopgørelser for et givet år"
 msgstr ""
 
-#: worker/job_registry.py:74
+#: worker/job_registry.py:81
+msgid "Afsendelse af KAS slutopgørelse"
+msgstr ""
+
+#: worker/job_registry.py:88
 msgid "Sender et Q10 batch"
 msgstr ""
 
-#: worker/job_registry.py:81
+#: worker/job_registry.py:95
 msgid "Flet pensionsselskaber"
 msgstr ""
 
-#: worker/job_registry.py:86
+#: worker/job_registry.py:100
 msgid "Importere kas beregninger for tidligere år (2018/2019)"
 msgstr ""
 
-#: worker/job_registry.py:92
+#: worker/job_registry.py:106
 msgid "Generering af pseudo slutopgørelser (2018/2019)"
 msgstr ""
 
-#: worker/job_registry.py:98
-msgid "Import af data fra R75 i regneark"
-msgstr ""
-
-#: worker/job_registry.py:107
+#: worker/job_registry.py:127
 msgid "Reset data for skatteår"
 msgstr ""
 
-#: worker/job_registry.py:118
+#: worker/job_registry.py:140
 msgid "Generate sample data"
 msgstr ""
 

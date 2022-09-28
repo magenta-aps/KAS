@@ -8,9 +8,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.test import override_settings
-from fakeredis import FakeStrictRedis
-
 from eskat.jobs import generate_sample_data
+from fakeredis import FakeStrictRedis
 from kas.models import PersonTaxYearCensus
 from kas.models import (
     PolicyTaxYear,
@@ -24,6 +23,7 @@ from kas.tests.test_mixin import create_admin_user
 from prisme.models import Transaction, Prisme10QBatch
 from rq import Queue
 from worker.models import Job
+
 from kas.jobs import import_mandtal
 
 

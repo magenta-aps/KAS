@@ -86,12 +86,13 @@ class AgterskrivelsePDF(FPDF):
                 )
             ):
                 selvangivet_beskatningsgrundlag = first_not_none(
-                    other_policy.self_reported_amount, other_policy.prefilled_amount
+                    other_policy.self_reported_amount,
+                    other_policy.prefilled_adjusted_amount,
                 )
                 ansat_beskatningsgrundlag = first_not_none(
                     other_policy.assessed_amount,
                     other_policy.self_reported_amount,
-                    other_policy.prefilled_amount,
+                    other_policy.prefilled_adjusted_amount,
                 )
                 self.block(
                     right_pos,
@@ -137,12 +138,12 @@ class AgterskrivelsePDF(FPDF):
 
             for policy in self.policy_tax_years:
 
-                topdanmark_beskatningsgrundlag = policy.prefilled_amount
+                topdanmark_beskatningsgrundlag = policy.prefilled_adjusted_amount
                 selvangivet_beskatningsgrundlag = policy.self_reported_amount or 0
                 ansat_beskatningsgrundlag = first_not_none(
                     policy.assessed_amount,
                     policy.self_reported_amount,
-                    policy.prefilled_amount,
+                    policy.prefilled_adjusted_amount,
                 )
                 height = self.block(
                     0,

@@ -9,7 +9,8 @@
         <th>{% translate 'Kræver efterbehandling' %}</th>
         <th>{% translate 'Næste behandlingsdato'%}</th>
         <th class="text-right">{% translate 'Fortrykt beløb'%}</th>
-        <th class="text-right">{% translate 'Justeret R75 beløb'%}</th>
+        <th class="text-right">{% translate 'Admin-ændret R75 beløb'%}</th>
+        <th class="text-right">{% translate 'R75 beløb justeret for skattedage'%}</th>
         <th class="text-right">{% translate 'Selvangivet beløb'%}</th>
         <th class="text-right">{% translate 'Ansat beløb'%}</th>
         <th class="text-right">{% translate 'Anvendt beløb'%}</th>
@@ -26,7 +27,8 @@
             <td>{% if policy.efterbehandling %}<span>{% translate 'Ja' %}</span>{% else %}<span>{% translate 'Nej' %}</span>{% endif %}</td>
             <td>{{ policy.next_processing_date|date:'SHORT_DATE_FORMAT'|default_if_none:"" }}</td>
             <td class="text-right">{{ policy.prefilled_amount|default_if_none:"" }}</td>
-            <td class="text-right">{{ policy.adjusted_r75_amount|default_if_none:"" }}</td>
+            <td class="text-right">{{ policy.prefilled_amount_edited|default_if_none:"" }}</td>
+            <td class="text-right">{{ policy.prefilled_adjusted_amount|default_if_none:"" }}</td>
             <td class="text-right">{{ policy.self_reported_amount|default_if_none:"" }}</td>
             <td class="text-right">{{ policy.assessed_amount|default_if_none:"" }}</td>
             <td class="text-right"><strong>{{ policy.get_assessed_amount|default_if_none:"" }}</strong></td>

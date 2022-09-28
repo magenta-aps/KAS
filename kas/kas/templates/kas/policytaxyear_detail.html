@@ -66,12 +66,16 @@
             </tr>
             <tr>
                 <th>{% translate 'R75 beløb' %}</th>
-                <td>{% if policy.adjusted_r75_amount %}
-                        {{ policy.adjusted_r75_amount }}
+                <td>{% if policy.prefilled_amount_edited %}
+                        {{ policy.prefilled_amount_edited }}
                     {% else %}
                         {{ policy.prefilled_amount|default_if_none:'' }}
                     {% endif %}
                 </td>
+            </tr>
+            <tr>
+                <th>{% translate 'R75 beløb justeret for skattedage' %}</th>
+                <td>{{ policy.prefilled_adjusted_amount|default_if_none:'' }}</td>
             </tr>
             <tr>
                 <th>{% translate 'Selvangivet beløb' %}</th>

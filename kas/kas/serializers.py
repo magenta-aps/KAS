@@ -94,6 +94,7 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
             "applied_deduction_from_previous_years",
             "available_deduction_from_previous_years",
             "year_adjusted_amount",
+            "prefilled_adjusted_amount",
             "documents",
             "active",
             "updated_by",
@@ -107,6 +108,7 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
             "prefilled_amount",
             "applied_deduction_from_previous_years",
             "available_deduction_from_previous_years",
+            "prefilled_adjusted_amount",
         ]
         depth = 2
 

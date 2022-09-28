@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-29 10:42+0200\n"
+"POT-Creation-Date: 2022-09-15 09:19+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,7 +35,7 @@ msgstr ""
 msgid "Overført"
 msgstr ""
 
-#: prisme/models.py:25 prisme/models.py:161
+#: prisme/models.py:25 prisme/models.py:182
 msgid "Annulleret"
 msgstr ""
 
@@ -59,43 +59,43 @@ msgstr ""
 msgid "transaktioner"
 msgstr ""
 
-#: prisme/models.py:103
+#: prisme/models.py:122
 msgid "Undervisningssystem"
 msgstr ""
 
-#: prisme/models.py:104
+#: prisme/models.py:123
 msgid "Produktionssystem"
 msgstr ""
 
-#: prisme/models.py:105
+#: prisme/models.py:124
 msgid "Mocking"
 msgstr ""
 
-#: prisme/models.py:119
+#: prisme/models.py:140
 msgid "prisme 10Q batch"
 msgstr ""
 
-#: prisme/models.py:120
+#: prisme/models.py:141
 msgid "prisme 10Q batches"
 msgstr ""
 
-#: prisme/models.py:157
+#: prisme/models.py:178
 msgid "Ikke afsendt"
 msgstr ""
 
-#: prisme/models.py:158
+#: prisme/models.py:179
 msgid "Afsender"
 msgstr ""
 
-#: prisme/models.py:159
+#: prisme/models.py:180
 msgid "Afsendelse fejlet"
 msgstr ""
 
-#: prisme/models.py:160
+#: prisme/models.py:181
 msgid "Afsendt"
 msgstr ""
 
-#: prisme/models.py:241
+#: prisme/models.py:250
 #, python-brace-format
 msgid "Prisme 10Q bunke {tidsstempel} ({status})"
 msgstr ""

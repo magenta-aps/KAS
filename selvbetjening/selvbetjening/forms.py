@@ -39,7 +39,7 @@ class PolicyForm(forms.Form):
         required=False,
     )
 
-    prefilled_amount = fields.IntegerField(
+    prefilled_adjusted_amount = fields.IntegerField(
         required=False,
         disabled=True,
         widget=widgets.NumberInput(

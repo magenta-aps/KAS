@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-29 10:42+0200\n"
+"POT-Creation-Date: 2022-09-15 09:19+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,28 +25,28 @@ msgstr ""
 msgid "Greenlandic"
 msgstr ""
 
-#: project/view_mixins.py:4
+#: project/view_mixins.py:5
 msgid ""
 "Du skal være logget ind som enten administrator eller sagsbehandler for at "
 "kunne redigere"
 msgstr ""
 
-#: project/view_mixins.py:8
+#: project/view_mixins.py:11
 msgid ""
 "Du skal være logget ind som enten administrator, sagsbehandler eller "
 "borgerservice for at kunne tilføje notater og uploade bilag."
 msgstr ""
 
-#: project/view_mixins.py:12
+#: project/view_mixins.py:17
 msgid ""
 "Du skal være logget ind som enten administrator eller regnskabsmedarbejder. "
 "For at kunne benytte denne funktion"
 msgstr ""
 
-#: project/view_mixins.py:15
+#: project/view_mixins.py:22
 msgid "Du skal være administrator for at benytte følgende funktion."
 msgstr ""
 
-#: project/view_mixins.py:19
+#: project/view_mixins.py:28
 msgid "Du har ikke rettigheder til at tilgå denne funktion."
 msgstr ""
