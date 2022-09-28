@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import math
-
 from django.core.files.base import ContentFile
 from fpdf import FPDF
 from project.settings import KAS_TAX_RATE
