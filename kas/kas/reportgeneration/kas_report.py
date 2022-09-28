@@ -238,8 +238,7 @@ class TaxPDF(FPDF):
         assert isinstance(width, (int, float)), "Width of wrong type"
         n_rows = 0
         for line in text.split("\n"):
-            n_rows += 1
-            n_rows += int(self.get_string_width(line) / width)
+            n_rows += int(self.get_string_width(line) / width) + 1
         return n_rows
 
     def write_multi_cell_row(
