@@ -66,7 +66,7 @@
                         <tbody>
                             <tr>
                                 <td class="col-8-sm">{% translate 'Kapitalafkast PBL (DK) § 53 A' %}</td>
-                                <td class="col-3-sm">{{ policy.self_reported_amount|default:policy.prefilled_amount }}</td>
+                                <td class="col-3-sm">{{ policy.self_reported_amount|default:policy.prefilled_adjusted_amount }}</td>
                                 <td class="col-1-sm">KAS-201</td>
                             </tr>
 
@@ -133,7 +133,7 @@
                         <tbody>
                         <tr>
                             <td class="col-8-sm">{% translate 'Kapitalafkast PBL (DK) § 53 A' %}</td>
-                            <td class="col-3-sm">{{ summary.self_reported_amount|default:summary.prefilled_amount }}</td>
+                            <td class="col-3-sm">{{ summary.self_reported_amount|default:summary.prefilled_adjusted_amount }}</td>
                             <td class="col-1-sm">KAS-201</td>
                         </tr>
                         <tr>

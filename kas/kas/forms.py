@@ -327,7 +327,7 @@ class EditAmountsUpdateForm(forms.ModelForm, BootstrapForm):
     class Meta:
         model = PolicyTaxYear
         fields = (
-            "adjusted_r75_amount",
+            "prefilled_amount_edited",
             "self_reported_amount",
             "assessed_amount",
             "slutlignet",

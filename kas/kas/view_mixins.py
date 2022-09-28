@@ -207,5 +207,6 @@ class KasMixin(object):
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
         if settings.ENVIRONMENT != "production":
-            ctx["TEST_ENVIRONMENT"] = True
+            ctx["test_environment"] = True
+        ctx["version"] = settings.VERSION
         return ctx

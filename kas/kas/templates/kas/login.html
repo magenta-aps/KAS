@@ -1,10 +1,10 @@
 {% extends 'kas/layout.html' %}
 {% load i18n %}
 {% block content %}
-    {% if TEST_ENVIRONMENT %}
+    {% if test_environment %}
     <header class="dev_globalheader printhide">
     <div class="row justify-content-md-center mb-2 mr-sm-2">
-        <h1>{% translate 'KAS 2.1.1 TEST VERSION' %}</h1>
+        <h1>{% blocktranslate with version=version %}KAS {{ version }} (TEST){% endblocktranslate %}</h1>
     </div>
     {% else %}
     <div class="row justify-content-md-center mb-2 mr-sm-2">

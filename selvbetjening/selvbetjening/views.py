@@ -315,7 +315,7 @@ class PolicyDetailView(HasUserMixin, YearTabMixin, TemplateView):
                 "summary": {
                     key: sum([int(policy.get(key) or 0) for policy in policies])
                     for key in [
-                        "prefilled_amount",
+                        "prefilled_adjusted_amount",
                         "self_reported_amount",
                         "calculated_result",
                     ]

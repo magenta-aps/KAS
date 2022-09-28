@@ -20,10 +20,10 @@
 </head>
 <body>
 {% if user.is_authenticated %}
-    {% if TEST_ENVIRONMENT %}
+    {% if test_environment %}
         <header class="dev_globalheader printhide">
     {% else %}
-        <header >
+        <header>
     {% endif %}
     <nav class="nav d-flex p-2">
         {% if back_url %}
@@ -93,9 +93,8 @@
             {% endif %}
         </span>
     </nav>
-    {% if TEST_ENVIRONMENT %}
-        <div class="dev_textheader">KAS 2.1.1 TEST VERSION</div>
-    {% endif %}
+
+    <div class="dev_textheader">KAS {{version}} {% if test_environment %}TEST{% else %}PROD{% endif %}</div>
     </header>
     <hr class="p-0 m-0">
 
@@ -113,8 +112,8 @@
 {% endif %}
     <div class="p-4">
 
-{% if TEST_ENVIRONMENT %}
-<div class="dev_watermark">KAS 2.1.1<br>TEST VERSION</div>
+{% if test_environment %}
+<div class="dev_watermark">KAS {{version}}<br>TEST VERSION</div>
 {% endif %}
 {% block content %}
 {% endblock %}

@@ -10,6 +10,9 @@
                 {% endif %}
             </div>
         </div>
+        {% if text_before_form %}
+        <p>{{ text_before_form }}</p>
+        {% endif %}
         <div class="form-row">
             {% for field in form %}
                 {% if field.name != 'next_processing_date' and field.name != 'slutlignet' and field.name != 'efterbehandling' %}
@@ -26,6 +29,10 @@
                 {% endif %}
             {% endfor %}
         </div>
+
+        {% if text_after_form %}
+        <p>{{ text_after_form }}</p>
+        {% endif %}
 
         <hr/>
 
