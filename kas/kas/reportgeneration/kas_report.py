@@ -4,6 +4,7 @@ import math
 
 from django.core.files.base import ContentFile
 from fpdf import FPDF
+from project.settings import KAS_TAX_RATE
 from kas.models import PolicyTaxYear, PersonTaxYear, TaxSlipGenerated
 
 
@@ -133,20 +134,20 @@ class TaxPDF(FPDF):
         "dk": "Kapitalafkast PBL (DK) § 53 A",
     }
 
-    text17A = {"gl": "Immersugassap aqqa\n ", "dk": "Feltnavn\n "}
-    text17B = {"gl": "Naqeriigaq\n ", "dk": "Fortrykt\n "}
+    text17A = {"gl": "Immersugassap aqqa", "dk": "Feltnavn"}
+    text17B = {"gl": "Naqeriigaq", "dk": "Fortrykt"}
     text17C = {
         "gl": "Soraarnerussutisiaqarnissamut aaqqissuussivik",
-        "dk": "Pensionsselskab\n ",
+        "dk": "Pensionsselskab",
     }
-    text17D = {"gl": "Policenormu\n ", "dk": "Policenummer\n "}
-    text17E = {"gl": "Nammineerluni nalunaarutigineqartoq", "dk": "Selvangivet\n "}
+    text17D = {"gl": "Policenormu", "dk": "Policenummer"}
+    text17E = {"gl": "Nammineerluni nalunaarutigineqartoq", "dk": "Selvangivet"}
     text17F = {
         "gl": "Ullunut akileraarfinnut agguarneqarnera",
         "dk": "Forholdsmæssigt i skattepligtsperioden",
     }
 
-    text18 = {"gl": "Immersugassap normua", "dk": "Felt nr.\n "}
+    text18 = {"gl": "Immersugassap normua", "dk": "Felt nr."}
     text25 = {"gl": "Aningaasat koruuninngorlugit", "dk": "Beløb i kroner"}
     text26 = {
         "gl": "Paasissutissat Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pillugu Inatsisartut "
@@ -191,8 +192,6 @@ class TaxPDF(FPDF):
     person_number = "-"
     reciever_name = "-"
     reciever_postal_address = ""
-    fully_tax_liable = True
-    tax_days_adjust_factor = 1.0
     taxable_days_in_year = 365
     page_counter = 1
     policies = [""]
@@ -206,8 +205,6 @@ class TaxPDF(FPDF):
         person_number="-",
         reciever_name="",
         reciever_postal_address="",
-        fully_tax_liable=True,
-        tax_days_adjust_factor=1.0,
         taxable_days_in_year=365,
         policies=None,
     ):
@@ -221,8 +218,6 @@ class TaxPDF(FPDF):
             policies = []
 
         self.reciever_postal_address = reciever_postal_address or ""
-        self.fully_tax_liable = fully_tax_liable
-        self.tax_days_adjust_factor = tax_days_adjust_factor
         self.taxable_days_in_year = taxable_days_in_year
         self.policies = policies
         self.default_line_width = self.line_width
@@ -239,6 +234,93 @@ class TaxPDF(FPDF):
         self.cell(h=5.0, align="R", w=10, txt=str(self.page_counter), border=0)
         self.page_counter += 1
         self.set_xy(self.left_margin, self.yposition)
+
+    def count_rows(self, text, width):
+        assert isinstance(text, (int, float, str)), "Text of wrong type"
+        assert isinstance(width, (int, float)), "Width of wrong type"
+        n_rows = 0
+        for line in text.split("\n"):
+            n_rows += 1
+            n_rows += int(self.get_string_width(line)/width)
+        return n_rows
+
+    def write_multi_cell_row(
+            self,
+            col_texts,
+            col_widths=None,
+            fontsize=9,
+            align=None,
+            height=5,
+            border=None,
+            left_border=None,
+            top_border=None,
+            **kwargs,
+            ):
+
+        # Makes sure defaults are set, and that arguments, which are iterated over, are lists
+        if not col_widths:
+            col_widths = [self.std_document_width]
+        if type(col_widths) is not list:
+            col_widths = [col_widths]
+        if isinstance(col_texts, str):
+            col_texts = [col_texts]
+        for i in [col_widths, align, border]:
+            if not isinstance(i, list):
+                i = [i]
+        if align is None:
+            align = len(col_widths)*["C"]
+        if type(align) is str:
+            align = [align]
+            align = align[0] * len(col_widths)
+        if border is None:
+            border = len(col_widths)*[1]
+        if type(border) is not list:
+            border = [border]
+        if left_border is None:
+            left_border = self.left_margin
+        if top_border:
+            self.yposition = top_border
+        else:
+            top_border = self.yposition
+
+        # Calculate no. of rows required for cells
+        required_rows = 0
+        txt = [0]*len(col_widths)
+        for i, width in enumerate(col_widths):
+            if isinstance(col_texts[i], int):
+                txt[i] = "{:,}".format(col_texts[i]).replace(",", ".")
+            elif isinstance(col_texts[i], float):
+                txt[i] = "{:,f}".format(col_texts[i]).replace(",", ".")
+            else:
+                txt[i] = str(col_texts[i])
+            cell_rows = self.count_rows(txt[i], width)
+            if cell_rows > required_rows:
+                required_rows = cell_rows
+        # write to cells
+        for i, width in enumerate(col_widths):
+            self.set_xy(left_border, top_border)
+            """
+            if isinstance(col_texts[i], (int, float)):
+                txt = "{:,f}".format(col_texts[i]).replace(",", ".")
+            else:
+                txt = str(col_texts[i])
+            """
+            # There seems to be some sort of invisible padding, hence the "-2"
+            cell_rows = self.count_rows(txt[i], width-2)
+            if cell_rows < required_rows:
+                txt[i] += "\n "*(required_rows - cell_rows)
+            self.multi_cell(
+                h=height,
+                align=align[i],
+                w=width,
+                txt=txt[i],
+                border=border[i],
+            )
+            left_border+=width
+        self.yposition += height*required_rows
+        return None
+
+            
 
     def print_tax_slip(self, language):
         """
@@ -261,49 +343,52 @@ class TaxPDF(FPDF):
         )
 
         self.set_font("arial", "B", 12.0)
-        self.set_xy(self.left_margin, 8.0)
-        self.multi_cell(
-            h=self.contact_info_table_cell.get("h"),
+
+        # Set yposition for first cell
+        self.yposition = 8
+        self.write_multi_cell_row(
+            self.text2.get(language).format(self.tax_year),
             align="L",
-            w=170,
-            txt=self.text2.get(language).format(self.tax_year),
             border=0,
         )
 
         self.set_font("arial", "", 9.0)
-        self.set_xy(self.left_margin, 20.0)
-        self.cell(
-            h=0,
+        self.write_multi_cell_row(
+            self.text4[language].format(self.tax_return_date_limit),
             align="L",
-            w=75.0,
-            txt=self.text4[language].format(self.tax_return_date_limit),
             border=0,
         )
-
+    
         self.set_font("arial", "", 8.5)
         # Adressing reciever
-        self.set_xy(self.address_field.get("x"), self.address_field.get("y"))
-        self.multi_cell(
-            self.address_field.get("w"),
-            3,
+        #self.set_xy(self.address_field.get("x"), self.address_field.get("y"))
+        self.write_multi_cell_row(
+            [self.reciever_name + "\n" + self.reciever_postal_address],
+            col_widths = self.address_field.get("w"),
+            height=3,
             align="L",
             border=0,
-            txt=self.reciever_name + "\n" + self.reciever_postal_address,
+            left_border = self.address_field.get("x"),
+            top_border = self.address_field.get("y"),
         )
 
         # Adressing department
-        self.set_xy(self.address_field.get("x"), self.address_field.get("y") + 12)
-        self.multi_cell(
-            self.address_field.get("w"),
-            4,
+        #self.set_xy(self.address_field.get("x"), self.address_field.get("y") + 12)
+        self.write_multi_cell_row(
+            self.sender_name
+            + "\n" 
+            + self.sender_address 
+            + "\n" 
+            + self.sender_postnumber,
+            col_widths = self.address_field.get("w"),
+            height=4,
             align="L",
             border=0,
-            txt=self.sender_name
-            + "\n"
-            + self.sender_address
-            + "\n"
-            + self.sender_postnumber,
+            left_border = self.address_field.get("x"),
+            top_border = self.address_field.get("y")+12,
         )
+
+        # Generates the cross over sender address
         self.line(
             self.address_field.get("x"),
             self.address_field.get("y") + 12,
@@ -316,436 +401,200 @@ class TaxPDF(FPDF):
             self.address_field.get("x") + self.address_field.get("w") - 30,
             self.address_field.get("y") + 12,
         )
+        
+        # Write the contact information box
+        self.write_multi_cell_row(
+            [self.text5[language], self.person_number,],
+            col_widths = [self.contact_info_table_cell.get("w"),
+                self.contact_info_table_cell.get("w"),],
+            align="L",
+            height=self.contact_info_table_cell.get("h"),
+            left_border = self.contact_info_table.get("x"),
+            top_border = self.contact_info_table.get("y"),
+        )
+        self.write_multi_cell_row(
+            [self.text6[language], "{:.2%}".format(KAS_TAX_RATE).replace(",","."),],
+            col_widths = [self.contact_info_table_cell.get("w"),
+                self.contact_info_table_cell.get("w"),],
+            align = "L",
+            height=self.contact_info_table_cell.get("h"),
+            left_border = self.contact_info_table.get("x"),
+        )
 
-        self.set_xy(self.contact_info_table.get("x"), self.contact_info_table.get("y"))
-        self.cell(
-            h=self.contact_info_table_cell.get("h"),
-            align="L",
-            w=self.contact_info_table_cell.get("w"),
-            txt=self.text5[language],
-            border=1,
-        )
-        self.set_xy(
-            self.contact_info_table.get("x"),
-            self.contact_info_table.get("y") + self.contact_info_table_cell.get("h"),
-        )
-        self.cell(
-            h=self.contact_info_table_cell.get("h"),
-            align="L",
-            w=self.contact_info_table_cell.get("w"),
-            txt=self.text6[language],
-            border=1,
-        )
-
-        self.set_xy(
-            self.contact_info_table.get("x") + self.contact_info_table_cell.get("w"),
-            self.contact_info_table.get("y"),
-        )
-        self.cell(
-            h=self.contact_info_table_cell.get("h"),
-            align="L",
-            w=self.contact_info_table_cell.get("w"),
-            txt=self.person_number,
-            border=1,
-        )
-        self.set_xy(
-            self.contact_info_table.get("x") + self.contact_info_table_cell.get("w"),
-            self.contact_info_table.get("y") + self.contact_info_table_cell.get("h"),
-        )
-        self.cell(
-            h=self.contact_info_table_cell.get("h"),
-            align="L",
-            w=self.contact_info_table_cell.get("w"),
-            txt="15,3%",
-            border=1,
-        )
-        self.set_xy(
-            self.contact_info_table.get("x"),
-            self.contact_info_table.get("y")
-            + 2 * self.contact_info_table_cell.get("h"),
-        )
-        self.multi_cell(
-            2 * self.contact_info_table_cell.get("w"),
-            5,
+        self.write_multi_cell_row(
             self.text7[language],
-            border=1,
+            col_widths = 2*self.contact_info_table_cell.get("w"),
             align="L",
+            left_border = self.contact_info_table.get("x"),
         )
-
-        self.set_xy(
-            self.contact_info_table.get("x"),
-            self.contact_info_table.get("y")
-            + 5 * self.contact_info_table_cell.get("h"),
+        self.write_multi_cell_row(
+            [self.text8[language], "sullissivik.gl",],
+            col_widths = [self.contact_info_table_cell.get("w"),
+                self.contact_info_table_cell.get("w"),],
+            align = "L",
+            height=self.contact_info_table_cell.get("h"),
+            left_border = self.contact_info_table.get("x"),
         )
-        self.cell(
-            h=self.contact_info_table_cell.get("h"),
-            align="L",
-            w=self.contact_info_table_cell.get("w"),
-            txt=self.text8[language],
-            border=1,
+        self.write_multi_cell_row(
+            [self.text8A[language], str(self.taxable_days_in_year),],
+            col_widths = [self.contact_info_table_cell.get("w"),
+                self.contact_info_table_cell.get("w"),],
+            align = "L",
+            height=self.contact_info_table_cell.get("h"),
+            left_border = self.contact_info_table.get("x"),
         )
-
-        self.set_xy(
-            self.contact_info_table.get("x") + self.contact_info_table_cell.get("w"),
-            self.contact_info_table.get("y")
-            + 5 * self.contact_info_table_cell.get("h"),
-        )
-        self.cell(
-            h=self.contact_info_table_cell.get("h"),
-            align="L",
-            w=self.contact_info_table_cell.get("w"),
-            txt="www.sullissivik.gl",
-            border=1,
-        )
-
-        self.set_xy(
-            self.contact_info_table.get("x"),
-            self.contact_info_table.get("y")
-            + 6 * self.contact_info_table_cell.get("h"),
-        )
-        self.cell(
-            h=self.contact_info_table_cell.get("h"),
-            align="L",
-            w=self.contact_info_table_cell.get("w"),
-            txt=self.text8A[language],
-            border=1,
-        )
-
-        self.set_xy(
-            self.contact_info_table.get("x") + self.contact_info_table_cell.get("w"),
-            self.contact_info_table.get("y")
-            + 6 * self.contact_info_table_cell.get("h"),
-        )
-        self.cell(
-            h=self.contact_info_table_cell.get("h"),
-            align="L",
-            w=self.contact_info_table_cell.get("w"),
-            txt=str(self.taxable_days_in_year),
-            border=1,
-        )
-
+        
+        # Set yposition for main text
         self.yposition = 80
-        self.set_xy(self.left_margin, self.yposition)
 
         self.set_font("arial", "B", 8.5)
-        self.multi_cell(self.std_document_width, 5, self.text10[language], border=0)
-        self.yposition = self.get_y()
-
+        self.write_multi_cell_row(self.text10[language], align="L", border=0)
+        text_fields = [
+            self.text11[language], "   ",
+            self.text12[language], "   ",
+            self.text13[language],
+            self.text13A[language],
+            self.text13B[language],
+            self.text13C[language].format(self.tax_return_date_limit), "   ",
+            self.text13D[language], "   ",
+            self.text13E[language].format(self.request_pay, self.pay_date), "   ",
+            self.text14[language].format(self.tax_year, self.request_pay),
+            ]
         self.set_font("arial", "", 8.5)
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(
-            self.std_document_width, 5, align="L", txt=self.text11[language], border=0
-        )
-        self.yposition = self.get_y()
-        self.yposition += 5
-
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(
-            self.std_document_width, 5, align="L", txt=self.text12[language], border=0
-        )
-        self.yposition = self.get_y()
-        self.yposition += 5
-
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(
-            self.std_document_width, 5, align="L", txt=self.text13[language], border=0
-        )
-        self.yposition = self.get_y()
-
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(
-            self.std_document_width, 5, align="L", txt=self.text13A[language], border=0
-        )
-        self.yposition = self.get_y()
-
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(
-            self.std_document_width, 5, align="L", txt=self.text13B[language], border=0
-        )
-        self.yposition = self.get_y()
-
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(
-            self.std_document_width,
-            5,
-            align="L",
-            txt=self.text13C[language].format(self.tax_return_date_limit),
-            border=0,
-        )
-        self.yposition = self.get_y()
-        self.yposition += 5
-
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(
-            self.std_document_width, 5, align="L", txt=self.text13D[language], border=0
-        )
-        self.yposition = self.get_y()
-        self.yposition += 5
-
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(
-            self.std_document_width,
-            5,
-            align="L",
-            txt=self.text13E[language].format(self.request_pay, self.pay_date),
-            border=0,
-        )
-        self.yposition = self.get_y()
-        self.yposition += 5
-
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(
-            self.std_document_width,
-            5,
-            align="L",
-            txt=self.text14[language].format(self.tax_year, self.request_pay),
-            border=0,
-        )
-        self.yposition = self.get_y()
-
-        self.yposition += 20
-
-        self.yposition = self.get_y()
+        for field in text_fields:
+            self.write_multi_cell_row(field, align="L", border=0)
 
         self.add_page()
 
         """
-        Spacing parameters dxw for 4 cells, and cx2 for 3 cells. Denotes cell width
+        Spacing parameters exw for 5 cells, and cxw for 3 cells.
+        Denotes cell width.
         """
-        d2w = 33
-        d3w = 43
-        d4w = 43
-        d1w = self.std_document_width - d2w - d3w - d4w
+        e2w = 21
+        e3w = 34
+        e4w = 38
+        e5w = 28
+        e1w = self.std_document_width - e2w - e3w - e4w - e5w
+        five_cols = [e1w, e2w, e3w, e4w, e5w]
 
         c2w = 52
         c3w = 52
         c1w = self.std_document_width - c2w - c3w
+        three_cols = [c1w, c2w, c3w]
         policys_per_page = 4
         policy_index = 0
         any_policys_added = False
         rowheight = 10
+        headerheight = 10
         columnheaderheight = 5
 
+        # Write out policies
         for policy in self.policies:
 
             if policy_index == policys_per_page:
                 self.add_page()
                 policy_index = 0
             policy_index += 1
-            headerheight = 10
             self.set_font("arial", "B", 12)
-            self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(
-                h=headerheight,
-                align="C",
-                w=c1w + c2w + c3w,
-                txt=policy.get("policy"),
-                border=1,
+            self.write_multi_cell_row(
+                policy.get("policy"),
+                height=headerheight,
             )
-            self.yposition += headerheight
 
-            self.set_font("arial", "B", 10)
-            self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(
-                h=columnheaderheight,
-                align="C",
-                w=d1w,
-                txt=self.text17A[language],
-                border=1,
+            self.set_font("arial", "B", 9)
+
+            # Create function, which, given widths and text, creates and write to cols
+            self.write_multi_cell_row(
+                [self.text17A[language],
+                self.text17B[language],   
+                self.text8A[language],
+                self.text17F[language],
+                self.text17E[language],
+                ],
+                col_widths=five_cols,
+                height=columnheaderheight,
             )
-            self.set_xy(self.left_margin + d1w, self.yposition)
-            self.multi_cell(
-                h=columnheaderheight,
-                align="C",
-                w=d2w,
-                txt=self.text17B[language],
-                border=1,
-            )
-            self.set_xy(self.left_margin + d1w + d2w, self.yposition)
-            self.multi_cell(
-                h=columnheaderheight,
-                align="C",
-                w=d3w,
-                txt=self.text17F[language],
-                border=1,
-            )
-            self.set_xy(self.left_margin + d1w + d2w + d3w, self.yposition)
-            self.multi_cell(
-                h=columnheaderheight,
-                align="C",
-                w=d4w,
-                txt=self.text17E[language],
-                border=1,
-            )
-            self.yposition += 10
 
             self.set_font("arial", "", 8.5)
-
-            self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(
-                h=rowheight, align="L", w=d1w, txt=self.text15[language], border=1
+            
+            self.write_multi_cell_row(
+                [self.text15[language],
+                policy.get('prefilled_amount'),   
+                self.taxable_days_in_year,
+                policy.get("year_adjusted_amount"),
+                "   ",
+                ],
+                col_widths=five_cols,
+                align=['L', 'C', 'C', 'C', 'C'],
+                height=rowheight,
             )
-            self.set_xy(self.left_margin + d1w, self.yposition)
-            actual_amount = policy.get("prefilled_amount")
-            if not self.fully_tax_liable:
-                actual_amount = math.floor(float(actual_amount) * 0.8)
-            self.multi_cell(
-                h=rowheight,
-                align="C",
-                w=d2w,
-                txt="{:,}".format(actual_amount).replace(",", "."),
-                border=1,
-            )
-            self.set_xy(self.left_margin + d1w + d2w, self.yposition)
-            year_adjusted_amount = policy.get("year_adjusted_amount")
-            self.multi_cell(
-                h=rowheight,
-                align="C",
-                w=d3w,
-                txt="{:,}".format(year_adjusted_amount).replace(",", "."),
-                border=1,
-            )
-
-            self.set_xy(self.left_margin + d1w + d2w + d3w, self.yposition)
-            self.multi_cell(h=rowheight, align="L", w=d4w, txt="  ", border=1)
-            self.yposition += rowheight
-            self.set_xy(self.left_margin, self.yposition)
+            
             if policy.get("pension_company_pays"):
-                self.multi_cell(
-                    self.std_document_width,
-                    5,
+                self.write_multi_cell_row(
+                    self.text26D[language],
                     align="L",
-                    txt=self.text26D[language],
-                    border=0,
+                    border=[0],
+                    height=columnheaderheight,
                 )
-            self.yposition += 15
+            
+            # Space before next policy
+            self.yposition += 2*columnheaderheight
             any_policys_added = True
 
         if any_policys_added:
             self.add_page()
 
-        self.multi_cell(
-            self.std_document_width, 5, align="L", txt=self.text26DA[language], border=0
+        self.write_multi_cell_row(
+            self.text26DA[language],
+            align="L",
+            border=0,
         )
-        self.yposition = self.get_y()
-        self.yposition += 5
 
-        self.set_font("arial", "B", 10)
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(
-            h=columnheaderheight, align="C", w=c1w, txt=self.text17C[language], border=1
+        self.yposition += columnheaderheight
+        self.set_font("arial", "B", 9)
+        self.write_multi_cell_row(
+            [self.text17C[language],
+                self.text17D[language],
+                self.text17E[language],
+                ],
+            col_widths = three_cols,
         )
-        self.set_xy(self.left_margin + c1w, self.yposition)
-        self.multi_cell(
-            h=columnheaderheight, align="C", w=c2w, txt=self.text17D[language], border=1
-        )
-        self.set_xy(self.left_margin + c1w + c2w, self.yposition)
-        self.multi_cell(
-            h=columnheaderheight, align="C", w=c3w, txt=self.text17E[language], border=1
-        )
-        self.yposition += rowheight
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(h=rowheight, align="L", w=c1w, txt="  ", border=1)
-        self.set_xy(self.left_margin + c1w, self.yposition)
-        self.multi_cell(h=rowheight, align="C", w=c2w, txt="  ", border=1)
-        self.set_xy(self.left_margin + c1w + c2w, self.yposition)
-        self.multi_cell(h=rowheight, align="C", w=c3w, txt="  ", border=1)
-        self.yposition += rowheight
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(h=rowheight, align="L", w=c1w, txt="  ", border=1)
-        self.set_xy(self.left_margin + c1w, self.yposition)
-        self.multi_cell(h=rowheight, align="C", w=c2w, txt="  ", border=1)
-        self.set_xy(self.left_margin + c1w + c2w, self.yposition)
-        self.multi_cell(h=rowheight, align="C", w=c3w, txt="  ", border=1)
-        self.yposition = self.get_y()
+        # Changes the number of blank rows for text17C/D/E. 
+        number_of_extra_taxslip_rows = 2
+        for i in range(number_of_extra_taxslip_rows):
+            self.write_multi_cell_row(
+                ["   ", "   ", "   ",],
+                col_widths=three_cols,
+                height=rowheight,
+            )
+
+        self.yposition += columnheaderheight
+        self.set_font("arial", "", 8.5)
+
+        self.write_multi_cell_row(self.text26E[language], align="L")
+        self.write_multi_cell_row("   ", height=40)
+        self.yposition += 10
+
+        self.write_multi_cell_row(self.text26B[language], align="L")
+        self.write_multi_cell_row("   ", height=15)
+
         self.yposition += 15
 
-        self.set_font("arial", "", 8.5)
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(
-            self.std_document_width, 5, align="L", txt=self.text26E[language], border=1
+        self.write_multi_cell_row(self.text26[language], align="L")
+        self.write_multi_cell_row(
+            [self.text27[language],
+                self.text28[language],
+                self.text29[language],
+                ],
+            col_widths = 3*[self.signature_table_cell.get("w")],
+            height = self.signature_table_cell.get("h"),
+            align = 3*["L"],
         )
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 50, txt="  ", border=1)
-        self.yposition = self.get_y()
-        self.yposition += 20
-
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(
-            self.std_document_width, 5, align="L", txt=self.text26B[language], border=1
+        self.write_multi_cell_row(
+            ["   ", "   ", "   "],
+            col_widths = 3*[self.signature_table_cell.get("w")],
+            height = self.signature_table_cell.get("h"),
         )
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(self.std_document_width, 30, txt="  ", border=1)
-        self.yposition = self.get_y()
-        self.yposition += 20
-
-        elementheight = 30
-        self.set_xy(self.left_margin, self.yposition)
-        self.set_line_width(self.default_line_width)
-        self.multi_cell(
-            h=5,
-            align="L",
-            w=self.std_document_width,
-            txt=self.text26[language],
-            border=1,
-        )
-        self.yposition = self.get_y()
-        self.set_xy(self.left_margin, self.yposition)
-        self.cell(
-            h=self.signature_table_cell.get("h"),
-            align="L",
-            w=self.signature_table_cell.get("w"),
-            txt=self.text27[language],
-            border=1,
-        )
-        self.set_xy(
-            self.left_margin + self.signature_table_cell.get("w"), self.yposition
-        )
-        self.cell(
-            h=self.signature_table_cell.get("h"),
-            align="L",
-            w=self.signature_table_cell.get("w"),
-            txt=self.text28[language],
-            border=1,
-        )
-        self.set_xy(
-            self.left_margin + self.signature_table_cell.get("w") * 2, self.yposition
-        )
-        self.cell(
-            h=self.signature_table_cell.get("h"),
-            align="L",
-            w=self.signature_table_cell.get("w"),
-            txt=self.text29[language],
-            border=1,
-        )
-        self.set_xy(self.left_margin, self.yposition + 10)
-        self.cell(
-            h=self.signature_table_cell.get("h"),
-            w=self.signature_table_cell.get("w"),
-            border=1,
-        )
-        self.set_xy(
-            self.left_margin + self.signature_table_cell.get("w"), self.yposition + 10
-        )
-        self.cell(
-            h=self.signature_table_cell.get("h"),
-            w=self.signature_table_cell.get("w"),
-            border=1,
-        )
-        self.set_xy(
-            self.left_margin + self.signature_table_cell.get("w") * 2,
-            self.yposition + 10,
-        )
-        self.cell(
-            h=self.signature_table_cell.get("h"),
-            w=self.signature_table_cell.get("w"),
-            border=1,
-        )
-        self.set_line_width(1)
-        self.set_line_width(self.default_line_width)
-        self.yposition += elementheight
-
-        self.yposition += 10
 
     def write_tax_slip_to_disk(self, path):
         self.output(path, "F")
@@ -765,8 +614,6 @@ class TaxPDF(FPDF):
         person_number = person_tax_year.person.cpr
         reciever_name = person_tax_year.person.name
         reciever_postal_address = person_tax_year.person.postal_address
-        fully_tax_liable = person_tax_year.fully_tax_liable
-        tax_days_adjust_factor = 1 if person_tax_year.fully_tax_liable else 0
         taxable_days_in_year = person_tax_year.number_of_days
         tax_days_adjust_factor = (
             taxable_days_in_year / person_tax_year.tax_year.days_in_year
@@ -780,7 +627,6 @@ class TaxPDF(FPDF):
         policy_file_name = f"Y_{tax_year}_{person_number}.pdf"
 
         for policy in list_of_policies:
-
             single_policy = {
                 "policy": (
                     (policy.pension_company.name or " - ")
@@ -806,15 +652,13 @@ class TaxPDF(FPDF):
             person_number,
             reciever_name,
             reciever_postal_address,
-            fully_tax_liable,
-            tax_days_adjust_factor,
             taxable_days_in_year,
             policies,
         )
 
         self.print_tax_slip("gl")
         self.print_tax_slip("dk")
-
+        
         ts = TaxSlipGenerated.objects.create(persontaxyear=person_tax_year, title=title)
         ts.file.save(content=ContentFile(self.output()), name=policy_file_name)
         person_tax_year.tax_slip = ts
