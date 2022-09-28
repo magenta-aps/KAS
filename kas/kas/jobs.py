@@ -362,7 +362,7 @@ def import_r75(job):
 def generate_reports_for_year(job):
     qs = PersonTaxYear.get_pdf_recipients_for_year_qs(
         job.arguments["year_pk"],
-        exclude_already_generated=REPORT_EXCLUDE_ALREADY_GENERATED
+        exclude_already_generated=REPORT_EXCLUDE_ALREADY_GENERATED,
     )
     total_count = qs.count()
     for i, person_tax_year in enumerate(qs.iterator(), 1):
