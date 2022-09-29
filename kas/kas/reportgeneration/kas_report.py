@@ -257,13 +257,13 @@ class TaxPDF(FPDF):
     ):
 
         # Makes sure defaults are set, and that arguments, which are iterated over, are lists
-        length = len( self.listify(col_texts) )
+        length = len(self.listify(col_texts))
         if not col_widths:
             col_widths = [self.std_document_width]
         col_widths = self.listify(col_widths)
         col_texts = self.listify(col_texts)
-        align = self.listify(align) * (length // len( self.listify(align) ))
-        border = self.listify(border) * (length // len( self.listify(border) ))
+        align = self.listify(align) * (length // len(self.listify(align)))
+        border = self.listify(border) * (length // len(self.listify(border)))
         if left_border is None:
             left_border = self.left_margin
         if top_border:
@@ -479,8 +479,9 @@ class TaxPDF(FPDF):
         five_col_3 = 34
         five_col_4 = 38
         five_col_5 = 28
-        five_col_1 = self.std_document_width \
-            - five_col_2 - five_col_3 - five_col_4 - five_col_5
+        five_col_1 = (
+            self.std_document_width - five_col_2 - five_col_3 - five_col_4 - five_col_5
+        )
         five_cols = [five_col_1, five_col_2, five_col_3, five_col_4, five_col_5]
 
         three_col_2 = 52
