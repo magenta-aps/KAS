@@ -234,45 +234,36 @@ class TaxPDF(FPDF):
         self.set_xy(self.left_margin, self.yposition)
 
     def count_rows(self, text, width):
-        assert isinstance(text, (int, float, str)), "Text of wrong type"
-        assert isinstance(width, (int, float)), "Width of wrong type"
         n_rows = 0
         for line in text.split("\n"):
             n_rows += int(self.get_string_width(line) / width) + 1
         return n_rows
+
+    @staticmethod
+    def listify(item):
+        return item if isinstance(item, list) else [item]
 
     def write_multi_cell_row(
         self,
         col_texts,
         col_widths=None,
         fontsize=9,
-        align=None,
+        align="C",
         height=5,
-        border=None,
+        border=1,
         left_border=None,
         top_border=None,
         **kwargs,
     ):
 
         # Makes sure defaults are set, and that arguments, which are iterated over, are lists
+        length = len( self.listify(col_texts) )
         if not col_widths:
             col_widths = [self.std_document_width]
-        if type(col_widths) is not list:
-            col_widths = [col_widths]
-        if isinstance(col_texts, str):
-            col_texts = [col_texts]
-        for i in [col_widths, align, border]:
-            if not isinstance(i, list):
-                i = [i]
-        if align is None:
-            align = len(col_widths) * ["C"]
-        if type(align) is str:
-            align = [align]
-            align = align[0] * len(col_widths)
-        if border is None:
-            border = len(col_widths) * [1]
-        if type(border) is not list:
-            border = [border]
+        col_widths = self.listify(col_widths)
+        col_texts = self.listify(col_texts)
+        align = self.listify(align) * (length // len( self.listify(align) ))
+        border = self.listify(border) * (length // len( self.listify(border) ))
         if left_border is None:
             left_border = self.left_margin
         if top_border:
@@ -298,12 +289,6 @@ class TaxPDF(FPDF):
         # write to cells
         for i, width in enumerate(col_widths):
             self.set_xy(left_border, top_border)
-            """
-            if isinstance(col_texts[i], (int, float)):
-                txt = "{:,f}".format(col_texts[i]).replace(",", ".")
-            else:
-                txt = str(col_texts[i])
-            """
             # There seems to be some sort of invisible padding, hence the "-2"
             cell_rows = self.count_rows(txt[i], width - 2)
             if cell_rows < required_rows:
@@ -487,20 +472,21 @@ class TaxPDF(FPDF):
         self.add_page()
 
         """
-        Spacing parameters exw for 5 cells, and cxw for 3 cells.
-        Denotes cell width.
+        Spacing parameters five_col_x for 5 cells, and three_col_x for 3 cells.
+        Denotes cell width. Gathered in a list for use in write_multi_cell_row()
         """
-        e2w = 21
-        e3w = 34
-        e4w = 38
-        e5w = 28
-        e1w = self.std_document_width - e2w - e3w - e4w - e5w
-        five_cols = [e1w, e2w, e3w, e4w, e5w]
+        five_col_2 = 21
+        five_col_3 = 34
+        five_col_4 = 38
+        five_col_5 = 28
+        five_col_1 = self.std_document_width \
+            - five_col_2 - five_col_3 - five_col_4 - five_col_5
+        five_cols = [five_col_1, five_col_2, five_col_3, five_col_4, five_col_5]
 
-        c2w = 52
-        c3w = 52
-        c1w = self.std_document_width - c2w - c3w
-        three_cols = [c1w, c2w, c3w]
+        three_col_2 = 52
+        three_col_3 = 52
+        three_col_1 = self.std_document_width - three_col_2 - three_col_3
+        three_cols = [three_col_1, three_col_2, three_col_3]
         policys_per_page = 4
         policy_index = 0
         any_policys_added = False
