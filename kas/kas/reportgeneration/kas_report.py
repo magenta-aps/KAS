@@ -2,7 +2,7 @@
 
 from django.core.files.base import ContentFile
 from fpdf import FPDF
-from project.settings import KAS_TAX_RATE
+from django.conf import settings
 from kas.models import PolicyTaxYear, PersonTaxYear, TaxSlipGenerated
 
 
@@ -188,8 +188,8 @@ class TaxPDF(FPDF):
     tax_year = "-"
     tax_return_date_limit = "-"
     person_number = "-"
-    reciever_name = "-"
-    reciever_postal_address = ""
+    receiver_name = "-"
+    receiver_postal_address = ""
     taxable_days_in_year = 365
     page_counter = 1
     policies = [""]
@@ -201,8 +201,8 @@ class TaxPDF(FPDF):
         request_pay="",
         pay_date="",
         person_number="-",
-        reciever_name="",
-        reciever_postal_address="",
+        receiver_name="",
+        receiver_postal_address="",
         taxable_days_in_year=365,
         policies=None,
     ):
@@ -211,11 +211,11 @@ class TaxPDF(FPDF):
         self.request_pay = request_pay
         self.pay_date = pay_date
         self.person_number = person_number
-        self.reciever_name = reciever_name or ""
+        self.receiver_name = receiver_name or ""
         if policies is None:
             policies = []
 
-        self.reciever_postal_address = reciever_postal_address or ""
+        self.receiver_postal_address = receiver_postal_address or ""
         self.taxable_days_in_year = taxable_days_in_year
         self.policies = policies
         self.default_line_width = self.line_width
@@ -282,17 +282,19 @@ class TaxPDF(FPDF):
 
         # Calculate no. of rows required for cells
         required_rows = 0
-        txt = [0] * len(col_widths)
+        txt = []
         for i, width in enumerate(col_widths):
-            if isinstance(col_texts[i], int):
-                txt[i] = "{:,}".format(col_texts[i]).replace(",", ".")
+            col_text = col_texts[i]
+            if isinstance(col_text, int):
+                txt_item = "{:,}".format(col_text).replace(",", ".")
             elif isinstance(col_texts[i], float):
-                txt[i] = "{:,f}".format(col_texts[i]).replace(",", ".")
+                txt_item = "{:,f}".format(col_text).replace(",", ".")
             else:
-                txt[i] = str(col_texts[i])
-            cell_rows = self.count_rows(txt[i], width)
+                txt_item = str(col_text)
+            cell_rows = self.count_rows(txt_item, width)
             if cell_rows > required_rows:
                 required_rows = cell_rows
+            txt.append(txt_item)
         # write to cells
         for i, width in enumerate(col_widths):
             self.set_xy(left_border, top_border)
@@ -357,7 +359,7 @@ class TaxPDF(FPDF):
         self.set_font("arial", "", 8.5)
         # Adressing reciever
         self.write_multi_cell_row(
-            [self.reciever_name + "\n" + self.reciever_postal_address],
+            [self.receiver_name + "\n" + self.receiver_postal_address],
             col_widths=self.address_field.get("w"),
             height=3,
             align="L",
@@ -413,7 +415,7 @@ class TaxPDF(FPDF):
         self.write_multi_cell_row(
             [
                 self.text6[language],
-                "{:.2%}".format(KAS_TAX_RATE).replace(",", "."),
+                "{:.2%}".format(settings.KAS_TAX_RATE).replace(",", "."),
             ],
             col_widths=[
                 self.contact_info_table_cell.get("w"),
@@ -638,8 +640,8 @@ class TaxPDF(FPDF):
         request_pay = f" {(person_tax_year.tax_year.year+1)}"
         pay_date = f"1. september {(person_tax_year.tax_year.year+1)}"
         person_number = person_tax_year.person.cpr
-        reciever_name = person_tax_year.person.name
-        reciever_postal_address = person_tax_year.person.postal_address
+        receiver_name = person_tax_year.person.name
+        receiver_postal_address = person_tax_year.person.postal_address
         taxable_days_in_year = person_tax_year.number_of_days
         policies = []
 
@@ -673,8 +675,8 @@ class TaxPDF(FPDF):
             request_pay,
             pay_date,
             person_number,
-            reciever_name,
-            reciever_postal_address,
+            receiver_name,
+            receiver_postal_address,
             taxable_days_in_year,
             policies,
         )
