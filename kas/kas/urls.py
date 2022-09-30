@@ -27,6 +27,7 @@ from kas.views import (
     PersonTaxYearFailSendListView,
     PolicyTaxYearUnfinishedListView,
     PersonTaxYearDocumentsAndNotesUpdateView,
+    PersonTaxYearEskatDiffListView,
     PolicyPaymentOverrideView,
     PersonTaxYearUnhandledDocumentsAndNotes,
     FinalSettlementGenerateView,
@@ -80,6 +81,11 @@ urlpatterns = [
         "person/foreign/",
         PersonTaxYearGeneralAndForeignNotesListView.as_view(),
         name="person_search_foreign",
+    ),
+    path(
+        "person/eskat_diff/",
+        PersonTaxYearEskatDiffListView.as_view(),
+        name="person_search_eskat_diff",
     ),
     path(
         "person/<int:pk>/represent/",

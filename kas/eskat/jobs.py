@@ -17,6 +17,8 @@ from kas.models import TaxYear
 from worker.job_registry import resolve_job_function
 from worker.models import job_decorator, Job
 
+from kas.models import PersonTaxYear
+
 rate_text = (
     "Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pil-\n"
     "lugu Inatsisartut Inatsisaat nr. 37, 23. november 2017-\n"
@@ -133,7 +135,7 @@ def importere_kas_beregninger_for_legacy_years(job):
         raise Exception("skatteår eksisterer ikke")
 
     if year.year not in settings.LEGACY_YEARS:
-        raise Exception("Kun import af tidligere år (2018/219) er understøttet")
+        raise Exception("Kun import af tidligere år (2018/2019) er understøttet")
 
     source_model = get_kas_beregninger_x_model().objects.filter(skatteaar=year.year)
     fundet_beregninger = source_model.count()
@@ -153,6 +155,11 @@ def importere_kas_beregninger_for_legacy_years(job):
                 # Set all fields
                 setattr(imported_beregning, attr, value)
             imported_beregning._change_reason = "Updated by import"
+
+        imported_beregning.person_tax_year = PersonTaxYear.objects.get(
+            person__cpr=beregning["cpr"],
+            tax_year__year=beregning["skatteaar"],
+        )
         imported_beregning.save()
         gemte_beregninger += 1
 

@@ -8,7 +8,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
-from django.db.models import Count, F, Q, Min
+from django.db.models import Count, F, Q, Min, FilteredRelation
 from django.http import Http404, HttpResponse, HttpResponseRedirect, FileResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -329,6 +329,34 @@ class PersonTaxYearGeneralAndForeignNotesListView(PersonTaxYearSpecialListView):
             Q(general_notes__isnull=True) | Q(general_notes__exact=""),
         )
         print(qs.query)
+        return qs
+
+
+class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
+    template_name = "kas/persontaxyear_eskat_diff.html"
+    filename = "eskat_diff.xls"
+
+    def filter_queryset(self, qs):
+        qs = super(PersonTaxYearEskatDiffListView, self).filter_queryset(qs)
+        # find persontaxyears hvor FinalSettlement.pseudo_amount != ImportedKasBeregningerX.capital_return_tax
+
+        qs = qs.annotate(
+            pseudo_settlement=FilteredRelation(
+                "finalsettlement",
+                condition=Q(
+                    finalsettlement__pseudo=True, finalsettlement__invalid=False
+                ),
+            )
+        ).annotate(
+            pseudo_amount=F("pseudo_settlement__pseudo_amount"),
+        )
+
+        qs = qs.annotate(
+            capital_return_tax=F("importedkasberegningerx__capital_return_tax")
+        )
+
+        qs = qs.exclude(pseudo_amount=F("capital_return_tax"))
+
         return qs
 
 
