@@ -1620,7 +1620,12 @@ class FinalSettlement(EboksDispatch):
     # but only used for comparison to our own calculations, flagging the user if there are differences
     pseudo = models.BooleanField(default=False)
     # Final settlement ammount provided by the user when uploading the pdf.
-    pseudo_amount = models.DecimalField(null=True, max_digits=5, decimal_places=2)
+    pseudo_amount = models.DecimalField(
+        blank=False,
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+    )
 
     def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
         return super().dispatch_to_eboks(

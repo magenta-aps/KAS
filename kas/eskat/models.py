@@ -108,9 +108,18 @@ class ImportedKasBeregningerX(models.Model):
     skatteaar = models.IntegerField()
     # Dette er det eneste felt der er relevant for 2018/2019 data
     capital_return_tax = models.DecimalField(
-        max_digits=12, decimal_places=2, blank=True, null=True
+        max_digits=12, decimal_places=2, blank=False, null=False, default=0
+    )
+    person_tax_year = models.OneToOneField(
+        "kas.PersonTaxYear",
+        on_delete=models.CASCADE,
     )
     history = HistoricalRecords()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["cpr", "skatteaar"]),
+        ]
 
 
 def get_kas_beregninger_x_model():
