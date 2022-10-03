@@ -55,7 +55,9 @@ urlpatterns = [
     path("_ht/", include("watchman.urls")),
     path(
         "error/login-timeout/",
-        AccessDeniedView.as_view(template_name="error/login_timeout.html"),
+        AccessDeniedView.as_view(
+            template_name="error/login_timeout.html"
+        ),
         name="login-timeout",
     ),
     path(
