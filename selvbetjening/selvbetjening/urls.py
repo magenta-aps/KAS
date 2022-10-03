@@ -56,18 +56,18 @@ urlpatterns = [
     path(
         "error/login-timeout/",
         AccessDeniedView.as_view(
-            template_name="selvbetjening/error/login_timeout.html"
+            template_name="error/login_timeout.html"
         ),
         name="login-timeout",
     ),
     path(
         "error/login-repeat/",
-        AccessDeniedView.as_view(template_name="selvbetjening/error/login_repeat.html"),
+        AccessDeniedView.as_view(template_name="error/login_repeat.html"),
         name="login-repeat",
     ),
     path(
         "error/login-nocpr/",
-        AccessDeniedView.as_view(template_name="selvbetjening/error/login_no_cpr.html"),
+        AccessDeniedView.as_view(template_name="error/login_no_cpr.html"),
         name="login-no-cpr",
     ),
 ]
