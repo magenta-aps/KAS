@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.conf import settings
 from django.forms import formset_factory
@@ -21,6 +22,8 @@ from django.views.i18n import JavaScriptCatalog
 from selvbetjening.exceptions import PersonNotFoundException
 from selvbetjening.forms import PolicyForm, PersonTaxYearForm, RepresentationTokenForm
 from selvbetjening.restclient import RestClient
+
+logger = logging.getLogger(__name__)
 
 
 class CustomJavaScriptCatalog(JavaScriptCatalog):
@@ -163,6 +166,9 @@ class PolicyFormView(HasUserMixin, CloseMixin, YearTabMixin, FormView):
         try:
             self.load_initial()
         except PersonNotFoundException:
+            logger.info(
+                f"Attempted PolicyFormView with CPR {self.cpr}, but this CPR was not found in database"
+            )
             return redirect(reverse("selvbetjening:person-not-found"))
         return super(PolicyFormView, self).get(request, *args, **kwargs)
 
