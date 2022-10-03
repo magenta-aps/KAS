@@ -215,6 +215,7 @@ LOGIN_WHITELISTED_URLS = [
     reverse_lazy("selvbetjening:representation-start"),
     reverse_lazy("selvbetjening:representation-stop"),
     LOGIN_URL,
+    "_/ht/",
 ]
 LOGIN_TIMEOUT_URL = reverse_lazy("selvbetjening:login-timeout")
 LOGIN_REPEATED_URL = reverse_lazy("selvbetjening:login-repeat")
