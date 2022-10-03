@@ -318,6 +318,7 @@ class PolicyDetailView(HasUserMixin, YearTabMixin, TemplateView):
                         "prefilled_adjusted_amount",
                         "self_reported_amount",
                         "calculated_result",
+                        "year_adjusted_amount",
                     ]
                 },
                 "final_settlement_exists": final_settlement_exists,

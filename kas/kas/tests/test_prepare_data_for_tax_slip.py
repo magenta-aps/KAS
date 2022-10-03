@@ -210,8 +210,8 @@ class DeductionTest(TestCase):
 
         self.test_dir = tempfile.mkdtemp() + "/"
 
-        pdf_documen = TaxSlipHandling()
-        pdf_documen.perform_complete_write_of_one_tax_year(tax_year=2020, title="test")
+        pdf_document = TaxSlipHandling()
+        pdf_document.perform_complete_write_of_one_tax_year(tax_year=2020, title="test")
 
         list_of_tax_slips = TaxSlipGenerated.objects.all()
         self.assertEqual(3, len(list_of_tax_slips))
@@ -223,7 +223,7 @@ class DeductionTest(TestCase):
             )
 
         self.test_dir = tempfile.mkdtemp() + "/"
-        pdf_documen.perform_complete_write_of_one_tax_year(tax_year=2019, title="test")
+        pdf_document.perform_complete_write_of_one_tax_year(tax_year=2019, title="test")
         list_of_tax_slips = TaxSlipGenerated.objects.all()
         self.assertEqual(4, len(list_of_tax_slips))
 

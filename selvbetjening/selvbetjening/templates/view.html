@@ -58,15 +58,21 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th class="col-8-sm">{% translate 'Feltnavn' %}</th>
-                                <th class="col-3-sm">{% translate 'Værdi' %}</th>
+                                <th class="col-7-sm">{% translate 'Feltnavn' %}</th>
+                                <th class="col-3-sm">{% translate 'Fortrykt' %}</th>
+                                <th class="col-3-sm">{% translate 'Antal skattepligtsdage' %}</th>
+                                <th class="col-3-sm">{% translate 'Forholdsmæssigt i skattepligtsperioden' %}</th>
+                                <th class="col-3-sm">{% translate 'Selvangivet' %}</th>
                                 <th class="col-1-sm">{% translate 'Felt nr.' %}</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="col-8-sm">{% translate 'Kapitalafkast PBL (DK) § 53 A' %}</td>
-                                <td class="col-3-sm">{{ policy.self_reported_amount|default:policy.prefilled_adjusted_amount }}</td>
+                                <td class="col-7-sm">{% translate 'Kapitalafkast PBL (DK) § 53 A' %}</td>
+                                <td class="col-3-sm">{{ policy.prefilled_amount }}</td>
+                                <td class="col-3-sm">{{ person_tax_year.number_of_days }}</td>
+                                <td class="col-3-sm">{{ policy.year_adjusted_amount }}</td>
+                                <td class="col-3-sm">{{ policy.self_reported_amount|default:policy.prefilled_amount }}</td>
                                 <td class="col-1-sm">KAS-201</td>
                             </tr>
 

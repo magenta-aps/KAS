@@ -189,6 +189,8 @@ if ENVIRONMENT not in ("development", "staging", "production"):
 KAS_TAX_RATE = 0.153
 KAS_TAX_RATE_IN_PERCENT = KAS_TAX_RATE * 100
 
+REPORT_EXCLUDE_ALREADY_GENERATED = False
+
 EBOKS_MOCK = bool(strtobool(os.environ.get("EBOKS_MOCK", "False")))
 EBOKS = {"dispatch_bulk_size": int(os.environ["EBOKS_DISPATCH_BULK_SIZE"])}
 if EBOKS_MOCK:

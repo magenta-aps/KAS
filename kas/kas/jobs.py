@@ -8,7 +8,6 @@ from datetime import date, datetime
 from decimal import Decimal
 from time import sleep
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import IntegerField, Sum, Q, Count
@@ -43,6 +42,7 @@ from kas.reportgeneration.kas_topdanmark_agterskrivelse import AgterskrivelsePDF
 from openpyxl import load_workbook
 from prisme.models import Prisme10QBatch
 from project.dafo import DatafordelerClient
+from django.conf import settings
 from requests.exceptions import HTTPError, ConnectionError
 from rq import get_current_job
 from worker.job_registry import resolve_job_function
@@ -360,7 +360,8 @@ def import_r75(job):
 @job_decorator
 def generate_reports_for_year(job):
     qs = PersonTaxYear.get_pdf_recipients_for_year_qs(
-        job.arguments["year_pk"], exclude_already_generated=True
+        job.arguments["year_pk"],
+        exclude_already_generated=settings.REPORT_EXCLUDE_ALREADY_GENERATED,
     )
     total_count = qs.count()
     for i, person_tax_year in enumerate(qs.iterator(), 1):
