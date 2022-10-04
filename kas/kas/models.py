@@ -1033,6 +1033,11 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             available[policy.year] = (
                 -policy.year_adjusted_amount
             ) - used  # Positive value
+
+        if available:
+            if min(available.values()) < 0:
+                available = self.adjust_deduction_data_for_negative_remaining_values()
+
         return available
 
     def modify_deduction_data_for_protected_cells(
@@ -1268,6 +1273,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
         for policy in policies_to_be_recalculated:
             policy.recalculate()
+
+        return self.calculate_available_yearly_deduction()
 
     def save(self, *args, **kwargs):
         super(PolicyTaxYear, self).save(*args, **kwargs)
