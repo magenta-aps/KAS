@@ -664,17 +664,19 @@ def generate_final_settlements_for_year(job):
     there exists one or more active and slutlignet policies.
     """
     tax_year = TaxYear.objects.get(pk=job.arguments["year_pk"])
-    if not check_year_period(tax_year, job, "ligning"):
-        return
+    #if not check_year_period(tax_year, job, "ligning"):
+    #    return
 
     generated_final_settlements = 0
 
     qs = (
-        PersonTaxYear.objects.filter(tax_year=tax_year, fully_tax_liable=True)
+        #PersonTaxYear.objects.filter(tax_year=tax_year, fully_tax_liable=True)
+        PersonTaxYear.objects.filter(tax_year=tax_year)
         .annotate(
             active_policies=Count(
                 "policytaxyear",
-                filter=Q(policytaxyear__active=True, policytaxyear__slutlignet=True),
+                #filter=Q(policytaxyear__active=True, policytaxyear__slutlignet=True),
+                filter=Q(policytaxyear__active=True),
             )
         )
         .filter(active_policies__gt=0)

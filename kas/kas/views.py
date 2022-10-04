@@ -750,16 +750,40 @@ class PolicyTaxYearUnfinishedListView(SpecialExcelMixin, PolicyTaxYearSpecialLis
 class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
     permission_required = "kas.view_policytaxyear"
     template_name = "kas/policytaxyear_tabs.html"
-    model = PolicyTaxYear
+    # Utilizing thatthe most recent history object == the updated non-history object
+    model = PolicyTaxYear.history.model
 
     def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .filter(
+        if FinalSettlement.objects.filter(
+            person_tax_year__person__id=self.kwargs['person_id'],
+            person_tax_year__tax_year__year=self.kwargs['year'],
+            ).exists():
+            final_settlement_creation_date = FinalSettlement.objects.get(
+                person_tax_year__person__id=self.kwargs['person_id'],
+                person_tax_year__tax_year__year=self.kwargs['year'],
+            ).created_at
+        else:
+            final_settlement_creation_date = date.today()
+
+        qs = super().get_queryset().filter(
                 person_tax_year__person__id=self.kwargs["person_id"],
                 person_tax_year__tax_year__year=self.kwargs["year"],
+                history_date__lte=final_settlement_creation_date,
             )
+        qs_temp = []
+        pension_company_id_list = list(
+            dict.fromkeys(
+                qs.values_list('pension_company_id')
+            )
+        )
+        for pension_company_id in pension_company_id_list:
+            qs_temp.append(
+                qs.filter(pension_company_id=pension_company_id)
+                .order_by('-history_date')[0]
+            )
+
+        return (
+            qs_temp
         )
 
     def get_context_data(self, *args, **kwargs):

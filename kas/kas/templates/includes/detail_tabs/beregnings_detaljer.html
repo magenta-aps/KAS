@@ -126,14 +126,18 @@
         <td>{{ calculation.full_tax }}</td>
     </tr>
     <tr>
+        <td>Modtaget indbetaling af foreløbig kapitalafkastskat</td>
+        <td>{{ policy.preliminary_paid_amount|default_if_none:0|negative }}</td>
+    </tr>
+    <tr>
         <td>{% translate 'Nedslag for betalt skat i udlandet' %}</td>
         <td>{{ calculation.foreign_paid_amount|negative }}</td>
     </tr>
     <tr>
         <td>
             {% translate 'Kapitalafkastskat' %}
-            {% blocktrans asvar help_text_with_deductions with tax=calculation.full_tax paid=calculation.foreign_paid_amount %}
-                Skat før fraregning af skat betalt i udlandet ({{ tax }}) - Skat betalt i udlandet ({{ paid }})
+            {% blocktrans asvar help_text_with_deductions with tax=calculation.full_tax paid_foreign=calculation.foreign_paid_amount paid_preliminary=policy.preliminary_paid_amount %}
+            Skat før fraregning af skat betalt i udlandet ({{ tax }}) - Skat betalt i udlandet ({{ paid }}) - Foreløbigt modtaget indbetaling ({{ paid_preliminary|default_if_none:0 }})
             {% endblocktrans %}
             {% include 'includes/help_text/question_mark.html' with target_id='tax_with_deductions' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_with_deductions target_id='tax_with_deductions' %}
