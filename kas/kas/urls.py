@@ -50,6 +50,8 @@ from kas.views import (
     LockDetailView,
     UploadExistingFinalSettlementView,
     CreateLockForYearTemplateView,
+    UpdatePreviousYearNegativePayoutView,
+    PreviousYearNegativePayoutHistoryListView,
     KasLoginView,
 )
 from kas.viewsets import (
@@ -292,6 +294,16 @@ urlpatterns = [
     path("note/<int:pk>/", NoteUpdateView.as_view(), name="note-update"),
     path(
         "agterskrivelse/<uuid:pk>/", AgterskrivelseView.as_view(), name="agterskrivelse"
+    ),
+    path(
+        "policy/<int:pk>/negativepayoutdefined/<int:from>/<int:to>/",
+        UpdatePreviousYearNegativePayoutView.as_view(),
+        name="define-negative-policy-payout",
+    ),
+    path(
+        "policy/<int:pk>/negativepayoutdefined/<int:from>/<int:to>/history/",
+        PreviousYearNegativePayoutHistoryListView.as_view(),
+        name="define-negative-policy-payout-history",
     ),
     path("accounts/login/", KasLoginView.as_view(), name="login"),
 ]

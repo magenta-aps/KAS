@@ -187,10 +187,10 @@ class MandtalImportJobsTest(BaseTransactionTestCase):
             created_by=self.user,
         )
 
-        self.assertEqual(Person.objects.count(), 17)
+        self.assertEqual(Person.objects.count(), 18)
 
         self.assertEqual(Person.objects.filter(updated_from_dafo=True).count(), 2)
-        self.assertEqual(Person.objects.filter(updated_from_dafo=False).count(), 15)
+        self.assertEqual(Person.objects.filter(updated_from_dafo=False).count(), 16)
 
         self.assertEqual(
             Person.objects.filter(status="Alive").count(), 1
@@ -199,7 +199,7 @@ class MandtalImportJobsTest(BaseTransactionTestCase):
             Person.objects.filter(status="Dead").count(), 1
         )  # Mocked af Andes in Dafo
         self.assertEqual(
-            Person.objects.filter(status="Undefined").count(), 15
+            Person.objects.filter(status="Undefined").count(), 16
         )  # 0102031234, the predefined person that is also 'Undefined'
 
         person = Person.objects.get(cpr="0101570010")
