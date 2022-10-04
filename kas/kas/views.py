@@ -10,6 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
 from django.db.models import Count, F, Q, Min, FilteredRelation
 from django.http import Http404, HttpResponse, HttpResponseRedirect, FileResponse
+from django.core.exceptions import SuspiciousOperation
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
@@ -48,6 +49,7 @@ from kas.forms import (
     PensionCompanyMergeForm,
     NoteUpdateForm,
     UploadExistingFinalSettlementForm,
+    PreviousYearNegativePayoutForm,
 )
 from kas.models import (
     PensionCompanySummaryFile,
@@ -64,6 +66,7 @@ from kas.models import (
     Person,
     Lock,
     Agterskrivelse,
+    PreviousYearNegativePayout,
 )
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.view_mixins import (
@@ -1833,6 +1836,167 @@ class AgterskrivelseView(KasMixin, PermissionRequiredWithMessage, DetailView):
     def get(self, request, *args, **kwargs):
         agterskrivelse = self.get_object()
         return FileResponse(agterskrivelse.pdf)
+
+
+class BaseNegativePayoutView(BaseDetailView):
+    model = PreviousYearNegativePayout
+
+    def get_policy_tax_year(self):
+        return PolicyTaxYear.objects.get(pk=self.kwargs["pk"])
+
+    def get_back_url(self):
+        """
+        returns an URL which sends you back to the proper:
+            - person tax year
+            - policy tax year
+            - negative payout tab
+        """
+        policy_tax_year = self.get_policy_tax_year()
+        person_tax_year = policy_tax_year.person_tax_year
+
+        return (
+            reverse(
+                "kas:policy_tabs",
+                kwargs={
+                    "year": self.request.GET.get("back") or person_tax_year.year,
+                    "person_id": person_tax_year.person.id,
+                },
+            )
+            + "#policy_%d__negativ" % policy_tax_year.pk
+        )
+
+
+class UpdatePreviousYearNegativePayoutView(BaseNegativePayoutView, UpdateView):
+    form_class = PreviousYearNegativePayoutForm
+    template_name = "kas/previousyearnegativepayoutdefined_form.html"
+    model = PreviousYearNegativePayout
+
+    def get_form_kwargs(self):
+
+        kwargs = super().get_form_kwargs()
+
+        from_year = self.kwargs["from"]
+        to_year = self.kwargs["to"]
+        latest_policy = self.get_policy_tax_year().latest_policy
+
+        deduction_table = latest_policy.previous_year_deduction_table_data
+
+        deduction = deduction_table[from_year]
+
+        kwargs.update(
+            {
+                "limit": deduction["used_max_by_year"][to_year],
+                "initial": {
+                    "transferred_negative_payout": deduction["used_by_year"][to_year],
+                    "protected_against_recalculations": True,
+                },
+            }
+        )
+        return kwargs
+
+    def get_object(self):
+
+        if self.kwargs["to"] <= self.kwargs["from"]:
+            raise SuspiciousOperation("This cell cannot be edited")
+
+        try:
+            # Find the entry which needs to be modified in the database
+            policy_tax_year = self.get_policy_tax_year()
+            policies = policy_tax_year.same_policy_qs
+
+            return self.model.objects.get(
+                used_from__person_tax_year__tax_year__year=self.kwargs["from"],
+                used_for__person_tax_year__tax_year__year=self.kwargs["to"],
+                used_from__in=policies,
+                used_for__in=policies,
+            )
+        except self.model.DoesNotExist:
+            # Return an empty object - if there is no entry in the database yet
+            used_from = policy_tax_year.same_policy_qs.get(
+                person_tax_year__tax_year__year=self.kwargs["from"],
+            )
+            used_for = policy_tax_year.same_policy_qs.get(
+                person_tax_year__tax_year__year=self.kwargs["to"],
+            )
+
+            created_object = self.model.objects.create(
+                used_from=used_from, used_for=used_for, transferred_negative_payout=0
+            )
+
+            created_object.history.last().delete()
+
+            return created_object
+
+    def get_success_url(self):
+        return self.get_back_url()
+
+    def get_context_data(self, **kwargs):
+        ctx = super(UpdatePreviousYearNegativePayoutView, self).get_context_data(
+            **kwargs
+        )
+
+        ctx["back_url"] = self.get_back_url()
+
+        policy_tax_year = self.get_policy_tax_year()
+        deduction_table = (
+            policy_tax_year.latest_policy.previous_year_deduction_table_data
+        )
+
+        used_in_this_for_year = []
+        for year_from in deduction_table.keys():
+            value = deduction_table[year_from]["used_by_year"][self.kwargs["to"]]
+            if value != "-":
+                used_in_this_for_year.append(value)
+
+        ctx["assessed_amount"] = deduction_table[self.kwargs["to"]]["used_max"]
+        ctx["used_this_for_year"] = sum(used_in_this_for_year)
+
+        ctx["year_to"] = self.kwargs["to"]
+        ctx["year_from"] = self.kwargs["from"]
+
+        ctx["negative_payout"] = deduction_table[self.kwargs["from"]]["available"]
+        ctx["remaining_negative_payout"] = deduction_table[self.kwargs["from"]][
+            "remaining"
+        ]
+
+        ctx["current_amount"] = deduction_table[self.kwargs["from"]]["used_by_year"][
+            self.kwargs["to"]
+        ]
+
+        ctx["limit"] = self.get_form_kwargs()["limit"]
+
+        return ctx
+
+
+class PreviousYearNegativePayoutHistoryListView(
+    BaseNegativePayoutView, PermissionRequiredWithMessage, DetailView
+):
+    permission_required = "kas.view_policytaxyear"
+    model = PreviousYearNegativePayout
+    template_name = "kas/previousyearnegativepayoutdefined_history.html"
+
+    def get_object(self):
+        policy_tax_year = self.get_policy_tax_year()
+        policies = policy_tax_year.same_policy_qs
+
+        try:
+            return self.model.objects.get(
+                used_from__person_tax_year__tax_year__year=self.kwargs["from"],
+                used_for__person_tax_year__tax_year__year=self.kwargs["to"],
+                used_from__in=policies,
+                used_for__in=policies,
+            )
+        except self.model.DoesNotExist:
+            raise Http404("There is no history for this cell")
+
+    def get_context_data(self, **kwargs):
+        ctx = super(PreviousYearNegativePayoutHistoryListView, self).get_context_data(
+            **kwargs
+        )
+        ctx["objects"] = self.object.history.order_by("-history_date")
+        ctx["back_url"] = self.get_back_url()
+
+        return ctx
 
 
 class KasLoginView(KasMixin, LoginView):

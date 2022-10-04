@@ -1,0 +1,83 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+{% block content %}
+
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+
+
+    <div class="row">
+    <div class="col-2">
+    <label for="{{form.transferred_negative_payout.id_for_label}}">{{form.transferred_negative_payout.label}}{% blocktranslate %} (max {{ limit }}): {% endblocktranslate %}
+
+
+    </label>
+    </div>
+    <div class="col-4">
+    {{form.transferred_negative_payout}}
+    {{form.transferred_negative_payout.errors}}
+    </div>
+
+    <div class="col-5">
+    <table>
+
+    <tr>
+        <td>{% blocktranslate with year=year_to %} Negativt afkast anvendt i {{ year }}:{% endblocktranslate %}</td>
+        <td>{{ used_this_for_year }}</td>
+    </tr>
+
+    <tr>
+        <td>{% blocktranslate with year=year_to %} Skattepligtigt beløb i {{ year_to }}:{% endblocktranslate %}</td>
+        <td>{{ assessed_amount }}</td>
+    </tr>
+
+    <tr>
+        <td>{% blocktranslate with year=year_from %} Negativt afkast i {{ year }}:{% endblocktranslate %}</td>
+        <td>{{ negative_payout }}</td>
+    </tr>
+
+    <tr>
+        <td>{% blocktranslate %} Ikke-tildelt negativt afkast:{% endblocktranslate %}</td>
+        <td>{{ remaining_negative_payout }}</td>
+    </tr>
+
+    <tr>
+        <td>{% translate 'Nuværende beløb:' %}</td>
+        <td>{{ current_amount }}</td>
+    </tr>
+
+    <tr>
+        <td>{% translate 'Max. beløb:' %}</td>
+        <td>{{ limit }}</td>
+    </tr>
+    </table>
+    </div>
+    </div>
+
+
+    <div class="row">
+    <br>
+    </div>
+
+    <div class="row">
+    <div class="col-2">
+    <label for="{{form.protected_against_recalculations.id_for_label}}">{{form.protected_against_recalculations.label}}:</label>
+    </div>
+    <div class="col-6">
+    {{form.protected_against_recalculations}}
+    {{form.protected_against_recalculations.errors}}
+        {% include 'includes/help_text/question_mark.html' with target_id='js-bottom-collapse2' only%}
+        {% blocktranslate asvar bottom_help %}Beskytter værdien mod at blive overskrivet af genberegninger. Genberegninger sker
+        blandt andet når (selvangivet) beløb på policen bliver rettet.{% endblocktranslate %}
+        {% include 'includes/help_text/collapse.html' with help_text=bottom_help target_id='js-bottom-collapse2' %}
+    </div>
+    </div>
+    <input type="submit" value="{% translate 'Opdater' %}" class="btn btn-success" />
+</form>
+
+
+
+
+{% endblock %}

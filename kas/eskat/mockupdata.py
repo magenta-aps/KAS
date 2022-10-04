@@ -6,7 +6,6 @@ from kas.models import TaxYear
 unique_res_counter = 0
 fictitious_cprs = [  # noqa
     # if you need a fictive cpr number use one of these and remove it from the list
-    "1502062774",
     "2509474829",
     "1105801064",
     "3105841026",
@@ -431,6 +430,32 @@ def generate_persons():
                     2019: -1000,
                     2020: 3000,
                     2021: 2500,
+                },
+            },
+        ],
+    )
+
+    create_person(
+        "Borger med negativt afkast fra 2010 til 2020",
+        cpr="1502062774",
+        adresselinje2="Imaneq 32A, 3. sal.",
+        adresselinje4="3900 Nuuk",
+        policies=[
+            {
+                "res": 19676889,
+                "years": {
+                    2010: -300,
+                    2011: -400,
+                    2012: -500,
+                    2013: 600,
+                    2014: 0,
+                    2015: 100,
+                    2016: -30_000_000,
+                    2017: -300,
+                    2018: -600,
+                    2019: 1000,
+                    2020: -3000,
+                    2021: 4000,
                 },
             },
         ],
