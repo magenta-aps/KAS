@@ -8,8 +8,11 @@ services:
       dockerfile: docker/Dockerfile.kas
     depends_on:
       - postgres
-    ports:
-      - "8000:8000"
+    # Test-idp needs for adresses to endpoints to be the same from the perspective
+    # of the test-idp container and for the client (which means accessing 'localhost' adresses always)
+    # This means that all containers should run in "host" network mode, and should conflict
+    # with each others' ports
+    network_mode: "host"
     env_file:
       - ./dev-environment/kas.env
     volumes:
@@ -31,6 +34,7 @@ services:
     depends_on:
       - postgres
       - redis
+    network_mode: "host"
     env_file:
       - ./dev-environment/kas.env
     volumes:
@@ -44,6 +48,7 @@ services:
     #add more containers like this to add more workers
     container_name: worker-one
     image: kas:latest
+    network_mode: "host"
     depends_on:
       - postgres
       - redis
@@ -58,9 +63,7 @@ services:
   postgres:
     container_name: kas-db
     image: postgres:13
-    ports:
-      # expose to localhost for easier debugging
-      - "5432:5432"
+    network_mode: "host"
     env_file:
       - ./dev-environment/kas.env
     volumes:
@@ -70,8 +73,7 @@ services:
   redis:
     container_name: redis
     image: redis:6.0
-    ports:
-      - "6379:6379"
+    network_mode: "host"
 
   selvbetjening:
     container_name: kas-selvbetjening
@@ -80,19 +82,38 @@ services:
       dockerfile: docker/Dockerfile.selvbetjening
     depends_on:
       - postgres
-    ports:
-      - "8080:8000"
+    network_mode: "host"
     env_file:
       - ./dev-environment/selvbetjening.env
     volumes:
       - ./selvbetjening:/app
+      - ./dev-environment/cert:/ssl:ro
     environment:
       - MAKE_MIGRATIONS=true
       - MIGRATE=true
     command: bash -c "
         django-admin compilemessages &&
-        gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output
+        gunicorn -b 0.0.0.0:8040 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output
       "
+
+  test-idp:
+    user: "1000:1000"
+    image: kenchan0130/simplesamlphp
+    container_name: idp
+    network_mode: "host"
+    environment:
+      SIMPLESAMLPHP_SP_ENTITY_ID: http://localhost:8040/saml/metadata/
+      SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: http://localhost:8040/login/callback/
+      SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE: http://localhost:8040/logout/callback/
+      SIMPLESAMLPHP_IDP_CERTIFICATE: /var/www/simplesamlphp/cert/selfsigned.crt
+      SIMPLESAMLPHP_IDP_PRIVATEKEY: /var/www/simplesamlphp/cert/selfsigned.key
+
+    volumes:
+      - ./dev-environment/cert/idp/selfsigned.crt:/var/www/simplesamlphp/cert/server.crt:ro
+      - ./dev-environment/cert/idp/selfsigned.key:/var/www/simplesamlphp/cert/server.pem:ro
+      - ./dev-idp/authsources.php:/var/www/simplesamlphp/config/authsources.php:ro
+      - ./dev-idp/saml20-sp-remote.php:/var/www/simplesamlphp/metadata/saml20-sp-remote.php:ro
+
 
 volumes:
   kas-postgres-data:

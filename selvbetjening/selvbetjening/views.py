@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.conf import settings
 from django.forms import formset_factory
@@ -21,6 +22,8 @@ from django.views.i18n import JavaScriptCatalog
 from selvbetjening.exceptions import PersonNotFoundException
 from selvbetjening.forms import PolicyForm, PersonTaxYearForm, RepresentationTokenForm
 from selvbetjening.restclient import RestClient
+
+logger = logging.getLogger(__name__)
 
 
 class CustomJavaScriptCatalog(JavaScriptCatalog):
@@ -90,15 +93,15 @@ class SetLanguageView(View):
 class HasUserMixin(object):
     @property
     def cpr(self):
-        return self.request.session["user_info"]["CPR"]
+        return self.request.session["user_info"]["cpr"]
 
     @property
     def name(self):
-        return self.request.session["user_info"].get("PersonName")
+        return self.request.session["user_info"].get("personname")
 
     @property
     def admin_name(self):
-        return self.request.session["user_info"].get("AdminUsername")
+        return self.request.session["user_info"].get("adminusername")
 
     def get_context_data(self, **kwargs):
         return super(HasUserMixin, self).get_context_data(
@@ -163,6 +166,9 @@ class PolicyFormView(HasUserMixin, CloseMixin, YearTabMixin, FormView):
         try:
             self.load_initial()
         except PersonNotFoundException:
+            logger.info(
+                f"Attempted PolicyFormView with CPR {self.cpr}, but this CPR was not found in database"
+            )
             return redirect(reverse("selvbetjening:person-not-found"))
         return super(PolicyFormView, self).get(request, *args, **kwargs)
 
@@ -366,7 +372,7 @@ class RepresentationStartView(FormView):
                 return HttpResponse(
                     status=500, content=f"Missing {key} in token service response"
                 )
-            pruned_data[key] = data[key]
+            pruned_data[key.lower()] = data[key]
         self.request.session["user_info"] = pruned_data
         return redirect(reverse("selvbetjening:policy-edit"))
 

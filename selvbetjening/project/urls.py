@@ -5,9 +5,14 @@ from django.urls import path
 
 urlpatterns = [
     path("", include("selvbetjening.urls", namespace="selvbetjening")),
-    path("user/", include("sullissivik.login.urls", namespace="sullissivik")),
+    path("", include("django_mitid_auth.urls", namespace="login")),
     path("i18n/", include("django.conf.urls.i18n")),
 ]
 
 if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()
+
+if settings.MITID_TEST_ENABLED:
+    urlpatterns.append(
+        path("mitid_test/", include("mitid_test.urls", namespace="mitid_test"))
+    )
