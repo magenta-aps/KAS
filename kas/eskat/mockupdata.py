@@ -6,6 +6,7 @@ from kas.models import TaxYear
 unique_res_counter = 0
 fictitious_cprs = [  # noqa
     # if you need a fictive cpr number use one of these and remove it from the list
+    "0902410058",
     "2509474829",
     "1105801064",
     "3105841026",
@@ -18,7 +19,6 @@ fictitious_cprs = [  # noqa
     "2301175038",
     "1111111112",
     "0106664862",
-    "0902410058",
     "0312600013",
     "1102640019",
     "0112977724",

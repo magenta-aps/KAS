@@ -26,6 +26,7 @@ from kas.views import (
     PersonTaxYearUnfinishedListView,
     PersonTaxYearFailSendListView,
     PolicyTaxYearUnfinishedListView,
+    PolicyTaxYearTaxDifferenceListView,
     PersonTaxYearDocumentsAndNotesUpdateView,
     PersonTaxYearEskatDiffListView,
     PolicyPaymentOverrideView,
@@ -146,6 +147,11 @@ urlpatterns = [
         "policy/unfinished/",
         PolicyTaxYearUnfinishedListView.as_view(),
         name="policy_search_unfinished",
+    ),
+    path(
+        "policy/taxdifference/",
+        PolicyTaxYearTaxDifferenceListView.as_view(),
+        name="policy_search_taxdifference",
     ),
     path(
         "policy/<int:pk>/paymentoverride/",

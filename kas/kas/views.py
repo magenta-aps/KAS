@@ -665,6 +665,46 @@ class PolicyTaxYearSpecialListView(PolicyTaxYearListView):
         return qs
 
 
+class PolicyTaxYearTaxDifferenceListView(
+    SpecialExcelMixin, PolicyTaxYearSpecialListView
+):
+
+    template_name = "kas/policytaxyear_taxdifference_list.html"
+    default_order_by = "difference_nulllast"
+    filename = "selvangivet_forskel_policer.xls"
+
+    excel_headers = [
+        "Person",
+        "Pensionsselskab",
+        "Policenummer",
+        "Næste behandlingsdato",
+        "Fortrykt beløb",
+        "Selvangivet beløb",
+        "Forskel",
+    ]
+
+    values = [
+        "person_tax_year__person__name",
+        "pension_company__name",
+        "policy_number",
+        "next_processing_date",
+        "prefilled_amount",
+        "self_reported_amount",
+        "difference",
+    ]
+
+    def filter_queryset(self, qs):
+        qs = super(PolicyTaxYearTaxDifferenceListView, self).filter_queryset(qs)
+
+        return (
+            qs.filter(
+                self_reported_amount__isnull=False, prefilled_amount__isnull=False
+            )
+            .exclude(self_reported_amount__exact=F("prefilled_amount"))
+            .annotate(difference=F("self_reported_amount") - F("prefilled_amount"))
+        )
+
+
 class PolicyTaxYearUnfinishedListView(SpecialExcelMixin, PolicyTaxYearSpecialListView):
     template_name = "kas/policytaxyear_unfinished_list.html"
     default_order_by = "difference_pct_nulllast"
