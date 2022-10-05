@@ -153,11 +153,35 @@ class StatisticsView(KasMixin, PermissionRequiredWithMessage, TemplateView):
         return result
 
 
-class PersonTaxYearListView(KasMixin, PermissionRequiredWithMessage, ListView):
+class PersonTaxYearListView(
+    KasMixin, SpecialExcelMixin, PermissionRequiredWithMessage, ListView
+):
     permission_required = "kas.view_persontaxyear"
     template_name = "kas/persontaxyear_list.html"
     context_object_name = "personstaxyears"
     paginate_by = 20
+
+    excel_headers = [
+        "Personnummer",
+        "Navn",
+        "Adresse",
+        "Kommune",
+        "Antal policer",
+        "Næste behandlingsdato",
+        "Slutlignede policer",
+        "Ikke-slutlignede policer",
+    ]
+
+    values = [
+        "person__cpr",
+        "person__name",
+        "person__full_address",
+        "person__municipality_name",
+        "policy_count",
+        "next_processing_date",
+        "slutlignede",
+        "ikke_slutlignede",
+    ]
 
     model = PersonTaxYear
     form_class = PersonListFilterForm
@@ -224,20 +248,31 @@ class PersonTaxYearListView(KasMixin, PermissionRequiredWithMessage, ListView):
                     form.cleaned_data["tax_liability"] is not None
                 ):  # False is a valid value
                     qs = qs.filter(fully_tax_liable=form.cleaned_data["tax_liability"])
+
+                qs = qs.annotate(
+                    slutlignede=Count(
+                        expression="policytaxyear",
+                        filter=Q(
+                            policytaxyear__slutlignet=True, policytaxyear__active=True
+                        ),
+                    ),
+                    ikke_slutlignede=Count(
+                        expression="policytaxyear",
+                        filter=Q(
+                            policytaxyear__slutlignet=False, policytaxyear__active=True
+                        ),
+                    ),
+                )
                 if form.cleaned_data["finalized"]:
                     finalized = form.cleaned_data["finalized"]
-                    has = Q(policytaxyear__slutlignet=True, policytaxyear__active=True)
-                    has_not = Q(
-                        policytaxyear__slutlignet=False, policytaxyear__active=True
-                    )
                     if finalized == "har_slutlignede":
-                        qs = qs.filter(has)
+                        qs = qs.filter(slutlignede__gt=0)
                     elif finalized == "mangler_slutlignede":
-                        qs = qs.exclude(has)
+                        qs = qs.filter(slutlignede=0)
                     if finalized == "har_ikkeslutlignede":
-                        qs = qs.filter(has_not)
+                        qs = qs.filter(ikke_slutlignede__gt=0)
                     elif finalized == "mangler_ikkeslutlignede":
-                        qs = qs.exclude(has_not)
+                        qs = qs.filter(ikke_slutlignede=0)
             elif "year" in form.initial:
                 qs = qs.filter(tax_year__year=form.initial["year"])
             qs = qs.annotate(
@@ -250,7 +285,7 @@ class PersonTaxYearListView(KasMixin, PermissionRequiredWithMessage, ListView):
         return qs
 
 
-class PersonTaxYearSpecialListView(SpecialExcelMixin, PersonTaxYearListView):
+class PersonTaxYearSpecialListView(PersonTaxYearListView):
 
     default_order_by = "person__cpr"
 
