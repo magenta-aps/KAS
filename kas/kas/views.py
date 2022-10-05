@@ -168,9 +168,10 @@ class PersonTaxYearListView(KasMixin, PermissionRequiredWithMessage, ListView):
         current_year = timezone.now().year
         if current_year not in years:
             current_year = max([y for y in years if y < current_year])
-        kwargs = {"initial": {"year": current_year}}
+        initial = {"year": current_year}
+        kwargs = {"initial": initial}
         if self.request.GET:
-            kwargs["data"] = self.request.GET
+            kwargs["data"] = {**initial, **self.request.GET.dict()}
         return PersonListFilterForm(**kwargs)
 
     def should_search(self, form):
@@ -559,9 +560,10 @@ class PolicyTaxYearListView(KasMixin, PermissionRequiredWithMessage, ListView):
         current_year = timezone.now().year
         if current_year not in years:
             current_year = max([y for y in years if y < current_year])
-        kwargs = {"initial": {"year": current_year}}
+        initial = {"year": current_year}
+        kwargs = {"initial": initial}
         if self.request.GET:
-            kwargs["data"] = self.request.GET
+            kwargs["data"] = {**initial, **self.request.GET.dict()}
         return PolicyListFilterForm(**kwargs)
 
     def should_search(self, form):
