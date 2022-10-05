@@ -45,7 +45,8 @@
             <li><a class="dropdown-item" href="{% url 'kas:person_search_unfinished' %}">{% translate 'Personer med policer der kræver efterbehandling' %}</a></li>
             <li><a class="dropdown-item" href="{% url 'kas:person_search_unhandled' %}">{% translate 'Personer med nye dokumenter eller notater' %}</a></li>
             <li><a class="dropdown-item" href="{% url 'kas:person_search_foreign' %}">{% translate 'Personer med udenlandsk pensionsnotat' %}</a></li>
-            <li><a class="dropdown-item" href="{% url 'kas:person_search_eskat_diff' %}">{% trans 'Personer med difference mellem eskat og kas' %}</a></li>
+            <li><a class="dropdown-item" href="{% url 'kas:person_search_eskat_diff' %}">{% translate 'Personer med forskel mellem eskat og kas' %}</a></li>
+            <li><a class="dropdown-item" href="{% url 'kas:policy_search_taxdifference' %}">{% translate 'Policer med forskel på fortrykt og selvangivet beløb' %}</a></li>
         </ul>
         {% endif %}
             {% if perms.worker.view_job or perms.kas.change_pensioncompany %}
