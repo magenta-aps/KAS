@@ -104,7 +104,7 @@ class TaxFinalStatementPDF(FPDF):
         "gl": "Pigisanit pissarsiat akileraarutaat",
         "dk": "Kapitalafkastskat",
     }
-    policy_row_text_comapny_handles = {
+    policy_row_text_company_handles = {
         "gl": "Akilernissaa {}-p isumagissavaa",
         "dk": "Afregnes af {}",
     }
@@ -423,7 +423,6 @@ class TaxFinalStatementPDF(FPDF):
             3,
             align="L",
             border=0,
-            #txt=self._person_tax_year.person.name 
             txt=person_name
             + "\n"
             + self._person_tax_year.person.postal_address,
@@ -780,7 +779,7 @@ class TaxFinalStatementPDF(FPDF):
                     h=self.table_header_height,
                     align="L",
                     w=c1w + c2w,
-                    txt=self.policy_row_text_comapny_handles[language].format(
+                    txt=self.policy_row_text_company_handles[language].format(
                         policy.get("company")
                     ),
                     border=1,
