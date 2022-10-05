@@ -875,7 +875,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         initial_amount = int(initial_amount)
 
         # Adjust for taxable days. Round down because we only operate in integer amounts of money
-        year_adjusted_amount = math.floor(initial_amount * tax_days_adjust_factor)
+        year_adjusted_amount = int(initial_amount * tax_days_adjust_factor)
 
         taxable_amount = max(0, year_adjusted_amount)
         used_negative_return = 0
