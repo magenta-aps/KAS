@@ -10,6 +10,8 @@ from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.utils import timezone
+import requests
+from django.shortcuts import redirect
 
 
 from kas.models import (
@@ -134,16 +136,34 @@ class CurrentFinalSettlementExistsView(APIView):
                 status="send",
             ).order_by("-send_at")[0]
         except IndexError:
-            raise Http404()
+            return None
+
+    def get_remote_href(self):
+        # Når vi får info om urls for slutopgørelser fra skattestyrelsen skal denne genbesøges
+        # TODO: use correct url
+        return None
+
+    def get_remote_exist(self):
+        url = self.get_remote_href()
+        if url:
+            response = requests.head(self.get_remote_href(), allow_redirects=True)
+            return response.status_code == 200
+        else:
+            return False
 
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
-        try:
-            if instance.pdf.size == 0:
-                raise Http404()
-        except FileNotFoundError:
-            raise Http404()
-        return HttpResponse("")
+        if instance is None:
+            # try to see if it exists remotely
+            if self.get_remote_exist():
+                return HttpResponse("remote")
+        else:
+            try:
+                if instance.pdf.size > 0:
+                    return HttpResponse("local")
+            except FileNotFoundError:
+                pass
+        raise Http404()
 
 
 class CurrentFinalSettlementDownloadView(CurrentFinalSettlementExistsView):
@@ -153,6 +173,11 @@ class CurrentFinalSettlementDownloadView(CurrentFinalSettlementExistsView):
 
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
+        if instance is None:
+            if self.get_remote_exist():
+                return redirect(self.get_remote_href())
+            else:
+                raise Http404()
         return FileResponse(
             instance.pdf,
             as_attachment=False,

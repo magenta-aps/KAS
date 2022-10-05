@@ -347,6 +347,8 @@ class ViewFinalSettlementView(HasUserMixin, View):
         r = RestClient().get_final_settlement(year, self.cpr)
         if r.status_code == 200:
             return FileResponse(r.iter_content(), content_type="application/pdf")
+        if r.status_code in (301, 302):
+            return redirect(r.headers["Location"])
         return HttpResponse(
             content=_("Ingen slutopgørelse for givet år"),
             status=404,
