@@ -195,6 +195,22 @@ Selvbetjening Unittest:
     OPENID_POST_LOGOUT_REDIRECT_URI: ""
     CLOSE_AT_MONTH: 5
     CLOSE_AT_DATE: 6
+    SAML_ENABLED: "true"
+    SAML_SP_ENTITY_ID: http://localhost:8040/saml/metadata/
+    SAML_SP_LOGIN_CALLBACK_URI: http://localhost:8040/login/callback
+    SAML_SP_LOGOUT_CALLBACK_URI: http://localhost:8040/logout/callback/
+    SAML_SP_CERTIFICATE: /ssl/sp/selfsigned.crt
+    SAML_SP_KEY: /ssl/sp/selfsigned.key
+    SAML_IDP_ENTITY_ID: http://localhost:8080/simplesaml/saml2/idp/metadata.php
+    SAML_IDP_LOGIN_URI: http://localhost:8080/simplesaml/saml2/idp/SSOService.php
+    SAML_IDP_LOGOUT_URI: http://localhost:8080/simplesaml/saml2/idp/SingleLogoutService.php
+    SAML_IDP_CERTIFICATE: /ssl/idp/selfsigned.crt
+    SAML_IDP_METADATA: http://localhost:8080/simplesaml/saml2/idp/metadata.php
+    SAML_CONTACT_TECHNICAL_NAME: Tester
+    SAML_CONTACT_TECHNICAL_EMAIL: test@example.com
+    SAML_CONTACT_SUPPORT_NAME: Tester
+    SAML_CONTACT_SUPPORT_EMAIL: test@example.com
+    SKIP_IDP_METADATA: "true"
   script:
     - cd /app
     - coverage run --source='.' --omit=manage.py,project/wsgi.py,*/admin.py manage.py test

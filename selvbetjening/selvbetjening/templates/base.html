@@ -71,7 +71,8 @@
                                 <span>{% blocktrans with cpr=cpr_x %}Logget ind som {{ cpr }}{% endblocktrans %}</span>
                             {% endif %}
                             {% if cpr %}
-                                <a href="{% url 'sullissivik:openid:logout' %}">{% translate 'Log ud' %}</a>
+                                {# 'login' == settings.LOGIN_NAMESPACE #}
+                                <a href="{% url 'login:logout' %}" id="logout-link">{% translate 'Log ud' %}</a>
                             {% endif %}
                         {% endif %}
 
@@ -80,6 +81,11 @@
                 {% block content %}
                 {% endblock %}
             </main>
+            <script>
+                $("#logout-link").on('click', function () {
+                    return confirm("{% translate 'Er du sikker på at du vil logge ud?\nDet anbefales at du lukker browserfanen efter at du er logget ud' %}");
+                });
+            </script>
         </div>
     </body>
 </html>

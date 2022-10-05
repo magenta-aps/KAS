@@ -14,7 +14,7 @@ class RestClient(object):
 
     def __init__(self, user_info=None):
         if user_info:
-            self.username = user_info.get("AdminUsername") or user_info.get("CPR")
+            self.username = user_info.get("adminusername") or user_info.get("cpr")
 
     @property
     def headers(self):

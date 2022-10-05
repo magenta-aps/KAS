@@ -284,6 +284,11 @@ msgstr ""
 msgid "Ingen slutopgørelse for givet år"
 msgstr ""
 
+msgid ""
+"Er du sikker på at du vil logge ud?"
+"Det anbefales at du lukker browserfanen efter at du er logget ud"
+msgstr ""
+
 #~ msgid "common.logout"
 #~ msgstr "Log ud"
 
