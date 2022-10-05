@@ -11,6 +11,7 @@ from django.db import models, transaction
 from django.db.models import Count, F, Q, Min, FilteredRelation
 from django.http import Http404, HttpResponse, HttpResponseRedirect, FileResponse
 from django.core.exceptions import SuspiciousOperation
+from django.db.models import Case, Value, When
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
@@ -659,7 +660,13 @@ class PolicyTaxYearUnfinishedListView(SpecialExcelMixin, PolicyTaxYearSpecialLis
         return (
             qs.filter(efterbehandling=True)
             .annotate(difference=F("self_reported_amount") - F("prefilled_amount"))
-            .annotate(difference_pct=F("difference") * 100 / F("prefilled_amount"))
+            .annotate(
+                difference_pct=Case(
+                    When(prefilled_amount=0, then=Value(None)),
+                    default=F("difference") * 100 / F("prefilled_amount"),
+                    output_field=models.IntegerField(),
+                )
+            )
         )
 
 
