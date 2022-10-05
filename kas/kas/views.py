@@ -11,6 +11,7 @@ from django.db import models, transaction
 from django.db.models import Count, F, Q, Min, FilteredRelation, Sum, Case, Value, When
 from django.http import Http404, HttpResponse, HttpResponseRedirect, FileResponse
 from django.core.exceptions import SuspiciousOperation
+from django.db.models import Case, Value, When
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
