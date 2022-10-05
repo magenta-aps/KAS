@@ -207,6 +207,7 @@ class RestClient(object):
             headers=self.headers,
             stream=True,
             verify=False,  # settings.REST_CA_CERT,
+            allow_redirects=False,
         )
 
     def exchange_token(self, token):
