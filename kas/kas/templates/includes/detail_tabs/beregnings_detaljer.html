@@ -92,7 +92,7 @@
     {% empty %}
     <tr>
         <td>
-            {% blocktrans %}Modregning af tidligere negativt kapitalafkast{% endblocktrans %}
+            {% translate 'Modregning af tidligere negativt kapitalafkas' %}
             {% blocktrans asvar help_text_deduction %}
             Der er ikke noget tilgængeligt negativt kapitalafkast til modregning
             {% endblocktrans %}
@@ -126,24 +126,66 @@
         <td>{{ calculation.full_tax }}</td>
     </tr>
     <tr>
-        <td>Foreløbigt betalt kapitalafkastskat</td>
-        <!-- <td>{{ prepayment.amount|default_if_none:0|negative }}</td> -->
-        <td>{{ policy.preliminary_paid_amount|default_if_none:0|negative }}</td>
-    </tr>
-    <tr>
         <td>{% translate 'Nedslag for betalt skat i udlandet' %}</td>
         <td>{{ calculation.foreign_paid_amount|negative }}</td>
     </tr>
     <tr>
         <td>
-            {% translate 'Kapitalafkastskat' %}
-            {% blocktrans asvar help_text_with_deductions with tax=calculation.full_tax paid_foreign=calculation.foreign_paid_amount paid_preliminary=policy.preliminary_paid_amount %}
-            Skat før fraregning af skat betalt i udlandet ({{ tax }}) - Skat betalt i udlandet ({{ paid_foreign }}) - Foreløbigt modtaget indbetaling ({{ paid_preliminary|default_if_none:0 }})
+            {% translate 'Kapitalafkastskat med nedslag' %}
+            {% blocktrans asvar help_text_with_deductions with tax=calculation.full_tax paid_foreign=calculation.foreign_paid_amount %}
+            Skat før fraregning af skat betalt i udlandet ({{ tax }}) - Skat betalt i udlandet ({{ paid_foreign }})
             {% endblocktrans %}
             {% include 'includes/help_text/question_mark.html' with target_id='tax_with_deductions' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_with_deductions target_id='tax_with_deductions' %}
         </td>
         <th>{{ calculation.tax_with_deductions }}</th>
     </tr>
+    <tr>
+        <td>{% translate 'Betales af pensionsselskabet' %}</td>
+        <td>
+            {% if policy.pension_company_pays %}
+            {{ calculation.tax_with_deductions }}
+            {% else %}
+            0
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td>{% translate 'Foreløbigt betalt kapitalafkastskat' %}</td>
+        <td>{{ policy.preliminary_paid_amount|default_if_none:0|negative }}</td>
+    </tr>
+    <tr>
+        {% if policy_count > 1 %}
+            <td>{% translate 'Kapitalafkastskat at betale for police nr.' %} {{ policy.policy_number }}</td>
+            <td>{{ calculation.tax_to_pay }}</td>
+        {% else %}
+            <td>
+                <b>{% translate 'Kapitalafkastskat at betale' %}</b>
+                {% blocktrans asvar help_text_to_pay with tax=calculation.tax_with_deductions paid_preliminary=policy.preliminary_paid_amount %}
+                Skat at betale ({{ tax }}) - Foreløbigt modtaget indbetaling ({{ paid_preliminary }})
+                {% endblocktrans %}
+                {% include 'includes/help_text/question_mark.html' with target_id='tax_to_pay' right=True %}
+                {% include 'includes/help_text/collapse.html' with help_text=help_text_to_pay target_id='tax_to_pay' %}
+            </td>
+            <th>{{ total_payment }}</th>
+        {% endif %} 
+    </tr>
     {% endif %}
+    <!-- Indsæt rækker med samlet beløb at betale over flere policer, såfrem de findes, samt tidligere betalinger -->
+    {% if policy_count > 1 %}
+    <tr>
+        <td>
+            <b>{% translate 'Kapitalafkastskat at betale i alt' %}</b>
+            {% blocktrans asvar help_text_to_pay with tax=total_tax_with_deductions paid=total_prepayment.amount %}
+            Skat at betale i alt for policer ({{ tax }}) - Foreløbigt modtagne indbetalinger i alt ({{ paid }})
+            {% endblocktrans %}
+            {% include 'includes/help_text/question_mark.html' with target_id='tax_to_pay' right=True %}
+            {% include 'includes/help_text/collapse.html' with help_text=help_text_to_pay target_id='tax_to_pay' %}
+        </td>
+        <th>{{ total_payment }}</th>
+    </tr>
+    
+
+    {% endif %}
+
 </table>

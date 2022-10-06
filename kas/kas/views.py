@@ -1,6 +1,6 @@
 import mimetypes
 import os
-from datetime import date, timedelta
+from datetime import date, datetime
 
 from django.conf import settings
 from django.contrib import messages
@@ -763,8 +763,7 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
                 person_tax_year__tax_year__year=self.kwargs['year'],
             ).created_at
         else:
-            # final_settlement_creation_date set to tomorrow, so policies created today are also shown
-            final_settlement_creation_date = date.today() + timedelta(days=1)
+            final_settlement_creation_date = datetime.now()
 
         qs = super().get_queryset().filter(
                 person_tax_year__person__id=self.kwargs["person_id"],
@@ -798,10 +797,22 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
         context["self_reported_amount_label"] = amount_choices_by_value[
             PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED
         ]
-        context["prepayment"] = context['object_list'][0].person_tax_year.transaction_set.filter(
+        context["total_prepayment"] = context['object_list'][0].person_tax_year.transaction_set.filter(
             type="prepayment"
         ).aggregate(amount=Sum("amount"))
-        #context["previous_transactions"] = 
+        if not context["total_prepayment"]["amount"]:
+            context['total_prepayment']["amount"] = 0
+        context['policy_count'] = len(context['object_list'])
+        context['total_tax_with_deductions'] = sum([
+            x.history_object.get_calculation()["tax_with_deductions"] \
+            for x in context['object_list'] \
+            if not x.history_object.pension_company_pays
+        ])
+        context['total_payment'] = sum([
+            x.history_object.get_calculation()["tax_to_pay"] \
+            for x in context['object_list'] \
+            if not x.history_object.pension_company_pays
+        ])
         return context
 
 
