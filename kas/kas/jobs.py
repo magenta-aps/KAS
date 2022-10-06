@@ -13,6 +13,7 @@ from django.db import transaction
 from django.db.models import IntegerField, Sum, Q, Count
 from django.db.models.functions import Cast
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from eskat.jobs import delete_protected
 from eskat.models import (
     ImportedKasMandtal,
@@ -137,7 +138,11 @@ def import_mandtal(job):
                 persontaxyearcensus_created += 1
             elif status == PersonTaxYear.UPDATED:
                 persontaxyearcensus_updated += 1
-            person_tax_year.recalculate_mandtal()
+            person_tax_year.recalculate_mandtal(
+                negative_payout_history_note=_(
+                    "Genberegning på grund af import_mandtal job"
+                )
+            )
 
         if i % 1000 == 0:
             progress = progress_start + (i / count) * (100 * progress_factor)
@@ -181,7 +186,7 @@ def import_mandtal(job):
                     co = resultdict.get("co", "")
                     landekode = resultdict.get("landekode", "")
                     civilstand = resultdict.get("civilstand", "")
-                    obj, _ = AddressFromDafo.objects.update_or_create(
+                    obj, __ = AddressFromDafo.objects.update_or_create(
                         cpr=cpr,
                         defaults={
                             "name": name,
@@ -322,7 +327,11 @@ def import_r75(job):
                     policy_tax_year._change_reason = (
                         "Updated by import"  # needed for autoligning
                     )
-                    policy_tax_year.recalculate()
+                    policy_tax_year.recalculate(
+                        negative_payout_history_note=_(
+                            "Genberegning på grund af import_r75 job"
+                        )
+                    )
                     policy_tax_year.save()
                     policy_tax_year._change_reason = ""
                     if status == PersonTaxYear.CREATED:
@@ -626,7 +635,11 @@ def autoligning(job):
             policy.assessed_amount = policy.get_assessed_amount()
 
             # Recalculate used negative amounts etc.
-            policy.recalculate()
+            policy.recalculate(
+                negative_payout_history_note=_(
+                    "Genberegning på grund af autoligning job"
+                )
+            )
 
             total += 1
             policy._change_reason = "autoligning"

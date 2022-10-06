@@ -560,7 +560,9 @@ class PersonTaxYear(HistoryMixin, models.Model):
             return 1
         return self.number_of_days / self.tax_year.days_in_year
 
-    def recalculate_mandtal(self):
+    def recalculate_mandtal(
+        self, negative_payout_history_note=_("Genberegning af mandtal")
+    ):
         number_of_days = 0
         fully_tax_liable = False
         qs = self.persontaxyearcensus_set.filter(fully_tax_liable=True)
@@ -580,7 +582,9 @@ class PersonTaxYear(HistoryMixin, models.Model):
             self.save()
             for policytaxyear in self.active_policies_qs:
                 old_result = policytaxyear.calculated_result
-                policytaxyear.recalculate()
+                policytaxyear.recalculate(
+                    negative_payout_history_note=negative_payout_history_note
+                )
                 policytaxyear.save()
                 if policytaxyear.calculated_result != old_result:
                     # Tilføj note på policen om at mandtal har ændret resultatet
