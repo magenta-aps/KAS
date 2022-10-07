@@ -7,6 +7,7 @@ CREATE_USERS=${CREATE_USERS:=false}
 DUMMYDATA=${DUMMYDATA:=false}
 DJANGO_DEBUG=${DJANGO_DEBUG:=false}
 COMPILEMESSAGES=${COMPILEMESSAGES:=true}
+GENERATE_DB_DOCUMENTATION=${GENERATE_DB_DOCUMENTATION:=true}
 
 if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] || [ "$TEST" = true ] || [ "$CREATE_USERS" = true ] || [ "$CREATE_DUMMY_USERS" = true ] || [ "$DUMMYDATA" = true ] || [ "$COMPILEMESSAGES" == true ]; then
   python manage.py wait_for_db
@@ -40,4 +41,8 @@ if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] || [ "$TEST" = true ] 
   fi
 fi
 
+if [ "$GENERATE_DB_DOCUMENTATION" = true ]; then
+    echo 'building DB documentation!'
+  java -jar /usr/local/share/schemaspy.jar -dp /usr/local/share/postgresql.jar -t pgsql -db $POSTGRES_DB -host $POSTGRES_HOST -u $POSTGRES_USER -p $POSTGRES_PASSWORD -o /app/kas/static/doc/er_html
+fi
 exec "$@"
