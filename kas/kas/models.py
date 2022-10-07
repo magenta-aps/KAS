@@ -988,9 +988,14 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     @property
     def reported_difference_pct(self):
         diff = self.reported_difference
-        if diff is None or self.prefilled_adjusted_amount == 0:
+        prefilled_adjusted_amount = self.prefilled_adjusted_amount
+        if (
+            diff is None
+            or prefilled_adjusted_amount is None
+            or prefilled_adjusted_amount == 0
+        ):
             return None
-        return diff / self.prefilled_adjusted_amount * 100
+        return diff / prefilled_adjusted_amount * 100
 
     @property
     def used_from(self):
@@ -1528,6 +1533,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         amount = self.prefilled_amount_edited
         if amount is None:
             amount = self.prefilled_amount
+        if amount is None:
+            return None
         factor = (
             self.person_tax_year.number_of_days
             / self.person_tax_year.tax_year.days_in_year
