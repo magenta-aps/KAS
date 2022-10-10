@@ -142,6 +142,7 @@ KAS Unittest:
     ESKAT_DB: ""
     ESKAT_USER: ""
     ESKAT_PASSWORD: ""
+    GENERATE_DB_DOCUMENTATION: "false"
 
     # No fiddling with sftp server during testing
     TENQ_HOST: ""
@@ -183,7 +184,6 @@ Selvbetjening Unittest:
     REST_HOST: http://kas:8000
     REST_TOKEN: 1799c88d-10e6-489d-8fe9-adeb2fd8a36f
     KAS_REPRESENTATION_STOP: http://kas:8000/represent-stop
-    GENERATE_DB_DOCUMENTATION: "false"
     OPENID_ENABLED: "false"
     OPENID_ISSUER: ""
     OPENID_SCOPE: ""

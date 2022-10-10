@@ -6,3 +6,6 @@ docker-compose.override.yml
 data/kas/*
 !data/kas/.gitkeep
 .spyproject/**
+# Generated documentation
+kas/kas/static/doc/er_html/
+kas/kas/static/doc/kas_models.png

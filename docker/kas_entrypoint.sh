@@ -39,10 +39,12 @@ if [ "$MAKE_MIGRATIONS" = true ] || [ "$MIGRATE" = true ] || [ "$TEST" = true ] 
     echo 'compiling messages!'
     python manage.py compilemessages
   fi
-fi
 
-if [ "$GENERATE_DB_DOCUMENTATION" = true ]; then
-    echo 'building DB documentation!'
-  java -jar /usr/local/share/schemaspy.jar -dp /usr/local/share/postgresql.jar -t pgsql -db $POSTGRES_DB -host $POSTGRES_HOST -u $POSTGRES_USER -p $POSTGRES_PASSWORD -o /app/kas/static/doc/er_html
+  if [ "$GENERATE_DB_DOCUMENTATION" = true ]; then
+      echo 'building DB documentation!'
+      java -jar /usr/local/share/schemaspy.jar -dp /usr/local/share/postgresql.jar -t pgsql -db $POSTGRES_DB -host $POSTGRES_HOST -u $POSTGRES_USER -p $POSTGRES_PASSWORD -o /app/kas/static/doc/er_html
+
+      python manage.py graph_models eskat kas prisme worker -g -X Historical* -o kas/static/doc/kas_models.png
+  fi
 fi
 exec "$@"
