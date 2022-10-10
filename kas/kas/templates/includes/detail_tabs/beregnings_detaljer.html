@@ -92,7 +92,7 @@
     {% empty %}
     <tr>
         <td>
-            {% translate 'Modregning af tidligere negativt kapitalafkas' %}
+            {% translate 'Modregning af tidligere negativt kapitalafkast' %}
             {% blocktrans asvar help_text_deduction %}
             Der er ikke noget tilgængeligt negativt kapitalafkast til modregning
             {% endblocktrans %}
@@ -156,9 +156,15 @@
         </td>
     </tr>
     <tr>
-        <td>{% translate 'Foreløbigt betalt kapitalafkastskat' %}</td>
+        <td>{% translate 'Forudbetalt kapitalafkastskat' %}</td>
         <td>{{ policy.preliminary_paid_amount|default_if_none:0|negative }}</td>
     </tr>
+    {% if final_settlement.get_calculation_amounts.remainder_with_interest %}
+        <tr>
+            <td>{% translate 'Manglende betaling fra tidligere år' %}</td>
+            <td>{{ final_settlement.get_calculation_amounts.remainder_with_interest }}</td>
+        </tr>
+    {% endif %}
     <tr>
         {% if policy_count > 1 %}
             <td>{% translate 'Kapitalafkastskat at betale for police nr.' %} {{ policy.policy_number }}</td>
@@ -167,7 +173,7 @@
             <td>
                 <b>{% translate 'Kapitalafkastskat at betale' %}</b>
                 {% blocktrans asvar help_text_to_pay with tax=calculation.tax_with_deductions paid_preliminary=policy.preliminary_paid_amount %}
-                Skat at betale ({{ tax }}) - Foreløbigt modtaget indbetaling ({{ paid_preliminary }})
+                Skat at betale ({{ tax }}) - Forudbetalt skat ({{ paid_preliminary }})
                 {% endblocktrans %}
                 {% include 'includes/help_text/question_mark.html' with target_id='tax_to_pay' right=True %}
                 {% include 'includes/help_text/collapse.html' with help_text=help_text_to_pay target_id='tax_to_pay' %}
@@ -176,21 +182,53 @@
         {% endif %} 
     </tr>
     {% endif %}
-    <!-- Indsæt rækker med samlet beløb at betale over flere policer, såfrem de findes, samt tidligere betalinger -->
-    {% if policy_count > 1 %}
-    <tr>
-        <td>
-            <b>{% translate 'Kapitalafkastskat at betale i alt' %}</b>
-            {% blocktrans asvar help_text_to_pay with tax=total_tax_with_deductions paid=total_prepayment.amount %}
-            Skat at betale i alt for policer ({{ tax }}) - Foreløbigt modtagne indbetalinger i alt ({{ paid }})
-            {% endblocktrans %}
-            {% include 'includes/help_text/question_mark.html' with target_id='tax_to_pay' right=True %}
-            {% include 'includes/help_text/collapse.html' with help_text=help_text_to_pay target_id='tax_to_pay' %}
-        </td>
-        <th>{{ total_payment }}</th>
-    </tr>
-    
 
+    {% if final_settlement.get_calculation_amounts.extra_payment_for_previous_missing %}
+    <tr>
+        <td>{% translate 'Ikke betalt kapitalafkastskat ifølge tidligere meddelelse' %}</td>
+        <td>{{ final_settlement.get_calculation_amounts.extra_payment_for_previous_missing }}</td>
+    <tr>
+    {% endif%}
+
+    {% if final_settlement.get_calculation_amounts.total_payment >= 0 %}
+        <tr>
+            <td>
+                <b>{% translate 'Kapitalafkastskat at betale i alt for policer i ' %}{{ policy.person_tax_year.tax_year.year }}</b>
+                {% blocktrans asvar help_text_to_pay with tax=final_settlement.get_calculation_amounts.total_tax|default_if_none:0 missing_payment=final_settlement.get_calculation_amounts.extra_payment_for_previous_missing|default_if_none:0 paid=final_settlement.get_calculation_amounts.prepayment|default_if_none:0 %}
+                Skat at betale i alt for policer ({{ tax }}) + Ikke betalt skat fra tidligere ({{ missing_payment }}) - Foreløbigt modtagne indbetalinger i alt ({{ paid }})
+                {% endblocktrans %}
+                {% include 'includes/help_text/question_mark.html' with target_id='tax_to_pay' right=True %}
+                {% include 'includes/help_text/collapse.html' with help_text=help_text_to_pay target_id='tax_to_pay' %}
+            </td>
+            <th>{{ final_settlement.get_calculation_amounts.total_payment }}</th>
+        </tr>
+    {% elif final_settlement.get_calculation_amounts.total_payment < 0 %}
+        <tr>
+            <td>
+                <b>{% translate 'Kapitalafkastskat til udbetaling i alt for policer i ' %}{{ policy.person_tax_year.tax_year.year }}</b>
+                {% blocktrans asvar help_text_to_pay with tax=total_tax_with_deduction|default_if_none:0 missing_payment=final_settlement.get_calculation_amounts.extra_payment_for_previous_missing|default_if_none:0 paid=final_settlement.get_calculation_amounts.prepayment|default_if_none:0 %}
+                Skat at betale i alt for policer ({{ tax }}) + Ikke betalt skat fra tidligere ({{ missing_payment }}) - Foreløbigt modtagne indbetalinger i alt ({{ paid }})
+                {% endblocktrans %}
+                {% include 'includes/help_text/question_mark.html' with target_id='tax_to_pay' right=True %}
+                {% include 'includes/help_text/collapse.html' with help_text=help_text_to_pay target_id='tax_to_pay' %}
+            </td>
+            <th>{{ final_settlement.get_calculation_amounts.total_payment|negative }}</th>
+        </tr>
+    {% else %}
+        <tr>
+            <td>
+                <b>{% translate 'Kapitalafkastskat at betale i alt for policer i ' %}{{ policy.person_tax_year.tax_year.year }}</b>
+                {% blocktrans asvar help_text_to_pay with tax=total_tax_with_deductions paid=total_prepayment %}
+                Skat at betale i alt for policer ({{ tax }}) - Foreløbigt modtagne indbetalinger i alt ({{ paid }})
+                {% endblocktrans %}
+                {% include 'includes/help_text/question_mark.html' with target_id='tax_to_pay' right=True %}
+                {% include 'includes/help_text/collapse.html' with help_text=help_text_to_pay target_id='tax_to_pay' %}
+            </td>
+            <th>{{ total_payment }}</th>
+        </tr>
     {% endif %}
+        
+
+
 
 </table>
