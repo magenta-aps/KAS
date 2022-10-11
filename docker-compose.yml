@@ -9,7 +9,7 @@ services:
     depends_on:
       - postgres
     # Test-idp needs for adresses to endpoints to be the same from the perspective
-    # of the test-idp container and for the client (which means accessing 'localhost' adresses always)
+    # of the kas-test-idp container and for the client (which means accessing 'localhost' adresses always)
     # This means that all containers should run in "host" network mode, and should conflict
     # with each others' ports
     network_mode: "host"
@@ -96,10 +96,10 @@ services:
         gunicorn -b 0.0.0.0:8040 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output
       "
 
-  test-idp:
+  kas-test-idp:
     user: "1000:1000"
     image: kenchan0130/simplesamlphp
-    container_name: idp
+    container_name: kas-test-idp
     network_mode: "host"
     environment:
       SIMPLESAMLPHP_SP_ENTITY_ID: http://localhost:8040/saml/metadata/
@@ -113,7 +113,6 @@ services:
       - ./dev-environment/cert/idp/selfsigned.key:/var/www/simplesamlphp/cert/server.pem:ro
       - ./dev-idp/authsources.php:/var/www/simplesamlphp/config/authsources.php:ro
       - ./dev-idp/saml20-sp-remote.php:/var/www/simplesamlphp/metadata/saml20-sp-remote.php:ro
-
 
 volumes:
   kas-postgres-data:
