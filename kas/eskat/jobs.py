@@ -143,23 +143,26 @@ def importere_kas_beregninger_for_legacy_years(job):
     for beregning in source_model.values(
         "cpr", "pension_crt_calc_guid", "capital_return_tax", "skatteaar"
     ):
-        try:
-            imported_beregning = ImportedKasBeregningerX.objects.get(
-                pension_crt_calc_guid=beregning["pension_crt_calc_guid"]
-            )
-        except ImportedKasBeregningerX.DoesNotExist:
-            imported_beregning = ImportedKasBeregningerX(**beregning)
-            imported_beregning._change_reason = "Created by import"
-        else:
-            for attr, value in beregning.items():
-                # Set all fields
-                setattr(imported_beregning, attr, value)
-            imported_beregning._change_reason = "Updated by import"
-
-        imported_beregning.person_tax_year = PersonTaxYear.objects.get(
+        person_tax_year = PersonTaxYear.objects.get(
             person__cpr=beregning["cpr"],
             tax_year__year=beregning["skatteaar"],
         )
+
+        try:
+            imported_beregning = ImportedKasBeregningerX.objects.get(
+                person_tax_year=person_tax_year,
+            )
+        except ImportedKasBeregningerX.DoesNotExist:
+            imported_beregning = ImportedKasBeregningerX(
+                **beregning, person_tax_year=person_tax_year
+            )
+            imported_beregning._change_reason = "Created by import"
+        else:
+            if imported_beregning.capital_return_tax != beregning["capital_return_tax"]:
+                imported_beregning.capital_return_tax = beregning["capital_return_tax"]
+                imported_beregning._change_reason = "Updated by import"
+            else:
+                continue
         imported_beregning.save()
         gemte_beregninger += 1
 

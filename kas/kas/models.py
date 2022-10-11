@@ -1933,7 +1933,7 @@ class FinalSettlement(EboksDispatch):
     # Final settlement ammount provided by the user when uploading the pdf.
     pseudo_amount = models.DecimalField(
         blank=False,
-        max_digits=5,
+        max_digits=12,
         decimal_places=2,
         default=0,
     )
