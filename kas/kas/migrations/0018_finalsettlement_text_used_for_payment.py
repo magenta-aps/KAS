@@ -6,23 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("kas", "0017_auto_20211109_1622"),
+        ('kas', '0017_auto_20211109_1622'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name="finalsettlement",
-            name="text_used_for_payment",
-            field=models.IntegerField(
-                choices=[
-                    (1, "Standardtekst for automatisk slutopgørelse"),
-                    (2, "Beløbet forfalder på dato X"),
-                    (3, "Beløbet er forfaldent"),
-                    (4, "Tidligere beløb er forfaldent, nyt beløb forfalder på dato X"),
-                    (5, "Tilbagebetaling"),
-                ],
-                default=1,
-                verbose_name="Tekst om beløb til betaling",
-            ),
+            model_name='finalsettlement',
+            name='text_used_for_payment',
+            field=models.IntegerField(choices=[(1, 'Standardtekst for automatisk slutopgørelse'), (2, 'Beløbet forfalder på dato X'), (3, 'Beløbet er forfaldent'), (4, 'Tidligere beløb er forfaldent, nyt beløb forfalder på dato X'), (5, 'Tilbagebetaling')], default=1, verbose_name='Tekst om beløb til betaling'),
         ),
     ]

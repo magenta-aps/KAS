@@ -4,7 +4,7 @@ from django.db import migrations
 
 
 def set_person(apps, schema_editor):
-    PolicyDocument = apps.get_model("kas", "PolicyDocument")
+    PolicyDocument = apps.get_model('kas', 'PolicyDocument')
 
     for document in PolicyDocument.objects.all():
         document.person_tax_year = document.policy_tax_year.person_tax_year
@@ -18,7 +18,7 @@ def noop(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("kas", "0004_auto_20210412_1329"),
+        ('kas', '0004_auto_20210412_1329'),
     ]
 
     operations = [

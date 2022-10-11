@@ -7,45 +7,25 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("kas", "0032_auto_20220518_1526"),
+        ('kas', '0032_auto_20220518_1526'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name="Lock",
+            name='Lock',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("interval_from", models.DateField()),
-                ("interval_to", models.DateField(blank=True, null=True)),
-                (
-                    "taxyear",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT,
-                        related_name="locks",
-                        to="kas.taxyear",
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('interval_from', models.DateField()),
+                ('interval_to', models.DateField(blank=True, null=True)),
+                ('taxyear', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='locks', to='kas.taxyear')),
             ],
             options={
-                "ordering": ("interval_from",),
+                'ordering': ('interval_from',),
             },
         ),
         migrations.AddField(
-            model_name="finalsettlement",
-            name="lock",
-            field=models.ForeignKey(
-                null=True,
-                on_delete=django.db.models.deletion.PROTECT,
-                related_name="settlements",
-                to="kas.lock",
-            ),
+            model_name='finalsettlement',
+            name='lock',
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='settlements', to='kas.lock'),
         ),
     ]

@@ -6,21 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("kas", "0028_migrate_users"),
+        ('kas', '0028_migrate_users'),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name="taxyear",
-            name="year_part",
-            field=models.TextField(
-                choices=[
-                    ("selvangivelse", "Selvangivelsesperiode"),
-                    ("ligning", "Ligningsperiode"),
-                    ("genoptagelsesperiode", "Genoptagelsesperiode"),
-                ],
-                default="selvangivelse",
-                verbose_name="Periode",
-            ),
+            model_name='taxyear',
+            name='year_part',
+            field=models.TextField(choices=[('selvangivelse', 'Selvangivelsesperiode'), ('ligning', 'Ligningsperiode'), ('genoptagelsesperiode', 'Genoptagelsesperiode')], default='selvangivelse', verbose_name='Periode'),
         ),
     ]

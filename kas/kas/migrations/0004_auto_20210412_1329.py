@@ -11,45 +11,29 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("kas", "0003_groups"),
+        ('kas', '0003_groups'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name="policydocument",
-            name="person_tax_year",
-            field=models.ForeignKey(
-                null=True,
-                on_delete=django.db.models.deletion.PROTECT,
-                to="kas.PersonTaxYear",
-            ),
+            model_name='policydocument',
+            name='person_tax_year',
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to='kas.PersonTaxYear'),
         ),
         migrations.AddField(
-            model_name="policydocument",
-            name="uploaded_at",
-            field=models.DateTimeField(
-                auto_now_add=True,
-                default=datetime.datetime(2021, 4, 12, 11, 29, 8, 683285, tzinfo=utc),
-            ),
+            model_name='policydocument',
+            name='uploaded_at',
+            field=models.DateTimeField(auto_now_add=True, default=datetime.datetime(2021, 4, 12, 11, 29, 8, 683285, tzinfo=utc)),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name="policydocument",
-            name="uploaded_by",
-            field=models.ForeignKey(
-                null=True,
-                on_delete=django.db.models.deletion.PROTECT,
-                to=settings.AUTH_USER_MODEL,
-            ),
+            model_name='policydocument',
+            name='uploaded_by',
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
         ),
         migrations.AlterField(
-            model_name="policydocument",
-            name="policy_tax_year",
-            field=models.ForeignKey(
-                null=True,
-                on_delete=django.db.models.deletion.PROTECT,
-                related_name="policy_documents",
-                to="kas.PolicyTaxYear",
-            ),
+            model_name='policydocument',
+            name='policy_tax_year',
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='policy_documents', to='kas.PolicyTaxYear'),
         ),
     ]

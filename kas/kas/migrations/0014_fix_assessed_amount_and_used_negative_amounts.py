@@ -4,7 +4,7 @@ from django.db import migrations
 
 
 def forward(apps, schema_editor):
-    PolicyTaxYear = apps.get_model("kas", "PolicyTaxYear")
+    PolicyTaxYear = apps.get_model('kas', 'PolicyTaxYear')
 
     qs = PolicyTaxYear.objects.filter(person_tax_year__tax_year=2020)
 
@@ -15,12 +15,10 @@ def forward(apps, schema_editor):
             changed = changed + 1
             x.assessed_amount = x.get_assessed_amount()
             x.recalculate()
-            x._change_reason = "Recalculate assessed amount"
+            x._change_reason = 'Recalculate assessed amount'
             x.save()
 
-    print(
-        "Updated assessed amount / used negative amount for %d PolixyTaxYears" % changed
-    )
+    print('Updated assessed amount / used negative amount for %d PolixyTaxYears' % changed)
 
 
 def revert(apps, schema_editor):
@@ -31,7 +29,7 @@ def revert(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("kas", "0013_auto_20210527_1230_squashed_0016_auto_20210608_0838"),
+        ('kas', '0013_auto_20210527_1230_squashed_0016_auto_20210608_0838'),
     ]
 
     operations = [

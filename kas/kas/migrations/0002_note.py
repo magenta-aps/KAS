@@ -9,57 +9,28 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("kas", "0001_initial"),
+        ('kas', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name="Note",
+            name='Note',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("date", models.DateTimeField(auto_now_add=True)),
-                ("content", models.TextField(verbose_name="Tekst")),
-                (
-                    "author",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT,
-                        to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
-                (
-                    "person_tax_year",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="notes",
-                        to="kas.PersonTaxYear",
-                    ),
-                ),
-                (
-                    "policy_tax_year",
-                    models.ForeignKey(
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="notes",
-                        to="kas.PolicyTaxYear",
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('date', models.DateTimeField(auto_now_add=True)),
+                ('content', models.TextField(verbose_name='Tekst')),
+                ('author', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
+                ('person_tax_year', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notes', to='kas.PersonTaxYear')),
+                ('policy_tax_year', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='notes', to='kas.PolicyTaxYear')),
             ],
-            options={"ordering": ["date"]},
+            options={'ordering': ['date']},
         ),
         migrations.RemoveField(
-            model_name="historicalpolicytaxyear",
-            name="note",
+            model_name='historicalpolicytaxyear',
+            name='note',
         ),
         migrations.RemoveField(
-            model_name="policytaxyear",
-            name="note",
+            model_name='policytaxyear',
+            name='note',
         ),
     ]

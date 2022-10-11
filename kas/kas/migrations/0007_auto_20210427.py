@@ -13,359 +13,190 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("kas", "0006_auto_20210412_1341"),
+        ('kas', '0006_auto_20210412_1341'),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name="persontaxyear",
-            options={"ordering": ["-tax_year__year", "person__name"]},
+            name='persontaxyear',
+            options={'ordering': ['-tax_year__year', 'person__name']},
         ),
         migrations.AlterModelOptions(
-            name="taxyear",
-            options={"ordering": ["-year"]},
+            name='taxyear',
+            options={'ordering': ['-year']},
         ),
         migrations.RemoveField(
-            model_name="historicalpolicytaxyear",
-            name="estimated_amount",
+            model_name='historicalpolicytaxyear',
+            name='estimated_amount',
         ),
         migrations.RemoveField(
-            model_name="policytaxyear",
-            name="estimated_amount",
+            model_name='policytaxyear',
+            name='estimated_amount',
         ),
         migrations.AddField(
-            model_name="historicalpolicytaxyear",
-            name="adjusted_r75_amount",
-            field=models.BigIntegerField(
-                blank=True, null=True, verbose_name="Justeret R75 beløb"
-            ),
+            model_name='historicalpolicytaxyear',
+            name='adjusted_r75_amount',
+            field=models.BigIntegerField(blank=True, null=True, verbose_name='Justeret R75 beløb'),
         ),
         migrations.AddField(
-            model_name="historicalpolicytaxyear",
-            name="assessed_amount",
-            field=models.BigIntegerField(
-                blank=True, null=True, verbose_name="Ansat beløb"
-            ),
+            model_name='historicalpolicytaxyear',
+            name='assessed_amount',
+            field=models.BigIntegerField(blank=True, null=True, verbose_name='Ansat beløb'),
         ),
         migrations.AddField(
-            model_name="policytaxyear",
-            name="adjusted_r75_amount",
-            field=models.BigIntegerField(
-                blank=True, null=True, verbose_name="Justeret R75 beløb"
-            ),
+            model_name='policytaxyear',
+            name='adjusted_r75_amount',
+            field=models.BigIntegerField(blank=True, null=True, verbose_name='Justeret R75 beløb'),
         ),
         migrations.AddField(
-            model_name="policytaxyear",
-            name="assessed_amount",
-            field=models.BigIntegerField(
-                blank=True, null=True, verbose_name="Ansat beløb"
-            ),
+            model_name='policytaxyear',
+            name='assessed_amount',
+            field=models.BigIntegerField(blank=True, null=True, verbose_name='Ansat beløb'),
         ),
         migrations.AlterField(
-            model_name="historicalpolicytaxyear",
-            name="active_amount",
-            field=models.SmallIntegerField(
-                choices=[
-                    (1, "Beløb rapporteret fra pensionsselskab"),
-                    (3, "Selvangivet beløb"),
-                ],
-                default=1,
-                verbose_name="Beløb brugt til beregning",
-            ),
+            model_name='historicalpolicytaxyear',
+            name='active_amount',
+            field=models.SmallIntegerField(choices=[(1, 'Beløb rapporteret fra pensionsselskab'), (3, 'Selvangivet beløb')], default=1, verbose_name='Beløb brugt til beregning'),
         ),
         migrations.AlterField(
-            model_name="policytaxyear",
-            name="active_amount",
-            field=models.SmallIntegerField(
-                choices=[
-                    (1, "Beløb rapporteret fra pensionsselskab"),
-                    (3, "Selvangivet beløb"),
-                ],
-                default=1,
-                verbose_name="Beløb brugt til beregning",
-            ),
+            model_name='policytaxyear',
+            name='active_amount',
+            field=models.SmallIntegerField(choices=[(1, 'Beløb rapporteret fra pensionsselskab'), (3, 'Selvangivet beløb')], default=1, verbose_name='Beløb brugt til beregning'),
         ),
         migrations.CreateModel(
-            name="PensionCompanySummaryFile",
+            name='PensionCompanySummaryFile',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                (
-                    "file",
-                    models.FileField(
-                        upload_to=kas.models.pensioncompanysummaryfile_path
-                    ),
-                ),
-                ("created", models.DateTimeField(auto_now_add=True)),
-                (
-                    "company",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="kas.PensionCompany",
-                    ),
-                ),
-                (
-                    "creator",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
-                (
-                    "tax_year",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="kas.TaxYear"
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('file', models.FileField(upload_to=kas.models.pensioncompanysummaryfile_path)),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='kas.PensionCompany')),
+                ('creator', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('tax_year', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='kas.TaxYear')),
             ],
         ),
         migrations.CreateModel(
-            name="PensionCompanySummaryFileDownload",
+            name='PensionCompanySummaryFileDownload',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("downloaded_at", models.DateTimeField(auto_now_add=True)),
-                ("downloaded_to", models.GenericIPAddressField(null=True)),
-                (
-                    "downloaded_by",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
-                (
-                    "file",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="kas.PensionCompanySummaryFile",
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('downloaded_at', models.DateTimeField(auto_now_add=True)),
+                ('downloaded_to', models.GenericIPAddressField(null=True)),
+                ('downloaded_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('file', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='kas.PensionCompanySummaryFile')),
             ],
         ),
         migrations.AddField(
-            model_name="historicalpolicytaxyear",
-            name="active",
-            field=models.BooleanField(default=True, verbose_name="Aktiv"),
+            model_name='historicalpolicytaxyear',
+            name='active',
+            field=models.BooleanField(default=True, verbose_name='Aktiv'),
         ),
         migrations.AddField(
-            model_name="policytaxyear",
-            name="active",
-            field=models.BooleanField(default=True, verbose_name="Aktiv"),
+            model_name='policytaxyear',
+            name='active',
+            field=models.BooleanField(default=True, verbose_name='Aktiv'),
         ),
         migrations.AddField(
-            model_name="historicalpolicytaxyear",
-            name="efterbehandling",
-            field=models.BooleanField(
-                default=False, verbose_name="Kræver efterbehandling"
-            ),
+            model_name='historicalpolicytaxyear',
+            name='efterbehandling',
+            field=models.BooleanField(default=False, verbose_name='Kræver efterbehandling'),
         ),
         migrations.AddField(
-            model_name="historicalpolicytaxyear",
-            name="slutlignet",
-            field=models.BooleanField(default=False, verbose_name="Slutlignet"),
+            model_name='historicalpolicytaxyear',
+            name='slutlignet',
+            field=models.BooleanField(default=False, verbose_name='Slutlignet'),
         ),
         migrations.AddField(
-            model_name="policytaxyear",
-            name="efterbehandling",
-            field=models.BooleanField(
-                default=False, verbose_name="Kræver efterbehandling"
-            ),
+            model_name='policytaxyear',
+            name='efterbehandling',
+            field=models.BooleanField(default=False, verbose_name='Kræver efterbehandling'),
         ),
         migrations.AddField(
-            model_name="policytaxyear",
-            name="slutlignet",
-            field=models.BooleanField(default=False, verbose_name="Slutlignet"),
+            model_name='policytaxyear',
+            name='slutlignet',
+            field=models.BooleanField(default=False, verbose_name='Slutlignet'),
         ),
         migrations.AddField(
-            model_name="taxyear",
-            name="year_part",
-            field=models.TextField(
-                choices=[
-                    ("selvangivelse", "Selvangivelsesperiode"),
-                    ("ligning", "Ligningsperiode"),
-                    ("efterbehandling", "Efterbehandlingsperiode"),
-                ],
-                default="selvangivelse",
-            ),
+            model_name='taxyear',
+            name='year_part',
+            field=models.TextField(choices=[('selvangivelse', 'Selvangivelsesperiode'), ('ligning', 'Ligningsperiode'), ('efterbehandling', 'Efterbehandlingsperiode')], default='selvangivelse'),
         ),
         migrations.AddField(
-            model_name="taxslipgenerated",
-            name="created_at",
-            field=models.DateTimeField(
-                auto_now_add=True,
-                default=datetime.datetime(2021, 5, 19, 10, 9, 35, 237138, tzinfo=utc),
-            ),
+            model_name='taxslipgenerated',
+            name='created_at',
+            field=models.DateTimeField(auto_now_add=True, default=datetime.datetime(2021, 5, 19, 10, 9, 35, 237138, tzinfo=utc)),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name="taxslipgenerated",
-            name="send_at",
+            model_name='taxslipgenerated',
+            name='send_at',
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name="taxslipgenerated",
-            name="title",
-            field=models.TextField(default=""),
+            model_name='taxslipgenerated',
+            name='title',
+            field=models.TextField(default=''),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name="taxslipgenerated",
-            name="post_processing_status",
-            field=models.TextField(
-                blank=True,
-                choices=[
-                    ("pending", "Afventer processering"),
-                    ("address resolved", "Fundet gyldig postadresse"),
-                    ("address not found", "Ingen gyldig postadresse"),
-                    ("remote printed", "Overført til fjernprint"),
-                ],
-                default="",
-            ),
+            model_name='taxslipgenerated',
+            name='post_processing_status',
+            field=models.TextField(blank=True, choices=[('pending', 'Afventer processering'), ('address resolved', 'Fundet gyldig postadresse'), ('address not found', 'Ingen gyldig postadresse'), ('remote printed', 'Overført til fjernprint')], default=''),
         ),
         migrations.AlterField(
-            model_name="taxslipgenerated",
-            name="recipient_status",
-            field=models.TextField(
-                blank=True,
-                choices=[
-                    ("", "Gyldig E-boks modtager"),
-                    ("exempt", "Fritaget modtager"),
-                    ("invalid", "Ugyldig E-boks modtager (sendes til efterbehandling)"),
-                    ("dead", "Afdød"),
-                    ("minor", "Mindreårig"),
-                ],
-                default="",
-            ),
+            model_name='taxslipgenerated',
+            name='recipient_status',
+            field=models.TextField(blank=True, choices=[('', 'Gyldig E-boks modtager'), ('exempt', 'Fritaget modtager'), ('invalid', 'Ugyldig E-boks modtager (sendes til efterbehandling)'), ('dead', 'Afdød'), ('minor', 'Mindreårig')], default=''),
         ),
         migrations.AlterField(
-            model_name="taxslipgenerated",
-            name="status",
-            field=models.TextField(
-                blank=True,
-                choices=[
-                    ("created", "Genereret"),
-                    ("send", "Afsendt"),
-                    ("post_processing", "Afventer efterbehandling"),
-                    ("failed", "Afsendelse fejlet"),
-                ],
-                default="created",
-            ),
+            model_name='taxslipgenerated',
+            name='status',
+            field=models.TextField(blank=True, choices=[('created', 'Genereret'), ('send', 'Afsendt'), ('post_processing', 'Afventer efterbehandling'), ('failed', 'Afsendelse fejlet')], default='created'),
         ),
         migrations.CreateModel(
-            name="FinalSettlement",
+            name='FinalSettlement',
             fields=[
-                ("title", models.TextField()),
-                (
-                    "status",
-                    models.TextField(
-                        blank=True,
-                        choices=[
-                            ("created", "Genereret"),
-                            ("send", "Afsendt"),
-                            ("post_processing", "Afventer efterbehandling"),
-                            ("failed", "Afsendelse fejlet"),
-                        ],
-                        default="created",
-                    ),
-                ),
-                (
-                    "post_processing_status",
-                    models.TextField(
-                        blank=True,
-                        choices=[
-                            ("pending", "Afventer processering"),
-                            ("address resolved", "Fundet gyldig postadresse"),
-                            ("address not found", "Ingen gyldig postadresse"),
-                            ("remote printed", "Overført til fjernprint"),
-                        ],
-                        default="",
-                    ),
-                ),
-                (
-                    "recipient_status",
-                    models.TextField(
-                        blank=True,
-                        choices=[
-                            ("", "Gyldig E-boks modtager"),
-                            ("exempt", "Fritaget modtager"),
-                            (
-                                "invalid",
-                                "Ugyldig E-boks modtager (sendes til efterbehandling)",
-                            ),
-                            ("dead", "Afdød"),
-                            ("minor", "Mindreårig"),
-                        ],
-                        default="",
-                    ),
-                ),
-                ("message_id", models.TextField(blank=True, default="")),
-                ("created_at", models.DateTimeField(auto_now_add=True)),
-                ("send_at", models.DateTimeField(blank=True, null=True)),
-                (
-                    "uuid",
-                    models.UUIDField(
-                        default=uuid.uuid4, primary_key=True, serialize=False
-                    ),
-                ),
-                ("pdf", models.FileField(upload_to=kas.models.filefield_path)),
-                (
-                    "person_tax_year",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT,
-                        to="kas.PersonTaxYear",
-                    ),
-                ),
+                ('title', models.TextField()),
+                ('status', models.TextField(blank=True, choices=[('created', 'Genereret'), ('send', 'Afsendt'), ('post_processing', 'Afventer efterbehandling'), ('failed', 'Afsendelse fejlet')], default='created')),
+                ('post_processing_status', models.TextField(blank=True, choices=[('pending', 'Afventer processering'), ('address resolved', 'Fundet gyldig postadresse'), ('address not found', 'Ingen gyldig postadresse'), ('remote printed', 'Overført til fjernprint')], default='')),
+                ('recipient_status', models.TextField(blank=True, choices=[('', 'Gyldig E-boks modtager'), ('exempt', 'Fritaget modtager'), ('invalid', 'Ugyldig E-boks modtager (sendes til efterbehandling)'), ('dead', 'Afdød'), ('minor', 'Mindreårig')], default='')),
+                ('message_id', models.TextField(blank=True, default='')),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('send_at', models.DateTimeField(blank=True, null=True)),
+                ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
+                ('pdf', models.FileField(upload_to=kas.models.filefield_path)),
+                ('person_tax_year', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='kas.PersonTaxYear')),
             ],
             options={
-                "abstract": False,
+                'abstract': False,
             },
         ),
         migrations.RenameField(
-            model_name="persontaxyear",
-            old_name="foreign_pension_notes",
-            new_name="foreign_pension_notes",
+            model_name='persontaxyear',
+            old_name='foreign_pension_notes',
+            new_name='foreign_pension_notes',
         ),
         migrations.RenameField(
-            model_name="historicalpersontaxyear",
-            old_name="foreign_pension_notes",
-            new_name="foreign_pension_notes",
+            model_name='historicalpersontaxyear',
+            old_name='foreign_pension_notes',
+            new_name='foreign_pension_notes',
         ),
         migrations.AlterField(
-            model_name="persontaxyear",
-            name="foreign_pension_notes",
-            field=models.TextField(
-                null=True, verbose_name="Noter om pension i udlandet"
-            ),
+            model_name='persontaxyear',
+            name='foreign_pension_notes',
+            field=models.TextField(null=True, verbose_name='Noter om pension i udlandet'),
         ),
         migrations.AlterField(
-            model_name="persontaxyear",
-            name="general_notes",
-            field=models.TextField(null=True, verbose_name="Yderligere noter"),
+            model_name='persontaxyear',
+            name='general_notes',
+            field=models.TextField(null=True, verbose_name='Yderligere noter'),
         ),
         migrations.AlterField(
-            model_name="historicalpersontaxyear",
-            name="foreign_pension_notes",
-            field=models.TextField(
-                null=True, verbose_name="Noter om pension i udlandet"
-            ),
+            model_name='historicalpersontaxyear',
+            name='foreign_pension_notes',
+            field=models.TextField(null=True, verbose_name='Noter om pension i udlandet'),
         ),
         migrations.AlterField(
-            model_name="historicalpersontaxyear",
-            name="general_notes",
-            field=models.TextField(null=True, verbose_name="Yderligere noter"),
+            model_name='historicalpersontaxyear',
+            name='general_notes',
+            field=models.TextField(null=True, verbose_name='Yderligere noter'),
         ),
     ]

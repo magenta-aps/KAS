@@ -385,11 +385,7 @@ class TaxFinalStatementPDF(FPDF):
         :param language:
         :return:
         """
-        person_name = (
-            self._person_tax_year.person.name
-            if self._person_tax_year.person.name
-            else " "
-        )
+        person_name = self._person_tax_year.person.name if self._person_tax_year.person.name else " "
         self.add_page()
         self.page_counter = 1
         self.set_fill_color(180, 180, 180)
@@ -427,7 +423,10 @@ class TaxFinalStatementPDF(FPDF):
             3,
             align="L",
             border=0,
-            txt=person_name + "\n" + self._person_tax_year.person.postal_address,
+            #txt=self._person_tax_year.person.name 
+            txt=person_name
+            + "\n"
+            + self._person_tax_year.person.postal_address,
         )
 
         # Adressing department

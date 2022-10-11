@@ -8,63 +8,44 @@ import kas.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("kas", "0019_auto_20220107_1344"),
-        ("kas", "0020_auto_20220113_0945"),
+        ('kas', '0019_auto_20220107_1344'),
+        ('kas', '0020_auto_20220113_0945'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name="pensioncompany",
-            name="agreement",
-            field=models.FileField(
-                blank=True,
-                default="",
-                upload_to=kas.models.pension_company_agreement_file_path,
-            ),
+            model_name='pensioncompany',
+            name='agreement',
+            field=models.FileField(blank=True, default='', upload_to=kas.models.pension_company_agreement_file_path),
         ),
         migrations.AlterField(
-            model_name="pensioncompany",
-            name="address",
-            field=models.TextField(blank=True, null=True, verbose_name="Adresse"),
+            model_name='pensioncompany',
+            name='address',
+            field=models.TextField(blank=True, null=True, verbose_name='Adresse'),
         ),
         migrations.AlterField(
-            model_name="pensioncompany",
-            name="name",
-            field=models.TextField(
-                blank=True,
-                db_index=True,
-                help_text="Pensionselskabets navn",
-                max_length=255,
-                null=True,
-                verbose_name="Navn",
-            ),
+            model_name='pensioncompany',
+            name='name',
+            field=models.TextField(blank=True, db_index=True, help_text='Pensionselskabets navn', max_length=255, null=True, verbose_name='Navn'),
         ),
         migrations.AlterField(
-            model_name="pensioncompany",
-            name="res",
-            field=models.IntegerField(
-                help_text="Identificerende nummer (reg.nr. for banker, se-nr for pensionsselskaber)",
-                null=True,
-                unique=True,
-                validators=[django.core.validators.MinValueValidator(limit_value=1)],
-                verbose_name="Registrerings nr.",
-            ),
+            model_name='pensioncompany',
+            name='res',
+            field=models.IntegerField(help_text='Identificerende nummer (reg.nr. for banker, se-nr for pensionsselskaber)', null=True, unique=True, validators=[django.core.validators.MinValueValidator(limit_value=1)], verbose_name='Registrerings nr.'),
         ),
         migrations.AlterField(
-            model_name="pensioncompanysummaryfile",
-            name="file",
+            model_name='pensioncompanysummaryfile',
+            name='file',
             field=models.FileField(upload_to=kas.models.filefield_path),
         ),
         migrations.AlterField(
-            model_name="policydocument",
-            name="file",
-            field=models.FileField(
-                upload_to=kas.models.filefield_path, verbose_name="Fil"
-            ),
+            model_name='policydocument',
+            name='file',
+            field=models.FileField(upload_to=kas.models.filefield_path, verbose_name='Fil'),
         ),
         migrations.AlterField(
-            model_name="taxslipgenerated",
-            name="file",
+            model_name='taxslipgenerated',
+            name='file',
             field=models.FileField(null=True, upload_to=kas.models.filefield_path),
         ),
     ]

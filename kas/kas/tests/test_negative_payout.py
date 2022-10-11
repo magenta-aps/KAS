@@ -75,6 +75,68 @@ class BaseNegativePayoutTestCase(TestCase):
                     ]
                 )
                 self.number_of_history_items += 1
+
+    def pretty_print_table(self, table):
+        print("=" * 50)
+        for key in table:
+            print("%s: {" % key)
+            for key2 in table[key]:
+                print("    '%s': %s" % (key2, table[key][key2]))
+            print("}")
+        print("=" * 50)
+
+    def setUp(self) -> None:
+        self.year_adjusted_amount = -1000
+        self.assessed_amount = 2000
+        self.username = "admin"
+        self.user = get_user_model().objects.create_user(username=self.username)
+        self.password = "admin"
+        self.user.set_password(self.password)
+        self.user.save()
+        self.administrator_group = Group.objects.get(name="administrator")
+        self.user.groups.set([self.administrator_group])
+        self.person = Person.objects.create(cpr="1234567890", name="TestPerson")
+        self.pension_company = PensionCompany.objects.create()
+        self.tax_year = TaxYear.objects.create(year=2021)
+        self.person_tax_year = PersonTaxYear.objects.create(
+            tax_year=self.tax_year,
+            person=self.person,
+            number_of_days=self.tax_year.days_in_year,
+        )
+        self.policy_tax_year = PolicyTaxYear.objects.create(
+            person_tax_year=self.person_tax_year,
+            pension_company=self.pension_company,
+            prefilled_amount=35,
+            policy_number="1234",
+            assessed_amount=self.assessed_amount,
+            year_adjusted_amount=self.year_adjusted_amount,
+        )
+
+        self.negative_payouts = []
+        self.number_of_history_items = 0
+        self.debug = False
+
+
+class NegativePayoutTestCase(BaseNegativePayoutTestCase):
+    def setUp(self) -> None:
+        super(NegativePayoutTestCase, self).setUp()
+        self.debug = False
+        self.client.login(username=self.username, password=self.password)
+
+        # =============================================================================
+        # Make a negative payout table
+        # =============================================================================
+        from_years = [2016, 2017, 2018, 2019, 2020]
+        for_years = [2017, 2018, 2019, 2020, 2021]
+
+        # Note1: We need a zero in this list - so the loop skips some objects
+        # And does not create them but rather shows them with their default values
+        #
+        # Note2: The sum of this list cannot be larger than self.year_adjusted_amount
+        for_year_values = [100, 200, 300, 400, 0]
+
+        self.populate_negative_payouts(from_years, for_years, for_year_values)
+
         # =============================================================================
         # This is what the test data looks like
         #
@@ -133,13 +195,6 @@ class BaseNegativePayoutTestCase(TestCase):
         if self.debug:
             table = self.policy_tax_year.previous_year_deduction_table_data
             self.pretty_print_table(table)
-
-
-class NegativePayoutTestCase(BaseNegativePayoutTestCase):
-    def setUp(self) -> None:
-        super(NegativePayoutTestCase, self).setUp()
-        self.debug = False
-        self.client.login(username=self.username, password=self.password)
 
     def get_table_from_context_data(self, return_request_object=False):
         r = self.client.get(

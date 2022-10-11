@@ -6,24 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("kas", "0036_auto_20220623_1636"),
+        ('kas', '0036_auto_20220623_1636'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name="historicalpolicytaxyear",
-            name="company_pay_override",
-            field=models.BooleanField(
-                default=False,
-                verbose_name="Pensionsselskabet betaler selvom der ikke foreligger aftale med pensionsselskab",
-            ),
+            model_name='historicalpolicytaxyear',
+            name='company_pay_override',
+            field=models.BooleanField(default=False, verbose_name='Pensionsselskabet betaler selvom der ikke foreligger aftale med pensionsselskab'),
         ),
         migrations.AddField(
-            model_name="policytaxyear",
-            name="company_pay_override",
-            field=models.BooleanField(
-                default=False,
-                verbose_name="Pensionsselskabet betaler selvom der ikke foreligger aftale med pensionsselskab",
-            ),
+            model_name='policytaxyear',
+            name='company_pay_override',
+            field=models.BooleanField(default=False, verbose_name='Pensionsselskabet betaler selvom der ikke foreligger aftale med pensionsselskab'),
         ),
     ]

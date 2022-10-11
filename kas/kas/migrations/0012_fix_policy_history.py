@@ -4,52 +4,36 @@ from django.db import migrations
 
 
 def mark_policy_history_as_part_of_import(apps, schema_editor):
-    HistoricalPolicyTaxYear = apps.get_model("kas", "HistoricalPolicyTaxYear")
+    HistoricalPolicyTaxYear = apps.get_model('kas', 'HistoricalPolicyTaxYear')
     created = False
     former_id = None
-    for history in (
-        HistoricalPolicyTaxYear.objects.all().order_by("id", "history_date").iterator()
-    ):
+    for history in HistoricalPolicyTaxYear.objects.all().order_by('id', 'history_date').iterator():
         if former_id == history.id:
-            if history.history_type == "~" and created is True:
-                if (
-                    history.history_user is None
-                    and history.history_change_reason is None
-                ):
-                    history.history_change_reason = "Updated by import"
+            if history.history_type == '~' and created is True:
+                if history.history_user is None and history.history_change_reason is None:
+                    history.history_change_reason = 'Updated by import'
                     history.save()
 
-        if history.history_type == "+":
+        if history.history_type == '+':
             created = True
         else:
             created = False
 
         former_id = history.id
-        print(
-            "{} {} {} {}".format(
-                history.id,
-                history.history_date,
-                history.history_type,
-                history.history_change_reason,
-            )
-        )
+        print('{} {} {} {}'.format(history.id, history.history_date, history.history_type, history.history_change_reason))
 
 
 def unmark_policy_history(apps, schema_editor):
-    HistoricalPolicyTaxYear = apps.get_model("kas", "HistoricalPolicyTaxYear")
-    HistoricalPolicyTaxYear.objects.filter(
-        history_type="~", history_change_reason="Updated by import"
-    ).update(history_change_reason=None)
+    HistoricalPolicyTaxYear = apps.get_model('kas', 'HistoricalPolicyTaxYear')
+    HistoricalPolicyTaxYear.objects.filter(history_type='~', history_change_reason='Updated by import').update(history_change_reason=None)
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("kas", "0007_auto_20210427"),
+        ('kas', '0007_auto_20210427'),
     ]
 
     operations = [
-        migrations.RunPython(
-            mark_policy_history_as_part_of_import, unmark_policy_history
-        ),
+        migrations.RunPython(mark_policy_history_as_part_of_import, unmark_policy_history),
     ]

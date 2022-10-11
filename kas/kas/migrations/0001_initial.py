@@ -18,890 +18,250 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="Payment",
+            name='Payment',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                (
-                    "days",
-                    models.IntegerField(
-                        db_index=True, help_text="Antal dage", verbose_name="Antal dage"
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('days', models.IntegerField(db_index=True, help_text='Antal dage', verbose_name='Antal dage')),
             ],
         ),
         migrations.CreateModel(
-            name="PensionCompany",
+            name='PensionCompany',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                (
-                    "name",
-                    models.TextField(
-                        blank=True,
-                        db_index=True,
-                        help_text="Navn",
-                        max_length=255,
-                        null=True,
-                        verbose_name="Navn",
-                    ),
-                ),
-                (
-                    "address",
-                    models.TextField(
-                        blank=True,
-                        help_text="Adresse",
-                        null=True,
-                        verbose_name="Adresse",
-                    ),
-                ),
-                (
-                    "email",
-                    models.TextField(
-                        blank=True, help_text="E-mail", null=True, verbose_name="E-mail"
-                    ),
-                ),
-                (
-                    "phone",
-                    models.TextField(
-                        blank=True,
-                        help_text="Telefon",
-                        null=True,
-                        verbose_name="Telefon",
-                    ),
-                ),
-                (
-                    "res",
-                    models.IntegerField(
-                        null=True,
-                        unique=True,
-                        validators=[
-                            django.core.validators.MinValueValidator(limit_value=1)
-                        ],
-                        verbose_name="Identificerende nummer (reg.nr. for banker, se-nr for pensionsselskaber)",
-                    ),
-                ),
-                (
-                    "agreement_present",
-                    models.BooleanField(
-                        default=False,
-                        verbose_name="Foreligger der en aftale med skattestyrelsen",
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.TextField(blank=True, db_index=True, help_text='Navn', max_length=255, null=True, verbose_name='Navn')),
+                ('address', models.TextField(blank=True, help_text='Adresse', null=True, verbose_name='Adresse')),
+                ('email', models.TextField(blank=True, help_text='E-mail', null=True, verbose_name='E-mail')),
+                ('phone', models.TextField(blank=True, help_text='Telefon', null=True, verbose_name='Telefon')),
+                ('res', models.IntegerField(null=True, unique=True, validators=[django.core.validators.MinValueValidator(limit_value=1)], verbose_name='Identificerende nummer (reg.nr. for banker, se-nr for pensionsselskaber)')),
+                ('agreement_present', models.BooleanField(default=False, verbose_name='Foreligger der en aftale med skattestyrelsen')),
             ],
             options={
-                "verbose_name": "pensionsselskab",
-                "verbose_name_plural": "pensionsselskaber",
-                "ordering": ["name"],
+                'verbose_name': 'pensionsselskab',
+                'verbose_name_plural': 'pensionsselskaber',
+                'ordering': ['name'],
             },
         ),
         migrations.CreateModel(
-            name="Person",
+            name='Person',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                (
-                    "cpr",
-                    models.TextField(
-                        db_index=True,
-                        help_text="CPR nummer",
-                        max_length=10,
-                        unique=True,
-                        validators=[
-                            django.core.validators.RegexValidator(regex="\\d{10}")
-                        ],
-                        verbose_name="CPR nummer",
-                    ),
-                ),
-                ("name", models.TextField(blank=True, null=True)),
-                ("municipality_code", models.IntegerField(blank=True, null=True)),
-                ("municipality_name", models.TextField(blank=True, null=True)),
-                ("address_line_1", models.TextField(blank=True, null=True)),
-                ("address_line_2", models.TextField(blank=True, null=True)),
-                ("address_line_3", models.TextField(blank=True, null=True)),
-                ("address_line_4", models.TextField(blank=True, null=True)),
-                ("address_line_5", models.TextField(blank=True, null=True)),
-                ("full_address", models.TextField(blank=True, null=True)),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('cpr', models.TextField(db_index=True, help_text='CPR nummer', max_length=10, unique=True, validators=[django.core.validators.RegexValidator(regex='\\d{10}')], verbose_name='CPR nummer')),
+                ('name', models.TextField(blank=True, null=True)),
+                ('municipality_code', models.IntegerField(blank=True, null=True)),
+                ('municipality_name', models.TextField(blank=True, null=True)),
+                ('address_line_1', models.TextField(blank=True, null=True)),
+                ('address_line_2', models.TextField(blank=True, null=True)),
+                ('address_line_3', models.TextField(blank=True, null=True)),
+                ('address_line_4', models.TextField(blank=True, null=True)),
+                ('address_line_5', models.TextField(blank=True, null=True)),
+                ('full_address', models.TextField(blank=True, null=True)),
             ],
             bases=(kas.models.HistoryMixin, models.Model),
         ),
         migrations.CreateModel(
-            name="PersonTaxYear",
+            name='PersonTaxYear',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                (
-                    "number_of_days",
-                    models.IntegerField(null=True, verbose_name="Antal dage"),
-                ),
-                (
-                    "fully_tax_liable",
-                    models.BooleanField(
-                        default=True, verbose_name="Fuldt skattepligtig"
-                    ),
-                ),
-                (
-                    "foreign_pension_notes",
-                    models.TextField(
-                        null=True, verbose_name="Noter om pension i udlandet"
-                    ),
-                ),
-                (
-                    "general_notes",
-                    models.TextField(null=True, verbose_name="Yderligere noter"),
-                ),
-                (
-                    "person",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT, to="kas.Person"
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('number_of_days', models.IntegerField(null=True, verbose_name='Antal dage')),
+                ('fully_tax_liable', models.BooleanField(default=True, verbose_name='Fuldt skattepligtig')),
+                ('foreign_pension_notes', models.TextField(null=True, verbose_name='Noter om pension i udlandet')),
+                ('general_notes', models.TextField(null=True, verbose_name='Yderligere noter')),
+                ('person', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='kas.Person')),
             ],
             bases=(kas.models.HistoryMixin, models.Model),
         ),
         migrations.CreateModel(
-            name="PolicyTaxYear",
+            name='PolicyTaxYear',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("policy_number", models.CharField(max_length=40)),
-                (
-                    "prefilled_amount",
-                    models.BigIntegerField(
-                        blank=True,
-                        null=True,
-                        verbose_name="Beløb rapporteret fra pensionsselskab",
-                    ),
-                ),
-                (
-                    "estimated_amount",
-                    models.BigIntegerField(
-                        default=0, verbose_name="Skønsbeløb angivet af Skattestyrelsen"
-                    ),
-                ),
-                (
-                    "self_reported_amount",
-                    models.BigIntegerField(null=True, verbose_name="Selvangivet beløb"),
-                ),
-                (
-                    "active_amount",
-                    models.SmallIntegerField(
-                        choices=[
-                            (1, "Beløb rapporteret fra pensionsselskab"),
-                            (2, "Skønsbeløb angivet af Skattestyrelsen"),
-                            (3, "Selvangivet beløb"),
-                        ],
-                        default=1,
-                        verbose_name="Beløb brugt til beregning",
-                    ),
-                ),
-                (
-                    "year_adjusted_amount",
-                    models.BigIntegerField(
-                        default=0, verbose_name="Beløb justeret for dage i skatteår"
-                    ),
-                ),
-                (
-                    "calculation_model",
-                    models.SmallIntegerField(
-                        choices=[(1, "Standard"), (2, "Alternativ")],
-                        default=1,
-                        verbose_name="Beregningsmodel",
-                    ),
-                ),
-                (
-                    "preliminary_paid_amount",
-                    models.BigIntegerField(
-                        blank=True,
-                        null=True,
-                        validators=[
-                            django.core.validators.MinValueValidator(limit_value=0)
-                        ],
-                        verbose_name="Foreløbigt betalt kapitalafkast",
-                    ),
-                ),
-                (
-                    "from_pension",
-                    models.BooleanField(
-                        default=False,
-                        verbose_name="Er kapitalafkastskatten hævet fra pensionsordning",
-                    ),
-                ),
-                (
-                    "foreign_paid_amount_self_reported",
-                    models.BigIntegerField(
-                        blank=True,
-                        default=0,
-                        validators=[
-                            django.core.validators.MinValueValidator(limit_value=0)
-                        ],
-                        verbose_name="Selvangivet beløb for betalt kapitalafkastskat i udlandet",
-                    ),
-                ),
-                (
-                    "foreign_paid_amount_actual",
-                    models.BigIntegerField(
-                        blank=True,
-                        default=0,
-                        validators=[
-                            django.core.validators.MinValueValidator(limit_value=0)
-                        ],
-                        verbose_name="Faktisk betalt kapitalafkastskat i udlandet",
-                    ),
-                ),
-                (
-                    "calculated_full_tax",
-                    models.BigIntegerField(
-                        blank=True, default=0, verbose_name="Beregnet skat uden fradrag"
-                    ),
-                ),
-                (
-                    "calculated_result",
-                    models.BigIntegerField(
-                        blank=True, default=0, verbose_name="Beregnet resultat"
-                    ),
-                ),
-                (
-                    "available_negative_return",
-                    models.BigIntegerField(
-                        blank=True,
-                        default=None,
-                        editable=False,
-                        null=True,
-                        verbose_name="Tilgængeligt fradrag fra andre år (beregnet ud fra andre data)",
-                    ),
-                ),
-                (
-                    "modified_by",
-                    models.CharField(
-                        default="unknown", max_length=255, verbose_name="Modificeret af"
-                    ),
-                ),
-                (
-                    "locked",
-                    models.BooleanField(
-                        default=False, help_text="Låst", verbose_name="Låst"
-                    ),
-                ),
-                ("note", models.TextField(null=True, verbose_name="Note")),
-                (
-                    "pension_company",
-                    models.ForeignKey(
-                        blank=True,
-                        on_delete=django.db.models.deletion.PROTECT,
-                        to="kas.PensionCompany",
-                    ),
-                ),
-                (
-                    "person_tax_year",
-                    models.ForeignKey(
-                        blank=True,
-                        on_delete=django.db.models.deletion.PROTECT,
-                        to="kas.PersonTaxYear",
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('policy_number', models.CharField(max_length=40)),
+                ('prefilled_amount', models.BigIntegerField(blank=True, null=True, verbose_name='Beløb rapporteret fra pensionsselskab')),
+                ('estimated_amount', models.BigIntegerField(default=0, verbose_name='Skønsbeløb angivet af Skattestyrelsen')),
+                ('self_reported_amount', models.BigIntegerField(null=True, verbose_name='Selvangivet beløb')),
+                ('active_amount', models.SmallIntegerField(choices=[(1, 'Beløb rapporteret fra pensionsselskab'), (2, 'Skønsbeløb angivet af Skattestyrelsen'), (3, 'Selvangivet beløb')], default=1, verbose_name='Beløb brugt til beregning')),
+                ('year_adjusted_amount', models.BigIntegerField(default=0, verbose_name='Beløb justeret for dage i skatteår')),
+                ('calculation_model', models.SmallIntegerField(choices=[(1, 'Standard'), (2, 'Alternativ')], default=1, verbose_name='Beregningsmodel')),
+                ('preliminary_paid_amount', models.BigIntegerField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(limit_value=0)], verbose_name='Foreløbigt betalt kapitalafkast')),
+                ('from_pension', models.BooleanField(default=False, verbose_name='Er kapitalafkastskatten hævet fra pensionsordning')),
+                ('foreign_paid_amount_self_reported', models.BigIntegerField(blank=True, default=0, validators=[django.core.validators.MinValueValidator(limit_value=0)], verbose_name='Selvangivet beløb for betalt kapitalafkastskat i udlandet')),
+                ('foreign_paid_amount_actual', models.BigIntegerField(blank=True, default=0, validators=[django.core.validators.MinValueValidator(limit_value=0)], verbose_name='Faktisk betalt kapitalafkastskat i udlandet')),
+                ('calculated_full_tax', models.BigIntegerField(blank=True, default=0, verbose_name='Beregnet skat uden fradrag')),
+                ('calculated_result', models.BigIntegerField(blank=True, default=0, verbose_name='Beregnet resultat')),
+                ('available_negative_return', models.BigIntegerField(blank=True, default=None, editable=False, null=True, verbose_name='Tilgængeligt fradrag fra andre år (beregnet ud fra andre data)')),
+                ('modified_by', models.CharField(default='unknown', max_length=255, verbose_name='Modificeret af')),
+                ('locked', models.BooleanField(default=False, help_text='Låst', verbose_name='Låst')),
+                ('note', models.TextField(null=True, verbose_name='Note')),
+                ('pension_company', models.ForeignKey(blank=True, on_delete=django.db.models.deletion.PROTECT, to='kas.PensionCompany')),
+                ('person_tax_year', models.ForeignKey(blank=True, on_delete=django.db.models.deletion.PROTECT, to='kas.PersonTaxYear')),
             ],
             options={
-                "unique_together": {
-                    ("person_tax_year", "pension_company", "policy_number")
-                },
+                'unique_together': {('person_tax_year', 'pension_company', 'policy_number')},
             },
             bases=(kas.models.HistoryMixin, models.Model),
         ),
         migrations.CreateModel(
-            name="TaxSlipGenerated",
+            name='TaxSlipGenerated',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                (
-                    "file",
-                    models.FileField(
-                        null=True, upload_to=kas.models.taxslip_path_by_year
-                    ),
-                ),
-                (
-                    "status",
-                    models.TextField(
-                        blank=True,
-                        choices=[
-                            ("created", "KAS Selvangivelse genereret"),
-                            ("sent", "KAS Selvangivelse afsendt"),
-                            ("post_processing", "Afventer efterbehandling"),
-                            ("failed", "Afsendelse fejlet"),
-                        ],
-                        default="created",
-                    ),
-                ),
-                ("post_processing_status", models.TextField(blank=True, default="")),
-                ("recipient_status", models.TextField(blank=True, default="")),
-                ("message_id", models.TextField(blank=True, default="")),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('file', models.FileField(null=True, upload_to=kas.models.taxslip_path_by_year)),
+                ('status', models.TextField(blank=True, choices=[('created', 'KAS Selvangivelse genereret'), ('sent', 'KAS Selvangivelse afsendt'), ('post_processing', 'Afventer efterbehandling'), ('failed', 'Afsendelse fejlet')], default='created')),
+                ('post_processing_status', models.TextField(blank=True, default='')),
+                ('recipient_status', models.TextField(blank=True, default='')),
+                ('message_id', models.TextField(blank=True, default='')),
             ],
         ),
         migrations.CreateModel(
-            name="TaxYear",
+            name='TaxYear',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                (
-                    "year",
-                    models.IntegerField(
-                        db_index=True,
-                        help_text="Skatteår",
-                        unique=True,
-                        validators=[
-                            django.core.validators.MinValueValidator(limit_value=2000)
-                        ],
-                        verbose_name="Skatteår",
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('year', models.IntegerField(db_index=True, help_text='Skatteår', unique=True, validators=[django.core.validators.MinValueValidator(limit_value=2000)], verbose_name='Skatteår')),
             ],
         ),
         migrations.CreateModel(
-            name="R75",
+            name='R75',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                (
-                    "preprinted_net_return",
-                    models.BigIntegerField(
-                        default=0, verbose_name="Fortrykt nettoafkast"
-                    ),
-                ),
-                (
-                    "person_tax_year",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT,
-                        to="kas.PersonTaxYear",
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('preprinted_net_return', models.BigIntegerField(default=0, verbose_name='Fortrykt nettoafkast')),
+                ('person_tax_year', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='kas.PersonTaxYear')),
             ],
         ),
         migrations.CreateModel(
-            name="PriorYear",
+            name='PriorYear',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                (
-                    "tax_paid_in_prior_years",
-                    models.BigIntegerField(
-                        db_index=True,
-                        help_text="Skat betalt i tidligere år",
-                        verbose_name="Skat betalt i tidligere år",
-                    ),
-                ),
-                (
-                    "person",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT, to="kas.Person"
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('tax_paid_in_prior_years', models.BigIntegerField(db_index=True, help_text='Skat betalt i tidligere år', verbose_name='Skat betalt i tidligere år')),
+                ('person', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='kas.Person')),
             ],
         ),
         migrations.CreateModel(
-            name="PreviousYearNegativePayout",
+            name='PreviousYearNegativePayout',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                (
-                    "transferred_negative_payout",
-                    models.BigIntegerField(
-                        blank=True, default=0, verbose_name="Overført negativt afkast"
-                    ),
-                ),
-                (
-                    "used_for",
-                    models.ForeignKey(
-                        null=True,
-                        on_delete=django.db.models.deletion.PROTECT,
-                        related_name="payouts_used",
-                        to="kas.PolicyTaxYear",
-                    ),
-                ),
-                (
-                    "used_from",
-                    models.ForeignKey(
-                        null=True,
-                        on_delete=django.db.models.deletion.PROTECT,
-                        related_name="payouts_using",
-                        to="kas.PolicyTaxYear",
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('transferred_negative_payout', models.BigIntegerField(blank=True, default=0, verbose_name='Overført negativt afkast')),
+                ('used_for', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='payouts_used', to='kas.PolicyTaxYear')),
+                ('used_from', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='payouts_using', to='kas.PolicyTaxYear')),
             ],
         ),
         migrations.CreateModel(
-            name="PolicyDocument",
+            name='PolicyDocument',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("name", models.CharField(max_length=255, verbose_name="Navn")),
-                (
-                    "description",
-                    models.TextField(blank=True, verbose_name="Beskrivelse"),
-                ),
-                ("file", models.FileField(upload_to="", verbose_name="Fil")),
-                (
-                    "policy_tax_year",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT,
-                        related_name="policy_documents",
-                        to="kas.PolicyTaxYear",
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=255, verbose_name='Navn')),
+                ('description', models.TextField(blank=True, verbose_name='Beskrivelse')),
+                ('file', models.FileField(upload_to='', verbose_name='Fil')),
+                ('policy_tax_year', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='policy_documents', to='kas.PolicyTaxYear')),
             ],
         ),
         migrations.CreateModel(
-            name="PersonTaxYearCensus",
+            name='PersonTaxYearCensus',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("imported_kas_mandtal", models.UUIDField()),
-                (
-                    "number_of_days",
-                    models.IntegerField(null=True, verbose_name="Antal dage"),
-                ),
-                (
-                    "fully_tax_liable",
-                    models.BooleanField(
-                        default=True, verbose_name="Fuldt skattepligtig"
-                    ),
-                ),
-                (
-                    "person_tax_year",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="kas.PersonTaxYear",
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('imported_kas_mandtal', models.UUIDField()),
+                ('number_of_days', models.IntegerField(null=True, verbose_name='Antal dage')),
+                ('fully_tax_liable', models.BooleanField(default=True, verbose_name='Fuldt skattepligtig')),
+                ('person_tax_year', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='kas.PersonTaxYear')),
             ],
             bases=(kas.models.HistoryMixin, models.Model),
         ),
         migrations.AddField(
-            model_name="persontaxyear",
-            name="tax_slip",
-            field=models.OneToOneField(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.PROTECT,
-                to="kas.TaxSlipGenerated",
-            ),
+            model_name='persontaxyear',
+            name='tax_slip',
+            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='kas.TaxSlipGenerated'),
         ),
         migrations.AddField(
-            model_name="persontaxyear",
-            name="tax_year",
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.PROTECT, to="kas.TaxYear"
-            ),
+            model_name='persontaxyear',
+            name='tax_year',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='kas.TaxYear'),
         ),
         migrations.CreateModel(
-            name="HistoricalPolicyTaxYear",
+            name='HistoricalPolicyTaxYear',
             fields=[
-                (
-                    "id",
-                    models.IntegerField(
-                        auto_created=True, blank=True, db_index=True, verbose_name="ID"
-                    ),
-                ),
-                ("policy_number", models.CharField(max_length=40)),
-                (
-                    "prefilled_amount",
-                    models.BigIntegerField(
-                        blank=True,
-                        null=True,
-                        verbose_name="Beløb rapporteret fra pensionsselskab",
-                    ),
-                ),
-                (
-                    "estimated_amount",
-                    models.BigIntegerField(
-                        default=0, verbose_name="Skønsbeløb angivet af Skattestyrelsen"
-                    ),
-                ),
-                (
-                    "self_reported_amount",
-                    models.BigIntegerField(null=True, verbose_name="Selvangivet beløb"),
-                ),
-                (
-                    "active_amount",
-                    models.SmallIntegerField(
-                        choices=[
-                            (1, "Beløb rapporteret fra pensionsselskab"),
-                            (2, "Skønsbeløb angivet af Skattestyrelsen"),
-                            (3, "Selvangivet beløb"),
-                        ],
-                        default=1,
-                        verbose_name="Beløb brugt til beregning",
-                    ),
-                ),
-                (
-                    "year_adjusted_amount",
-                    models.BigIntegerField(
-                        default=0, verbose_name="Beløb justeret for dage i skatteår"
-                    ),
-                ),
-                (
-                    "calculation_model",
-                    models.SmallIntegerField(
-                        choices=[(1, "Standard"), (2, "Alternativ")],
-                        default=1,
-                        verbose_name="Beregningsmodel",
-                    ),
-                ),
-                (
-                    "preliminary_paid_amount",
-                    models.BigIntegerField(
-                        blank=True,
-                        null=True,
-                        validators=[
-                            django.core.validators.MinValueValidator(limit_value=0)
-                        ],
-                        verbose_name="Foreløbigt betalt kapitalafkast",
-                    ),
-                ),
-                (
-                    "from_pension",
-                    models.BooleanField(
-                        default=False,
-                        verbose_name="Er kapitalafkastskatten hævet fra pensionsordning",
-                    ),
-                ),
-                (
-                    "foreign_paid_amount_self_reported",
-                    models.BigIntegerField(
-                        blank=True,
-                        default=0,
-                        validators=[
-                            django.core.validators.MinValueValidator(limit_value=0)
-                        ],
-                        verbose_name="Selvangivet beløb for betalt kapitalafkastskat i udlandet",
-                    ),
-                ),
-                (
-                    "foreign_paid_amount_actual",
-                    models.BigIntegerField(
-                        blank=True,
-                        default=0,
-                        validators=[
-                            django.core.validators.MinValueValidator(limit_value=0)
-                        ],
-                        verbose_name="Faktisk betalt kapitalafkastskat i udlandet",
-                    ),
-                ),
-                (
-                    "calculated_full_tax",
-                    models.BigIntegerField(
-                        blank=True, default=0, verbose_name="Beregnet skat uden fradrag"
-                    ),
-                ),
-                (
-                    "calculated_result",
-                    models.BigIntegerField(
-                        blank=True, default=0, verbose_name="Beregnet resultat"
-                    ),
-                ),
-                (
-                    "available_negative_return",
-                    models.BigIntegerField(
-                        blank=True,
-                        default=None,
-                        editable=False,
-                        null=True,
-                        verbose_name="Tilgængeligt fradrag fra andre år (beregnet ud fra andre data)",
-                    ),
-                ),
-                (
-                    "modified_by",
-                    models.CharField(
-                        default="unknown", max_length=255, verbose_name="Modificeret af"
-                    ),
-                ),
-                (
-                    "locked",
-                    models.BooleanField(
-                        default=False, help_text="Låst", verbose_name="Låst"
-                    ),
-                ),
-                ("note", models.TextField(null=True, verbose_name="Note")),
-                ("history_id", models.AutoField(primary_key=True, serialize=False)),
-                ("history_date", models.DateTimeField()),
-                ("history_change_reason", models.CharField(max_length=100, null=True)),
-                (
-                    "history_type",
-                    models.CharField(
-                        choices=[("+", "Created"), ("~", "Changed"), ("-", "Deleted")],
-                        max_length=1,
-                    ),
-                ),
-                (
-                    "history_user",
-                    models.ForeignKey(
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="+",
-                        to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
-                (
-                    "pension_company",
-                    models.ForeignKey(
-                        blank=True,
-                        db_constraint=False,
-                        null=True,
-                        on_delete=django.db.models.deletion.DO_NOTHING,
-                        related_name="+",
-                        to="kas.PensionCompany",
-                    ),
-                ),
-                (
-                    "person_tax_year",
-                    models.ForeignKey(
-                        blank=True,
-                        db_constraint=False,
-                        null=True,
-                        on_delete=django.db.models.deletion.DO_NOTHING,
-                        related_name="+",
-                        to="kas.PersonTaxYear",
-                    ),
-                ),
+                ('id', models.IntegerField(auto_created=True, blank=True, db_index=True, verbose_name='ID')),
+                ('policy_number', models.CharField(max_length=40)),
+                ('prefilled_amount', models.BigIntegerField(blank=True, null=True, verbose_name='Beløb rapporteret fra pensionsselskab')),
+                ('estimated_amount', models.BigIntegerField(default=0, verbose_name='Skønsbeløb angivet af Skattestyrelsen')),
+                ('self_reported_amount', models.BigIntegerField(null=True, verbose_name='Selvangivet beløb')),
+                ('active_amount', models.SmallIntegerField(choices=[(1, 'Beløb rapporteret fra pensionsselskab'), (2, 'Skønsbeløb angivet af Skattestyrelsen'), (3, 'Selvangivet beløb')], default=1, verbose_name='Beløb brugt til beregning')),
+                ('year_adjusted_amount', models.BigIntegerField(default=0, verbose_name='Beløb justeret for dage i skatteår')),
+                ('calculation_model', models.SmallIntegerField(choices=[(1, 'Standard'), (2, 'Alternativ')], default=1, verbose_name='Beregningsmodel')),
+                ('preliminary_paid_amount', models.BigIntegerField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(limit_value=0)], verbose_name='Foreløbigt betalt kapitalafkast')),
+                ('from_pension', models.BooleanField(default=False, verbose_name='Er kapitalafkastskatten hævet fra pensionsordning')),
+                ('foreign_paid_amount_self_reported', models.BigIntegerField(blank=True, default=0, validators=[django.core.validators.MinValueValidator(limit_value=0)], verbose_name='Selvangivet beløb for betalt kapitalafkastskat i udlandet')),
+                ('foreign_paid_amount_actual', models.BigIntegerField(blank=True, default=0, validators=[django.core.validators.MinValueValidator(limit_value=0)], verbose_name='Faktisk betalt kapitalafkastskat i udlandet')),
+                ('calculated_full_tax', models.BigIntegerField(blank=True, default=0, verbose_name='Beregnet skat uden fradrag')),
+                ('calculated_result', models.BigIntegerField(blank=True, default=0, verbose_name='Beregnet resultat')),
+                ('available_negative_return', models.BigIntegerField(blank=True, default=None, editable=False, null=True, verbose_name='Tilgængeligt fradrag fra andre år (beregnet ud fra andre data)')),
+                ('modified_by', models.CharField(default='unknown', max_length=255, verbose_name='Modificeret af')),
+                ('locked', models.BooleanField(default=False, help_text='Låst', verbose_name='Låst')),
+                ('note', models.TextField(null=True, verbose_name='Note')),
+                ('history_id', models.AutoField(primary_key=True, serialize=False)),
+                ('history_date', models.DateTimeField()),
+                ('history_change_reason', models.CharField(max_length=100, null=True)),
+                ('history_type', models.CharField(choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')], max_length=1)),
+                ('history_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
+                ('pension_company', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='kas.PensionCompany')),
+                ('person_tax_year', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='kas.PersonTaxYear')),
             ],
             options={
-                "verbose_name": "historical policy tax year",
-                "ordering": ("-history_date", "-history_id"),
-                "get_latest_by": "history_date",
+                'verbose_name': 'historical policy tax year',
+                'ordering': ('-history_date', '-history_id'),
+                'get_latest_by': 'history_date',
             },
             bases=(simple_history.models.HistoricalChanges, models.Model),
         ),
         migrations.CreateModel(
-            name="HistoricalPersonTaxYear",
+            name='HistoricalPersonTaxYear',
             fields=[
-                (
-                    "id",
-                    models.IntegerField(
-                        auto_created=True, blank=True, db_index=True, verbose_name="ID"
-                    ),
-                ),
-                (
-                    "number_of_days",
-                    models.IntegerField(null=True, verbose_name="Antal dage"),
-                ),
-                (
-                    "fully_tax_liable",
-                    models.BooleanField(
-                        default=True, verbose_name="Fuldt skattepligtig"
-                    ),
-                ),
-                (
-                    "foreign_pension_notes",
-                    models.TextField(
-                        null=True, verbose_name="Noter om pension i udlandet"
-                    ),
-                ),
-                (
-                    "general_notes",
-                    models.TextField(null=True, verbose_name="Yderligere noter"),
-                ),
-                ("history_id", models.AutoField(primary_key=True, serialize=False)),
-                ("history_date", models.DateTimeField()),
-                ("history_change_reason", models.CharField(max_length=100, null=True)),
-                (
-                    "history_type",
-                    models.CharField(
-                        choices=[("+", "Created"), ("~", "Changed"), ("-", "Deleted")],
-                        max_length=1,
-                    ),
-                ),
-                (
-                    "history_user",
-                    models.ForeignKey(
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="+",
-                        to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
-                (
-                    "person",
-                    models.ForeignKey(
-                        blank=True,
-                        db_constraint=False,
-                        null=True,
-                        on_delete=django.db.models.deletion.DO_NOTHING,
-                        related_name="+",
-                        to="kas.Person",
-                    ),
-                ),
-                (
-                    "tax_slip",
-                    models.ForeignKey(
-                        blank=True,
-                        db_constraint=False,
-                        null=True,
-                        on_delete=django.db.models.deletion.DO_NOTHING,
-                        related_name="+",
-                        to="kas.TaxSlipGenerated",
-                    ),
-                ),
-                (
-                    "tax_year",
-                    models.ForeignKey(
-                        blank=True,
-                        db_constraint=False,
-                        null=True,
-                        on_delete=django.db.models.deletion.DO_NOTHING,
-                        related_name="+",
-                        to="kas.TaxYear",
-                    ),
-                ),
+                ('id', models.IntegerField(auto_created=True, blank=True, db_index=True, verbose_name='ID')),
+                ('number_of_days', models.IntegerField(null=True, verbose_name='Antal dage')),
+                ('fully_tax_liable', models.BooleanField(default=True, verbose_name='Fuldt skattepligtig')),
+                ('foreign_pension_notes', models.TextField(null=True, verbose_name='Noter om pension i udlandet')),
+                ('general_notes', models.TextField(null=True, verbose_name='Yderligere noter')),
+                ('history_id', models.AutoField(primary_key=True, serialize=False)),
+                ('history_date', models.DateTimeField()),
+                ('history_change_reason', models.CharField(max_length=100, null=True)),
+                ('history_type', models.CharField(choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')], max_length=1)),
+                ('history_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
+                ('person', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='kas.Person')),
+                ('tax_slip', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='kas.TaxSlipGenerated')),
+                ('tax_year', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='kas.TaxYear')),
             ],
             options={
-                "verbose_name": "historical person tax year",
-                "ordering": ("-history_date", "-history_id"),
-                "get_latest_by": "history_date",
+                'verbose_name': 'historical person tax year',
+                'ordering': ('-history_date', '-history_id'),
+                'get_latest_by': 'history_date',
             },
             bases=(simple_history.models.HistoricalChanges, models.Model),
         ),
         migrations.CreateModel(
-            name="HistoricalPerson",
+            name='HistoricalPerson',
             fields=[
-                (
-                    "id",
-                    models.IntegerField(
-                        auto_created=True, blank=True, db_index=True, verbose_name="ID"
-                    ),
-                ),
-                (
-                    "cpr",
-                    models.TextField(
-                        db_index=True,
-                        help_text="CPR nummer",
-                        max_length=10,
-                        validators=[
-                            django.core.validators.RegexValidator(regex="\\d{10}")
-                        ],
-                        verbose_name="CPR nummer",
-                    ),
-                ),
-                ("name", models.TextField(blank=True, null=True)),
-                ("municipality_code", models.IntegerField(blank=True, null=True)),
-                ("municipality_name", models.TextField(blank=True, null=True)),
-                ("address_line_1", models.TextField(blank=True, null=True)),
-                ("address_line_2", models.TextField(blank=True, null=True)),
-                ("address_line_3", models.TextField(blank=True, null=True)),
-                ("address_line_4", models.TextField(blank=True, null=True)),
-                ("address_line_5", models.TextField(blank=True, null=True)),
-                ("full_address", models.TextField(blank=True, null=True)),
-                ("history_id", models.AutoField(primary_key=True, serialize=False)),
-                ("history_date", models.DateTimeField()),
-                ("history_change_reason", models.CharField(max_length=100, null=True)),
-                (
-                    "history_type",
-                    models.CharField(
-                        choices=[("+", "Created"), ("~", "Changed"), ("-", "Deleted")],
-                        max_length=1,
-                    ),
-                ),
-                (
-                    "history_user",
-                    models.ForeignKey(
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="+",
-                        to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
+                ('id', models.IntegerField(auto_created=True, blank=True, db_index=True, verbose_name='ID')),
+                ('cpr', models.TextField(db_index=True, help_text='CPR nummer', max_length=10, validators=[django.core.validators.RegexValidator(regex='\\d{10}')], verbose_name='CPR nummer')),
+                ('name', models.TextField(blank=True, null=True)),
+                ('municipality_code', models.IntegerField(blank=True, null=True)),
+                ('municipality_name', models.TextField(blank=True, null=True)),
+                ('address_line_1', models.TextField(blank=True, null=True)),
+                ('address_line_2', models.TextField(blank=True, null=True)),
+                ('address_line_3', models.TextField(blank=True, null=True)),
+                ('address_line_4', models.TextField(blank=True, null=True)),
+                ('address_line_5', models.TextField(blank=True, null=True)),
+                ('full_address', models.TextField(blank=True, null=True)),
+                ('history_id', models.AutoField(primary_key=True, serialize=False)),
+                ('history_date', models.DateTimeField()),
+                ('history_change_reason', models.CharField(max_length=100, null=True)),
+                ('history_type', models.CharField(choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')], max_length=1)),
+                ('history_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                "verbose_name": "historical person",
-                "ordering": ("-history_date", "-history_id"),
-                "get_latest_by": "history_date",
+                'verbose_name': 'historical person',
+                'ordering': ('-history_date', '-history_id'),
+                'get_latest_by': 'history_date',
             },
             bases=(simple_history.models.HistoricalChanges, models.Model),
         ),
         migrations.AlterUniqueTogether(
-            name="persontaxyear",
-            unique_together={("tax_year", "person")},
+            name='persontaxyear',
+            unique_together={('tax_year', 'person')},
         ),
     ]
