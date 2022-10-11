@@ -40,4 +40,14 @@ class Migration(migrations.Migration):
             },
             bases=(simple_history.models.HistoricalChanges, models.Model),
         ),
+        migrations.AlterField(                                                          
+            model_name='historicalpolicytaxyear',                                       
+            name='preliminary_paid_amount',                                             
+            field=models.BigIntegerField(blank=True, default=0, null=True, validators=[django.core.validators.MinValueValidator(limit_value=0)], verbose_name='Foreløbigt betalt kapitalafkast'),
+        ),                                                                              
+        migrations.AlterField(                                                          
+            model_name='policytaxyear',                                                 
+            name='preliminary_paid_amount',                                             
+            field=models.BigIntegerField(blank=True, default=0, null=True, validators=[django.core.validators.MinValueValidator(limit_value=0)], verbose_name='Foreløbigt betalt kapitalafkast'),
+        ),
     ]

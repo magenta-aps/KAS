@@ -1,10 +1,6 @@
 import mimetypes
 import os
-<<<<<<< HEAD
-from datetime import date, datetime
-=======
-from datetime import date, timedelta
->>>>>>> 30de0ab (Experimenting with which fields are necessary)
+from datetime import date, datetime, timedelta
 
 from django.conf import settings
 from django.contrib import messages
