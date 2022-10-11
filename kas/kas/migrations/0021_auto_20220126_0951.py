@@ -6,18 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0020_auto_20220120_1034'),
+        ("kas", "0020_auto_20220120_1034"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='historicalpersontaxyear',
-            name='updated_from_dafo',
-            field=models.BooleanField(default=False, verbose_name='Opdateret fra datafordeleren'),
+            model_name="historicalpersontaxyear",
+            name="updated_from_dafo",
+            field=models.BooleanField(
+                default=False, verbose_name="Opdateret fra datafordeleren"
+            ),
         ),
         migrations.AddField(
-            model_name='persontaxyear',
-            name='updated_from_dafo',
-            field=models.BooleanField(default=False, verbose_name='Opdateret fra datafordeleren'),
+            model_name="persontaxyear",
+            name="updated_from_dafo",
+            field=models.BooleanField(
+                default=False, verbose_name="Opdateret fra datafordeleren"
+            ),
         ),
     ]

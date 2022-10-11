@@ -6,26 +6,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0031_migrate_files'),
+        ("kas", "0031_migrate_files"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='finalsettlement',
+            name="finalsettlement",
             options={},
         ),
         migrations.AddField(
-            model_name='finalsettlement',
-            name='pseudo',
+            model_name="finalsettlement",
+            name="pseudo",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='finalsettlement',
-            name='pseudo_amount',
+            model_name="finalsettlement",
+            name="pseudo_amount",
             field=models.DecimalField(decimal_places=2, max_digits=5, null=True),
         ),
         migrations.AddConstraint(
-            model_name='finalsettlement',
-            constraint=models.UniqueConstraint(condition=models.Q(('pseudo', True)), fields=('person_tax_year', 'pseudo'), name='idx_pseudo_true'),
+            model_name="finalsettlement",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("pseudo", True)),
+                fields=("person_tax_year", "pseudo"),
+                name="idx_pseudo_true",
+            ),
         ),
     ]

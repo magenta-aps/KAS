@@ -7,13 +7,15 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0005_setPerson'),
+        ("kas", "0005_setPerson"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='policydocument',
-            name='person_tax_year',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='kas.PersonTaxYear'),
+            model_name="policydocument",
+            name="person_tax_year",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, to="kas.PersonTaxYear"
+            ),
         ),
     ]

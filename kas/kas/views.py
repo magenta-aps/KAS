@@ -1,6 +1,6 @@
 import mimetypes
 import os
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 from django.conf import settings
 from django.contrib import messages
@@ -8,7 +8,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
-from django.db.models import Count, F, Q, Min, FilteredRelation, Sum, Case, Value, When
+from django.db.models import Count, F, Q, Min, FilteredRelation, Sum
 from django.http import Http404, HttpResponse, HttpResponseRedirect, FileResponse
 from django.core.exceptions import SuspiciousOperation
 from django.db.models import Case, Value, When
@@ -755,37 +755,38 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
 
     def get_queryset(self):
         if FinalSettlement.objects.filter(
-            person_tax_year__person__id=self.kwargs['person_id'],
-            person_tax_year__tax_year__year=self.kwargs['year'],
+            person_tax_year__person__id=self.kwargs["person_id"],
+            person_tax_year__tax_year__year=self.kwargs["year"],
         ).exists():
-            final_settlement_creation_date = FinalSettlement.objects.filter(
-                person_tax_year__person__id=self.kwargs['person_id'],
-                person_tax_year__tax_year__year=self.kwargs['year'],
-            ).order_by('-created_at')[0].created_at
+            final_settlement_creation_date = (
+                FinalSettlement.objects.filter(
+                    person_tax_year__person__id=self.kwargs["person_id"],
+                    person_tax_year__tax_year__year=self.kwargs["year"],
+                )
+                .order_by("-created_at")[0]
+                .created_at
+            )
         else:
             final_settlement_creation_date = datetime.now()
 
-        qs = super().get_queryset().filter(
+        qs = (
+            super()
+            .get_queryset()
+            .filter(
                 person_tax_year__person__id=self.kwargs["person_id"],
                 person_tax_year__tax_year__year=self.kwargs["year"],
                 history_date__lte=final_settlement_creation_date,
             )
-        qs_temp = []
-        policy_number_list = list(
-            dict.fromkeys(
-                qs.values_list('policy_number')
-            )
         )
+        qs_temp = []
+        policy_number_list = list(dict.fromkeys(qs.values_list("policy_number")))
         for policy_number in policy_number_list:
             qs_temp.append(
                 # policy_number returns a tuple, where 0'th index is the policy number
-                qs.filter(policy_number=policy_number[0])
-                .order_by('-history_date')[0]
+                qs.filter(policy_number=policy_number[0]).order_by("-history_date")[0]
             )
 
-        return (
-            qs_temp
-        )
+        return qs_temp
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -798,34 +799,39 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
         context["self_reported_amount_label"] = amount_choices_by_value[
             PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED
         ]
-        context['policy_count'] = len(context['object_list'])
-        context['total_tax_with_deductions'] = sum([
-            x.history_object.get_calculation()["tax_with_deductions"] 
-            for x in context['object_list'] 
-            if not x.history_object.pension_company_pays
-        ])
-        context['total_payment'] = sum([
-            x.history_object.get_calculation()["tax_to_pay"] 
-            for x in context['object_list'] 
-            if not x.history_object.pension_company_pays
-        ])
+        context["policy_count"] = len(context["object_list"])
+        context["total_tax_with_deductions"] = sum(
+            [
+                x.history_object.get_calculation()["tax_with_deductions"]
+                for x in context["object_list"]
+                if not x.history_object.pension_company_pays
+            ]
+        )
+        context["total_payment"] = sum(
+            [
+                x.history_object.get_calculation()["tax_to_pay"]
+                for x in context["object_list"]
+                if not x.history_object.pension_company_pays
+            ]
+        )
         if FinalSettlement.objects.filter(
-            person_tax_year__person__id=self.kwargs['person_id'],
-            person_tax_year__tax_year__year=self.kwargs['year'],
+            person_tax_year__person__id=self.kwargs["person_id"],
+            person_tax_year__tax_year__year=self.kwargs["year"],
         ).exists():
-            context['final_settlement'] = FinalSettlement.objects.filter(
-                person_tax_year__person__id=self.kwargs['person_id'],
-                person_tax_year__tax_year__year=self.kwargs['year'],
-            ).order_by('-created_at')[0]
+            context["final_settlement"] = FinalSettlement.objects.filter(
+                person_tax_year__person__id=self.kwargs["person_id"],
+                person_tax_year__tax_year__year=self.kwargs["year"],
+            ).order_by("-created_at")[0]
         else:
-            context['final_settlement'] = FinalSettlement.objects.filter(
-                person_tax_year__person__id=self.kwargs['person_id'],
-                person_tax_year__tax_year__year=self.kwargs['year'],
+            context["final_settlement"] = FinalSettlement.objects.filter(
+                person_tax_year__person__id=self.kwargs["person_id"],
+                person_tax_year__tax_year__year=self.kwargs["year"],
             )
-            context['total_prepayment'] = (
-                context['object_list'][0].person_tax_year.transaction_set.filter(
-                    type="prepayment"
-                ).aggregate(amount=Sum("amount"))['amount'] or 0
+            context["total_prepayment"] = (
+                context["object_list"][0]
+                .person_tax_year.transaction_set.filter(type="prepayment")
+                .aggregate(amount=Sum("amount"))["amount"]
+                or 0
             )
 
         return context

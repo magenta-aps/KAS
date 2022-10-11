@@ -9,37 +9,102 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0035_alter_finalsettlement_lock'),
+        ("kas", "0035_alter_finalsettlement_lock"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Agterskrivelse',
+            name="Agterskrivelse",
             fields=[
-                ('title', models.TextField()),
-                ('status', models.TextField(blank=True, choices=[('created', 'Genereret'), ('send', 'Afsendt'), ('post_processing', 'Afventer efterbehandling'), ('failed', 'Afsendelse fejlet')], default='created')),
-                ('post_processing_status', models.TextField(blank=True, choices=[('pending', 'Afventer processering'), ('address resolved', 'Fundet gyldig postadresse'), ('address not found', 'Ingen gyldig postadresse'), ('remote printed', 'Overført til fjernprint')], default='')),
-                ('recipient_status', models.TextField(blank=True, choices=[('', 'Gyldig E-boks modtager'), ('exempt', 'Fritaget modtager'), ('invalid', 'Ugyldig E-boks modtager (sendes til efterbehandling)'), ('dead', 'Afdød'), ('minor', 'Mindreårig')], default='')),
-                ('message_id', models.TextField(blank=True, default='')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('send_at', models.DateTimeField(blank=True, null=True)),
-                ('uuid', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('pdf', models.FileField(upload_to=kas.models.agterskrivelse_file_path)),
-                ('person_tax_year', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='kas.persontaxyear')),
+                ("title", models.TextField()),
+                (
+                    "status",
+                    models.TextField(
+                        blank=True,
+                        choices=[
+                            ("created", "Genereret"),
+                            ("send", "Afsendt"),
+                            ("post_processing", "Afventer efterbehandling"),
+                            ("failed", "Afsendelse fejlet"),
+                        ],
+                        default="created",
+                    ),
+                ),
+                (
+                    "post_processing_status",
+                    models.TextField(
+                        blank=True,
+                        choices=[
+                            ("pending", "Afventer processering"),
+                            ("address resolved", "Fundet gyldig postadresse"),
+                            ("address not found", "Ingen gyldig postadresse"),
+                            ("remote printed", "Overført til fjernprint"),
+                        ],
+                        default="",
+                    ),
+                ),
+                (
+                    "recipient_status",
+                    models.TextField(
+                        blank=True,
+                        choices=[
+                            ("", "Gyldig E-boks modtager"),
+                            ("exempt", "Fritaget modtager"),
+                            (
+                                "invalid",
+                                "Ugyldig E-boks modtager (sendes til efterbehandling)",
+                            ),
+                            ("dead", "Afdød"),
+                            ("minor", "Mindreårig"),
+                        ],
+                        default="",
+                    ),
+                ),
+                ("message_id", models.TextField(blank=True, default="")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("send_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4, primary_key=True, serialize=False
+                    ),
+                ),
+                (
+                    "pdf",
+                    models.FileField(upload_to=kas.models.agterskrivelse_file_path),
+                ),
+                (
+                    "person_tax_year",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="kas.persontaxyear",
+                    ),
+                ),
             ],
             options={
-                'ordering': ('-created_at',),
-                'abstract': False,
+                "ordering": ("-created_at",),
+                "abstract": False,
             },
         ),
         migrations.AddField(
-            model_name='historicalpolicytaxyear',
-            name='agterskrivelse',
-            field=models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='kas.agterskrivelse'),
+            model_name="historicalpolicytaxyear",
+            name="agterskrivelse",
+            field=models.ForeignKey(
+                blank=True,
+                db_constraint=False,
+                null=True,
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                related_name="+",
+                to="kas.agterskrivelse",
+            ),
         ),
         migrations.AddField(
-            model_name='policytaxyear',
-            name='agterskrivelse',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='kas.agterskrivelse'),
+            model_name="policytaxyear",
+            name="agterskrivelse",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="kas.agterskrivelse",
+            ),
         ),
     ]

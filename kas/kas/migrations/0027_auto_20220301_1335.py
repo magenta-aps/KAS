@@ -6,18 +6,34 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0026_auto_20220221_1310'),
+        ("kas", "0026_auto_20220221_1310"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='historicalperson',
-            name='status',
-            field=models.TextField(choices=[('Undefined', ''), ('Invalid', 'Ugyldig'), ('Alive', ''), ('Dead', 'Afdød')], default='Undefined'),
+            model_name="historicalperson",
+            name="status",
+            field=models.TextField(
+                choices=[
+                    ("Undefined", ""),
+                    ("Invalid", "Ugyldig"),
+                    ("Alive", ""),
+                    ("Dead", "Afdød"),
+                ],
+                default="Undefined",
+            ),
         ),
         migrations.AddField(
-            model_name='person',
-            name='status',
-            field=models.TextField(choices=[('Undefined', ''), ('Invalid', 'Ugyldig'), ('Alive', ''), ('Dead', 'Afdød')], default='Undefined'),
+            model_name="person",
+            name="status",
+            field=models.TextField(
+                choices=[
+                    ("Undefined", ""),
+                    ("Invalid", "Ugyldig"),
+                    ("Alive", ""),
+                    ("Dead", "Afdød"),
+                ],
+                default="Undefined",
+            ),
         ),
     ]

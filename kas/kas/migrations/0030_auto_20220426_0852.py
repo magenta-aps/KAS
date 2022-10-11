@@ -7,28 +7,32 @@ import kas.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0029_auto_20220328_0920'),
+        ("kas", "0029_auto_20220328_0920"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='policydocument',
-            name='file',
-            field=models.FileField(upload_to=kas.models.policydocument_file_path, verbose_name='Fil'),
+            model_name="policydocument",
+            name="file",
+            field=models.FileField(
+                upload_to=kas.models.policydocument_file_path, verbose_name="Fil"
+            ),
         ),
         migrations.AlterField(
-            model_name='finalsettlement',
-            name='pdf',
+            model_name="finalsettlement",
+            name="pdf",
             field=models.FileField(upload_to=kas.models.final_settlement_file_path),
         ),
         migrations.AlterField(
-            model_name='pensioncompanysummaryfile',
-            name='file',
+            model_name="pensioncompanysummaryfile",
+            name="file",
             field=models.FileField(upload_to=kas.models.pensioncompanysummaryfile_path),
         ),
         migrations.AlterField(
-            model_name='taxslipgenerated',
-            name='file',
-            field=models.FileField(null=True, upload_to=kas.models.taxslip_path_by_year),
+            model_name="taxslipgenerated",
+            name="file",
+            field=models.FileField(
+                null=True, upload_to=kas.models.taxslip_path_by_year
+            ),
         ),
     ]

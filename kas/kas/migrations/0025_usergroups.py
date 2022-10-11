@@ -4,47 +4,60 @@ from django.db import migrations
 
 
 def apply_migration(apps, schema_editor):
-    Group = apps.get_model('auth', 'Group')
-    Permission = apps.get_model('auth', 'Permission')
-    ContentType = apps.get_model('contenttypes', 'ContentType')
-    all_kas_content_types = ContentType.objects.filter(app_label='kas').exclude(model='representationtoken')  # includes all content types for kas app
-    all_prisme_content_types = ContentType.objects.filter(app_label='prisme')
-    prisme_read_only_permissions = Permission.objects.filter(content_type__in=all_prisme_content_types).filter(codename__startswith='view_')
+    Group = apps.get_model("auth", "Group")
+    Permission = apps.get_model("auth", "Permission")
+    ContentType = apps.get_model("contenttypes", "ContentType")
+    all_kas_content_types = ContentType.objects.filter(app_label="kas").exclude(
+        model="representationtoken"
+    )  # includes all content types for kas app
+    all_prisme_content_types = ContentType.objects.filter(app_label="prisme")
+    prisme_read_only_permissions = Permission.objects.filter(
+        content_type__in=all_prisme_content_types
+    ).filter(codename__startswith="view_")
 
     tenq_write_permission = Permission.objects.filter(
-        content_type__in=all_prisme_content_types.filter(model='prisme10qbatch')).filter(codename__startswith='add_')
+        content_type__in=all_prisme_content_types.filter(model="prisme10qbatch")
+    ).filter(codename__startswith="add_")
 
-    all_kas_permissions = Permission.objects.filter(content_type__in=all_kas_content_types
-                                                    ).exclude(codename__startswith='delete_')
-    kas_read_only_permissions = all_kas_permissions.filter(codename__startswith='view_')
-    kas_add_permissions = all_kas_permissions.filter(codename__startswith='add_').exclude(content_type__model='taxyear')
-    kas_change_permissions = all_kas_permissions.filter(codename__startswith='change_').exclude(content_type__model='taxyear')
-    for name in ('Sagsbehandler', 'Borgerservice', 'Regnskab', 'Skatteråd'):
+    all_kas_permissions = Permission.objects.filter(
+        content_type__in=all_kas_content_types
+    ).exclude(codename__startswith="delete_")
+    kas_read_only_permissions = all_kas_permissions.filter(codename__startswith="view_")
+    kas_add_permissions = all_kas_permissions.filter(
+        codename__startswith="add_"
+    ).exclude(content_type__model="taxyear")
+    kas_change_permissions = all_kas_permissions.filter(
+        codename__startswith="change_"
+    ).exclude(content_type__model="taxyear")
+    for name in ("Sagsbehandler", "Borgerservice", "Regnskab", "Skatteråd"):
         group = Group.objects.create(name=name)
         # every group needs read only access to kas
         group.permissions.add(*kas_read_only_permissions)
         # allow every group to read Transactions, batches etc
         group.permissions.add(*prisme_read_only_permissions)
-        if name == 'Sagsbehandler':
+        if name == "Sagsbehandler":
             # Sagsbehanddler can add and change everything besides Jobs and taxYears
             group.permissions.add(*kas_add_permissions)
             group.permissions.add(*kas_change_permissions)
-        elif name == 'Borgerservice':
+        elif name == "Borgerservice":
             # Allow borger service to add documents and notes.
-            group.permissions.add(*all_kas_permissions.filter(codename__in=['add_policydocument',
-                                                                            'add_note']))
-        elif name == 'Regnskab':
+            group.permissions.add(
+                *all_kas_permissions.filter(
+                    codename__in=["add_policydocument", "add_note"]
+                )
+            )
+        elif name == "Regnskab":
             # allow regenskab to create 10Q batches
             group.permissions.add(*tenq_write_permission)
 
     # add permissions to the administrator group
-    administrators = Group.objects.get(name='administrator')
+    administrators = Group.objects.get(name="administrator")
     administrators.permissions.add(*all_kas_permissions)
     administrators.permissions.add(*prisme_read_only_permissions)
     # prisme write permissions
     administrators.permissions.add(*tenq_write_permission)
     try:
-        old_admin_group = Group.objects.get(name='admins')
+        old_admin_group = Group.objects.get(name="admins")
     except Group.DoesNotExist:
         pass
     else:
@@ -52,20 +65,24 @@ def apply_migration(apps, schema_editor):
 
 
 def revert_migration(apps, schema_editor):
-    Group = apps.get_model('auth', 'Group')
+    Group = apps.get_model("auth", "Group")
     # delete the groups
-    Group.objects.filter(name__in=['Sagsbehandler', 'Borgerservice', 'Regnskab', 'Skatteråd']).delete()
-    administrators = Group.objects.get(name='administrator')
-    pre_existing_permissions = ['view_job',
-                                'add_job',
-                                'change_job',
-                                'view_user',
-                                'add_user',
-                                'change_user',
-                                'view_taxyear',
-                                'add_taxyear',
-                                'view_pensioncompany',
-                                'change_pensioncompany']
+    Group.objects.filter(
+        name__in=["Sagsbehandler", "Borgerservice", "Regnskab", "Skatteråd"]
+    ).delete()
+    administrators = Group.objects.get(name="administrator")
+    pre_existing_permissions = [
+        "view_job",
+        "add_job",
+        "change_job",
+        "view_user",
+        "add_user",
+        "change_user",
+        "view_taxyear",
+        "add_taxyear",
+        "view_pensioncompany",
+        "change_pensioncompany",
+    ]
 
     # remove all "new" administrator permissions
     administrators.permissions.exclude(codename__in=pre_existing_permissions).delete()
@@ -74,9 +91,7 @@ def revert_migration(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0024_administrator_group'),
+        ("kas", "0024_administrator_group"),
     ]
 
-    operations = [
-        migrations.RunPython(apply_migration, reverse_code=revert_migration)
-    ]
+    operations = [migrations.RunPython(apply_migration, reverse_code=revert_migration)]

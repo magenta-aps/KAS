@@ -4,34 +4,36 @@ from django.db import migrations
 
 
 def apply_migration(apps, schema_editor):
-    Group = apps.get_model('auth', 'Group')
-    group = Group.objects.create(name='administrator')
-    Permission = apps.get_model('auth', 'Permission')
-    permissions = Permission.objects.filter(codename__in=['view_job',
-                                                          'add_job',
-                                                          'change_job',
-                                                          'view_user',
-                                                          'add_user',
-                                                          'change_user',
-                                                          'view_taxyear',
-                                                          'add_taxyear',
-                                                          'view_pensioncompany',
-                                                          'change_pensioncompany'])
+    Group = apps.get_model("auth", "Group")
+    group = Group.objects.create(name="administrator")
+    Permission = apps.get_model("auth", "Permission")
+    permissions = Permission.objects.filter(
+        codename__in=[
+            "view_job",
+            "add_job",
+            "change_job",
+            "view_user",
+            "add_user",
+            "change_user",
+            "view_taxyear",
+            "add_taxyear",
+            "view_pensioncompany",
+            "change_pensioncompany",
+        ]
+    )
     group.permissions.add(*permissions)
 
 
 def revert_migration(apps, schema_editor):
-    Group = apps.get_model('auth', 'Group')
-    Group.objects.filter(name='administrator').delete()
+    Group = apps.get_model("auth", "Group")
+    Group.objects.filter(name="administrator").delete()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0023_auto_20220210_0918'),
-        ('worker', '0007_auto_20210917_1054'),
+        ("kas", "0023_auto_20220210_0918"),
+        ("worker", "0007_auto_20210917_1054"),
     ]
 
-    operations = [
-        migrations.RunPython(apply_migration, reverse_code=revert_migration)
-    ]
+    operations = [migrations.RunPython(apply_migration, reverse_code=revert_migration)]

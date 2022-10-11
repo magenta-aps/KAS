@@ -845,7 +845,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         foreign_paid_amount: int = 0,  # Amount already paid in taxes in foreign country
         preliminary_payment: int = 0,  # Amount already paid in taxes domestically
         adjust_for_days_in_year: bool = True,  # Perform adjustment for taxable days in year (false if self-reported)
-        pension_company_pays: bool = False,    # Sets tax_to_pay to zero if pension company pays
+        pension_company_pays: bool = False,  # Sets tax_to_pay to zero if pension company pays
     ) -> dict:
 
         if days_in_year not in (365, 366):

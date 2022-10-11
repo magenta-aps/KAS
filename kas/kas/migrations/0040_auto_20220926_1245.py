@@ -6,18 +6,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0039_test_persons'),
+        ("kas", "0039_test_persons"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='historicalpolicytaxyear',
-            old_name='adjusted_r75_amount',
-            new_name='prefilled_amount_edited'
+            model_name="historicalpolicytaxyear",
+            old_name="adjusted_r75_amount",
+            new_name="prefilled_amount_edited",
         ),
         migrations.RenameField(
-            model_name='policytaxyear',
-            old_name='adjusted_r75_amount',
-            new_name='prefilled_amount_edited'
+            model_name="policytaxyear",
+            old_name="adjusted_r75_amount",
+            new_name="prefilled_amount_edited",
         ),
     ]

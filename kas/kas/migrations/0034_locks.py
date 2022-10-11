@@ -5,20 +5,23 @@ from django.utils import timezone
 
 
 def apply_migration(apps, schema_editor):
-    TaxYear = apps.get_model('kas', 'TaxYear')
-    Lock = apps.get_model('kas', 'Lock')
-    FinalSettlement = apps.get_model('kas', 'FinalSettlement')
+    TaxYear = apps.get_model("kas", "TaxYear")
+    Lock = apps.get_model("kas", "Lock")
+    FinalSettlement = apps.get_model("kas", "FinalSettlement")
     # For each tax year create a new open lock
     for tax_year in TaxYear.objects.all():
-        lock = Lock.objects.create(taxyear=tax_year,
-                                   interval_from=timezone.now().date())
+        lock = Lock.objects.create(
+            taxyear=tax_year, interval_from=timezone.now().date()
+        )
         # Add the lock to all Finalsettlements for the tax_year
-        FinalSettlement.objects.filter(person_tax_year__tax_year=tax_year).update(lock=lock)
+        FinalSettlement.objects.filter(person_tax_year__tax_year=tax_year).update(
+            lock=lock
+        )
 
 
 def revert_migration(apps, schema_editor):
-    FinalSettlement = apps.get_model('kas', 'FinalSettlement')
-    Lock = apps.get_model('kas', 'Lock')
+    FinalSettlement = apps.get_model("kas", "FinalSettlement")
+    Lock = apps.get_model("kas", "Lock")
     # remove all references to locks
     FinalSettlement.objects.all().update(lock=None)
     # Remove all locks
@@ -28,9 +31,7 @@ def revert_migration(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0033_auto_20220601_1413'),
+        ("kas", "0033_auto_20220601_1413"),
     ]
 
-    operations = [
-        migrations.RunPython(apply_migration, reverse_code=revert_migration)
-    ]
+    operations = [migrations.RunPython(apply_migration, reverse_code=revert_migration)]

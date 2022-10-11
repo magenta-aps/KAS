@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0015_finalsettlement_invalid'),
+        ("kas", "0015_finalsettlement_invalid"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='taxyear',
-            name='rate_text_for_transactions',
-            field=models.TextField(default='', verbose_name='Tekst brugt i opkrævninger sendt ud for skatteåret'),
+            model_name="taxyear",
+            name="rate_text_for_transactions",
+            field=models.TextField(
+                default="",
+                verbose_name="Tekst brugt i opkrævninger sendt ud for skatteåret",
+            ),
         ),
     ]

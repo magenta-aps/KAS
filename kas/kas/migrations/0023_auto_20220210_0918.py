@@ -9,69 +9,100 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('kas', '0022_auto_20220124_1150'),
+        ("kas", "0022_auto_20220124_1150"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='AddressFromDafo',
+            name="AddressFromDafo",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('cpr', models.TextField(null=False, unique=True)),
-                ('address', models.TextField(blank=True, null=True)),
-                ('postal_area', models.TextField(blank=True, null=True)),
-                ('name', models.TextField(blank=True, null=True)),
-                ('co', models.TextField(blank=True, null=True)),
-                ('full_address', models.TextField(blank=True, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("cpr", models.TextField(null=False, unique=True)),
+                ("address", models.TextField(blank=True, null=True)),
+                ("postal_area", models.TextField(blank=True, null=True)),
+                ("name", models.TextField(blank=True, null=True)),
+                ("co", models.TextField(blank=True, null=True)),
+                ("full_address", models.TextField(blank=True, null=True)),
             ],
         ),
         migrations.RemoveField(
-            model_name='historicalpersontaxyear',
-            name='updated_from_dafo',
+            model_name="historicalpersontaxyear",
+            name="updated_from_dafo",
         ),
         migrations.RemoveField(
-            model_name='persontaxyear',
-            name='updated_from_dafo',
+            model_name="persontaxyear",
+            name="updated_from_dafo",
         ),
         migrations.AddField(
-            model_name='historicalperson',
-            name='updated_from_dafo',
-            field=models.BooleanField(default=False, verbose_name='Opdateret fra datafordeleren'),
+            model_name="historicalperson",
+            name="updated_from_dafo",
+            field=models.BooleanField(
+                default=False, verbose_name="Opdateret fra datafordeleren"
+            ),
         ),
         migrations.AddField(
-            model_name='historicalpersontaxyear',
-            name='updated_by',
+            model_name="historicalpersontaxyear",
+            name="updated_by",
             field=models.CharField(max_length=150, null=True),
         ),
         migrations.AddField(
-            model_name='historicalpolicytaxyear',
-            name='updated_by',
+            model_name="historicalpolicytaxyear",
+            name="updated_by",
             field=models.CharField(max_length=150, null=True),
         ),
         migrations.AddField(
-            model_name='person',
-            name='updated_from_dafo',
-            field=models.BooleanField(default=False, verbose_name='Opdateret fra datafordeleren'),
+            model_name="person",
+            name="updated_from_dafo",
+            field=models.BooleanField(
+                default=False, verbose_name="Opdateret fra datafordeleren"
+            ),
         ),
         migrations.AddField(
-            model_name='persontaxyear',
-            name='updated_by',
+            model_name="persontaxyear",
+            name="updated_by",
             field=models.CharField(max_length=150, null=True),
         ),
         migrations.AddField(
-            model_name='policytaxyear',
-            name='updated_by',
+            model_name="policytaxyear",
+            name="updated_by",
             field=models.CharField(max_length=150, null=True),
         ),
         migrations.CreateModel(
-            name='RepresentationToken',
+            name="RepresentationToken",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('token', models.CharField(max_length=64, unique=True)),
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('consumed', models.BooleanField(default=False)),
-                ('person', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='kas.Person')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("token", models.CharField(max_length=64, unique=True)),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("consumed", models.BooleanField(default=False)),
+                (
+                    "person",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="kas.Person"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

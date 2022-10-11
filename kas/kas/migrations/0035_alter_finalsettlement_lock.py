@@ -7,13 +7,17 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kas', '0034_locks'),
+        ("kas", "0034_locks"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='finalsettlement',
-            name='lock',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='settlements', to='kas.lock'),
+            model_name="finalsettlement",
+            name="lock",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="settlements",
+                to="kas.lock",
+            ),
         ),
     ]
