@@ -22,4 +22,6 @@ class Migration(migrations.Migration):
         ("kas", "0038_auto_20220810_1012"),
     ]
 
-    operations = [migrations.RunPython(apply_migration, reverse_code=revert_migration)]
+    operations = [
+        migrations.RunPython(apply_migration, reverse_code=revert_migration)
+    ]

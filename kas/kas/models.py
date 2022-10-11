@@ -1289,6 +1289,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         for policy in policies_to_be_recalculated:
             policy.recalculate()
 
+        return self.calculate_available_yearly_deduction()
+
     def save(self, *args, **kwargs):
         super(PolicyTaxYear, self).save(*args, **kwargs)
 

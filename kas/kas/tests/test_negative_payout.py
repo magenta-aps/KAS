@@ -17,60 +17,8 @@ from kas.models import (
 
 
 class BaseNegativePayoutTestCase(TestCase):
-    def pretty_print_table(self, table):
-        print("=" * 50)
-        for key in table:
-            print("%s: {" % key)
-            for key2 in table[key]:
-                print("    '%s': %s" % (key2, table[key][key2]))
-            print("}")
-        print("=" * 50)
-
-    def setUp(self) -> None:
-        self.year_adjusted_amount = -1000
-        self.assessed_amount = 2000
-        self.username = "admin"
-        self.user = get_user_model().objects.create_user(username=self.username)
-        self.password = "admin"
-        self.user.set_password(self.password)
-        self.user.save()
-        self.administrator_group = Group.objects.get(name="administrator")
-        self.user.groups.set([self.administrator_group])
-        self.person = Person.objects.create(cpr="1234567890", name="TestPerson")
-        self.pension_company = PensionCompany.objects.create()
-        self.tax_year = TaxYear.objects.create(year=2021)
-        self.person_tax_year = PersonTaxYear.objects.create(
-            tax_year=self.tax_year,
-            person=self.person,
-            number_of_days=self.tax_year.days_in_year,
-        )
-        self.policy_tax_year = PolicyTaxYear.objects.create(
-            person_tax_year=self.person_tax_year,
-            pension_company=self.pension_company,
-            prefilled_amount=35,
-            policy_number="1234",
-            assessed_amount=self.assessed_amount,
-            year_adjusted_amount=self.year_adjusted_amount,
-        )
-
-        # =============================================================================
-        # Make a negative payout table
-        # =============================================================================
-        self.from_years = [2016, 2017, 2018, 2019, 2020]
-        self.for_years = [2017, 2018, 2019, 2020, 2021]
-
-        # Note1: We need a zero in this list - so the loop skips some objects
-        # And does not create them but rather shows them with their default values
-        #
-        # Note2: The sum of this list cannot be larger than self.year_adjusted_amount
-        self.for_year_values = [100, 200, 300, 400, 0]
-
-        self.negative_payouts = []
-        self.number_of_history_items = 0
-
-        self.debug = False
-
-        for from_year in self.from_years:
+    def populate_negative_payouts(self, from_years, for_years, for_year_values):
+        for from_year in from_years:
             from_tax_year, created = TaxYear.objects.get_or_create(year=from_year)
             from_person_tax_year, created = PersonTaxYear.objects.get_or_create(
                 tax_year=from_tax_year,
@@ -87,7 +35,7 @@ class BaseNegativePayoutTestCase(TestCase):
                 year_adjusted_amount=self.year_adjusted_amount,
             )
 
-            for for_year, for_year_value in zip(self.for_years, self.for_year_values):
+            for for_year, for_year_value in zip(for_years, for_year_values):
 
                 # for year needs to be equal or smaller than from year;
                 # It is not possible to transfer negative payout to years in the past
@@ -710,3 +658,62 @@ class NegativePayoutTestCase(BaseNegativePayoutTestCase):
             self.assertEqual(table[from_year]["used_by_year"][2020], 300)
         except AssertionError:
             self.assertEqual(table[from_year]["used_by_year"][2018], 100)
+
+
+class BadNegativePayoutTestCase(BaseNegativePayoutTestCase):
+    """
+    Test case with negative payout data which is 'bad'. i.e. not obeying rules the rule
+    that the remaining amount must be positive
+    """
+
+    def setUp(self) -> None:
+        super(BadNegativePayoutTestCase, self).setUp()
+        self.debug = False
+        self.client.login(username=self.username, password=self.password)
+
+        # =============================================================================
+        # Make a negative payout table
+        # =============================================================================
+        from_years = [2018, 2019, 2020]
+        for_years = [2019, 2020, 2021]
+        for_year_values = [600, 600, 0]
+
+        self.populate_negative_payouts(from_years, for_years, for_year_values)
+
+        # =============================================================================
+        # This is what the test data looks like (Note the negative 'remaining' amount in 2018)
+        #
+        # 2018: {
+        #     'available': 1000
+        #     'used_by_year': {2018: '-', 2019: 600, 2020: 600, 2021: 0}
+        #     'used_max_by_year': {2019: 400, 2020: 400, 2021: -200}
+        #     'remaining': -200
+        #     'used_total': 0
+        #     'used_max': 2000
+        # }
+        # 2019: {
+        #     'available': 1000
+        #     'used_by_year': {2018: '-', 2019: '-', 2020: 600, 2021: 0}
+        #     'used_max_by_year': {2020: 1000, 2021: 400}
+        #     'remaining': 400
+        #     'used_total': 600
+        #     'used_max': 2000
+        # }
+        # 2020: {
+        #     'available': 1000
+        #     'used_by_year': {2018: '-', 2019: '-', 2020: '-', 2021: 0}
+        #     'used_max_by_year': {2021: 1000}
+        #     'remaining': 1000
+        #     'used_total': 1200
+        #     'used_max': 2000
+        # }
+        #
+        # =============================================================================
+
+        # And this is how to print it
+        if self.debug:
+            table = self.policy_tax_year.previous_year_deduction_table_data
+            self.pretty_print_table(table)
+
+    def test_recalculate(self):
+        self.policy_tax_year.recalculate()  # This is not supposed to throw an error
