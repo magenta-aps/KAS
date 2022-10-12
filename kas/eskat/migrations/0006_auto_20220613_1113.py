@@ -11,15 +11,21 @@ def populate_person_tax_year(apps, schema_editor):
         "eskat", "HistoricalImportedKasBeregningerX"
     )
     for item in ImportedKasBeregningerX.objects.all():
-        item.person_tax_year = PersonTaxYear.objects.get(
-            person__cpr=item.cpr, tax_year__year=item.skatteaar
-        )
-        item.save()
+        try:
+            item.person_tax_year = PersonTaxYear.objects.get(
+                person__cpr=item.cpr, tax_year__year=item.skatteaar
+            )
+            item.save()
+        except PersonTaxYear.DoesNotExist:
+            pass
     for item in HistoricalImportedKasBeregningerX.objects.all():
-        item.person_tax_year = PersonTaxYear.objects.get(
-            person__cpr=item.cpr, tax_year__year=item.skatteaar
-        )
-        item.save()
+        try:
+            item.person_tax_year = PersonTaxYear.objects.get(
+                person__cpr=item.cpr, tax_year__year=item.skatteaar
+            )
+            item.save()
+        except PersonTaxYear.DoesNotExist:
+            pass
 
 
 def unpopulate_person_tax_year(apps, schema_editor):
