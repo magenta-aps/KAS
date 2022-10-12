@@ -110,8 +110,10 @@ class ImportedKasBeregningerX(models.Model):
     capital_return_tax = models.DecimalField(
         max_digits=12, decimal_places=2, blank=False, null=False, default=0
     )
-    person_tax_year = models.ForeignKey(
-        "kas.PersonTaxYear", on_delete=models.CASCADE, null=True
+    person_tax_year = models.OneToOneField(
+        "kas.PersonTaxYear",
+        on_delete=models.CASCADE,
+        null=True
     )
     history = HistoricalRecords()
 
