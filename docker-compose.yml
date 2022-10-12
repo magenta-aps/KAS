@@ -18,6 +18,7 @@ services:
     volumes:
       - ./kas/:/app
       - ./data/kas:/srv/media
+      - ./data/kas/er_html:/app/kas/static/doc/er_html
     environment:
       - MAKE_MIGRATIONS=true
       - MIGRATE=true
@@ -113,6 +114,20 @@ services:
       - ./dev-environment/cert/idp/selfsigned.key:/var/www/simplesamlphp/cert/server.pem:ro
       - ./dev-idp/authsources.php:/var/www/simplesamlphp/config/authsources.php:ro
       - ./dev-idp/saml20-sp-remote.php:/var/www/simplesamlphp/metadata/saml20-sp-remote.php:ro
+
+  kas-er:
+    container_name: kas-er
+    image: kas-er:latest
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.er
+    depends_on:
+      - postgres
+    network_mode: "host"
+    env_file:
+      - ./dev-environment/kas.env
+    volumes:
+      - ./data/kas:/doc
 
 volumes:
   kas-postgres-data:
