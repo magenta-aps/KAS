@@ -69,21 +69,4 @@ class Migration(migrations.Migration):
         migrations.RunPython(
             populate_person_tax_year, reverse_code=unpopulate_person_tax_year
         ),
-        migrations.AlterField(
-            model_name="historicalimportedkasberegningerx",
-            name="person_tax_year",
-            field=models.ForeignKey(
-                db_constraint=False,
-                on_delete=django.db.models.deletion.DO_NOTHING,
-                related_name="+",
-                to="kas.persontaxyear",
-            ),
-        ),
-        migrations.AlterField(
-            model_name="importedkasberegningerx",
-            name="person_tax_year",
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to="kas.persontaxyear"
-            ),
-        ),
     ]
