@@ -16,7 +16,8 @@ class Migration(migrations.Migration):
             model_name="importedkasberegningerx",
             name="person_tax_year",
             field=models.OneToOneField(
-                on_delete=django.db.models.deletion.CASCADE, to="kas.persontaxyear"
+                on_delete=django.db.models.deletion.CASCADE, to="kas.persontaxyear",
+                null=True,
             ),
         ),
     ]
