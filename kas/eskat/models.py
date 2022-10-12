@@ -111,9 +111,7 @@ class ImportedKasBeregningerX(models.Model):
         max_digits=12, decimal_places=2, blank=False, null=False, default=0
     )
     person_tax_year = models.OneToOneField(
-        "kas.PersonTaxYear",
-        on_delete=models.CASCADE,
-        null=True
+        "kas.PersonTaxYear", on_delete=models.CASCADE, null=True
     )
     history = HistoricalRecords()
 
