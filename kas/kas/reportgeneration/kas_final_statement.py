@@ -423,7 +423,6 @@ class TaxFinalStatementPDF(FPDF):
             3,
             align="L",
             border=0,
-            #txt=self._person_tax_year.person.name 
             txt=person_name
             + "\n"
             + self._person_tax_year.person.postal_address,
