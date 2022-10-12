@@ -986,6 +986,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     @property
     def latest_policy(self):
+        # If the filtering for same policies returns an empty list, return original policytaxyear
+        if not self.same_policy_qs_sorted_by_year:
+            return self
         return self.same_policy_qs_sorted_by_year[0]
 
     @property

@@ -77,17 +77,17 @@
     {% else %}
 
 
-    {% for deduction in policy.used_from %}
+    {% for year, amount in calculation.desired_deduction_data.items %}
     <tr>
         <td>
-            {% blocktrans with year=deduction.from_year %}Modregning af tidligere negativt kapitalafkast ({{year}}){% endblocktrans %}
-            {% blocktrans asvar help_text_deduction with year=deduction.from_year amount=deduction.transferred_negative_payout|negative %}
-            Der er modregnes kr {{ amount }} i negativt kapitalafkast fra {{ year }}
+            {% blocktrans %}Modregning af tidligere negativt kapitalafkast ({{year}}){% endblocktrans %}
+            {% blocktrans asvar help_text_deduction %}
+            Der er modregnes kr {{ amount|negative }} i negativt kapitalafkast fra {{ year }}
             {% endblocktrans %}
             {% include 'includes/help_text/question_mark.html' with target_id='deduction'|append:forloop.counter right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_deduction target_id='deduction'|append:forloop.counter %}
         </td>
-        <td>{{ deduction.transferred_negative_payout|negative }}</td>
+        <td>{{ amount|negative }}</td>
     </tr>
     {% empty %}
     <tr>
@@ -126,16 +126,12 @@
         <td>{{ calculation.full_tax }}</td>
     </tr>
     <tr>
-        <td>Modtaget indbetaling af foreløbig kapitalafkastskat</td>
-        <td>{{ policy.preliminary_paid_amount|default_if_none:0|negative }}</td>
-    </tr>
-    <tr>
         <td>{% translate 'Nedslag for betalt skat i udlandet' %}</td>
         <td>{{ calculation.foreign_paid_amount|negative }}</td>
     </tr>
     <tr>
         <td>
-            {% translate 'Kapitalafkastskat' %}
+            {% translate 'Tilbageværende kapitalafkastskat'%}
             {% blocktrans asvar help_text_with_deductions with tax=calculation.full_tax paid_foreign=calculation.foreign_paid_amount paid_preliminary=policy.preliminary_paid_amount %}
             Skat før fraregning af skat betalt i udlandet ({{ tax }}) - Skat betalt i udlandet ({{ paid_foreign }}) - Foreløbigt modtaget indbetaling ({{ paid_preliminary|default_if_none:0 }})
             {% endblocktrans %}
@@ -168,16 +164,6 @@
         {% if policy_count > 1 %}
             <td>{% translate 'Kapitalafkastskat at betale for police nr.' %} {{ policy.policy_number }}</td>
             <td>{{ calculation.tax_to_pay }}</td>
-        {% else %}
-            <td>
-                <b>{% translate 'Kapitalafkastskat at betale' %}</b>
-                {% blocktrans asvar help_text_to_pay with tax=calculation.tax_with_deductions paid_preliminary=policy.preliminary_paid_amount %}
-                Skat at betale ({{ tax }}) - Forudbetalt skat ({{ paid_preliminary }})
-                {% endblocktrans %}
-                {% include 'includes/help_text/question_mark.html' with target_id='tax_to_pay' right=True %}
-                {% include 'includes/help_text/collapse.html' with help_text=help_text_to_pay target_id='tax_to_pay' %}
-            </td>
-            <th>{{ total_payment }}</th>
         {% endif %} 
     </tr>
     {% endif %}

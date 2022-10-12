@@ -1,6 +1,6 @@
 import mimetypes
 import os
-from datetime import date, datetime
+from datetime import date
 
 from django.conf import settings
 from django.contrib import messages
@@ -750,7 +750,7 @@ class PolicyTaxYearUnfinishedListView(SpecialExcelMixin, PolicyTaxYearSpecialLis
 class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
     permission_required = "kas.view_policytaxyear"
     template_name = "kas/policytaxyear_tabs.html"
-    # Utilizing thatthe most recent history object == the updated non-history object
+    # Utilizing that the most recent history object == the updated non-history object
     model = PolicyTaxYear.history.model
 
     def get_queryset(self):
@@ -767,7 +767,7 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
                 .created_at
             )
         else:
-            final_settlement_creation_date = datetime.now()
+            final_settlement_creation_date = timezone.now()
 
         qs = (
             super()
@@ -778,6 +778,7 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
                 history_date__lte=final_settlement_creation_date,
             )
         )
+
         qs_temp = []
         policy_number_list = list(dict.fromkeys(qs.values_list("policy_number")))
         for policy_number in policy_number_list:
@@ -785,7 +786,6 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
                 # policy_number returns a tuple, where 0'th index is the policy number
                 qs.filter(policy_number=policy_number[0]).order_by("-history_date")[0]
             )
-
         return qs_temp
 
     def get_context_data(self, *args, **kwargs):
@@ -833,7 +833,6 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
                 .aggregate(amount=Sum("amount"))["amount"]
                 or 0
             )
-
         return context
 
 
@@ -1101,7 +1100,8 @@ class PolicyTaxYearNumberUpdateView(
                 old_instance = self.model.objects.get(pk=form.instance.pk)
                 siblings = old_instance.same_policy_qs.exclude(pk=form.instance.pk)
                 siblings.update(policy_number=self.object.policy_number)
-        return super().form_valid(form)
+        result = super().form_valid(form)
+        return result
 
 
 class PensionCompanySummaryFileView(
