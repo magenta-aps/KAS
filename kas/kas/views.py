@@ -827,6 +827,13 @@ class PolicyTaxYearCreateView(
     def form_valid(self, form):
         form.instance.person_tax_year = self.get_person_tax_year()
         form.instance.active_amount = PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED
+        if PolicyTaxYear.objects.filter(
+            person_tax_year=form.instance.person_tax_year,
+            policy_number=form.instance.policy_number,
+            pension_company=form.instance.pension_company
+        ).exists():
+            form.add_error(None, _("En police med disse oplysninger findes allerede"))
+            return super().form_invalid(form)
         return super().form_valid(form)
 
 

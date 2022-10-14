@@ -1528,6 +1528,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         amount = self.prefilled_amount_edited
         if amount is None:
             amount = self.prefilled_amount
+        if amount is None:
+            return None
         factor = (
             self.person_tax_year.number_of_days
             / self.person_tax_year.tax_year.days_in_year
