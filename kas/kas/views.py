@@ -830,7 +830,7 @@ class PolicyTaxYearCreateView(
         if PolicyTaxYear.objects.filter(
             person_tax_year=form.instance.person_tax_year,
             policy_number=form.instance.policy_number,
-            pension_company=form.instance.pension_company
+            pension_company=form.instance.pension_company,
         ).exists():
             form.add_error(None, _("En police med disse oplysninger findes allerede"))
             return super().form_invalid(form)
