@@ -914,7 +914,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         if pension_company_pays:
             tax_to_pay = 0
         else:
-            tax_to_pay = tax_with_deductions -  preliminary_payment
+            tax_to_pay = tax_with_deductions - preliminary_payment
 
         return {
             "initial_amount": initial_amount,

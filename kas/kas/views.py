@@ -755,9 +755,9 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
 
     def get_queryset(self):
         if self.final_settlements.exists():
-            final_settlement_creation_date = (
-                self.final_settlements.order_by("-created_at")[0].created_at
-            )
+            final_settlement_creation_date = self.final_settlements.order_by(
+                "-created_at"
+            )[0].created_at
         else:
             final_settlement_creation_date = timezone.now()
 
@@ -808,9 +808,9 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
             ]
         )
         if self.final_settlements.exists():
-            context["final_settlement"] = (
-                self.final_settlements.order_by("-created_at")[0]
-            )
+            context["final_settlement"] = self.final_settlements.order_by(
+                "-created_at"
+            )[0]
         else:
             context["final_settlement"] = FinalSettlement.objects.none()
             context["total_prepayment"] = (
@@ -825,10 +825,9 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
     def final_settlements(self):
         final_settlements = FinalSettlement.objects.filter(
             person_tax_year__person__id=self.kwargs["person_id"],
-                 person_tax_year__tax_year__year=self.kwargs["year"],
+            person_tax_year__tax_year__year=self.kwargs["year"],
         )
         return final_settlements
-        
 
 
 class PolicyTaxYearDetailView(
