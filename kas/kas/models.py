@@ -914,7 +914,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         if pension_company_pays:
             tax_to_pay = 0
         else:
-            tax_to_pay = max(0, tax_with_deductions - max(0, preliminary_payment))
+            tax_to_pay = tax_with_deductions -  preliminary_payment
 
         return {
             "initial_amount": initial_amount,
@@ -986,10 +986,11 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     @property
     def latest_policy(self):
+        policies = list(self.same_policy_qs_sorted_by_year)
         # If the filtering for same policies returns an empty list, return original policytaxyear
-        if not self.same_policy_qs_sorted_by_year:
+        if not policies:
             return self
-        return self.same_policy_qs_sorted_by_year[0]
+        return policies[0]
 
     @property
     def reported_difference(self):
