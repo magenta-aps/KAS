@@ -154,10 +154,10 @@
         <td>{% translate 'Forudbetalt kapitalafkastskat' %}</td>
         <td>{{ policy.preliminary_paid_amount|default_if_none:0|negative }}</td>
     </tr>
-    {% if final_settlement.get_calculation_amounts.remainder_with_interest %}
+    {% if final_settlement.get_calculation_amounts.extra_payment_for_previous_missing %}
         <tr>
-            <td>{% translate 'Manglende betaling fra tidligere år' %}</td>
-            <td>{{ final_settlement.get_calculation_amounts.remainder_with_interest }}</td>
+            <td>{% translate 'Beløb for dækkelse af tidlgiere ikke-betalt regning' %}</td>
+            <td>{{ final_settlement.get_calculation_amounts.extra_payment_for_previous_missing }}</td>
         </tr>
     {% endif %}
     <tr>
