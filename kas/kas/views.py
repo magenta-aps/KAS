@@ -776,7 +776,9 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
             [x["policy_number"] for x in qs.values("policy_number")]
         )
         for policy_number in policy_number_list:
-            qs_temp = qs.filter(policy_number=policy_number).order_by("-history_date")[0]
+            qs_temp = qs.filter(policy_number=policy_number).order_by("-history_date")[
+                0
+            ]
             """
             qs_temp.annotate(
                 updated_policy_tax_year=PolicyTaxYear.objects.filter(
