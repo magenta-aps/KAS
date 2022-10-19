@@ -8,7 +8,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
-from django.db.models import Count, F, Q, Min, FilteredRelation
+from django.db.models import Count, F, Q, Min, FilteredRelation, Sum
 from django.http import Http404, HttpResponse, HttpResponseRedirect, FileResponse
 from django.core.exceptions import SuspiciousOperation
 from django.db.models import Case, Value, When
@@ -750,30 +750,100 @@ class PolicyTaxYearUnfinishedListView(SpecialExcelMixin, PolicyTaxYearSpecialLis
 class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
     permission_required = "kas.view_policytaxyear"
     template_name = "kas/policytaxyear_tabs.html"
-    model = PolicyTaxYear
+    # Utilizing that the most recent history object == the updated non-history object
+    model = PolicyTaxYear.history.model
 
     def get_queryset(self):
-        return (
+        if self.final_settlements.exists():
+            final_settlement_creation_date = self.final_settlements.order_by(
+                "-created_at"
+            )[0].created_at
+        else:
+            final_settlement_creation_date = timezone.now()
+
+        qs = (
             super()
             .get_queryset()
             .filter(
                 person_tax_year__person__id=self.kwargs["person_id"],
                 person_tax_year__tax_year__year=self.kwargs["year"],
+                history_date__lte=final_settlement_creation_date,
             )
         )
+
+        qs_list = []
+        policy_number_list = set(
+            [x["policy_number"] for x in qs.values("policy_number")]
+        )
+        for policy_number in policy_number_list:
+            qs_temp = qs.filter(policy_number=policy_number).order_by("-history_date")[
+                0
+            ]
+            """
+            qs_temp.annotate(
+                updated_policy_tax_year=PolicyTaxYear.objects.filter(
+                    id=qs_temp.id
+                )
+            )
+            print(dir(qs_temp))
+            """
+            qs_list.append(qs_temp)
+        return qs_list
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         amount_choices_by_value = {
             x[0]: x[1] for x in PolicyTaxYear.active_amount_options
         }
+        """
+        print(context['object_list'][0].id)
+        for policy_tax_year in context['object_list']:
+            policy_tax_year["updated_policy_tax_year"] = PolicyTaxYear.objects.filter(
+                id=policy_tax_year.id
+            )
+        """
         context["pension_company_amount_label"] = amount_choices_by_value[
             PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED
         ]
         context["self_reported_amount_label"] = amount_choices_by_value[
             PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED
         ]
+        context["policy_count"] = len(context["object_list"])
+        context["total_tax_with_deductions"] = sum(
+            [
+                x.history_object.get_calculation()["tax_with_deductions"]
+                for x in context["object_list"]
+                if not x.history_object.pension_company_pays
+            ]
+        )
+        context["total_payment"] = sum(
+            [
+                x.history_object.get_calculation()["tax_to_pay"]
+                for x in context["object_list"]
+                if not x.history_object.pension_company_pays
+            ]
+        )
+        if self.final_settlements.exists():
+            context["final_settlement"] = self.final_settlements.order_by(
+                "-created_at"
+            )[0]
+        else:
+            context["final_settlement"] = FinalSettlement.objects.none()
+            context["total_prepayment"] = (
+                context["object_list"][0]
+                .person_tax_year.transaction_set.filter(type="prepayment")
+                .aggregate(amount=Sum("amount"))["amount"]
+                or 0
+            )
         return context
+
+    @property
+    def final_settlements(self):
+        final_settlements = FinalSettlement.objects.filter(
+            person_tax_year__person__id=self.kwargs["person_id"],
+            person_tax_year__tax_year__year=self.kwargs["year"],
+        )
+        return final_settlements
 
 
 class PolicyTaxYearDetailView(

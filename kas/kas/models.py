@@ -743,6 +743,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         blank=True,
         null=True,
         validators=(MinValueValidator(limit_value=0),),
+        default=0,
     )
 
     from_pension = models.BooleanField(
@@ -842,7 +843,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         taxable_days_in_year: int = 365,  # Number of days the person is paying tax in Greenland
         available_deduction_data: dict = None,  # Dict of years to available deduction amounts
         foreign_paid_amount: int = 0,  # Amount already paid in taxes in foreign country
+        preliminary_payment: int = 0,  # Amount already paid in taxes domestically
         adjust_for_days_in_year: bool = True,  # Perform adjustment for taxable days in year (false if self-reported)
+        pension_company_pays: bool = False,  # Sets tax_to_pay to zero if pension company pays
     ) -> dict:
 
         if days_in_year not in (365, 366):
@@ -908,6 +911,11 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
         tax_with_deductions = max(0, full_tax - max(0, foreign_paid_amount))
 
+        if pension_company_pays:
+            tax_to_pay = 0
+        else:
+            tax_to_pay = tax_with_deductions - preliminary_payment
+
         return {
             "initial_amount": initial_amount,
             "days_in_year": days_in_year,
@@ -922,6 +930,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             "tax_with_deductions": tax_with_deductions,
             "desired_deduction_data": desired_deduction_data,
             "adjust_for_days_in_year": adjust_for_days_in_year,
+            "tax_to_pay": tax_to_pay,
         }
 
     @property
@@ -977,7 +986,24 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     @property
     def latest_policy(self):
-        return self.same_policy_qs_sorted_by_year[0]
+        policies = list(self.same_policy_qs_sorted_by_year)
+        # If the filtering for same policies returns an empty list, return original policytaxyear
+        if not policies:
+            return self
+        return policies[0]
+
+    @property
+    def updated_policy_tax_year(self):
+        """
+        Possibly redundant fix, in order to be able to call the updated
+        PolicyTaxYear from a history object
+        """
+        policy_qs = self.same_policy_qs.filter(
+            person_tax_year__tax_year__year=self.year
+        )
+        if not policy_qs:
+            return self
+        return policy_qs[0]
 
     @property
     def reported_difference(self):
@@ -1017,8 +1043,10 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             taxable_days_in_year=self.person_tax_year.number_of_days,
             available_deduction_data=self.calculate_available_yearly_deduction(),
             foreign_paid_amount=self.foreign_paid_amount_actual,
+            preliminary_payment=self.preliminary_paid_amount,
             adjust_for_days_in_year=(not only_adjusted_amounts)
             and self.should_adjust_for_tax_days,
+            pension_company_pays=self.pension_company_pays,
         )
 
     def calculate_available_yearly_deduction(self):

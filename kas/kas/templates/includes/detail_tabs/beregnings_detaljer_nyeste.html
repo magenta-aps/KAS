@@ -2,16 +2,7 @@
 {% load l10n %}
 {% load kas_tags %}
 
-
-<br>
-<b>{% translate 'Seneste slutopgørelse' %}</b>
-
-    {% blocktranslate asvar help_text_final_settlement_header with date=final_settlement.created_at %}
-    Nedenstående oplysninger stammer fra policeoplysningerne gældende ved generering af slutopgørelse d.{{ date }}.
-    Bemærk at oplysningerne kan være blevet opdateret siden.
-    {% endblocktranslate %}
-    {% include 'includes/help_text/question_mark.html' with target_id='final_settlement_header' %}
-    {% include 'includes/help_text/collapse.html' with help_text=help_text_final_settlement_header target_id='final_settlement_header' %}
+<b>{% translate 'Senest opdaterede oplysninger' %}</b>
 <table class="table table-bordered">
     <tr>
         <td>
@@ -20,7 +11,7 @@
             {% include 'includes/help_text/question_mark.html' with target_id='prefilled' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_prefilled target_id='prefilled' %}
         </td>
-        <td>{{ policy.prefilled_amount|default_if_none:'' }}</td>
+        <td>{{ updated_policy.prefilled_amount|default_if_none:'' }}</td>
     </tr>
     <tr>
         <td>
@@ -29,10 +20,10 @@
             {% include 'includes/help_text/question_mark.html' with target_id='prefilled_amount_edited' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_r75_adjusted target_id='prefilled_amount_edited' %}
         </td>
-        <td>{{ policy.prefilled_amount_edited|default_if_none:'' }}</td>
+        <td>{{ updated_policy.prefilled_amount_edited|default_if_none:'' }}</td>
     </tr>
 
-    {% if calculation.adjust_for_days_in_year %}
+    {% if updated_policy.get_calculation.adjust_for_days_in_year %}
     <tr>
         <td>
             {% blocktranslate with taxable_days=calculation.taxable_days_in_year total_days=calculation.days_in_year factor=calculation.tax_days_adjust_factor|percent:1 %}
@@ -44,7 +35,7 @@
             {% include 'includes/help_text/question_mark.html' with target_id='year_adjusted' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_year_adjusted target_id='year_adjusted' %}
         </td>
-        <td>{{ calculation.year_adjusted_amount }}</td>
+        <td>{{ updated_policy.get_calculation.year_adjusted_amount }}</td>
     </tr>
     {% endif %}
 
@@ -55,7 +46,7 @@
             {% include 'includes/help_text/question_mark.html' with target_id='self_reported' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_self_reported target_id='self_reported' %}
         </td>
-        <td>{{ policy.self_reported_amount|default_if_none:'' }}</td>
+        <td>{{ updated_policy.self_reported_amount|default_if_none:'' }}</td>
     </tr>
     <tr>
         <td>
@@ -64,15 +55,15 @@
             {% include 'includes/help_text/question_mark.html' with target_id='assessed_amount' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_assessed target_id='assessed_amount' %}
         </td>
-        <td>{{ policy.assessed_amount|default_if_none:'' }}</td>
+        <td>{{ updated_policy.assessed_amount|default_if_none:'' }}</td>
     </tr>
     <tr>
         <td>{% translate 'Kapitalafkast' %}</td>
-        <th>{{ policy.get_assessed_amount }}</th>
+        <th>{{ updated_policy.get_assessed_amount }}</th>
     </tr>
 
 
-    {% if calculation.year_adjusted_amount <= 0 %}
+    {% if updated_policy.get_calculation.year_adjusted_amount <= 0 %}
     <tr>
         <td>
             {% blocktranslate %}Negativt afkast til fremførsel{% endblocktranslate %}
@@ -82,12 +73,12 @@
             {% include 'includes/help_text/question_mark.html' with target_id='deduction_future' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_negative target_id='deduction_future' %}
         </td>
-        <th>{{ calculation.year_adjusted_amount|negative }}</th>
+        <th>{{ updated_policy.get_calculation.year_adjusted_amount|negative }}</th>
     </tr>
     {% else %}
 
 
-    {% for year, amount in calculation.desired_deduction_data.items %}
+    {% for year, amount in updated_policy.get_calculation.desired_deduction_data.items %}
     <tr>
         <td>
             {% blocktranslate %}Modregning af tidligere negativt kapitalafkast ({{year}}){% endblocktranslate %}
@@ -122,7 +113,7 @@
             {% include 'includes/help_text/question_mark.html' with target_id='taxable_amount' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_taxable target_id='taxable_amount' %}
         </td>
-        <td>{{ calculation.taxable_amount }}</td>
+        <td>{{ updated_policy.get_calculation.taxable_amount }}</td>
     </tr>
     <tr>
         <td>
@@ -133,11 +124,11 @@
             {% include 'includes/help_text/question_mark.html' with target_id='full_tax' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_full_tax target_id='full_tax' %}
         </td>
-        <td>{{ calculation.full_tax }}</td>
+        <td>{{ updated_policy.get_calculation.full_tax }}</td>
     </tr>
     <tr>
         <td>{% translate 'Nedslag for betalt skat i udlandet' %}</td>
-        <td>{{ calculation.foreign_paid_amount|negative }}</td>
+        <td>{{ updated_policy.get_calculation.foreign_paid_amount|negative }}</td>
     </tr>
     <tr>
         <td>
@@ -148,13 +139,13 @@
             {% include 'includes/help_text/question_mark.html' with target_id='tax_with_deductions' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_with_deductions target_id='tax_with_deductions' %}
         </td>
-        <th>{{ calculation.tax_with_deductions }}</th>
+        <th>{{ updated_policy.get_calculation.tax_with_deductions }}</th>
     </tr>
     <tr>
         <td>{% translate 'Betales af pensionsselskabet' %}</td>
         <td>
-            {% if policy.pension_company_pays %}
-            {{ calculation.tax_with_deductions }}
+            {% if updated_policy.pension_company_pays %}
+            {{ updated_policy.get_calculation.tax_with_deductions }}
             {% else %}
             0
             {% endif %}
@@ -162,14 +153,8 @@
     </tr>
     <tr>
         <td>{% translate 'Forudbetalt kapitalafkastskat' %}</td>
-        <td>{{ policy.preliminary_paid_amount|default_if_none:0|negative }}</td>
+        <td>{{ updated_policy.preliminary_paid_amount|default_if_none:0|negative }}</td>
     </tr>
-    {% if final_settlement.get_calculation_amounts.extra_payment_for_previous_missing %}
-        <tr>
-            <td>{% translate 'Beløb for dækkelse af tidlgiere ikke-betalt regning' %}</td>
-            <td>{{ final_settlement.get_calculation_amounts.extra_payment_for_previous_missing }}</td>
-        </tr>
-    {% endif %}
     <tr>
         {% if policy_count > 1 %}
             <td>
@@ -177,45 +162,24 @@
                 Kapitalafkastskat at betale for police nr. {{ policy_number }}
                 {% endblocktranslate %}
             </td>
-            <td>{{ calculation.tax_to_pay }}</td>
+            <td>{{ updated_policy.get_calculation.tax_to_pay }}</td>
         {% endif %} 
     </tr>
     {% endif %}
 
-    {% if final_settlement.get_calculation_amounts.extra_payment_for_previous_missing %}
-    <tr>
-        <td>{% translate 'Ikke betalt kapitalafkastskat ifølge tidligere meddelelse' %}</td>
-        <td>{{ final_settlement.get_calculation_amounts.extra_payment_for_previous_missing }}</td>
-    <tr>
-    {% endif%}
+        <tr>
+            <td>
+                <b>{% translate 'Kapitalafkastskat at betale i alt for policer i ' %}{{ updated_policy.person_tax_year.tax_year.year }}</b>
+                {% blocktranslate asvar help_text_to_pay with tax=latest_policy.get_calculation.tax_with_deductions paid=latest_policy.preliminary_paid_amount %}
+                Skat at betale i alt for policer ({{ tax }}) - Foreløbigt modtagne indbetalinger i alt ({{ paid }})
+                {% endblocktranslate %}
+                {% include 'includes/help_text/question_mark.html' with target_id='tax_to_pay' right=True %}
+                {% include 'includes/help_text/collapse.html' with help_text=help_text_to_pay target_id='tax_to_pay' %}
+            </td>
+            <th>{{ updated_policy.get_calculation.tax_to_pay }}</th>
+        </tr>
+        
 
-    {% if final_settlement.get_calculation_amounts.total_payment >= 0 %}
-        <tr>
-            <td>
-                <b>
-                    {% blocktranslate with year=policy.person_tax_year.tax_year.year %}
-                    Kapitalafkastskat at betale i alt for policer i {{ year }}
-                    {% endblocktranslate %}
-                </b>
-                {% blocktranslate asvar help_text_to_pay with tax=final_settlement.get_calculation_amounts.total_tax|default_if_none:0 missing_payment=final_settlement.get_calculation_amounts.extra_payment_for_previous_missing|default_if_none:0 paid=final_settlement.get_calculation_amounts.prepayment|default_if_none:0 %}
-                Skat at betale i alt for policer ({{ tax }}) + Ikke betalt skat fra tidligere ({{ missing_payment }}) - Foreløbigt modtagne indbetalinger i alt ({{ paid }})
-                {% endblocktranslate %}
-                {% include 'includes/help_text/question_mark.html' with target_id='tax_to_pay' right=True %}
-                {% include 'includes/help_text/collapse.html' with help_text=help_text_to_pay target_id='tax_to_pay' %}
-            </td>
-            <th>{{ total_payment }}</th>
-        </tr>
-    {% elif final_settlement.get_calculation_amounts.total_payment < 0 %}
-        <tr>
-            <td>
-                <b>{% translate 'Kapitalafkastskat til udbetaling i alt for policer i ' %}{{ policy.person_tax_year.tax_year.year }}</b>
-                {% blocktranslate asvar help_text_to_pay with tax=total_tax_with_deduction|default_if_none:0 missing_payment=final_settlement.get_calculation_amounts.extra_payment_for_previous_missing|default_if_none:0 paid=final_settlement.get_calculation_amounts.prepayment|default_if_none:0 %}
-                Skat at betale i alt for policer ({{ tax }}) + Ikke betalt skat fra tidligere ({{ missing_payment }}) - Foreløbigt modtagne indbetalinger i alt ({{ paid }})
-                {% endblocktranslate %}
-                {% include 'includes/help_text/question_mark.html' with target_id='tax_to_pay' right=True %}
-                {% include 'includes/help_text/collapse.html' with help_text=help_text_to_pay target_id='tax_to_pay' %}
-            </td>
-            <th>{{ final_settlement.get_calculation_amounts.total_payment|negative }}</th>
-        </tr>
-    {% endif %}
+
+
 </table>
