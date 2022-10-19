@@ -998,7 +998,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         Possibly redundant fix, in order to be able to call the updated
         PolicyTaxYear from a history object
         """
-        policy_qs = self.same_policy_qs.filter(person_tax_year__tax_year__year=self.year)
+        policy_qs = self.same_policy_qs.filter(
+            person_tax_year__tax_year__year=self.year
+        )
         if not policy_qs:
             return self
         return policy_qs[0]
