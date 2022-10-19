@@ -771,21 +771,35 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
             )
         )
 
-        qs_temp = []
+        qs_list = []
         policy_number_list = set(
             [x["policy_number"] for x in qs.values("policy_number")]
         )
         for policy_number in policy_number_list:
-            qs_temp.append(
-                qs.filter(policy_number=policy_number).order_by("-history_date")[0]
+            qs_temp = qs.filter(policy_number=policy_number).order_by("-history_date")[0]
+            """
+            qs_temp.annotate(
+                updated_policy_tax_year=PolicyTaxYear.objects.filter(
+                    id=qs_temp.id
+                )
             )
-        return qs_temp
+            print(dir(qs_temp))
+            """
+            qs_list.append(qs_temp)
+        return qs_list
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         amount_choices_by_value = {
             x[0]: x[1] for x in PolicyTaxYear.active_amount_options
         }
+        """
+        print(context['object_list'][0].id)
+        for policy_tax_year in context['object_list']:
+            policy_tax_year["updated_policy_tax_year"] = PolicyTaxYear.objects.filter(
+                id=policy_tax_year.id
+            )
+        """
         context["pension_company_amount_label"] = amount_choices_by_value[
             PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED
         ]

@@ -993,6 +993,14 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         return policies[0]
 
     @property
+    def updated_policy_tax_year(self):
+        """
+        Possibly redundant fix, in order to be able to call the updated
+        PolicyTaxYear from a history object
+        """
+        return self.same_policy_qs.filter(person_tax_year__tax_year__year=self.year)[0]
+
+    @property
     def reported_difference(self):
         if self.self_reported_amount is None or self.prefilled_adjusted_amount is None:
             return None
