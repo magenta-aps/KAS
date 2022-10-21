@@ -29,6 +29,7 @@ from django.views.generic import (
 from django.views.generic.detail import DetailView, SingleObjectMixin, BaseDetailView
 from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
+from django.db.models import BooleanField, ExpressionWrapper
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from ipware import get_client_ip
 from kas.filters import PensionCompanyFilterSet, LockFilterSet
@@ -51,6 +52,7 @@ from kas.forms import (
     NoteUpdateForm,
     UploadExistingFinalSettlementForm,
     PreviousYearNegativePayoutForm,
+    EfterbehandlingForm,
 )
 from kas.models import (
     PensionCompanySummaryFile,
@@ -376,6 +378,36 @@ class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
     template_name = "kas/persontaxyear_eskat_diff.html"
     filename = "eskat_diff.xls"
 
+    excel_headers = [
+        "Personnummer",
+        "Navn",
+        "Adresse",
+        "Kommune",
+        "Antal policer",
+        "Beløb i E-skat",
+        "Beløb i KAS",
+        "Kræver efterbehandling",
+    ]
+
+    values = [
+        "person__cpr",
+        "person__name",
+        "person__full_address",
+        "person__municipality_name",
+        "policy_count",
+        "capital_return_tax",
+        "pseudo_amount",
+        "efterbehandling_annotation",
+    ]
+
+    def get_form(self, *args, **kwargs):
+
+        initial = {"year": 2018}
+        kwargs = {"initial": initial}
+        if self.request.GET:
+            kwargs["data"] = {**initial, **self.request.GET.dict()}
+        return PersonListFilterForm(**kwargs)
+
     def filter_queryset(self, qs):
         qs = super(PersonTaxYearEskatDiffListView, self).filter_queryset(qs)
         # find persontaxyears hvor FinalSettlement.pseudo_amount != ImportedKasBeregningerX.capital_return_tax
@@ -396,6 +428,21 @@ class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
         )
 
         qs = qs.exclude(pseudo_amount=F("capital_return_tax"))
+
+        qs = qs.annotate(
+            efterbehandling_count=Count(
+                "policytaxyear",
+                filter=Q(policytaxyear__efterbehandling=True),
+            ),
+        )
+
+        # Note: 'efterbehandling' already exists as a property method.
+        # But we need an annotated twin of it, because decorated properties cannot be queried.
+        qs = qs.annotate(
+            efterbehandling_annotation=ExpressionWrapper(
+                Q(efterbehandling_count__gt=0), output_field=BooleanField()
+            )
+        )
 
         return qs
 
@@ -2162,3 +2209,36 @@ class PreviousYearNegativePayoutHistoryListView(
 
 class KasLoginView(KasMixin, LoginView):
     template_name = "kas/login.html"
+
+
+class UpdateEfterbehandlingView(KasMixin, UpdateView):
+    permission_required = "kas.change_policytaxyear"
+    permission_denied_message = sagsbehandler_or_administrator_required
+    model = PolicyTaxYear
+    form_class = EfterbehandlingForm
+    template_name = "kas/efterbehandling_form.html"
+
+    def get_back_url(self):
+        """
+        returns an URL which sends you back to the proper:
+            - person tax year
+            - policy tax year
+        """
+        policy_tax_year = PolicyTaxYear.objects.get(pk=self.kwargs["pk"])
+        person_tax_year = policy_tax_year.person_tax_year
+
+        return reverse(
+            "kas:policy_tabs",
+            kwargs={
+                "year": self.request.GET.get("back") or person_tax_year.year,
+                "person_id": person_tax_year.person.id,
+            },
+        )
+
+    def get_success_url(self):
+        return self.get_back_url()
+
+    def get_context_data(self, **kwargs):
+        ctx = super(UpdateEfterbehandlingView, self).get_context_data(**kwargs)
+        ctx["back_url"] = self.get_back_url()
+        return ctx

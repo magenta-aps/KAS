@@ -130,7 +130,10 @@ def generate_sample_data(job):
 @job_decorator
 def importere_kas_beregninger_for_legacy_years(job):
     try:
-        year = TaxYear.objects.get(pk=job.arguments["year_pk"])
+        if "year" in job.arguments.keys():
+            year = TaxYear.objects.get(year=job.arguments["year"])
+        elif "year_pk" in job.arguments.keys():
+            year = TaxYear.objects.get(pk=job.arguments["year_pk"])
     except TaxYear.DoesNotExist:
         raise Exception("skatteår eksisterer ikke")
 

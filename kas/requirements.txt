@@ -20,3 +20,4 @@ coverage
 black==22.6.0
 django-extensions
 pydotplus
+pandas==1.5.1

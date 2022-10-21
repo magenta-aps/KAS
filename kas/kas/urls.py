@@ -54,6 +54,7 @@ from kas.views import (
     UpdatePreviousYearNegativePayoutView,
     PreviousYearNegativePayoutHistoryListView,
     KasLoginView,
+    UpdateEfterbehandlingView,
 )
 from kas.viewsets import (
     CurrentFinalSettlementDownloadView,
@@ -312,6 +313,11 @@ urlpatterns = [
         name="define-negative-policy-payout-history",
     ),
     path("accounts/login/", KasLoginView.as_view(), name="login"),
+    path(
+        "policy/<int:pk>/update_efterbehandling",
+        UpdateEfterbehandlingView.as_view(),
+        name="update-efterbehandling",
+    ),
 ]
 
 if settings.FEATURE_FLAGS.get("enable_feature_flag_list"):
