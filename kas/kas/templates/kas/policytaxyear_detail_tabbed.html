@@ -115,6 +115,7 @@
                 <th>{% translate 'Kræver efterbehandling' %}</th>
                 <td>
                     {% if policy.efterbehandling %}<span>{% translate 'Ja' %}</span>{% else %}<span>{% translate 'Nej' %}</span>{% endif %}
+                    (<a href="{% url 'kas:update-efterbehandling' policy.pk %}?back={{policy.year}}">ret</a>)
                 </td>
             </tr>
             <tr>

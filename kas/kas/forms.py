@@ -480,3 +480,9 @@ class PreviousYearNegativePayoutForm(forms.ModelForm, BootstrapForm):
         instance.save()
 
         return instance
+
+
+class EfterbehandlingForm(forms.ModelForm, BootstrapForm):
+    class Meta:
+        model = PolicyTaxYear
+        fields = ("efterbehandling",)
