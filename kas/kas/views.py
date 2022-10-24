@@ -826,14 +826,6 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
             qs_temp = qs.filter(policy_number=policy_number).order_by("-history_date")[
                 0
             ]
-            """
-            qs_temp.annotate(
-                updated_policy_tax_year=PolicyTaxYear.objects.filter(
-                    id=qs_temp.id
-                )
-            )
-            print(dir(qs_temp))
-            """
             qs_list.append(qs_temp)
         return qs_list
 
@@ -842,13 +834,6 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
         amount_choices_by_value = {
             x[0]: x[1] for x in PolicyTaxYear.active_amount_options
         }
-        """
-        print(context['object_list'][0].id)
-        for policy_tax_year in context['object_list']:
-            policy_tax_year["updated_policy_tax_year"] = PolicyTaxYear.objects.filter(
-                id=policy_tax_year.id
-            )
-        """
         context["pension_company_amount_label"] = amount_choices_by_value[
             PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED
         ]
@@ -870,6 +855,11 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
                 if not x.history_object.pension_company_pays
             ]
         )
+        if abs(context["total_payment"]) < settings.TRANSACTION_INDIFFERENCE_LIMIT:
+            context["original_total_payment"] = context["total_payment"]
+            context["total_payment"] = 0
+            context["indifference_limited"] = True
+            context["indifference_limit"] = settings.TRANSACTION_INDIFFERENCE_LIMIT
         if self.final_settlements.exists():
             context["final_settlement"] = self.final_settlements.order_by(
                 "-created_at"
