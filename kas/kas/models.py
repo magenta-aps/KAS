@@ -835,6 +835,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         on_delete=models.SET_NULL,
     )
 
+    indifference_limited = models.BooleanField(default=False)
+
     @classmethod
     def perform_calculation(
         cls,
@@ -910,6 +912,11 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         full_tax = math.floor(taxable_amount * settings.KAS_TAX_RATE)
 
         tax_with_deductions = max(0, full_tax - max(0, foreign_paid_amount))
+        if (
+            abs(tax_with_deductions - preliminary_payment)
+            < settings.TRANSACTION_INDIFFERENCE_LIMIT
+        ):
+            cls(indifference_limited=True)
 
         if pension_company_pays:
             tax_to_pay = 0
@@ -1968,6 +1975,8 @@ class FinalSettlement(EboksDispatch):
         default=0,
     )
 
+    indifference_limited = models.BooleanField(default=False)
+
     def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
         return super().dispatch_to_eboks(
             client, generator, self.pdf, self.person_tax_year.person.cpr
@@ -2022,6 +2031,11 @@ class FinalSettlement(EboksDispatch):
         total_payment = (
             remainder_with_interest + self.extra_payment_for_previous_missing
         )
+        # Enforcing indifference limit on transactions, where abs(amount) < 100kr.
+        if abs(total_payment) < settings.TRANSACTION_INDIFFERENCE_LIMIT:
+            self.indifference_limited = True
+            self.save()
+            total_payment = 0
 
         return {
             "prepayment": prepayment,

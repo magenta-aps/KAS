@@ -190,6 +190,10 @@ if ENVIRONMENT not in ("development", "staging", "production"):
 KAS_TAX_RATE = 0.153
 KAS_TAX_RATE_IN_PERCENT = KAS_TAX_RATE * 100
 
+TRANSACTION_INDIFFERENCE_LIMIT = int(
+    os.environ.get("TRANSACTION_INDIFFERENCE_LIMIT") or 100
+)
+
 REPORT_EXCLUDE_ALREADY_GENERATED = False
 
 EBOKS_MOCK = bool(strtobool(os.environ.get("EBOKS_MOCK", "False")))
