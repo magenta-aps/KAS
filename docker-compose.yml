@@ -9,7 +9,7 @@ services:
     depends_on:
       - postgres
     # Test-idp needs for adresses to endpoints to be the same from the perspective
-    # of the kas-test-idp container and for the client (which means accessing 'localhost' adresses always)
+    # of the test-idp container and for the client (which means accessing 'localhost' adresses always)
     # This means that all containers should run in "host" network mode, and should conflict
     # with each others' ports
     network_mode: "host"
