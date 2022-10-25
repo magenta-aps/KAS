@@ -235,23 +235,14 @@ SAML = {
     "debug": 1,
     "entityid": os.environ.get("SAML_SP_ENTITY_ID"),
     "idp_entity_id": os.environ.get("SAML_IDP_ENTITY_ID"),
-<<<<<<< HEAD
     "name": os.environ.get("SAML_SP_NAME") or "KAS",
     "description": os.environ.get("SAML_SP_DESCRIPTION") or "Kapitalafkastskat",
-=======
-    "name": "KAS Test",
-    "description": "KAS Test",
->>>>>>> production
     "verify_ssl_cert": False,
     "metadata_remote": os.environ.get("SAML_IDP_METADATA"),
     "metadata": {"local": ["/var/cache/kas/idp_metadata.xml"]},  # IdP Metadata
     "service": {
         "sp": {
-<<<<<<< HEAD
             "name": os.environ.get("SAML_SP_NAME") or "KAS",
-=======
-            "name": "KAS Test",
->>>>>>> production
             "hide_assertion_consumer_service": False,
             "endpoints": {
                 "assertion_consumer_service": [
