@@ -11,15 +11,21 @@ def populate_person_tax_year(apps, schema_editor):
         "eskat", "HistoricalImportedKasBeregningerX"
     )
     for item in ImportedKasBeregningerX.objects.all():
-        item.person_tax_year = PersonTaxYear.objects.get(
-            person__cpr=item.cpr, tax_year__year=item.skatteaar
-        )
-        item.save()
+        try:
+            item.person_tax_year = PersonTaxYear.objects.get(
+                person__cpr=item.cpr, tax_year__year=item.skatteaar
+            )
+            item.save()
+        except PersonTaxYear.DoesNotExist:
+            pass
     for item in HistoricalImportedKasBeregningerX.objects.all():
-        item.person_tax_year = PersonTaxYear.objects.get(
-            person__cpr=item.cpr, tax_year__year=item.skatteaar
-        )
-        item.save()
+        try:
+            item.person_tax_year = PersonTaxYear.objects.get(
+                person__cpr=item.cpr, tax_year__year=item.skatteaar
+            )
+            item.save()
+        except PersonTaxYear.DoesNotExist:
+            pass
 
 
 def unpopulate_person_tax_year(apps, schema_editor):
@@ -62,22 +68,5 @@ class Migration(migrations.Migration):
         ),
         migrations.RunPython(
             populate_person_tax_year, reverse_code=unpopulate_person_tax_year
-        ),
-        migrations.AlterField(
-            model_name="historicalimportedkasberegningerx",
-            name="person_tax_year",
-            field=models.ForeignKey(
-                db_constraint=False,
-                on_delete=django.db.models.deletion.DO_NOTHING,
-                related_name="+",
-                to="kas.persontaxyear",
-            ),
-        ),
-        migrations.AlterField(
-            model_name="importedkasberegningerx",
-            name="person_tax_year",
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to="kas.persontaxyear"
-            ),
         ),
     ]

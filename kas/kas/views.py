@@ -8,7 +8,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
-from django.db.models import Count, F, Q, Min, FilteredRelation
+from django.db.models import Count, F, Q, Min, FilteredRelation, Sum
 from django.http import Http404, HttpResponse, HttpResponseRedirect, FileResponse
 from django.core.exceptions import SuspiciousOperation
 from django.db.models import Case, Value, When
@@ -29,6 +29,7 @@ from django.views.generic import (
 from django.views.generic.detail import DetailView, SingleObjectMixin, BaseDetailView
 from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
+from django.db.models import BooleanField, ExpressionWrapper
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from ipware import get_client_ip
 from kas.filters import PensionCompanyFilterSet, LockFilterSet
@@ -51,6 +52,7 @@ from kas.forms import (
     NoteUpdateForm,
     UploadExistingFinalSettlementForm,
     PreviousYearNegativePayoutForm,
+    EfterbehandlingForm,
 )
 from kas.models import (
     PensionCompanySummaryFile,
@@ -376,6 +378,36 @@ class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
     template_name = "kas/persontaxyear_eskat_diff.html"
     filename = "eskat_diff.xls"
 
+    excel_headers = [
+        "Personnummer",
+        "Navn",
+        "Adresse",
+        "Kommune",
+        "Antal policer",
+        "Beløb i E-skat",
+        "Beløb i KAS",
+        "Kræver efterbehandling",
+    ]
+
+    values = [
+        "person__cpr",
+        "person__name",
+        "person__full_address",
+        "person__municipality_name",
+        "policy_count",
+        "capital_return_tax",
+        "pseudo_amount",
+        "efterbehandling_annotation",
+    ]
+
+    def get_form(self, *args, **kwargs):
+
+        initial = {"year": 2018}
+        kwargs = {"initial": initial}
+        if self.request.GET:
+            kwargs["data"] = {**initial, **self.request.GET.dict()}
+        return PersonListFilterForm(**kwargs)
+
     def filter_queryset(self, qs):
         qs = super(PersonTaxYearEskatDiffListView, self).filter_queryset(qs)
         # find persontaxyears hvor FinalSettlement.pseudo_amount != ImportedKasBeregningerX.capital_return_tax
@@ -396,6 +428,21 @@ class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
         )
 
         qs = qs.exclude(pseudo_amount=F("capital_return_tax"))
+
+        qs = qs.annotate(
+            efterbehandling_count=Count(
+                "policytaxyear",
+                filter=Q(policytaxyear__efterbehandling=True),
+            ),
+        )
+
+        # Note: 'efterbehandling' already exists as a property method.
+        # But we need an annotated twin of it, because decorated properties cannot be queried.
+        qs = qs.annotate(
+            efterbehandling_annotation=ExpressionWrapper(
+                Q(efterbehandling_count__gt=0), output_field=BooleanField()
+            )
+        )
 
         return qs
 
@@ -750,17 +797,37 @@ class PolicyTaxYearUnfinishedListView(SpecialExcelMixin, PolicyTaxYearSpecialLis
 class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
     permission_required = "kas.view_policytaxyear"
     template_name = "kas/policytaxyear_tabs.html"
-    model = PolicyTaxYear
+    # Utilizing that the most recent history object == the updated non-history object
+    model = PolicyTaxYear.history.model
 
     def get_queryset(self):
-        return (
+        if self.final_settlements.exists():
+            final_settlement_creation_date = self.final_settlements.order_by(
+                "-created_at"
+            )[0].created_at
+        else:
+            final_settlement_creation_date = timezone.now()
+
+        qs = (
             super()
             .get_queryset()
             .filter(
                 person_tax_year__person__id=self.kwargs["person_id"],
                 person_tax_year__tax_year__year=self.kwargs["year"],
+                history_date__lte=final_settlement_creation_date,
             )
         )
+
+        qs_list = []
+        policy_number_list = set(
+            [x["policy_number"] for x in qs.values("policy_number")]
+        )
+        for policy_number in policy_number_list:
+            qs_temp = qs.filter(policy_number=policy_number).order_by("-history_date")[
+                0
+            ]
+            qs_list.append(qs_temp)
+        return qs_list
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -773,7 +840,47 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
         context["self_reported_amount_label"] = amount_choices_by_value[
             PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED
         ]
+        context["policy_count"] = len(context["object_list"])
+        context["total_tax_with_deductions"] = sum(
+            [
+                x.history_object.get_calculation()["tax_with_deductions"]
+                for x in context["object_list"]
+                if not x.history_object.pension_company_pays
+            ]
+        )
+        context["total_payment"] = sum(
+            [
+                x.history_object.get_calculation()["tax_to_pay"]
+                for x in context["object_list"]
+                if not x.history_object.pension_company_pays
+            ]
+        )
+        if abs(context["total_payment"]) < settings.TRANSACTION_INDIFFERENCE_LIMIT:
+            context["original_total_payment"] = context["total_payment"]
+            context["total_payment"] = 0
+            context["indifference_limited"] = True
+            context["indifference_limit"] = settings.TRANSACTION_INDIFFERENCE_LIMIT
+        if self.final_settlements.exists():
+            context["final_settlement"] = self.final_settlements.order_by(
+                "-created_at"
+            )[0]
+        else:
+            context["final_settlement"] = FinalSettlement.objects.none()
+            context["total_prepayment"] = (
+                context["object_list"][0]
+                .person_tax_year.transaction_set.filter(type="prepayment")
+                .aggregate(amount=Sum("amount"))["amount"]
+                or 0
+            )
         return context
+
+    @property
+    def final_settlements(self):
+        final_settlements = FinalSettlement.objects.filter(
+            person_tax_year__person__id=self.kwargs["person_id"],
+            person_tax_year__tax_year__year=self.kwargs["year"],
+        )
+        return final_settlements
 
 
 class PolicyTaxYearDetailView(
@@ -827,6 +934,13 @@ class PolicyTaxYearCreateView(
     def form_valid(self, form):
         form.instance.person_tax_year = self.get_person_tax_year()
         form.instance.active_amount = PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED
+        if PolicyTaxYear.objects.filter(
+            person_tax_year=form.instance.person_tax_year,
+            policy_number=form.instance.policy_number,
+            pension_company=form.instance.pension_company,
+        ).exists():
+            form.add_error(None, _("En police med disse oplysninger findes allerede"))
+            return super().form_invalid(form)
         return super().form_valid(form)
 
 
@@ -2085,3 +2199,36 @@ class PreviousYearNegativePayoutHistoryListView(
 
 class KasLoginView(KasMixin, LoginView):
     template_name = "kas/login.html"
+
+
+class UpdateEfterbehandlingView(KasMixin, UpdateView):
+    permission_required = "kas.change_policytaxyear"
+    permission_denied_message = sagsbehandler_or_administrator_required
+    model = PolicyTaxYear
+    form_class = EfterbehandlingForm
+    template_name = "kas/efterbehandling_form.html"
+
+    def get_back_url(self):
+        """
+        returns an URL which sends you back to the proper:
+            - person tax year
+            - policy tax year
+        """
+        policy_tax_year = PolicyTaxYear.objects.get(pk=self.kwargs["pk"])
+        person_tax_year = policy_tax_year.person_tax_year
+
+        return reverse(
+            "kas:policy_tabs",
+            kwargs={
+                "year": self.request.GET.get("back") or person_tax_year.year,
+                "person_id": person_tax_year.person.id,
+            },
+        )
+
+    def get_success_url(self):
+        return self.get_back_url()
+
+    def get_context_data(self, **kwargs):
+        ctx = super(UpdateEfterbehandlingView, self).get_context_data(**kwargs)
+        ctx["back_url"] = self.get_back_url()
+        return ctx

@@ -172,8 +172,8 @@ class TaxFinalStatementPDF(FPDF):
         "dk": "Til udbetaling i alt:",
     }
     summary_table2_correction7a = {
-        "gl": "Akiligassat katillugit:",
-        "dk": "Til opkrævning i alt:",
+        "gl": "Akiligassat katillugit (DKK):",
+        "dk": "Til opkrævning i alt (DKK):",
     }
 
     text_tailing_0 = {
@@ -901,37 +901,18 @@ class TaxFinalStatementPDF(FPDF):
                 )
                 self.yposition = self.get_y()
 
-        self.set_font(self.std_font_name, "B", self.table_header_font_size)
-        self.set_xy(self.left_margin, self.yposition)
-        self.multi_cell(
-            h=self.tablerowheight,
-            align="L",
-            w=c1w,
-            txt=self.summary_table2_summary[language],
-            border=1,
-        )
-        self.set_xy(self.left_margin + c1w, self.yposition)
-        self.multi_cell(
-            h=self.tablerowheight,
-            align="R",
-            w=c2w,
-            txt="{:,}".format(self.remainder_calculation["total_tax"]).replace(
-                ",", "."
-            ),
-            border=1,
-        )
-        self.yposition = self.get_y()
-        self.yposition += self.std_text_space
-        self.set_font(self.std_font_name, "", self.std_table_font_size)
-        self.yposition = self.get_y()
-
-        if self.remainder_calculation["prepayment"] != 0:
+        """
+        If the remaining payment on the final settlement falls under the indiference
+        (see settings.py), most fields are neglected, and the final payment is set to 0
+        """
+        if self._final_settlement.indifference_limited:
+            self.set_font(self.std_font_name, "B", self.table_header_font_size)
             self.set_xy(self.left_margin, self.yposition)
             self.multi_cell(
                 h=self.tablerowheight,
                 align="L",
                 w=c1w,
-                txt=self.summary_table2_text3[language],
+                txt=self.summary_table2_summary[language],
                 border=1,
             )
             self.set_xy(self.left_margin + c1w, self.yposition)
@@ -939,10 +920,15 @@ class TaxFinalStatementPDF(FPDF):
                 h=self.tablerowheight,
                 align="R",
                 w=c2w,
-                txt="{:,}".format(self.remainder_calculation["prepayment"]),
+                txt="0",
                 border=1,
             )
             self.yposition = self.get_y()
+            self.yposition += self.std_text_space
+            self.set_font(self.std_font_name, "", self.std_table_font_size)
+            self.yposition = self.get_y()
+
+        else:
 
             self.set_font(self.std_font_name, "B", self.table_header_font_size)
             self.set_xy(self.left_margin, self.yposition)
@@ -954,40 +940,12 @@ class TaxFinalStatementPDF(FPDF):
                 border=1,
             )
             self.set_xy(self.left_margin + c1w, self.yposition)
-            # Prepayment er et negativt tal
             self.multi_cell(
                 h=self.tablerowheight,
                 align="R",
                 w=c2w,
-                txt="{:,}".format(
-                    self.remainder_calculation["total_tax"]
-                    + self.remainder_calculation["prepayment"]
-                ).replace(",", "."),
-                border=1,
-            )
-            self.yposition = self.get_y()
-            self.yposition += self.std_text_space
-            self.set_font(self.std_font_name, "", self.std_table_font_size)
-            self.yposition = self.get_y()
-
-        if self.remainder_calculation["applicable_previous_statements_exist"]:
-
-            self.set_font(self.std_font_name, "", self.std_table_font_size)
-            self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(
-                h=self.tablerowheight,
-                align="L",
-                w=c1w,
-                txt=self.summary_table2_correction2[language],
-                border=1,
-            )
-            self.set_xy(self.left_margin + c1w, self.yposition)
-            self.multi_cell(
-                h=self.tablerowheight,
-                align="R",
-                w=c2w,
-                txt=self.format_amount(
-                    self.remainder_calculation["previous_transactions_sum"]
+                txt="{:,}".format(self.remainder_calculation["total_tax"]).replace(
+                    ",", "."
                 ),
                 border=1,
             )
@@ -996,121 +954,196 @@ class TaxFinalStatementPDF(FPDF):
             self.set_font(self.std_font_name, "", self.std_table_font_size)
             self.yposition = self.get_y()
 
-            remainder_positive = (
-                self.remainder_calculation["remainder"] >= 0
-            )  # True if citizen should pay more
-            message = (
-                self.summary_table2_correction3a
-                if remainder_positive
-                else self.summary_table2_correction3
-            )
-            self.set_font(self.std_font_name, "", self.std_table_font_size)
-            self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(
-                h=self.tablerowheight, align="L", w=c1w, txt=message[language], border=1
-            )
-            self.set_xy(self.left_margin + c1w, self.yposition)
-            self.multi_cell(
-                h=self.tablerowheight,
-                align="R",
-                w=c2w,
-                txt=self.format_amount(self.remainder_calculation["remainder"]),
-                border=1,
-            )
-            self.yposition = self.get_y()
-            self.yposition += self.std_text_space
-            self.set_font(self.std_font_name, "", self.std_table_font_size)
-            self.yposition = self.get_y()
+            if self.remainder_calculation["prepayment"] != 0:
+                self.set_xy(self.left_margin, self.yposition)
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="L",
+                    w=c1w,
+                    txt=self.summary_table2_text3[language],
+                    border=1,
+                )
+                self.set_xy(self.left_margin + c1w, self.yposition)
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="R",
+                    w=c2w,
+                    txt="{:,}".format(self.remainder_calculation["prepayment"]),
+                    border=1,
+                )
+                self.yposition = self.get_y()
 
-            message = (
-                self.summary_table2_correction4a
-                if remainder_positive
-                else self.summary_table2_correction4
-            )
-            self.set_font(self.std_font_name, "", self.std_table_font_size)
-            self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(
-                h=self.tablerowheight,
-                align="L",
-                w=c1w,
-                txt=message[language].format(
-                    self.remainder_calculation["interest_percent"],
-                    self.remainder_calculation["remainder"],
-                ),
-                border=1,
-            )
-            self.set_xy(self.left_margin + c1w, self.yposition)
-            self.multi_cell(
-                h=self.tablerowheight,
-                align="R",
-                w=c2w,
-                txt=self.format_amount(
-                    self.remainder_calculation["interest_amount_on_remainder"]
-                ),
-                border=1,
-            )
-            self.yposition = self.get_y()
-            self.yposition += self.std_text_space
-            self.set_font(self.std_font_name, "", self.std_table_font_size)
-            self.yposition = self.get_y()
+                self.set_font(self.std_font_name, "B", self.table_header_font_size)
+                self.set_xy(self.left_margin, self.yposition)
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="L",
+                    w=c1w,
+                    txt=self.summary_table2_summary[language],
+                    border=1,
+                )
+                self.set_xy(self.left_margin + c1w, self.yposition)
+                # Prepayment er et negativt tal
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="R",
+                    w=c2w,
+                    txt="{:,}".format(
+                        self.remainder_calculation["total_tax"]
+                        + self.remainder_calculation["prepayment"]
+                    ).replace(",", "."),
+                    border=1,
+                )
+                self.yposition = self.get_y()
+                self.yposition += self.std_text_space
+                self.set_font(self.std_font_name, "", self.std_table_font_size)
+                self.yposition = self.get_y()
 
-            message = (
-                self.summary_table2_correction5a
-                if remainder_positive
-                else self.summary_table2_correction5
-            )
-            font_divisor = 2 if remainder_positive else 1
-            self.set_font(self.std_font_name, "", self.std_table_font_size)
-            self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(
-                h=self.tablerowheight / font_divisor,
-                align="L",
-                w=c1w,
-                txt=message[language],
-                border=1,
-            )
-            self.set_xy(self.left_margin + c1w, self.yposition)
-            self.multi_cell(
-                h=self.tablerowheight,
-                align="R",
-                w=c2w,
-                txt=self.format_amount(
-                    self.remainder_calculation["remainder_with_interest"]
-                ),
-                border=1,
-            )
-            self.yposition = self.get_y()
-            self.yposition += self.std_text_space
-            self.set_font(self.std_font_name, "", self.std_table_font_size)
-            self.yposition = self.get_y()
+            if self.remainder_calculation["applicable_previous_statements_exist"]:
 
-        if self.remainder_calculation["extra_payment_for_previous_missing"] not in (
-            0,
-            None,
-        ):
-            self.set_font(self.std_font_name, "", self.std_table_font_size)
-            self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(
-                h=self.tablerowheight,
-                align="L",
-                w=c1w,
-                txt=self.summary_table2_correction6[language],
-                border=1,
-            )
-            self.set_xy(self.left_margin + c1w, self.yposition)
-            self.multi_cell(
-                h=self.tablerowheight,
-                align="R",
-                w=c2w,
-                txt=self.format_amount(
-                    self.remainder_calculation["extra_payment_for_previous_missing"]
-                ),
-                border=1,
-            )
-            self.yposition = self.get_y()
-            self.yposition += self.std_text_space
-            self.set_font(self.std_font_name, "", self.std_table_font_size)
-            self.yposition = self.get_y()
+                self.set_font(self.std_font_name, "", self.std_table_font_size)
+                self.set_xy(self.left_margin, self.yposition)
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="L",
+                    w=c1w,
+                    txt=self.summary_table2_correction2[language],
+                    border=1,
+                )
+                self.set_xy(self.left_margin + c1w, self.yposition)
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="R",
+                    w=c2w,
+                    txt=self.format_amount(
+                        self.remainder_calculation["previous_transactions_sum"]
+                    ),
+                    border=1,
+                )
+                self.yposition = self.get_y()
+                self.yposition += self.std_text_space
+                self.set_font(self.std_font_name, "", self.std_table_font_size)
+                self.yposition = self.get_y()
+
+                remainder_positive = (
+                    self.remainder_calculation["remainder"] >= 0
+                )  # True if citizen should pay more
+                message = (
+                    self.summary_table2_correction3a
+                    if remainder_positive
+                    else self.summary_table2_correction3
+                )
+                self.set_font(self.std_font_name, "", self.std_table_font_size)
+                self.set_xy(self.left_margin, self.yposition)
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="L",
+                    w=c1w,
+                    txt=message[language],
+                    border=1,
+                )
+                self.set_xy(self.left_margin + c1w, self.yposition)
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="R",
+                    w=c2w,
+                    txt=self.format_amount(self.remainder_calculation["remainder"]),
+                    border=1,
+                )
+                self.yposition = self.get_y()
+                self.yposition += self.std_text_space
+                self.set_font(self.std_font_name, "", self.std_table_font_size)
+                self.yposition = self.get_y()
+
+                message = (
+                    self.summary_table2_correction4a
+                    if remainder_positive
+                    else self.summary_table2_correction4
+                )
+                self.set_font(self.std_font_name, "", self.std_table_font_size)
+                self.set_xy(self.left_margin, self.yposition)
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="L",
+                    w=c1w,
+                    txt=message[language].format(
+                        self.remainder_calculation["interest_percent"],
+                        self.remainder_calculation["remainder"],
+                    ),
+                    border=1,
+                )
+                self.set_xy(self.left_margin + c1w, self.yposition)
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="R",
+                    w=c2w,
+                    txt=self.format_amount(
+                        self.remainder_calculation["interest_amount_on_remainder"]
+                    ),
+                    border=1,
+                )
+                self.yposition = self.get_y()
+                self.yposition += self.std_text_space
+                self.set_font(self.std_font_name, "", self.std_table_font_size)
+                self.yposition = self.get_y()
+
+                message = (
+                    self.summary_table2_correction5a
+                    if remainder_positive
+                    else self.summary_table2_correction5
+                )
+                font_divisor = 2 if remainder_positive else 1
+                self.set_font(self.std_font_name, "", self.std_table_font_size)
+                self.set_xy(self.left_margin, self.yposition)
+                self.multi_cell(
+                    h=self.tablerowheight / font_divisor,
+                    align="L",
+                    w=c1w,
+                    txt=message[language],
+                    border=1,
+                )
+                self.set_xy(self.left_margin + c1w, self.yposition)
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="R",
+                    w=c2w,
+                    txt=self.format_amount(
+                        self.remainder_calculation["remainder_with_interest"]
+                    ),
+                    border=1,
+                )
+                self.yposition = self.get_y()
+                self.yposition += self.std_text_space
+                self.set_font(self.std_font_name, "", self.std_table_font_size)
+                self.yposition = self.get_y()
+
+            if self.remainder_calculation["extra_payment_for_previous_missing"] not in (
+                0,
+                None,
+            ):
+                self.set_font(self.std_font_name, "", self.std_table_font_size)
+                self.set_xy(self.left_margin, self.yposition)
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="L",
+                    w=c1w,
+                    txt=self.summary_table2_correction6[language],
+                    border=1,
+                )
+                self.set_xy(self.left_margin + c1w, self.yposition)
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="R",
+                    w=c2w,
+                    txt=self.format_amount(
+                        self.remainder_calculation["extra_payment_for_previous_missing"]
+                    ),
+                    border=1,
+                )
+                self.yposition = self.get_y()
+                self.yposition += self.std_text_space
+                self.set_font(self.std_font_name, "", self.std_table_font_size)
+                self.yposition = self.get_y()
 
         if "total_payment" in self.remainder_calculation:
             # Til udbetaling/opkrævning i alt

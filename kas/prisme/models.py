@@ -196,10 +196,13 @@ class Prisme10QBatch(models.Model):
     @property
     def active_transactions_qs(self):
         """Return all transactions which are ready to be sent, and which are not below the indifferent limit
-        Amounts below abs(100) are considered indifferent, and are not sent to prisme"""
+        Amounts below abs(TRANSACTION_INDIFFERENCE_LIMIT) are considered indifferent, and are not sent to prisme"""
         return self.transaction_set.exclude(
             status=["cancelled", "indifferent"]
-        ).exclude(amount__gt=-100, amount__lt=100)
+        ).exclude(
+            amount__gt=-settings.TRANSACTION_INDIFFERENCE_LIMIT,
+            amount__lt=settings.TRANSACTION_INDIFFERENCE_LIMIT,
+        )
 
     @property
     def transactions_below_abs100_qs(self):
@@ -207,7 +210,8 @@ class Prisme10QBatch(models.Model):
         Small amounts below abs(100) are considered indifferent and should be marked for that
         """
         return self.transaction_set.exclude(status=["cancelled", "indifferent"]).filter(
-            amount__gte=-100, amount__lte=100
+            amount__gt=-settings.TRANSACTION_INDIFFERENCE_LIMIT,
+            amount__lt=settings.TRANSACTION_INDIFFERENCE_LIMIT,
         )
 
     def get_content(self, max_entries=None):

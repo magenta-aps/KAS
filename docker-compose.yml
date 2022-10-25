@@ -18,6 +18,7 @@ services:
     volumes:
       - ./kas/:/app
       - ./data/kas:/srv/media
+      - ./data/kas/er_html:/app/kas/static/doc/er_html
     environment:
       - MAKE_MIGRATIONS=true
       - MIGRATE=true
@@ -96,10 +97,10 @@ services:
         gunicorn -b 0.0.0.0:8040 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output
       "
 
-  test-idp:
+  kas-test-idp:
     user: "1000:1000"
     image: kenchan0130/simplesamlphp
-    container_name: idp
+    container_name: kas-test-idp
     network_mode: "host"
     environment:
       SIMPLESAMLPHP_SP_ENTITY_ID: http://localhost:8040/saml/metadata/
@@ -114,6 +115,19 @@ services:
       - ./dev-idp/authsources.php:/var/www/simplesamlphp/config/authsources.php:ro
       - ./dev-idp/saml20-sp-remote.php:/var/www/simplesamlphp/metadata/saml20-sp-remote.php:ro
 
+  kas-er:
+    container_name: kas-er
+    image: kas-er:latest
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.er
+    depends_on:
+      - postgres
+    network_mode: "host"
+    env_file:
+      - ./dev-environment/kas.env
+    volumes:
+      - ./data/kas:/doc
 
 volumes:
   kas-postgres-data:

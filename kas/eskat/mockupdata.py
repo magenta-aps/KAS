@@ -218,7 +218,7 @@ def generate_persons():
     )
 
     create_person(
-        "Borger med police hos PFA + andre",
+        "Borger med police hos PFA samt andre",
         cpr="2512474856",
         adresselinje2="Imaneq 32A, 2. sal.",
         adresselinje4="3900 Nuuk",

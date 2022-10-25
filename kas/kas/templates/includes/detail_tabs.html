@@ -45,7 +45,10 @@
     {% else %}
         {% if not historical %}
             <div id="{{prefix}}beregning" class="p-3 tab-pane active border border-secondary" role="tabpanel" aria-labelledby="beregning-tab">
-                {% include 'includes/detail_tabs/beregnings_detaljer.html' %}
+                {% include 'includes/detail_tabs/beregnings_detaljer_nyeste.html' with updated_policy=policy.updated_policy_tax_year %}
+                {% if final_settlement %}
+                    {% include 'includes/detail_tabs/beregnings_detaljer.html' %}
+                {% endif %}
             </div>
             <div id="{{prefix}}negativ" class="p-3 tab-pane border border-secondary" role="tabpanel" aria-labelledby="negativ-tab">
                 {% include 'includes/detail_tabs/anvendt_negativt_afkast.html' %}

@@ -142,6 +142,7 @@ KAS Unittest:
     ESKAT_DB: ""
     ESKAT_USER: ""
     ESKAT_PASSWORD: ""
+    GENERATE_DB_DOCUMENTATION: "false"
 
     # No fiddling with sftp server during testing
     TENQ_HOST: ""
