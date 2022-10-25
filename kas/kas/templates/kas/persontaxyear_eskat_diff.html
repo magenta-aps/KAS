@@ -41,8 +41,12 @@
             {% include 'includes/order_by_link.html' with key="order_by" value="capital_return_tax" text=eskat_amount %}
         </th>
         <th>
-            {% trans 'Beløb i KAS' as kas_amount %}
+            {% translate 'Beløb i KAS<br>(inkl. selskabsbetaling)' as kas_amount %}
             {% include 'includes/order_by_link.html' with key="order_by" value="pseudo_amount" text=kas_amount %}
+        </th>
+        <th>
+            {% translate 'Forskel' as difference %}
+            {% include 'includes/order_by_link.html' with key="order_by" value="difference" text=difference %}
         </th>
         <th style="text-align: center">
             {% trans 'Kræver efterbehandling' as efterbehandling %}
@@ -64,6 +68,7 @@
         <td>{{ person_tax_year.policy_count }}</td>
         <td>{{ person_tax_year.capital_return_tax }}</td>
         <td>{{ person_tax_year.pseudo_amount }}</td>
+        <td>{{ person_tax_year.difference }}</td>
         {% with efterbehandling=person_tax_year.efterbehandling|yesno:"Ja,Nej" %}
             <td align='center'>
             {% trans 'Kan rettes i: person<br>&#8627;police<br>&#8627;ret efterbehandling' as help_text %}

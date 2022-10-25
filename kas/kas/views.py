@@ -436,6 +436,8 @@ class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
             ),
         )
 
+        qs = qs.annotate(difference=F("pseudo_amount") - F("capital_return_tax"))
+
         # Note: 'efterbehandling' already exists as a property method.
         # But we need an annotated twin of it, because decorated properties cannot be queried.
         qs = qs.annotate(
