@@ -939,9 +939,7 @@ def generate_pseudo_settlements_and_transactions_for_legacy_years(job):
     for tax_year in TaxYear.objects.filter(year__in=[2018, 2019]).order_by("year"):
         for person_tax_year in PersonTaxYear.objects.filter(tax_year=tax_year):
             sum_tax_after_foreign_paid_deduction = 0
-            for policy in person_tax_year.policytaxyear_set.filter(
-                active=True, pension_company__agreement_present=False
-            ):
+            for policy in person_tax_year.policytaxyear_set.filter(active=True):
                 sum_tax_after_foreign_paid_deduction += (
                     policy.full_tax - policy.foreign_paid_amount_actual
                 )

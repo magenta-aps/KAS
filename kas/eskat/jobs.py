@@ -112,10 +112,21 @@ def generate_sample_data(job):
             "1509814844",
             "2512474856",
         ]:
-            #  Ensure mandtal for the cpr
-            MockModels.MockKasMandtal.objects.update_or_create(
-                pt_census_guid=uuid4(), cpr=cpr, skatteaar=tax_year
-            )
+            # Check if we already have this user in another year
+            mock_users_all_years = MockModels.MockKasMandtal.objects.filter(cpr=cpr)
+
+            # If so; Copy all personal info from that year
+            if len(mock_users_all_years) > 0:
+                user = mock_users_all_years[0]
+                user.pk = None  # Setting pk to None creates a copy
+                user.pt_census_guid = uuid4()
+                user.skatteaar = tax_year
+                user.save()
+            else:
+                #  Ensure mandtal for the cpr
+                MockModels.MockKasMandtal.objects.create(
+                    pt_census_guid=uuid4(), cpr=cpr, skatteaar=tax_year
+                )
             # Create kas_beregning for cpr and year
             MockKasBeregningerX.objects.update_or_create(
                 skatteaar=tax_year,
