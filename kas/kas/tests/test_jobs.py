@@ -518,11 +518,11 @@ class TestPseudoFinalSettlement(BaseTransactionTestCase):
         self.assertEqual(pseudo_settlements.count(), 2)
         self.assertEqual(
             pseudo_settlements.get(person_tax_year__tax_year__year=2018).pseudo_amount,
-            30,
+            45,
         )
         self.assertEqual(
             pseudo_settlements.get(person_tax_year__tax_year__year=2019).pseudo_amount,
-            60,
+            90,
         )
 
 
