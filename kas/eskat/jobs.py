@@ -12,6 +12,7 @@ from eskat.models import (
     get_kas_beregninger_x_model,
     ImportedKasBeregningerX,
     MockKasBeregningerX,
+    ImportedR75PrivatePension,
 )
 from kas.models import TaxYear
 from worker.job_registry import resolve_job_function
@@ -63,6 +64,7 @@ def generate_sample_data(job):
     MockModels.MockR75Idx4500230.objects.all().delete()
     MockModels.MockKasMandtal.objects.all().delete()
     MockKasBeregningerX.objects.all().delete()
+    ImportedR75PrivatePension.objects.all().delete()
     # Make sure we have pension company data
     call_command("import_default_pension_companies")
     for year in (2018, 2019, 2020, 2021):

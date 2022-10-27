@@ -8,7 +8,19 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
-from django.db.models import Count, F, Q, Min, FilteredRelation, Sum
+from django.db.models import (
+    Count,
+    F,
+    Q,
+    Min,
+    FilteredRelation,
+    Sum,
+    OuterRef,
+    Subquery,
+    IntegerField,
+    TextField,
+)
+from django.db.models.functions import Abs, Cast
 from django.http import Http404, HttpResponse, HttpResponseRedirect, FileResponse
 from django.core.exceptions import SuspiciousOperation
 from django.db.models import Case, Value, When
@@ -53,6 +65,7 @@ from kas.forms import (
     UploadExistingFinalSettlementForm,
     PreviousYearNegativePayoutForm,
     EfterbehandlingForm,
+    PersonListFilterFormEskatDiff,
 )
 from kas.models import (
     PensionCompanySummaryFile,
@@ -406,10 +419,79 @@ class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
         kwargs = {"initial": initial}
         if self.request.GET:
             kwargs["data"] = {**initial, **self.request.GET.dict()}
-        return PersonListFilterForm(**kwargs)
+        return PersonListFilterFormEskatDiff(**kwargs)
 
     def filter_queryset(self, qs):
         qs = super(PersonTaxYearEskatDiffListView, self).filter_queryset(qs)
+
+        form = self.get_form()
+        if self.should_search(form):
+            if hasattr(form, "cleaned_data"):
+                # A value is corrected by a user if:
+                #   - there is a high NEGATIVE amount registered in R75
+                #   - There is an equally high POSITIVE amount registered on the same policy
+                # We need to be able to filter for this, becuase eskat does not handle
+                # cases like this properly; Eskat does not subtract negative values found
+                # in R75 pension data.
+                corrected = form.cleaned_data["edited_by_user"]
+
+                if corrected is not None:
+                    # Convert renteindtaegt to an int. It is a text field in the model
+                    annotated_r75 = ImportedR75PrivatePension.objects.annotate(
+                        renteindtaegt_int=Cast(
+                            "renteindtaegt", output_field=IntegerField()
+                        )
+                    )
+
+                    # order such that the largest negative value is the first one.
+                    ordered_r75 = annotated_r75.filter(
+                        cpr=OuterRef("person__cpr"),
+                        tax_year=OuterRef("tax_year__year"),
+                        renteindtaegt__contains="-",
+                    ).order_by("renteindtaegt_int")
+
+                    # Get the largest negative amount from R75
+                    qs = qs.annotate(
+                        min_r75=Subquery(ordered_r75.values("renteindtaegt_int")[:1]),
+                    )
+
+                    # Also get the matching policy number for that amount
+                    qs = qs.annotate(
+                        min_r75_policy=Subquery(ordered_r75.values("ktd")[:1]),
+                    )
+
+                    # Transform the large negative amount to a positive amount
+                    qs = qs.annotate(min_r75_abs=Abs("min_r75"))
+
+                    # Convert back to string for lookup purposes in R75 model
+                    qs = qs.annotate(
+                        min_r75_abs_str=Cast("min_r75_abs", output_field=TextField())
+                    )
+
+                    # Check if the absolute value of the largest negative value exists
+                    qs = qs.annotate(
+                        corrected_value=Subquery(
+                            annotated_r75.filter(
+                                cpr=OuterRef("person__cpr"),
+                                tax_year=OuterRef("tax_year__year"),
+                                renteindtaegt__exact=OuterRef("min_r75_abs_str"),
+                                ktd=OuterRef("min_r75_policy"),
+                            ).values("renteindtaegt_int")[:1]
+                        ),
+                    )
+
+                    # Set a corrected flag which equals 'True' in case such a value exists
+                    qs = qs.annotate(
+                        corrected=Case(
+                            When(corrected_value=F("min_r75_abs"), then=Value(True)),
+                            default=Value(False),
+                            output_field=BooleanField(),
+                        )
+                    )
+
+                    # Filter for the obtained flag
+                    qs = qs.filter(corrected=corrected)
+
         # find persontaxyears hvor FinalSettlement.pseudo_amount != ImportedKasBeregningerX.capital_return_tax
 
         qs = qs.annotate(

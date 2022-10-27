@@ -129,9 +129,7 @@ def create_person(
                 "pt_census_guid": person_uuid(cpr, year),
                 # tax_year added below
                 # cpr added below
-                "r75_ctl_sekvens_guid": r75_sekvens_uuid(
-                    cpr, year, policy["res"], policy["ktd"]
-                ),
+                "r75_ctl_sekvens_guid": str(uuid.uuid4()),
                 "r75_ctl_indeks_guid": r75_indeks_uuid(
                     cpr, year, policy["res"], policy["ktd"]
                 ),
@@ -148,13 +146,12 @@ def create_person(
                 "r75_dato": "%04d0116" % (year),
             }
 
-            MockModels.MockR75Idx4500230.objects.update_or_create(
-                defaults=policy_data,
+            obj = MockModels.MockR75Idx4500230(
+                **policy_data,
                 tax_year=year,
                 cpr=cpr,
-                ktd=policy["ktd"],
-                res=policy["res"],
             )
+            obj.save()
 
     for year, person_year_data in person_years.items():
         # Make sure we have a taxyear for the given year
@@ -182,7 +179,11 @@ def generate_persons():
         cpr="0101570010",
         adresselinje2="Imaneq 32A, 3. sal.",
         adresselinje4="3900 Nuuk",
-        policies=[{"res": 19676889, "years": {2020: 0, 2021: 0}}],
+        policies=[
+            {"res": 19676889, "years": {2018: -200000, 2020: 0, 2021: 0}, "ktd": 300},
+            {"res": 19676889, "years": {2018: 200000}, "ktd": 300},
+            {"res": 19676889, "years": {2018: -30}, "ktd": 300},
+        ],
     )
 
     create_person(

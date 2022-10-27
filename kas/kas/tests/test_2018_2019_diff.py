@@ -14,8 +14,9 @@ from kas.models import (
     PersonTaxYear,
     FinalSettlement,
 )
-from eskat.models import ImportedKasBeregningerX
+from eskat.models import ImportedKasBeregningerX, ImportedR75PrivatePension
 from kas.views import PersonTaxYearEskatDiffListView
+from uuid import uuid4
 
 
 class BaseTestCase(TestCase):
@@ -30,8 +31,9 @@ class BaseTestCase(TestCase):
         self.client.login(username=self.username, password=self.password)
 
         self.year = 2018
+        self.cpr = "1234567890"
         self.person = Person.objects.create(
-            cpr="1234567890",
+            cpr=self.cpr,
             name="TestPerson",
             full_address="foo street",
             municipality_name="bar municipality",
@@ -61,11 +63,18 @@ class BaseTestCase(TestCase):
         )
 
 
-class LecagcyYearsTestCase(BaseTestCase):
-    def get_persons_with_difference_from_context(self):
-        r = self.client.get(
-            reverse("kas:person_search_eskat_diff") + "?year=%d" % self.year
-        )
+class LegacyYearsTestCase(BaseTestCase):
+    def get_persons_with_difference_from_context(self, corrected=None):
+
+        if corrected is None:
+            corrected_searchString = "edited_by_user="
+        else:
+            corrected_searchString = "edited_by_user=%s" % corrected
+
+        year_searchString = "year=%d" % self.year
+        full_searchString = "?" + year_searchString + "&" + corrected_searchString
+
+        r = self.client.get(reverse("kas:person_search_eskat_diff") + full_searchString)
         return r.context["personstaxyears"]
 
     def test_legacy_years_diff_list(self):
@@ -140,3 +149,84 @@ class LecagcyYearsTestCase(BaseTestCase):
         self.assertEquals(
             df.loc[0, "Kræver efterbehandling"], self.person_tax_year.efterbehandling
         )
+
+    def test_legacy_years_corrected_by_pension_company(self):
+        """
+        Validate that the user is shown as someone who corrected the r75 amount
+        if a correction amount is applied on its policy
+        """
+
+        # Change pseudo amount on final settlement
+        self.final_settlement.pseudo = True
+        self.final_settlement.pseudo_amount = 100
+        self.final_settlement.save()
+
+        # Verify that we can now see the user in the list
+        persons = self.get_persons_with_difference_from_context()
+        self.assertEqual(len(persons), 1)
+
+        # Insert a faulty amount in R75, and correct it back, then set the proper amount
+        idx = 0
+        for amount in [-200_000, 200_000, -30]:
+            ImportedR75PrivatePension.objects.create(
+                tax_year=self.year,
+                cpr=self.cpr,
+                ktd=200,
+                renteindtaegt=amount,
+                pt_census_guid=uuid4(),
+                r75_ctl_sekvens_guid=uuid4(),
+                r75_ctl_indeks_guid=uuid4(),
+                idx_nr=idx,
+            )
+            idx += 1
+
+        # Verify that the user only appears when 'corrected=True' is filtered for
+        testDict = {None: 1, True: 1, False: 0}
+
+        for corrected, expected_amount_of_persons in testDict.items():
+
+            persons = self.get_persons_with_difference_from_context(corrected=corrected)
+            self.assertEqual(len(persons), expected_amount_of_persons)
+
+    def test_legacy_years_not_corrected_by_pension_company(self):
+        """
+        Validate that the user is NOT shown as someone who corrected the r75 amount
+        if the 'correction' is on a different policy.
+
+        This can happen if a user has the same amount with opposite sign on a different
+        policy.
+        """
+
+        # Change pseudo amount on final settlement
+        self.final_settlement.pseudo = True
+        self.final_settlement.pseudo_amount = 100
+        self.final_settlement.save()
+
+        # Verify that we can now see the user in the list
+        persons = self.get_persons_with_difference_from_context()
+        self.assertEqual(len(persons), 1)
+
+        # Insert a faulty amount in R75, and correct it back, then set the proper amount
+        idx = 0
+        ktd = 200
+        for amount in [-200, 200, -30]:
+            ImportedR75PrivatePension.objects.create(
+                tax_year=self.year,
+                cpr=self.cpr,
+                ktd=ktd,
+                renteindtaegt=amount,
+                pt_census_guid=uuid4(),
+                r75_ctl_sekvens_guid=uuid4(),
+                r75_ctl_indeks_guid=uuid4(),
+                idx_nr=idx,
+            )
+            idx += 1
+            ktd += 1
+
+        # Verify that the user only appears when 'corrected=False' is filtered for
+        testDict = {None: 1, True: 0, False: 1}
+
+        for corrected, expected_amount_of_persons in testDict.items():
+
+            persons = self.get_persons_with_difference_from_context(corrected=corrected)
+            self.assertEqual(len(persons), expected_amount_of_persons)
