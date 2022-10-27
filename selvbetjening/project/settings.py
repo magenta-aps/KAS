@@ -147,9 +147,7 @@ OPENID_CONNECT = {
     "client_id": os.environ["OPENID_CLIENT_ID"],
     "client_certificate": os.environ["OPENID_CLIENT_CERTIFICATE_FILE"],
     "private_key": os.environ["OPENID_PRIVATE_KEY_FILE"],
-    "redirect_uri": os.environ[
-        "OPENID_LOGIN_CALLBACK"
-    ],
+    "redirect_uri": os.environ["OPENID_LOGIN_CALLBACK"],
     "login_callback": os.environ[
         "OPENID_LOGIN_CALLBACK"
     ],  # This must be equal to fqdn + reverse('sullissivik:openid:login-callback')
