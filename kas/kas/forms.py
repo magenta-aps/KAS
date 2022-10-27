@@ -70,6 +70,20 @@ class PersonListFilterForm(BootstrapForm):
         return cpr
 
 
+class PersonListFilterFormEskatDiff(PersonListFilterForm):
+
+    edited_by_user = forms.NullBooleanField(
+        label=_("Rettelse i R75 data"),
+        widget=forms.Select(
+            choices=[
+                (False, _("Nej")),
+                (True, _("Ja")),
+                (None, _("Alle")),
+            ],
+        ),
+    )
+
+
 class PolicyListFilterForm(BootstrapForm):
 
     year = forms.IntegerField(label=_("År"), required=False, widget=forms.Select())
