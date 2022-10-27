@@ -284,6 +284,14 @@ class TestCalculationMath(TestCase):
         policy_tax_year.save()
         return (person, pension_company, person_tax_year, policy_tax_year)
 
+    def test_None_preliminary_paid_amount_in_calculation(self):
+        person, pension_company, person_tax_year, policy = self.create_test_person_data(
+            foreign_paid_amount_actual=200
+        )
+
+        policy.preliminary_paid_amount = None
+        policy.get_calculation()
+
     def test_model_calculation(self):
 
         # Set up two older policies with losses, and one new policy that will deduct those losses

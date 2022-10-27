@@ -1050,7 +1050,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             taxable_days_in_year=self.person_tax_year.number_of_days,
             available_deduction_data=self.calculate_available_yearly_deduction(),
             foreign_paid_amount=self.foreign_paid_amount_actual,
-            preliminary_payment=self.preliminary_paid_amount,
+            preliminary_payment=self.preliminary_paid_amount or 0,
             adjust_for_days_in_year=(not only_adjusted_amounts)
             and self.should_adjust_for_tax_days,
             pension_company_pays=self.pension_company_pays,
