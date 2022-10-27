@@ -219,7 +219,7 @@ LOGIN_WHITELISTED_URLS = [
     reverse_lazy("selvbetjening:representation-start"),
     reverse_lazy("selvbetjening:representation-stop"),
     LOGIN_URL,
-    "_/ht/",
+    "/_ht/",
     LOGIN_TIMEOUT_URL,
     LOGIN_REPEATED_URL,
     LOGIN_NO_CPRCVR_URL,
