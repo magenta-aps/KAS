@@ -280,9 +280,9 @@ def import_r75(job):
     progress_start = 50
     (policies_created, policies_updated) = (0, 0)
 
-    # This queryset groups results by cpr, res, ktd and creates an sum
+    # This queryset groups results by cpr, res, ktd and creates a sum
     # of extra output field with the sum of the 'renteindtaegt' field.
-    # It must be constructed with the calss in this order to generate
+    # It must be constructed with the calls in this order to generate
     # the correct SELECT .. GROUP BY .. query-
     qs = (
         ImportedR75PrivatePension.objects.values(
@@ -294,6 +294,8 @@ def import_r75(job):
         )
     )
     count = qs.count()
+    users_with_corrected_policies = []
+
     for i, item in enumerate(qs):
         with transaction.atomic():
             person, c = Person.objects.get_or_create(cpr=item["cpr"])
@@ -338,6 +340,29 @@ def import_r75(job):
                         policies_created += 1
                     elif status == PersonTaxYear.UPDATED:
                         policies_updated += 1
+
+                matching_r75_policies = ImportedR75PrivatePension.objects.filter(
+                    cpr=item["cpr"], tax_year=year, ktd=item["ktd"], res=item["res"]
+                )
+
+                corrected = False
+                r75_amounts = [int(q.renteindtaegt) for q in matching_r75_policies]
+
+                for r75_amount in r75_amounts:
+                    if -r75_amount in r75_amounts:
+                        corrected = True
+                        break
+
+                if corrected:
+                    # Always set corrected = True
+                    person_tax_year.corrected_r75_data = True
+                    person_tax_year.save(update_fields=["corrected_r75_data"])
+                    users_with_corrected_policies.append(item["cpr"])
+                else:
+                    # Only set corrected = False if it was not set to True by this job
+                    if item["cpr"] not in users_with_corrected_policies:
+                        person_tax_year.corrected_r75_data = False
+                        person_tax_year.save(update_fields=["corrected_r75_data"])
 
             except PersonTaxYear.DoesNotExist:
                 pass
