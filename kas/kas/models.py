@@ -534,6 +534,9 @@ class PersonTaxYear(HistoryMixin, models.Model):
     # Charfield instead of User, so if a user is deleted we still remember him
     updated_by = models.CharField(max_length=150, null=True)
 
+    # Whether r75 data is corrected by the pension company or user
+    corrected_r75_data = models.BooleanField(default=False)
+
     @property
     def year(self):
         return self.tax_year.year

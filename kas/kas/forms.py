@@ -4,6 +4,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.utils.safestring import mark_safe
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from kas.fields import PensionCompanyChoiceField, DateInput
@@ -72,8 +73,14 @@ class PersonListFilterForm(BootstrapForm):
 
 class PersonListFilterFormEskatDiff(PersonListFilterForm):
 
+    label_tooltip = _("Foreligger der en korrektion af beløb i importerede E-skat data")
+    label_text = _("Rettelse i R75 data")
+
     edited_by_user = forms.NullBooleanField(
-        label=_("Rettelse i R75 data"),
+        label=mark_safe(
+            '<a href="#" data-toggle="tooltip" title="%s" data-html="true">%s</a>'
+            % (label_tooltip, label_text)
+        ),
         widget=forms.Select(
             choices=[
                 (False, _("Nej")),
