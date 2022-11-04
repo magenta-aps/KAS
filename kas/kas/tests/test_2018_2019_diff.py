@@ -230,7 +230,9 @@ class LegacyYearsTestCase(BaseTestCase):
         # Verify that the user only appears when 'full_tax_year=False' is filtered for
         testDict = {None: 1, True: 0, False: 1}
 
-        for corrected, expected_amount_of_persons in testDict.items():
+        for full_tax_year, expected_amount_of_persons in testDict.items():
 
-            persons = self.get_persons_with_difference_from_context(corrected=corrected)
+            persons = self.get_persons_with_difference_from_context(
+                full_tax_year=full_tax_year
+            )
             self.assertEqual(len(persons), expected_amount_of_persons)
