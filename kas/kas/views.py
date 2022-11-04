@@ -426,6 +426,13 @@ class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
                 if corrected is not None:
                     qs = qs.filter(corrected_r75_data=corrected)
 
+                full_tax_year = form.cleaned_data["full_tax_year"]
+                if full_tax_year is not None:
+                    if full_tax_year:
+                        qs = qs.filter(number_of_days__in=[365, 366])
+                    else:
+                        qs = qs.filter(number_of_days__lt=365)
+
         # find persontaxyears hvor FinalSettlement.pseudo_amount != ImportedKasBeregningerX.capital_return_tax
 
         qs = qs.annotate(
