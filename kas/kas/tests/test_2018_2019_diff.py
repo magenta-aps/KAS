@@ -63,15 +63,29 @@ class BaseTestCase(TestCase):
 
 
 class LegacyYearsTestCase(BaseTestCase):
-    def get_persons_with_difference_from_context(self, corrected=None):
+    def get_persons_with_difference_from_context(
+        self, corrected=None, full_tax_year=None
+    ):
 
         if corrected is None:
             corrected_searchString = "edited_by_user="
         else:
             corrected_searchString = "edited_by_user=%s" % corrected
 
+        if full_tax_year is None:
+            full_tax_year_searchString = "full_tax_year="
+        else:
+            full_tax_year_searchString = "full_tax_year=%s" % full_tax_year
+
         year_searchString = "year=%d" % self.year
-        full_searchString = "?" + year_searchString + "&" + corrected_searchString
+        full_searchString = (
+            "?"
+            + year_searchString
+            + "&"
+            + corrected_searchString
+            + "&"
+            + full_tax_year_searchString
+        )
 
         r = self.client.get(reverse("kas:person_search_eskat_diff") + full_searchString)
         return r.context["personstaxyears"]
@@ -178,6 +192,43 @@ class LegacyYearsTestCase(BaseTestCase):
 
         # Verify that the user only appears when 'corrected=True' is filtered for
         testDict = {None: 1, True: 1, False: 0}
+
+        for corrected, expected_amount_of_persons in testDict.items():
+
+            persons = self.get_persons_with_difference_from_context(corrected=corrected)
+            self.assertEqual(len(persons), expected_amount_of_persons)
+
+    def test_legacy_years_less_than_365_tax_days(self):
+        """
+        Validate that the user is shown as someone who corrected the r75 amount
+        if a correction amount is applied on its policy
+        """
+
+        # Change pseudo amount on final settlement
+        self.final_settlement.pseudo = True
+        self.final_settlement.pseudo_amount = 100
+        self.final_settlement.save()
+
+        # Verify that we can now see the user in the list
+        persons = self.get_persons_with_difference_from_context()
+        self.assertEqual(len(persons), 1)
+
+        # Verify that the user only appears when 'full_tax_year=True' is filtered for
+        testDict = {None: 1, True: 1, False: 0}
+
+        for full_tax_year, expected_amount_of_persons in testDict.items():
+
+            persons = self.get_persons_with_difference_from_context(
+                full_tax_year=full_tax_year
+            )
+            self.assertEqual(len(persons), expected_amount_of_persons)
+
+        # Now modify the number of days
+        self.person_tax_year.number_of_days = 200
+        self.person_tax_year.save()
+
+        # Verify that the user only appears when 'full_tax_year=False' is filtered for
+        testDict = {None: 1, True: 0, False: 1}
 
         for corrected, expected_amount_of_persons in testDict.items():
 

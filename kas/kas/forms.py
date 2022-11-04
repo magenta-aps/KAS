@@ -90,6 +90,17 @@ class PersonListFilterFormEskatDiff(PersonListFilterForm):
         ),
     )
 
+    full_tax_year = forms.NullBooleanField(
+        label="Antal skattadage",
+        widget=forms.Select(
+            choices=[
+                (False, _("0 - 364")),
+                (True, _("365 / 366")),
+                (None, _("Alle")),
+            ],
+        ),
+    )
+
 
 class PolicyListFilterForm(BootstrapForm):
 
