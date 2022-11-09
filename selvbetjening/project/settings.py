@@ -236,14 +236,14 @@ SAML = {
     "debug": 1,
     "entityid": os.environ.get("SAML_SP_ENTITY_ID"),
     "idp_entity_id": os.environ.get("SAML_IDP_ENTITY_ID"),
-    "name": "KAS Test",
-    "description": "KAS Test",
+    "name": os.environ.get("SAML_SP_NAME") or "KAS",
+    "description": os.environ.get("SAML_SP_DESCRIPTION") or "Kapitalafkastskat",
     "verify_ssl_cert": False,
     "metadata_remote": os.environ.get("SAML_IDP_METADATA"),
     "metadata": {"local": ["/var/cache/kas/idp_metadata.xml"]},  # IdP Metadata
     "service": {
         "sp": {
-            "name": "KAS Test",
+            "name": os.environ.get("SAML_SP_NAME") or "KAS",
             "hide_assertion_consumer_service": False,
             "endpoints": {
                 "assertion_consumer_service": [
@@ -291,8 +291,8 @@ SAML = {
     "xmlsec_binary": "/usr/bin/xmlsec1",
     "delete_tmpfiles": True,
     "organization": {
-        "name": [("KAS Test", "da")],
-        "display_name": ["KAS Test"],
+        "name": [("KAS", "da")],
+        "display_name": ["KAS"],
         "url": [("https://magenta.dk", "da")],
     },
     "contact_person": [
