@@ -660,6 +660,7 @@ class R75ImportJobTest(BaseTransactionTestCase):
         )
 
         self.assertEqual(person_tax_year.corrected_r75_data, True)
+        self.assertEqual(person_tax_year.future_r75_data, False)
 
     @patch.object(
         django_rq,
@@ -698,3 +699,39 @@ class R75ImportJobTest(BaseTransactionTestCase):
         )
 
         self.assertEqual(person_tax_year.corrected_r75_data, False)
+        self.assertEqual(person_tax_year.future_r75_data, False)
+
+    @patch.object(
+        django_rq,
+        "get_queue",
+        return_value=Queue(is_async=False, connection=FakeStrictRedis()),
+    )
+    def test_future_data(self, django_rq):
+
+        # Insert a R75 amount from the future
+        ImportedR75PrivatePension.objects.create(
+            tax_year=self.tax_year.year,
+            cpr=self.cpr,
+            ktd=200,
+            res=100,
+            renteindtaegt=200,
+            pt_census_guid=uuid4(),
+            r75_ctl_sekvens_guid=uuid4(),
+            r75_ctl_indeks_guid=uuid4(),
+            idx_nr=1,
+            r75_dato="%d1201" % (self.tax_year.year + 1),
+        )
+
+        Job.schedule_job(
+            import_r75,
+            "ImportR75Job",
+            job_kwargs=self.job_kwargs,
+            created_by=self.user,
+        )
+
+        person_tax_year = PersonTaxYear.objects.get(
+            tax_year=self.tax_year, person=self.person
+        )
+
+        self.assertEqual(person_tax_year.corrected_r75_data, False)
+        self.assertEqual(person_tax_year.future_r75_data, True)

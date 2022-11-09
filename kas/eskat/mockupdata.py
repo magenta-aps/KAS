@@ -121,6 +121,12 @@ def create_person(
             policy["ktd"] = next_unique_res()
 
         for year, beloeb in policy["years"].items():
+
+            if "r75_dato" in policy:
+                r75_dato = policy["r75_dato"]
+            else:
+                r75_dato = "%04d0116" % (year)
+
             # Make sure we create a mandtal entry for the person for this year
             if int(year) not in person_years:
                 person_years[year] = {}
@@ -143,7 +149,7 @@ def create_person(
                 "ejerstatuskode": 1,
                 "indestaaende": 0,
                 "renteindtaegt": beloeb,
-                "r75_dato": "%04d0116" % (year),
+                "r75_dato": r75_dato,
             }
 
             obj = MockModels.MockR75Idx4500230(
@@ -200,6 +206,7 @@ def generate_persons():
                     2020: 2500,
                     2021: 0,
                 },
+                "r75_dato": "20210101",
             },
             {
                 "res": 55143315,

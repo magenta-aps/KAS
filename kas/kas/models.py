@@ -537,6 +537,10 @@ class PersonTaxYear(HistoryMixin, models.Model):
     # Whether r75 data is corrected by the pension company or user
     corrected_r75_data = models.BooleanField(default=False)
 
+    # Whether r75 data for this tax year comes from the 'future'.
+    # i.e. it was submitted after the tax year was closed.
+    future_r75_data = models.BooleanField(default=False)
+
     @property
     def year(self):
         return self.tax_year.year

@@ -101,6 +101,29 @@ class PersonListFilterFormEskatDiff(PersonListFilterForm):
         ),
     )
 
+    label_tooltip = _(
+        (
+            "R75 Beløb blev først indberettet efter at skatteåret var afsluttet."
+            " Det vil sige efter 1. September året efter dette år."
+            " E-skat har muligvis ikke de rigtige oplysninger i disse tilfælde"
+        )
+    )
+    label_text = _("Forsinkede R75 data")
+
+    future_r75_data = forms.NullBooleanField(
+        label=mark_safe(
+            '<a href="#" data-toggle="tooltip" title="%s" data-html="true">%s</a>'
+            % (label_tooltip, label_text)
+        ),
+        widget=forms.Select(
+            choices=[
+                (False, _("Nej")),
+                (True, _("Ja")),
+                (None, _("Alle")),
+            ],
+        ),
+    )
+
 
 class PolicyListFilterForm(BootstrapForm):
 
