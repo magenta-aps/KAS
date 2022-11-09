@@ -433,6 +433,10 @@ class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
                     else:
                         qs = qs.filter(number_of_days__lt=365)
 
+                future_r75_data = form.cleaned_data["future_r75_data"]
+                if future_r75_data is not None:
+                    qs = qs.filter(future_r75_data=future_r75_data)
+
         # find persontaxyears hvor FinalSettlement.pseudo_amount != ImportedKasBeregningerX.capital_return_tax
 
         qs = qs.annotate(

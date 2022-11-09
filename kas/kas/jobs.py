@@ -7,6 +7,8 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 from time import sleep
+from more_itertools import map_except
+from pandas import to_datetime
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -261,6 +263,7 @@ def import_mandtal(job):
 @job_decorator
 def import_r75(job):
     year = job.arguments["year"]
+    tax_year_end_date = to_datetime("%d-09-01" % (year + 1))
 
     job.pretty_title = "%s - %s" % (job.pretty_job_type, year)
     job.save()
@@ -295,6 +298,7 @@ def import_r75(job):
     )
     count = qs.count()
     users_with_corrected_policies = []
+    users_with_future_r75_data = []
 
     for i, item in enumerate(qs):
         with transaction.atomic():
@@ -363,6 +367,30 @@ def import_r75(job):
                     if item["cpr"] not in users_with_corrected_policies:
                         person_tax_year.corrected_r75_data = False
                         person_tax_year.save(update_fields=["corrected_r75_data"])
+
+                r75_dates = list(
+                    map_except(
+                        lambda dt: to_datetime(dt, format="%Y%m%d"),
+                        [str(q.r75_dato) for q in matching_r75_policies],
+                        ValueError,
+                    )
+                )
+
+                if len(r75_dates) > 0:
+                    future_r75_data = max(r75_dates) >= tax_year_end_date
+                else:
+                    future_r75_data = False
+
+                if future_r75_data:
+                    # Always set future_r75_data = True
+                    person_tax_year.future_r75_data = True
+                    person_tax_year.save(update_fields=["future_r75_data"])
+                    users_with_future_r75_data.append(item["cpr"])
+                else:
+                    # Only set future_r75_data = False if it was not set to True by this job
+                    if item["cpr"] not in users_with_future_r75_data:
+                        person_tax_year.future_r75_data = False
+                        person_tax_year.save(update_fields=["future_r75_data"])
 
             except PersonTaxYear.DoesNotExist:
                 pass
