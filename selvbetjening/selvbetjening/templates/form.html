@@ -9,6 +9,10 @@
 
 <div class="container">
 
+    {% if person_tax_years.all|length == 0 %}
+    <p>{% translate 'Du er ikke kendt i systemet' %}</p>
+    {% else %}
+
     <a href="{% url 'selvbetjening:policy-view' year=year %}">{% translate 'Tilbage' %}</a>
 
     <p>{% blocktrans with number_of_days=person_tax_year.number_of_days %}Antal skattepligtige dage i skatteår: {{number_of_days}}{% endblocktrans %}</p>
@@ -285,5 +289,6 @@
             $(".policyform .company_select").each(changeCompanySelect);
         });
     </script>
+    {% endif %}
 </div>
 {% endblock %}
