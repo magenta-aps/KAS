@@ -7,7 +7,9 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import formats
 from django.utils.formats import date_format
+from django.utils.http import urlencode
 from django.utils.translation import to_locale, get_language, gettext as _
+from django.views.generic import ListView
 from django.views.generic.detail import SingleObjectMixin
 from openpyxl import Workbook
 
@@ -209,4 +211,10 @@ class KasMixin(object):
         if settings.ENVIRONMENT != "production":
             ctx["test_environment"] = True
         ctx["version"] = settings.VERSION
+        if isinstance(self, ListView):
+            # Convenience url for pagers; append the page parameter to this to get a full url with all search parameters
+            params = self.request.GET.dict()
+            if "page" in params:
+                del params["page"]
+            ctx["urlparams"] = "?" + urlencode(params) if len(params) else ""
         return ctx

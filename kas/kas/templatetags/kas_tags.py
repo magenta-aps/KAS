@@ -41,3 +41,15 @@ def get(item, attribute):
             return item[attribute]
         except (KeyError, TypeError):
             pass
+
+
+@register.filter
+def urlparam_join(value, extra):
+    if "?" in value:
+        if value == "?":
+            glue = ""
+        else:
+            glue = "&"
+    else:
+        glue = "?"
+    return f"{value}{glue}{extra}"
