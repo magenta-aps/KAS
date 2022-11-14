@@ -152,7 +152,7 @@ class YearTabMixin(object):
                     "prior": all_years[self.cutoff_years :],
                 },
                 "latest_year": date.today().year - 1,
-                "latest_tax_year": all_years[0]["tax_year"],
+                "latest_tax_year": all_years[0]["tax_year"] if len(all_years) else None,
             }
         )
 

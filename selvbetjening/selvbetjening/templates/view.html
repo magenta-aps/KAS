@@ -8,6 +8,10 @@
 
 <div class="container">
 
+    {% if person_tax_years.all|length == 0 %}
+    <p>{% translate 'Du er ikke kendt i systemet' %}</p>
+    {% else %}
+
     {% if prior %}
         <div class="row mb-3">
             <label for="select_year" class="col-sm-1 p-3 col-form-label col-form-label-sm">{% translate 'Skatteår:' %}</label>
@@ -153,5 +157,7 @@
             </div>
         </div>
     </div>
+
+    {% endif %}
 </div>
 {% endblock %}
