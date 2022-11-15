@@ -18,7 +18,7 @@ WHITENOISE_USE_FINDERS = True
 # DEFAULT_AUTO_FIELD  er sat da vi benytter 3 parts biblioteker der ikke har fuldt implementeret app_config
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = os.path.join(BASE_DIR, "kas", "static")
 # Application definition
 
 INSTALLED_APPS = [
