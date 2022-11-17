@@ -745,6 +745,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         default=CALCULATION_MODEL_DEFAULT,
     )
 
+    # NOTE: This field defaults to None until the job worker/job_registry/ImportPrePaymentFile has been run
     preliminary_paid_amount = models.BigIntegerField(
         verbose_name=_("Foreløbigt betalt kapitalafkast"),
         blank=True,
