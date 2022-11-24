@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-30 11:57+0000\n"
+"POT-Creation-Date: 2022-11-24 11:29+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,201 +17,201 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: worker/forms.py:12 worker/templates/worker/job_list.html:23
+#: worker/forms.py worker/templates/worker/job_list.html
 msgid "Job type"
 msgstr ""
 
-#: worker/forms.py:25 worker/forms.py:40 worker/forms.py:90 worker/forms.py:109
+#: worker/forms.py
 msgid "År"
 msgstr ""
 
-#: worker/forms.py:50
+#: worker/forms.py
 msgid "Alle år"
 msgstr ""
 
-#: worker/forms.py:58
+#: worker/forms.py
 msgid "Fil"
 msgstr ""
 
-#: worker/forms.py:83
+#: worker/forms.py
 msgid "Selskabet betaler"
 msgstr ""
 
-#: worker/forms.py:84
+#: worker/forms.py
 msgid "Nej"
 msgstr ""
 
-#: worker/forms.py:84
+#: worker/forms.py
 msgid "Ja"
 msgstr ""
 
-#: worker/forms.py:121
+#: worker/forms.py
 msgid "Titel"
 msgstr ""
 
-#: worker/forms.py:121
+#: worker/forms.py
 msgid "Vil blive brugt som titelfeltet i e-boks"
 msgstr ""
 
-#: worker/job_registry.py:24
+#: worker/job_registry.py
 msgid "Kør autoligning"
 msgstr ""
 
-#: worker/job_registry.py:30
+#: worker/job_registry.py
 msgid "Import af forudindbetalinger"
 msgstr ""
 
-#: worker/job_registry.py:36
+#: worker/job_registry.py
 msgid "Import af mandtal"
 msgstr ""
 
-#: worker/job_registry.py:42
+#: worker/job_registry.py
 msgid "Import af data fra R75"
 msgstr ""
 
-#: worker/job_registry.py:48
+#: worker/job_registry.py
 msgid "Forcering af slutligning på alle udestående policer"
 msgstr ""
 
-#: worker/job_registry.py:53
+#: worker/job_registry.py
 msgid "Generering af KAS selvangivelser for et givet år"
 msgstr ""
 
-#: worker/job_registry.py:58
+#: worker/job_registry.py
 msgid "Afsendelse af KAS selvangivelser for et givet år"
 msgstr ""
 
-#: worker/job_registry.py:63
+#: worker/job_registry.py
 msgid "Generering af KAS slutopgørelser for et givet år"
 msgstr ""
 
-#: worker/job_registry.py:69
+#: worker/job_registry.py
 msgid "Generering af Transaktioner og batch for et givent år"
 msgstr ""
 
-#: worker/job_registry.py:75
+#: worker/job_registry.py
 msgid "Afsendelse af KAS slutopgørelser for et givet år"
 msgstr ""
 
-#: worker/job_registry.py:81
+#: worker/job_registry.py
 msgid "Afsendelse af KAS slutopgørelse"
 msgstr ""
 
-#: worker/job_registry.py:88
+#: worker/job_registry.py
 msgid "Sender et Q10 batch"
 msgstr ""
 
-#: worker/job_registry.py:95
+#: worker/job_registry.py
 msgid "Flet pensionsselskaber"
 msgstr ""
 
-#: worker/job_registry.py:100
+#: worker/job_registry.py
 msgid "Importere kas beregninger for tidligere år (2018/2019)"
 msgstr ""
 
-#: worker/job_registry.py:106
+#: worker/job_registry.py
 msgid "Generering af pseudo slutopgørelser (2018/2019)"
 msgstr ""
 
-#: worker/job_registry.py:127
+#: worker/job_registry.py
 msgid "Reset data for skatteår"
 msgstr ""
 
-#: worker/job_registry.py:140
+#: worker/job_registry.py
 msgid "Generate sample data"
 msgstr ""
 
-#: worker/models.py:22
+#: worker/models.py
 msgid "Sat i kø"
 msgstr ""
 
-#: worker/models.py:23
+#: worker/models.py
 msgid "Igang"
 msgstr ""
 
-#: worker/models.py:24
+#: worker/models.py
 msgid "Afventer"
 msgstr ""
 
-#: worker/models.py:25
+#: worker/models.py
 msgid "Fejlet"
 msgstr ""
 
-#: worker/models.py:26
+#: worker/models.py
 msgid "Færdig"
 msgstr ""
 
-#: worker/templates/worker/includes/autoligning.html:6
+#: worker/templates/worker/includes/autoligning.html
 msgid "Kræver efterbehandling"
 msgstr ""
 
-#: worker/templates/worker/includes/forudindbetalinger.html:5
+#: worker/templates/worker/includes/forudindbetalinger.html
 msgid "Oprettede transaktioner"
 msgstr ""
 
-#: worker/templates/worker/includes/forudindbetalinger.html:18
+#: worker/templates/worker/includes/forudindbetalinger.html
 msgid "Ikke fundet skatteår for import"
 msgstr ""
 
-#: worker/templates/worker/includes/status_only.html:5
+#: worker/templates/worker/includes/status_only.html
 msgid "Resultat"
 msgstr ""
 
-#: worker/templates/worker/includes/status_only.html:6
+#: worker/templates/worker/includes/status_only.html
 msgid "Besked"
 msgstr ""
 
-#: worker/templates/worker/job_create_form.html:13
+#: worker/templates/worker/job_create_form.html
 msgid "Vælg en fil"
 msgstr ""
 
-#: worker/templates/worker/job_create_form.html:37
+#: worker/templates/worker/job_create_form.html
 msgid "Start job"
 msgstr ""
 
-#: worker/templates/worker/job_create_form.html:38
+#: worker/templates/worker/job_create_form.html
 msgid "Annullér"
 msgstr ""
 
-#: worker/templates/worker/job_detail.html:7
+#: worker/templates/worker/job_detail.html
 msgid "Tilbage til liste"
 msgstr ""
 
-#: worker/templates/worker/job_detail.html:12
+#: worker/templates/worker/job_detail.html
 msgid "Type"
 msgstr ""
 
-#: worker/templates/worker/job_detail.html:16
-#: worker/templates/worker/job_list.html:27
+#: worker/templates/worker/job_detail.html
+#: worker/templates/worker/job_list.html
 msgid "Status"
 msgstr ""
 
-#: worker/templates/worker/job_detail.html:21
+#: worker/templates/worker/job_detail.html
 msgid "Starttid"
 msgstr ""
 
-#: worker/templates/worker/job_detail.html:27
+#: worker/templates/worker/job_detail.html
 msgid "Kørselstid"
 msgstr ""
 
-#: worker/templates/worker/job_detail.html:33
+#: worker/templates/worker/job_detail.html
 msgid "Fejl"
 msgstr ""
 
-#: worker/templates/worker/job_detail.html:42
+#: worker/templates/worker/job_detail.html
 msgid "Opsummering"
 msgstr ""
 
-#: worker/templates/worker/job_detail.html:51
-#: worker/templates/worker/job_list.html:26
+#: worker/templates/worker/job_detail.html
+#: worker/templates/worker/job_list.html
 msgid "Fremskridt"
 msgstr ""
 
-#: worker/templates/worker/job_list.html:5
+#: worker/templates/worker/job_list.html
 msgid "Start nyt job"
 msgstr ""
 
-#: worker/templates/worker/job_list.html:14
+#: worker/templates/worker/job_list.html
 #, python-format
 msgid ""
 "På denne side oplistes kørende og kørte jobs, med relevant information om "
@@ -223,19 +223,19 @@ msgid ""
 "\">Overbliksmanualen</a>"
 msgstr ""
 
-#: worker/templates/worker/job_list.html:24
+#: worker/templates/worker/job_list.html
 msgid "Oprettet af"
 msgstr ""
 
-#: worker/templates/worker/job_list.html:25
+#: worker/templates/worker/job_list.html
 msgid "Oprettet"
 msgstr ""
 
-#: worker/templates/worker/job_type_select.html:7
+#: worker/templates/worker/job_type_select.html
 msgid "Vælg"
 msgstr ""
 
-#: worker/templates/worker/job_type_select.html:11
+#: worker/templates/worker/job_type_select.html
 msgid ""
 "\n"
 "    På denne side kan der vælges hvilket type job der skal køres.\n"
