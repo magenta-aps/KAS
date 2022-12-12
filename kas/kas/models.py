@@ -954,7 +954,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         """
         Returns the full tax
         """
-        only_adjusted_amounts = False
+        only_adjusted_amounts = True
         calculation_result = self.perform_calculation(
             initial_amount=int(self.get_assessed_amount(only_adjusted_amounts)),
             taxable_days_in_year=int(self.person_tax_year.number_of_days or 0),
@@ -1057,7 +1057,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         return self.same_policy_qs.filter(person_tax_year__tax_year__year__gt=self.year)
 
     def get_calculation(self):
-        only_adjusted_amounts = False
+        only_adjusted_amounts = True
         return PolicyTaxYear.perform_calculation(
             initial_amount=self.get_assessed_amount(only_adjusted_amounts),
             days_in_year=self.tax_year.days_in_year,

@@ -271,7 +271,7 @@ class TaxFinalStatementPDF(FPDF):
             calculation_result = policy.perform_calculation(
                 initial_amount=assessed_amount,
                 taxable_days_in_year=person_tax_year.number_of_days or 0,
-                days_in_year=self._person_tax_year.tax_year.days_in_year or 0,
+                days_in_year=person_tax_year.tax_year.days_in_year or 0,
                 available_deduction_data=available_deduction_data,
                 adjust_for_days_in_year=False,
             )
@@ -283,9 +283,6 @@ class TaxFinalStatementPDF(FPDF):
                     "active_amount": policy.active_amount,
                     "taxable_days_in_year": calculation_result.get(
                         "taxable_days_in_year"
-                    ),
-                    "adjust_for_days_in_year": calculation_result.get(
-                        "adjust_for_days_in_year"
                     ),
                     "year_adjusted_amount": calculation_result.get(
                         "year_adjusted_amount"
@@ -614,7 +611,10 @@ class TaxFinalStatementPDF(FPDF):
             self.yposition = self.get_y()
 
             year_adjusted_amount = policy.get("year_adjusted_amount")
-            if policy.get("adjust_for_days_in_year"):
+            if (
+                self._person_tax_year.number_of_days
+                < self._person_tax_year.tax_year.days_in_year
+            ):
                 self.set_xy(self.left_margin, self.yposition)
                 self.multi_cell(
                     h=self.tablerowheight,
