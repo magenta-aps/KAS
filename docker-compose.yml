@@ -15,10 +15,10 @@ services:
     network_mode: "host"
     env_file:
       - ./dev-environment/kas.env
-    volumes:
-      - ./kas/:/app
-      - ./data/kas:/srv/media
-      - ./data/kas/er_html:/app/kas/static/doc/er_html
+    # volumes:
+    #   - ./kas/:/app
+    #   - ./data/kas:/srv/media
+    #   - ./data/kas/er_html:/app/kas/static/doc/er_html
     environment:
       - MAKE_MIGRATIONS=true
       - MIGRATE=true
