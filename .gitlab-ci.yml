@@ -18,7 +18,7 @@ variables:
   RELEASE_REGISTRY: docker.io
   RELEASE_REGISTRY_IMAGE: index.docker.io/magentaaps/kas
 
-  KAS_IMAGE_SHA: ${CI_REGISTRY_IMAGE}/kas:${CI_COMMIT_SHA}
+  KAS_IMAGE_SHA: ${CI_REGISTRY_IMAGE}/kas:f3ccbbb241786ddbfc59aba810e6d8d671c19757
   KAS_IMAGE_DEV: magentaaps/kas:dev-kas
   KAS_IMAGE_TAG: magentaaps/kas:${CI_COMMIT_TAG}-kas
 
@@ -42,7 +42,7 @@ variables:
   tags:
     - docker
 
-Lint Python:
+.Lint Python:
   <<: *lint-default
   before_script:
     - pip3 install flake8
@@ -54,7 +54,7 @@ Lint Python:
     - black --check --diff --exclude=migrations kas/
     - black --check --diff --exclude=migrations selvbetjening/
 
-Lint Dockerfiles:
+.Lint Dockerfiles:
   <<: *lint-default
   image: hadolint/hadolint:latest-debian
   before_script:
@@ -63,7 +63,7 @@ Lint Dockerfiles:
   script:
     - git ls-files --exclude='Dockerfile*' --ignored | xargs --max-lines=1 hadolint
 
-Lint REUSE compliance:
+.Lint REUSE compliance:
   extends: .lint-default
   image:
     name: fsfe/reuse:latest
@@ -74,7 +74,7 @@ Lint REUSE compliance:
 # Build stage
 #############
 
-Build KAS image:
+.Build KAS image:
   stage: build
   needs: ["Lint Python", "Lint Dockerfiles", "Lint REUSE compliance"]
   dependencies: []
@@ -92,7 +92,7 @@ Build KAS image:
       --dockerfile=$CI_PROJECT_DIR/docker/Dockerfile.kas
       --destination=${KAS_IMAGE_SHA}
 
-Build Selvbetjening image:
+.Build Selvbetjening image:
   stage: build
   needs: ["Lint Python", "Lint Dockerfiles", "Lint REUSE compliance"]
   dependencies: []
@@ -110,7 +110,7 @@ Build Selvbetjening image:
       --dockerfile=$CI_PROJECT_DIR/docker/Dockerfile.selvbetjening
       --destination=${SELF_IMAGE_SHA}
 
-Build ER image:
+.Build ER image:
   stage: build
   dependencies: []
   image:
@@ -139,7 +139,7 @@ Build ER image:
 KAS Unittest:
   <<: *test-default
   needs: ["Build KAS image"]
-  image: ${KAS_IMAGE_SHA}
+  image: docker/compose:latest
   script:
     - export KAS_IMAGE_SHA=${KAS_IMAGE_SHA}
     - docker-compose up
@@ -192,7 +192,7 @@ KAS Unittest:
           coverage_format: cobertura
           path: /app/coverage.xml
 
-Selvbetjening Unittest:
+.Selvbetjening Unittest:
   <<: *test-default
   needs: ["Build Selvbetjening image"]
   image: ${SELF_IMAGE_SHA}
@@ -272,7 +272,7 @@ Selvbetjening Unittest:
   needs: ["Selvbetjening Unittest"]
 
 
-Release KAS image:
+.Release KAS image:
   # Releases both stable and RC releases.
   extends:
     - .rules:semver-all
@@ -284,7 +284,7 @@ Release KAS image:
       "docker://${KAS_IMAGE_SHA}"
       "docker://${KAS_IMAGE_TAG}"
 
-Release Selvbetjening image:
+.Release Selvbetjening image:
   extends:
     - .rules:semver-all
     - .release-self
@@ -295,7 +295,7 @@ Release Selvbetjening image:
       "docker://${SELF_IMAGE_SHA}"
       "docker://${SELF_IMAGE_TAG}"
 
-Release ER image:
+.Release ER image:
   extends:
     - .rules:semver-all
     - .release-kas
@@ -309,7 +309,7 @@ Release ER image:
 # Configure stage
 #################
 
-Configure Test:
+.Configure Test:
   stage: configure
   extends:
     - .rules:semver-all
@@ -319,7 +319,7 @@ Configure Test:
     # Matches routing in config-updater/config_updater/kas/main.py in salt repo
     ENDPOINT: kas/salt/update-test
 
-Configure Production:
+.Configure Production:
   stage: configure
   extends:
     - .rules:semver-core
@@ -332,7 +332,7 @@ Configure Production:
 # Deploy stage
 ##############
 
-Deploy to Staging:
+.Deploy to Staging:
   stage: deploy
   extends:
     - .rules:semver-all
@@ -346,7 +346,7 @@ Deploy to Staging:
     name: test
     url: "https://test.kas.aka.nanoq.gl"
 
-Deploy to Production:
+.Deploy to Production:
   stage: deploy
   extends:
     - .rules:semver-core
