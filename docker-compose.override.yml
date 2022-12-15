@@ -1,0 +1,19 @@
+version: "3.4"
+services:
+  kas-web:
+    user: "1000:1000" #uid:gid
+
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.kas
+    volumes:
+      - ./kas/:/app
+      - ./data/kas:/srv/media
+      - ./data/kas/er_html:/app/kas/static/doc/er_html
+
+  selvbetjening:
+    user: "1000:1000"
+
+  worker:
+    user: "1000:1000"
+

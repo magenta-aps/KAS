@@ -2,7 +2,7 @@ version: "3.4"
 services:
   kas-web:
     container_name: kas
-    image: $KAS_IMAGE_SHA
+    image: ${KAS_IMAGE_SHA:-kas:latest}
     # build:
     #   context: .
     #   dockerfile: docker/Dockerfile.kas
@@ -31,7 +31,7 @@ services:
 
   kas-cron:
     container_name: kas-cron
-    image: $KAS_IMAGE_SHA
+    image: ${KAS_IMAGE_SHA:-kas:latest}
     depends_on:
       - postgres
       - redis
@@ -48,7 +48,7 @@ services:
   worker:
     #add more containers like this to add more workers
     container_name: worker-one
-    image: $KAS_IMAGE_SHA
+    image: ${KAS_IMAGE_SHA:-kas:latest}
     network_mode: "host"
     depends_on:
       - postgres

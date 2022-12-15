@@ -2,7 +2,6 @@
 *.mo
 env/
 .idea/
-docker-compose.override.yml
 data/kas/*
 !data/kas/.gitkeep
 .spyproject/**
