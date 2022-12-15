@@ -134,7 +134,7 @@ variables:
   stage: test
   dependencies: []
   tags:
-    - docker
+    - docker-priviliged
 
 KAS Unittest:
   <<: *test-default
