@@ -3,9 +3,9 @@ services:
   kas-web:
     container_name: kas
     image: $KAS_IMAGE_SHA
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.kas
+    # build:
+    #   context: .
+    #   dockerfile: docker/Dockerfile.kas
     depends_on:
       - postgres
     # Test-idp needs for adresses to endpoints to be the same from the perspective

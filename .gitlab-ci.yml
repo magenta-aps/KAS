@@ -142,7 +142,10 @@ KAS Unittest:
   image: docker/compose:latest
   script:
     - export KAS_IMAGE_SHA=${KAS_IMAGE_SHA}
-    - docker-compose up
+    - docker-compose up -d kas-web
+    - docker-compose ps
+    - docker-compose down -v
+
 
   # services:
   #  - name: postgres:13
