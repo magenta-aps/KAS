@@ -2,7 +2,7 @@ version: "3.4"
 services:
   kas-web:
     container_name: kas
-    image: kas:latest
+    image: KAS_IMAGE_SHA
     build:
       context: .
       dockerfile: docker/Dockerfile.kas
