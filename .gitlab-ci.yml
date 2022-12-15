@@ -138,7 +138,7 @@ variables:
 
 KAS Unittest:
   <<: *test-default
-  needs: ["Build KAS image"]
+  #needs: ["Build KAS image"]
   image: docker/compose:latest
   script:
     - export KAS_IMAGE_SHA=${KAS_IMAGE_SHA}
