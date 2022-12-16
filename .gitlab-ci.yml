@@ -142,7 +142,7 @@ KAS Unittest:
   image: docker/compose:latest
   script:
     - export KAS_IMAGE_SHA=${KAS_IMAGE_SHA}
-    - docker-compose run --rm kas-web sleep 1
+    - docker-compose -f docker-compose.yml run --rm kas-web sleep 1
 
 
   # services:
