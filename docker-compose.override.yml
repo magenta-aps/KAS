@@ -1,8 +1,9 @@
+# =============================================================================
+# docker-compose.override.yml
+# =============================================================================
 version: "3.4"
 services:
   kas-web:
-    user: "1000:1000" #uid:gid
-
     build:
       context: .
       dockerfile: docker/Dockerfile.kas

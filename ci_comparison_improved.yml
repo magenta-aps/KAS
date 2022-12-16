@@ -1,0 +1,103 @@
+# =============================================================================
+# gitlab.ci.yml
+# =============================================================================
+KAS Unittest:
+  <<: *test-default
+  needs: ["Build KAS image"]
+  image: docker/compose:latest
+  script:
+    - export KAS_IMAGE_SHA=${KAS_IMAGE_SHA}
+    - docker-compose -f docker-compose.yml run --rm kas-web test.sh
+
+  coverage: '/^TOTAL.+?(\d+\%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+          coverage_format: cobertura
+          path: /app/coverage.xml
+
+# =============================================================================
+# docker-compose
+# =============================================================================
+services:
+  web:
+    container_name: kas
+    image: ${KAS_IMAGE_SHA:-kas:latest}
+    depends_on:
+      - database
+    # Test-idp needs for adresses to endpoints to be the same from the perspective
+    # of the test-idp container and for the client (which means accessing 'localhost' adresses always)
+    # This means that all containers should run in "host" network mode, and should conflict
+    # with each others' ports
+    network_mode: "host"
+    env_file:
+      - ./dev-environment/kas.env
+    environment:
+      - MAKE_MIGRATIONS=true
+      - MIGRATE=true
+      # Set this to "DUMMYDATA=" in override file if you do not want dummy data
+      - DUMMYDATA=true
+      - CREATE_USERS=true
+      - CREATE_DUMMY_USERS=true
+      - TEST=true
+
+    # Burde være i docker image
+    command: gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output # reload on code changes
+
+# =============================================================================
+# salt/states/magenta/kas/templates/docker-compose.yml.j2
+# =============================================================================
+services:
+  web:
+    # dette skal fixes i django. ikke i docker-compose.
+    container_name: kas-web-1 #django dosent allow _ in hostnames
+    image: {{ kas_docker_image }}
+    depends_on:
+      - database
+    ports:
+      - "0.0.0.0:443:443" # Behøver ikke være eksponeret fordi rev. proxy
+    env_file:
+      - ./config/kas.env
+    networks:
+      - default
+      - prometheus_lan # Vi udstiller metrikker, så den skal være her.
+    environment:
+      - MIGRATE=true # Burde være i kas.env
+    {%- if create_users is sameas True %}
+      - CREATE_USERS=true # Burde være i kas.env
+    {%- endif %}
+    {%- if create_dummy_users is sameas True %}
+      - CREATE_DUMMY_USERS=true  # Burde være i kas.env
+    {% endif %}
+    {%- if create_dummy_data is sameas True %}
+      - DUMMYDATA=true  # Burde være i kas.env
+    {%- endif %}
+    volumes:
+      - {{ ssl_dir }}:/ssl/ # Burde være reverse proxy - set in pillar file.
+      - /opt/docker/kas/data/kas:/srv/media
+      - /opt/docker/kas/data/er/er_html:/app/kas/static/doc/er_html
+    restart: unless-stopped
+
+    # Burde være i docker image
+    command: gunicorn -b 0.0.0.0:443 project.wsgi:application -w 4 --error-logfile - --access-logfile - --capture-output --certfile=/ssl/kas+ressourcerenter.cert --keyfile=/ssl/kas+ressourcerenter.key --timeout 120
+
+# =============================================================================
+# salt/states/magenta/kas/templates/docker-compose.yml - cleaned
+# =============================================================================
+services:
+  web:
+    restart: unless-stopped
+    depends_on:
+      - database
+
+    # Unik for prod.
+    image: ${KAS_IMAGE}
+    env_file:
+      - ./config/kas.env
+    networks:
+      - default
+      - prometheus_lan
+    volumes:
+      - /opt/docker/kas/data/kas:/srv/media
+      - /opt/docker/kas/data/er/er_html:/app/kas/static/doc/er_html
+
