@@ -104,6 +104,9 @@ def payment_file_by_year(instance, filename):
 
 
 class PrePaymentFile(models.Model):
+    class Meta:
+        ordering = ["uploaded_at"]
+
     uploaded_by = models.ForeignKey(get_user_model(), on_delete=models.PROTECT)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     file = models.FileField(
