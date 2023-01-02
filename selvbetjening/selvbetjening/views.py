@@ -93,7 +93,7 @@ class SetLanguageView(View):
 class HasUserMixin(object):
     @property
     def cpr(self):
-        return self.request.session["user_info"]["cpr"]
+        return self.request.session["user_info"].get("cpr")
 
     @property
     def name(self):
@@ -155,6 +155,10 @@ class YearTabMixin(object):
                 "latest_tax_year": all_years[0]["tax_year"] if len(all_years) else None,
             }
         )
+
+
+class ErrorView(HasUserMixin, TemplateView):
+    pass
 
 
 class PolicyFormView(HasUserMixin, CloseMixin, YearTabMixin, FormView):
