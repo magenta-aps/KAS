@@ -269,6 +269,8 @@ def create_lock_for_year(sender, instance, created, **kwargs):
 
 
 class Person(HistoryMixin, models.Model):
+    class Meta:
+        ordering = ["cpr"]
 
     history = HistoricalRecords()
 
@@ -638,6 +640,8 @@ class PersonTaxYear(HistoryMixin, models.Model):
 
 
 class PersonTaxYearCensus(HistoryMixin, models.Model):
+    class Meta:
+        ordering = ["person_tax_year"]
 
     person_tax_year = models.ForeignKey(
         PersonTaxYear, null=False, on_delete=models.CASCADE
@@ -662,6 +666,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     class Meta:
         unique_together = ["person_tax_year", "pension_company", "policy_number"]
+        ordering = ["person_tax_year"]
 
     person_tax_year = models.ForeignKey(
         PersonTaxYear,
@@ -1604,6 +1609,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
 
 class PreviousYearNegativePayout(models.Model):
+    class Meta:
+        ordering = ["used_from"]
 
     history = HistoricalRecords(history_change_reason_field=models.TextField(null=True))
 
@@ -1642,6 +1649,9 @@ def policydocument_file_path(instance, filename):
 
 
 class PolicyDocument(models.Model):
+    class Meta:
+        ordering = ["person_tax_year", "uploaded_at"]
+
     person_tax_year = models.ForeignKey(
         PersonTaxYear, null=False, db_index=True, on_delete=models.PROTECT
     )
@@ -1696,6 +1706,8 @@ post_save.connect(
 
 
 class R75(models.Model):
+    class Meta:
+        ordering = ["person_tax_year"]
 
     person_tax_year = models.ForeignKey(
         PersonTaxYear,
@@ -1708,6 +1720,8 @@ class R75(models.Model):
 
 
 class PriorYear(models.Model):
+    class Meta:
+        ordering = ["person"]
 
     person = models.ForeignKey(Person, on_delete=models.PROTECT)
 
@@ -1723,6 +1737,9 @@ class Payment(models.Model):
     days = models.IntegerField(
         db_index=True, verbose_name=_("Antal dage"), help_text=_("Antal dage")
     )
+
+    class Meta:
+        ordering = ["days"]
 
 
 class Note(models.Model):
@@ -1785,6 +1802,8 @@ def pensioncompanysummaryfile_path(instance, filename):
 
 
 class PensionCompanySummaryFile(models.Model):
+    class Meta:
+        ordering = ["company", "tax_year"]
 
     company = models.ForeignKey(
         PensionCompany,
@@ -1887,6 +1906,8 @@ post_delete.connect(
 
 
 class PensionCompanySummaryFileDownload(models.Model):
+    class Meta:
+        ordering = ["downloaded_at"]
 
     downloaded_by = models.ForeignKey(
         get_user_model(),
@@ -2208,6 +2229,7 @@ class FinalSettlement(EboksDispatch):
                 condition=Q(pseudo=True),
             )
         ]
+        ordering = ["person_tax_year"]
 
 
 def delete_pdf(sender, instance, using, **kwargs):
@@ -2226,6 +2248,9 @@ def agterskrivelse_file_path(instance, filename):
 
 
 class Agterskrivelse(EboksDispatch):
+    class Meta:
+        ordering = ["person_tax_year"]
+
     uuid = models.UUIDField(primary_key=True, default=uuid4)
     person_tax_year = models.ForeignKey(PersonTaxYear, on_delete=models.CASCADE)
     pdf = models.FileField(upload_to=agterskrivelse_file_path)
@@ -2260,6 +2285,9 @@ class AddressFromDafo(models.Model):
     def __str__(self):
         return "%s - %s" % (self.name, self.full_address)
 
+    class Meta:
+        ordering = ["cpr"]
+
 
 @receiver(post_save, sender=FinalSettlement)
 def cancel_batch_on_save(sender, instance, **kwargs):
@@ -2282,6 +2310,9 @@ def cancel_batch_on_save(sender, instance, **kwargs):
 
 
 class RepresentationToken(models.Model):
+    class Meta:
+        ordering = ["created"]
+
     token = models.CharField(
         max_length=64,
         null=False,
