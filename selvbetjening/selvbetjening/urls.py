@@ -2,6 +2,7 @@ from django.conf.urls import include
 from django.urls import path
 from django.views.generic import RedirectView, TemplateView
 from selvbetjening.views import CustomJavaScriptCatalog, SetLanguageView
+from selvbetjening.views import ErrorView
 from selvbetjening.views import PolicyFormView, PolicyDetailView, PolicyDetailPriorView
 from selvbetjening.views import RepresentationStartView, RepresentationStopView
 from selvbetjening.views import ViewFinalSettlementView
@@ -25,7 +26,7 @@ urlpatterns = [
     ),
     path(
         "policy/no_person_data/",
-        TemplateView.as_view(template_name="not_found.html"),
+        ErrorView.as_view(template_name="not_found.html"),
         name="person-not-found",
     ),
     path(

@@ -38,7 +38,7 @@ class EskatModelsTestCase(TestCase):
 
     def test_delete_protected(self):
         person = Person.objects.create()
-        tax_year = TaxYear.objects.create(year=2022)
+        tax_year = TaxYear.objects.create(year=2023)
         person_tax_year = PersonTaxYear.objects.create(tax_year=tax_year, person=person)
         PolicyDocument.objects.create(person_tax_year=person_tax_year)
 
