@@ -162,7 +162,10 @@
                 Kapitalafkastskat at betale for police nr. {{ policy_number }}
                 {% endblocktranslate %}
             </td>
-            <td>{{ updated_policy.get_calculation.tax_to_pay }}</td>
+            <th>
+                {{ updated_policy.get_calculation.tax_to_pay }}
+                {% if updated_policy.get_calculation.tax_to_pay < 100 %}*{% endif %}
+            </th>
         {% endif %} 
     </tr>
     {% endif %}
@@ -171,17 +174,17 @@
             <td>
                 <b>{% translate 'Kapitalafkastskat at betale i alt for policer i ' %}{{ updated_policy.person_tax_year.tax_year.year }}</b>
                 {% blocktranslate asvar help_text_to_pay with tax=updated_policy.get_calculation.tax_with_deductions paid=updated_policy.preliminary_paid_amount %}
-                Skat at betale i alt for policer ({{ tax }}) - Foreløbigt modtagne indbetalinger i alt ({{ paid }})
+                Skat at betale for policer, hvor betalingen overstiger 100kr. - Forudbetalt kapitalafkastskat
                 {% endblocktranslate %}
                 {% include 'includes/help_text/question_mark.html' with target_id='updated_tax_to_pay' right=True %}
                 {% include 'includes/help_text/collapse.html' with help_text=help_text_to_pay target_id='updated_tax_to_pay' %}
             </td>
             <th>
-                {{ updated_policy.get_calculation.tax_to_pay }}
-                {% if updated_policy.get_calculation.tax_to_pay < 100 %}*{% endif %}
+                {{ updated_total_payment }}
+                {% if updated_total_payment < 100 %}*{% endif %}
             </th>
         </tr>
 </table>
-{% if updated_policy.get_calculation.tax_to_pay < 100 %}
-            <p style="text-align:right">{% translate "* Da den samlede kapitalafkastskat er under 100kr. bortfalder opkrævningen" %}</p>
+{% if updated_policy.get_calculation.tax_to_pay < 100 or total_payment < 100 %}
+            <p style="text-align:right">{% translate "* Opkrævninger under minimumsgrænsen på 100kr. bortfalder" %}</p>
 {% endif %}
