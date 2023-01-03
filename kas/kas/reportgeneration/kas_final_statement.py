@@ -264,8 +264,10 @@ class TaxFinalStatementPDF(FPDF):
             active=True, slutlignet=True
         ):
             available_deduction_data = policy.calculate_available_yearly_deduction()
-            assessed_amount = policy.get_assessed_amount(only_adjusted=False)
+            assessed_amount = policy.get_assessed_amount(only_adjusted=True)
 
+            # NOTE: Change perform_calculation method to always take initial amount to
+            # always be adjusted
             calculation_result = policy.perform_calculation(
                 initial_amount=assessed_amount,
                 taxable_days_in_year=person_tax_year.number_of_days or 0,

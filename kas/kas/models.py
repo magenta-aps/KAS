@@ -924,16 +924,13 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         full_tax = math.floor(taxable_amount * settings.KAS_TAX_RATE)
 
         tax_with_deductions = max(0, full_tax - max(0, foreign_paid_amount))
-        if (
-            abs(tax_with_deductions - preliminary_payment)
-            < settings.TRANSACTION_INDIFFERENCE_LIMIT
-        ):
+        tax_to_pay = tax_with_deductions - preliminary_payment
+        if abs(tax_to_pay) < settings.TRANSACTION_INDIFFERENCE_LIMIT:
             cls(indifference_limited=True)
+            tax_to_pay = 0
 
         if pension_company_pays:
             tax_to_pay = 0
-        else:
-            tax_to_pay = tax_with_deductions - preliminary_payment
 
         return {
             "initial_amount": initial_amount,
@@ -1062,7 +1059,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     def get_calculation(self):
         only_adjusted_amounts = False
         return PolicyTaxYear.perform_calculation(
-            self.get_assessed_amount(only_adjusted_amounts),
+            initial_amount=self.get_assessed_amount(only_adjusted_amounts),
             days_in_year=self.tax_year.days_in_year,
             taxable_days_in_year=self.person_tax_year.number_of_days,
             available_deduction_data=self.calculate_available_yearly_deduction(),
@@ -2027,7 +2024,9 @@ class FinalSettlement(EboksDispatch):
 
         total_tax = sum(
             [
-                policy.get_calculation()["tax_with_deductions"]
+                policy.get_calculation()["tax_to_pay"]
+                # Testing
+                #policy.get_calculation()["tax_with_deductions"]
                 for policy in self.person_tax_year.active_policies_qs
                 if not policy.pension_company_pays
             ]
