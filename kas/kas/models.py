@@ -2026,8 +2026,6 @@ class FinalSettlement(EboksDispatch):
         total_tax = sum(
             [
                 policy.get_calculation()["tax_to_pay"]
-                # Testing
-                # policy.get_calculation()["tax_with_deductions"]
                 for policy in self.person_tax_year.active_policies_qs
                 if not policy.pension_company_pays
             ]
