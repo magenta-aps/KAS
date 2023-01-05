@@ -933,7 +933,6 @@ class PolicyTaxYear(HistoryMixin, models.Model):
                 cls(indifference_limited=True)
                 tax_to_pay = 0
 
-
         return {
             "initial_amount": initial_amount,
             "days_in_year": days_in_year,
