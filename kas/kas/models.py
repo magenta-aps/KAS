@@ -2027,7 +2027,9 @@ class FinalSettlement(EboksDispatch):
 
         total_tax = sum(
             [
-                policy.get_calculation()["tax_to_pay"]  # Samme som tax_with_deductions, men med beløb under 100 kr nulstillet
+                policy.get_calculation()[
+                    "tax_to_pay"
+                ]  # Samme som tax_with_deductions, men med beløb under 100 kr nulstillet
                 for policy in self.person_tax_year.active_policies_qs
                 if not policy.pension_company_pays
             ]
