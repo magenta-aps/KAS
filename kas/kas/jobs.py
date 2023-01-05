@@ -749,10 +749,10 @@ def generate_batch_and_transactions_for_year(job):
         return
 
     collect_date = date.today().replace(month=9, day=1)
-    prisme10Q_batch = Prisme10QBatch(
+    prisme10q_batch = Prisme10QBatch(
         created_by=job.created_by, tax_year=tax_year, collect_date=collect_date
     )
-    prisme10Q_batch.save()
+    prisme10q_batch.save()
 
     settlements = FinalSettlement.objects.filter(
         person_tax_year__tax_year=tax_year,
@@ -764,7 +764,7 @@ def generate_batch_and_transactions_for_year(job):
     for final_settlement in settlements:
         settlements_count += 1
         if final_settlement.get_transaction_amount() != 0:
-            prisme10Q_batch.add_transaction(final_settlement)
+            prisme10q_batch.add_transaction(final_settlement)
             new_transactions += 1
 
     job.result = {

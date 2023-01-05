@@ -13,14 +13,14 @@ class Test10QDateCalculation(TestCase):
         )
 
     def test_writer_successful(self):
-        prisme10Q_content = self.transaction_writer.serialize_transaction(
+        prisme10q_content = self.transaction_writer.serialize_transaction(
             cpr_nummer="1234567890",
             amount_in_dkk=1000,
             afstem_noegle="e688d6a6fc65424483819520bbbe7745",
             rate_text="Testing\r\nwith\r\nlines",
         )
         self.assertEquals(
-            prisme10Q_content,
+            prisme10q_content,
             "\r\n".join(
                 [
                     " KAS100202202181235090002220920221234567890001234567890",
