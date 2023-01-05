@@ -872,9 +872,9 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
         context["policy_count"] = len(context["object_list"])
         context["total_tax_with_deductions"] = sum(
             [
-                x.history_object.get_calculation()["tax_with_deductions"]
-                for x in context["object_list"]
-                if not x.history_object.pension_company_pays
+                policytaxyear.history_object.get_calculation()["tax_with_deductions"]
+                for policytaxyear in context["object_list"]
+                if not policytaxyear.history_object.pension_company_pays
             ]
         )
         context["total_payment"] = sum(
