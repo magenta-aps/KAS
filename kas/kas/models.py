@@ -2300,7 +2300,7 @@ def cancel_batch_on_save(sender, instance, **kwargs):
         ).exclude(
             status="transferred",
         ):
-            batch = transaction.prisme10Q_batch
+            batch = transaction.prisme10q_batch
             if batch.status in (
                 Prisme10QBatch.STATUS_CREATED,
                 Prisme10QBatch.STATUS_DELIVERY_FAILED,

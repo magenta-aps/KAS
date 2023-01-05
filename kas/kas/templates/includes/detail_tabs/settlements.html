@@ -22,7 +22,7 @@
             <td>
                 {% with transaction=settlement.get_transaction %}
                 {% if transaction %}
-                    <a href="{% url 'prisme:batch' pk=transaction.prisme10Q_batch.pk %}">{{ transaction.amount }} ({{ transaction.get_10q_status_display }})</a>
+                    <a href="{% url 'prisme:batch' pk=transaction.prisme10q_batch.pk %}">{{ transaction.amount }} ({{ transaction.get_10q_status_display }})</a>
                 {% endif %}
                 {% endwith %}
             </td>

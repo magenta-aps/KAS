@@ -430,11 +430,11 @@ class TestCalculationMath(TestCase):
         )
 
         # Put result in a transaction
-        prisme10Q_batch = Prisme10QBatch.objects.create(
+        prisme10q_batch = Prisme10QBatch.objects.create(
             tax_year=person_tax_year.tax_year
         )
-        prisme10Q_batch.add_transaction(final_statement)
-        transaction = Transaction.objects.get(prisme10Q_batch=prisme10Q_batch)
+        prisme10q_batch.add_transaction(final_statement)
+        transaction = Transaction.objects.get(prisme10q_batch=prisme10q_batch)
         transaction.status = "transferred"
         transaction.save()
 

@@ -592,7 +592,7 @@ class PaymentOverrideTestCase(BaseTestCase):
         self.assertEqual(transaction.amount, self.policy_tax_year.calculated_result)
         self.assertEqual(transaction.type, "prisme10q")
         self.assertEqual(transaction.status, "created")
-        self.assertEqual(transaction.prisme10Q_batch, batch)
+        self.assertEqual(transaction.prisme10q_batch, batch)
 
 
 class CreateLockForYearTestCase(BaseTestCase):

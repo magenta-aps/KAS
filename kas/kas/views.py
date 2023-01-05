@@ -1628,12 +1628,12 @@ class FinalSettlementGenerateView(
         if final_statement.get_transaction_amount() != 0:
             collect_date = get_due_date(date.today())
 
-            prisme10Q_batch = Prisme10QBatch.objects.create(
+            prisme10q_batch = Prisme10QBatch.objects.create(
                 created_by=self.request.user,
                 tax_year=self.object.tax_year,
                 collect_date=collect_date,
             )
-            prisme10Q_batch.add_transaction(final_statement)
+            prisme10q_batch.add_transaction(final_statement)
 
         messages.add_message(
             self.request,
@@ -1710,7 +1710,7 @@ class DispatchFinalSettlement(PermissionRequiredWithMessage, UpdateView):
                     FinalSettlement
                 ).id,
             )
-            batch = transaction.prisme10Q_batch
+            batch = transaction.prisme10q_batch
             return HttpResponseRedirect(
                 reverse("prisme:batch-send", kwargs={"pk": batch.pk})
             )

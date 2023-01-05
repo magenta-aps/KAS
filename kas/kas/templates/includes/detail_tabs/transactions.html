@@ -16,8 +16,8 @@
             <td>{{ transaction.get_type_display }}</td>
             <td>{{ transaction.created_at|date:"SHORT_DATETIME_FORMAT" }}</td>
             <td>
-                {% if transaction.type == 'prisme10q' and transaction.prisme10Q_batch is not None %}
-                <a href="{% url 'prisme:batch' pk=transaction.prisme10Q_batch.pk %}">{{transaction.prisme10Q_batch}}</a>
+                {% if transaction.type == 'prisme10q' and transaction.prisme10q_batch is not None %}
+                <a href="{% url 'prisme:batch' pk=transaction.prisme10q_batch.pk %}">{{transaction.prisme10q_batch}}</a>
                 {% endif %}
             </td>
             <td>{{ transaction.amount }}</td>
