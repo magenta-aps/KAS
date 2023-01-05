@@ -923,12 +923,14 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         # Calculate the tax
         full_tax = math.floor(taxable_amount * settings.KAS_TAX_RATE)
 
-        tax_with_deductions = max(0, full_tax - max(0, foreign_paid_amount))
+        tax_with_deductions = max(
+            0, full_tax - max(0, foreign_paid_amount) - max(0, preliminary_payment)
+        )
 
         if pension_company_pays:
             tax_to_pay = 0
         else:
-            tax_to_pay = tax_with_deductions - preliminary_payment
+            tax_to_pay = tax_with_deductions
             if abs(tax_to_pay) < settings.TRANSACTION_INDIFFERENCE_LIMIT:
                 cls(indifference_limited=True)
                 tax_to_pay = 0
