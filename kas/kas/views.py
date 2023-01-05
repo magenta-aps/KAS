@@ -879,16 +879,18 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
         )
         context["total_payment"] = sum(
             [
-                x.history_object.get_calculation()["tax_to_pay"]
-                for x in context["object_list"]
-                if not x.history_object.pension_company_pays
+                policytaxyear.history_object.get_calculation()["tax_to_pay"]
+                for policytaxyear in context["object_list"]
+                if not policytaxyear.history_object.pension_company_pays
             ]
         )
         context["updated_total_payment"] = sum(
             [
-                x.history_object.updated_policy_tax_year.get_calculation()["tax_to_pay"]
-                for x in context["object_list"]
-                if not x.history_object.pension_company_pays
+                policytaxyear.history_object.updated_policy_tax_year.get_calculation()[
+                    "tax_to_pay"
+                ]
+                for policytaxyear in context["object_list"]
+                if not policytaxyear.history_object.pension_company_pays
             ]
         )
         if abs(context["total_payment"]) < settings.TRANSACTION_INDIFFERENCE_LIMIT:
