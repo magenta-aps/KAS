@@ -655,13 +655,13 @@ class TaxFinalStatementPDF(FPDF):
             # A) Is the person taxable for less than the entire year?
             # B) Has the person not reported anything by themselves (selvangivet)?
             # C) Has an administrator not reported any amount (ansat beløb)?
-            if (
+            fewer_than_max_days = (
                 self._person_tax_year.number_of_days
                 < self._person_tax_year.tax_year.days_in_year
-                and not (
-                    policy.get("original_assessed_amount")
-                    or policy.get("self_reported_amount")
-                )
+            )
+            if fewer_than_max_days and not (
+                policy.get("original_assessed_amount")
+                or policy.get("self_reported_amount")
             ):
                 self.set_xy(self.left_margin, self.yposition)
                 self.multi_cell(
