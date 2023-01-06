@@ -76,6 +76,15 @@ class TaxFinalStatementPDF(FPDF):
     }
     policy_table_header_2 = {"gl": "Policenormu: {}", "dk": "Policenummer: {}"}
     policy_row_text_1 = {"gl": "Pigisanit pissarsiat", "dk": "Kapitalafkast"}
+    #TODO: Get translations for policy_row_text_1a/b
+    policy_row_text_1a = {
+        "gl": "Nammineerluni nalunaarutigineqartoq", # Only translated "Selvangivet"
+        "dk": "Selvangivet kapitalafkast",
+    }
+    policy_row_text_1b = {
+        "gl":"Ansat kapitalafkast", # Obviously not translated
+        "dk":"Ansat kapitalafkast",
+    }
     policy_row_text_2 = {
         "gl": "Ullunut akileraartussaaffinnut naatsorsukkat ({1}-init {0}-t)",
         "dk": "Justeret for antal skattepligtsdage i året ({0} af {1})",
@@ -275,7 +284,6 @@ class TaxFinalStatementPDF(FPDF):
                 available_deduction_data=available_deduction_data,
                 adjust_for_days_in_year=False,
             )
-
             self._pretty_policies.append(
                 {
                     "company": (policy.pension_company.name or "-"),
@@ -287,6 +295,9 @@ class TaxFinalStatementPDF(FPDF):
                     "year_adjusted_amount": calculation_result.get(
                         "year_adjusted_amount"
                     ),
+                    "prefilled_amount": policy.prefilled_amount, # Always present, not adjusted for tax days
+                    "self_reported_amount": policy.self_reported_amount, # May be present, adjusted for tax days
+                    "original_assessed_amount": policy.assessed_amount, # May be present, adjusted for tax days
                     "assessed_amount": assessed_amount,
                     "available_negative_return": policy.available_negative_return,
                     "taxable_amount": calculation_result.get("taxable_amount"),
@@ -592,28 +603,63 @@ class TaxFinalStatementPDF(FPDF):
             self.set_font(self.std_font_name, "", self.std_table_font_size)
 
             self.set_xy(self.left_margin, self.yposition)
-            self.multi_cell(
-                h=self.tablerowheight,
-                align="L",
-                w=c1w,
-                txt=self.policy_row_text_1[language],
-                border=1,
-            )
+            if policy.get("original_assessed_amount"):
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="L",
+                    w=c1w,
+                    txt=self.policy_row_text_1b[language],
+                    border=1,
+                )
+            elif policy.get("self_reported_amount"):
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="L",
+                    w=c1w,
+                    txt=self.policy_row_text_1a[language],
+                    border=1,
+                )
+            else:
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="L",
+                    w=c1w,
+                    txt=self.policy_row_text_1[language],
+                    border=1,
+                )
             self.set_xy(self.left_margin + c1w, self.yposition)
             assessed_amount = policy.get("assessed_amount")
-            self.multi_cell(
-                h=self.tablerowheight,
-                align="R",
-                w=c2w,
-                txt="{:,}".format(assessed_amount).replace(",", "."),
-                border=1,
-            )
+            if not (policy.get("original_assessed_amount")
+                or policy.get("self_reported_amount")
+            ):
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="R",
+                    w=c2w,
+                    txt="{:,}".format(policy.get("prefilled_amount")).replace(",", "."),
+                    border=1,
+                )
+            else:
+                self.multi_cell(
+                    h=self.tablerowheight,
+                    align="R",
+                    w=c2w,
+                    txt="{:,}".format(assessed_amount).replace(",", "."),
+                    border=1,
+                )
             self.yposition = self.get_y()
 
             year_adjusted_amount = policy.get("year_adjusted_amount")
+            # This is not pretty, but to sum up:
+            # A) Is the person taxable for less than the entire year?
+            # B) Has the person not reported anything by themselves (selvangivet)?
+            # C) Has an administrator not reported any amount (ansat beløb)?
             if (
                 self._person_tax_year.number_of_days
                 < self._person_tax_year.tax_year.days_in_year
+                and not (policy.get("original_assessed_amount")
+                    or policy.get("self_reported_amount")
+                )
             ):
                 self.set_xy(self.left_margin, self.yposition)
                 self.multi_cell(
