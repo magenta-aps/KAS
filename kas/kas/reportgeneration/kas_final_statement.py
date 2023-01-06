@@ -76,14 +76,14 @@ class TaxFinalStatementPDF(FPDF):
     }
     policy_table_header_2 = {"gl": "Policenormu: {}", "dk": "Policenummer: {}"}
     policy_row_text_1 = {"gl": "Pigisanit pissarsiat", "dk": "Kapitalafkast"}
-    #TODO: Get translations for policy_row_text_1a/b
+    # TODO: Get translations for policy_row_text_1a/b
     policy_row_text_1a = {
-        "gl": "Nammineerluni nalunaarutigineqartoq", # Only translated "Selvangivet"
+        "gl": "Nammineerluni nalunaarutigineqartoq",  # Only translated "Selvangivet"
         "dk": "Selvangivet kapitalafkast",
     }
     policy_row_text_1b = {
-        "gl":"Ansat kapitalafkast", # Obviously not translated
-        "dk":"Ansat kapitalafkast",
+        "gl": "Ansat kapitalafkast",  # Obviously not translated
+        "dk": "Ansat kapitalafkast",
     }
     policy_row_text_2 = {
         "gl": "Ullunut akileraartussaaffinnut naatsorsukkat ({1}-init {0}-t)",
@@ -295,9 +295,9 @@ class TaxFinalStatementPDF(FPDF):
                     "year_adjusted_amount": calculation_result.get(
                         "year_adjusted_amount"
                     ),
-                    "prefilled_amount": policy.prefilled_amount, # Always present, not adjusted for tax days
-                    "self_reported_amount": policy.self_reported_amount, # May be present, adjusted for tax days
-                    "original_assessed_amount": policy.assessed_amount, # May be present, adjusted for tax days
+                    "prefilled_amount": policy.prefilled_amount,  # Always present, not adjusted for tax days
+                    "self_reported_amount": policy.self_reported_amount,  # May be present, adjusted for tax days
+                    "original_assessed_amount": policy.assessed_amount,  # May be present, adjusted for tax days
                     "assessed_amount": assessed_amount,
                     "available_negative_return": policy.available_negative_return,
                     "taxable_amount": calculation_result.get("taxable_amount"),
@@ -629,7 +629,8 @@ class TaxFinalStatementPDF(FPDF):
                 )
             self.set_xy(self.left_margin + c1w, self.yposition)
             assessed_amount = policy.get("assessed_amount")
-            if not (policy.get("original_assessed_amount")
+            if not (
+                policy.get("original_assessed_amount")
                 or policy.get("self_reported_amount")
             ):
                 self.multi_cell(
@@ -657,7 +658,8 @@ class TaxFinalStatementPDF(FPDF):
             if (
                 self._person_tax_year.number_of_days
                 < self._person_tax_year.tax_year.days_in_year
-                and not (policy.get("original_assessed_amount")
+                and not (
+                    policy.get("original_assessed_amount")
                     or policy.get("self_reported_amount")
                 )
             ):
