@@ -1629,6 +1629,13 @@ class FinalSettlementGenerateView(
                     "Der kan kun genereres nye slutopgørelser hvis året er i genoptagelsesperioden"
                 ),
             )
+        if not self.object.slutlignet:
+            return HttpResponse(
+                status=400,
+                content=_(
+                    "Der kan ikke generes nye slutopgørelser, hvis der er ikke-slutlignede policer"
+                ),
+            )
 
         final_statement = TaxFinalStatementPDF.generate_pdf(
             person_tax_year=self.object, **form.cleaned_data
