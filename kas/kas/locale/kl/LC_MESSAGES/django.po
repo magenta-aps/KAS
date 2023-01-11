@@ -2489,7 +2489,7 @@ msgstr ""
 
 #: kas/views.py
 msgid ""
-"Der kan ikke generes nye slutopgørelser, hvis der er ikke-slutlignede policer"
+"Der kan ikke genereres nye slutopgørelser, hvis der er ikke-slutlignede policer"
 msgstr ""
 
 #: kas/views.py
