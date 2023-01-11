@@ -273,12 +273,15 @@ class TaxFinalStatementPDF(FPDF):
             active=True, slutlignet=True
         ):
             available_deduction_data = policy.calculate_available_yearly_deduction()
-            assessed_amount = policy.get_assessed_amount(only_adjusted=True)
+            base_calculation_amount = policy.get_base_calculation_amount(
+                only_adjusted=True
+            )
+            prefilled_amount = policy.prefilled_amount_edited or policy.prefilled_amount
 
             # NOTE: Change perform_calculation method to always take initial amount to
             # always be adjusted
             calculation_result = policy.perform_calculation(
-                initial_amount=assessed_amount,
+                initial_amount=base_calculation_amount,
                 taxable_days_in_year=person_tax_year.number_of_days or 0,
                 days_in_year=person_tax_year.tax_year.days_in_year or 0,
                 available_deduction_data=available_deduction_data,
@@ -292,13 +295,10 @@ class TaxFinalStatementPDF(FPDF):
                     "taxable_days_in_year": calculation_result.get(
                         "taxable_days_in_year"
                     ),
-                    "year_adjusted_amount": calculation_result.get(
-                        "year_adjusted_amount"
-                    ),
-                    "prefilled_amount": policy.prefilled_amount,  # Always present, not adjusted for tax days
+                    "prefilled_amount": prefilled_amount,  # Always present, not adjusted for tax days
                     "self_reported_amount": policy.self_reported_amount,  # May be present, adjusted for tax days
-                    "original_assessed_amount": policy.assessed_amount,  # May be present, adjusted for tax days
-                    "assessed_amount": assessed_amount,
+                    "assessed_amount": policy.assessed_amount,  # May be present, adjusted for tax days
+                    "base_calculation_amount": base_calculation_amount,
                     "available_negative_return": policy.available_negative_return,
                     "taxable_amount": calculation_result.get("taxable_amount"),
                     "tax_with_deductions": calculation_result.get(
@@ -628,10 +628,10 @@ class TaxFinalStatementPDF(FPDF):
                     border=1,
                 )
             self.set_xy(self.left_margin + c1w, self.yposition)
-            assessed_amount = policy.get("assessed_amount")
+            base_calculation_amount = policy.get("base_calculation_amount")
+
             if not (
-                policy.get("original_assessed_amount")
-                or policy.get("self_reported_amount")
+                policy.get("assessed_amount") or policy.get("self_reported_amount")
             ):
                 self.multi_cell(
                     h=self.tablerowheight,
@@ -645,12 +645,11 @@ class TaxFinalStatementPDF(FPDF):
                     h=self.tablerowheight,
                     align="R",
                     w=c2w,
-                    txt="{:,}".format(assessed_amount).replace(",", "."),
+                    txt="{:,}".format(base_calculation_amount).replace(",", "."),
                     border=1,
                 )
             self.yposition = self.get_y()
 
-            year_adjusted_amount = policy.get("year_adjusted_amount")
             # This is not pretty, but to sum up:
             # A) Is the person taxable for less than the entire year?
             # B) Has the person not reported anything by themselves (selvangivet)?
@@ -660,8 +659,7 @@ class TaxFinalStatementPDF(FPDF):
                 < self._person_tax_year.tax_year.days_in_year
             )
             if fewer_than_max_days and not (
-                policy.get("original_assessed_amount")
-                or policy.get("self_reported_amount")
+                policy.get("assessed_amount") or policy.get("self_reported_amount")
             ):
                 self.set_xy(self.left_margin, self.yposition)
                 self.multi_cell(
@@ -679,12 +677,12 @@ class TaxFinalStatementPDF(FPDF):
                     h=self.tablerowheight,
                     align="R",
                     w=c2w,
-                    txt="{:,}".format(year_adjusted_amount).replace(",", "."),
+                    txt="{:,}".format(base_calculation_amount).replace(",", "."),
                     border=1,
                 )
                 self.yposition = self.get_y()
 
-            if year_adjusted_amount < 0:
+            if base_calculation_amount < 0:
                 # If we got a negative amount this is the last row to write on a policy, this indicate the amount to be used in future years
                 self.set_font(self.std_font_name, "B", self.std_table_font_size)
                 self.set_xy(self.left_margin, self.yposition)
@@ -696,12 +694,11 @@ class TaxFinalStatementPDF(FPDF):
                     border=1,
                 )
                 self.set_xy(self.left_margin + c1w, self.yposition)
-                year_adjusted_amount = policy.get("year_adjusted_amount")
                 self.multi_cell(
                     h=self.tablerowheight,
                     align="R",
                     w=c2w,
-                    txt="{:,}".format(abs(year_adjusted_amount)).replace(",", "."),
+                    txt="{:,}".format(abs(base_calculation_amount)).replace(",", "."),
                     border=1,
                 )
                 self.yposition = self.get_y()

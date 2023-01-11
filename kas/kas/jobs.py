@@ -685,7 +685,7 @@ def autoligning(job):
                 autolignet += 1
 
             # Make sure assessed_amount is stored in the database
-            policy.assessed_amount = policy.get_assessed_amount()
+            policy.base_calculation_amount = policy.get_base_calculation_amount()
 
             # Recalculate used negative amounts etc.
             policy.recalculate(

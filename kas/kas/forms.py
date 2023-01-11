@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 from django.utils.safestring import mark_safe
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from kas.fields import PensionCompanyChoiceField, DateInput
+from kas.fields import PensionCompanyChoiceField, DateInput, DisabledIntegerField
 from kas.forms_mixin import BootstrapForm
 from kas.models import (
     PersonTaxYear,
@@ -394,7 +394,9 @@ class EditAmountsUpdateForm(forms.ModelForm, BootstrapForm):
             "assessed_amount",
             "slutlignet",
             "next_processing_date",
+            "base_calculation_amount",
         )
+        field_classes = {"base_calculation_amount": DisabledIntegerField}
         widgets = {"next_processing_date": DateInput()}
 
     def save(self, commit=True):
