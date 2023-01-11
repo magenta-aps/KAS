@@ -276,7 +276,9 @@ class TaxFinalStatementPDF(FPDF):
             base_calculation_amount = policy.get_base_calculation_amount(
                 only_adjusted=True
             )
-            prefilled_amount = policy.prefilled_amount_edited or policy.prefilled_amount
+            prefilled_amount = (
+                policy.prefilled_amount_edited or policy.prefilled_amount or 0
+            )
 
             # NOTE: Change perform_calculation method to always take initial amount to
             # always be adjusted
