@@ -1097,9 +1097,8 @@ class EditAmountsUpdateView(
         )
 
     def get_form_kwargs(self):
-        if self.object.assessed_amount is None:
-            # if the assessed amount is not set prefill it
-            self.object.assessed_amount = self.object.get_assessed_amount()
+        # Always set the base_calculation_amount through the get_base_calculation_amount priorities
+        self.object.base_calculation_amount = self.object.get_base_calculation_amount()
         if self.object.prefilled_amount_edited is None:
             # Fill out prefilled_amount_edited since we are not allowed to change prefilled_amount.
             self.object.prefilled_amount_edited = self.object.prefilled_amount

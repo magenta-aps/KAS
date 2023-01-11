@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-09 10:25+0100\n"
+"POT-Creation-Date: 2023-01-11 10:05+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -422,6 +422,10 @@ msgstr ""
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 #: kas/templates/includes/detail_tabs/policies_list.html
 msgid "Ansat beløb"
+msgstr ""
+
+#: kas/models.py
+msgid "Nuværende beløb til grund for skatteberegningen"
 msgstr ""
 
 #: kas/models.py
@@ -2481,6 +2485,11 @@ msgstr ""
 #: kas/views.py
 msgid ""
 "Der kan kun genereres nye slutopgørelser hvis året er i genoptagelsesperioden"
+msgstr ""
+
+#: kas/views.py
+msgid ""
+"Der kan ikke generes nye slutopgørelser, hvis der er ikke-slutlignede policer"
 msgstr ""
 
 #: kas/views.py

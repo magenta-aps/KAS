@@ -31,7 +31,7 @@
             <td class="text-right">{{ policy.prefilled_adjusted_amount|default_if_none:"" }}</td>
             <td class="text-right">{{ policy.self_reported_amount|default_if_none:"" }}</td>
             <td class="text-right">{{ policy.assessed_amount|default_if_none:"" }}</td>
-            <td class="text-right"><strong>{{ policy.get_assessed_amount|default_if_none:"" }}</strong></td>
+            <td class="text-right"><strong>{{ policy.get_base_calculation_amount|default_if_none:"" }}</strong></td>
             <td class="text-right">{% if policy.reported_difference %}{{ policy.reported_difference }} ({{ policy.reported_difference_pct }} %){% endif %}</td>
         </tr>
     {% empty %}
