@@ -29,7 +29,11 @@
             role="tabpanel"
             aria-labelledby="policy_{{policy.history_object.id}}_tab"
     >
-        {% include 'kas/policytaxyear_detail_tabbed.html' with policy=policy.history_object %}
+        {% if final_settlement %}
+            {% include 'kas/policytaxyear_detail_tabbed.html' with policy=policy.history_object %}
+        {% else %}
+            {% include 'kas/policytaxyear_detail_tabbed.html' with policy=policy.history_object.updated_policy_tax_year %}
+        {% endif %}
     </div>
     {% endfor %}
 </div>
