@@ -1632,7 +1632,7 @@ class FinalSettlementGenerateView(
             return HttpResponse(
                 status=400,
                 content=_(
-                    "Der kan ikke generes nye slutopgørelser, hvis der er ikke-slutlignede policer"
+                    "Der kan ikke genereres nye slutopgørelser, hvis der er ikke-slutlignede policer"
                 ),
             )
 
