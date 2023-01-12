@@ -67,7 +67,10 @@
         <td>{{ policy.assessed_amount|default_if_none:'' }}</td>
     </tr>
     <tr>
-        <td>{% translate 'Kapitalafkast' %}</td>
+        <td>{% blocktranslate with taxable_days=calculation.taxable_days_in_year total_days=calculation.days_in_year %}
+            Kapitalafkast ({{taxable_days}} skattedage ud af {{total_days}} dage)
+            {% endblocktranslate %}
+        </td>
         <th>{{ policy.get_base_calculation_amount }}</th>
     </tr>
 

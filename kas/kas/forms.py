@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 from django.utils.safestring import mark_safe
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from kas.fields import PensionCompanyChoiceField, DateInput, DisabledIntegerField
+from kas.fields import PensionCompanyChoiceField, DateInput
 from kas.forms_mixin import BootstrapForm
 from kas.models import (
     PersonTaxYear,
