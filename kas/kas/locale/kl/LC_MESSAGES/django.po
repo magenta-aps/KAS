@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-24 11:29+0100\n"
+"POT-Creation-Date: 2023-01-12 10:39+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -422,6 +422,10 @@ msgstr ""
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 #: kas/templates/includes/detail_tabs/policies_list.html
 msgid "Ansat beløb"
+msgstr ""
+
+#: kas/models.py
+msgid "Nuværende beløb til grund for skatteberegningen"
 msgstr ""
 
 #: kas/models.py
@@ -1114,17 +1118,15 @@ msgid "Kapitalafkastskat at betale i alt for policer i "
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
-#, python-format
 msgid ""
 "\n"
-"                Skat at betale i alt for policer (%(tax)s) - Foreløbigt "
-"modtagne indbetalinger i alt (%(paid)s)\n"
+"                Skat at betale for policer, hvor betalingen overstiger "
+"100kr. - Forudbetalt kapitalafkastskat\n"
 "                "
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
-msgid ""
-"* Da den samlede kapitalafkastskat er under 100kr. bortfalder opkrævningen"
+msgid "* Opkrævninger under minimumsgrænsen på 100kr. bortfalder"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/foreign_notes.html
@@ -2483,6 +2485,11 @@ msgstr ""
 #: kas/views.py
 msgid ""
 "Der kan kun genereres nye slutopgørelser hvis året er i genoptagelsesperioden"
+msgstr ""
+
+#: kas/views.py
+msgid ""
+"Der kan ikke generes nye slutopgørelser, hvis der er ikke-slutlignede policer"
 msgstr ""
 
 #: kas/views.py

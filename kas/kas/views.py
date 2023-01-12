@@ -872,16 +872,25 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
         context["policy_count"] = len(context["object_list"])
         context["total_tax_with_deductions"] = sum(
             [
-                x.history_object.get_calculation()["tax_with_deductions"]
-                for x in context["object_list"]
-                if not x.history_object.pension_company_pays
+                policytaxyear.history_object.get_calculation()["tax_with_deductions"]
+                for policytaxyear in context["object_list"]
+                if not policytaxyear.history_object.pension_company_pays
             ]
         )
         context["total_payment"] = sum(
             [
-                x.history_object.get_calculation()["tax_to_pay"]
-                for x in context["object_list"]
-                if not x.history_object.pension_company_pays
+                policytaxyear.history_object.get_calculation()["tax_to_pay"]
+                for policytaxyear in context["object_list"]
+                if not policytaxyear.history_object.pension_company_pays
+            ]
+        )
+        context["updated_total_payment"] = sum(
+            [
+                policytaxyear.history_object.updated_policy_tax_year.get_calculation()[
+                    "tax_to_pay"
+                ]
+                for policytaxyear in context["object_list"]
+                if not policytaxyear.history_object.pension_company_pays
             ]
         )
         if abs(context["total_payment"]) < settings.TRANSACTION_INDIFFERENCE_LIMIT:
@@ -1088,9 +1097,8 @@ class EditAmountsUpdateView(
         )
 
     def get_form_kwargs(self):
-        if self.object.assessed_amount is None:
-            # if the assessed amount is not set prefill it
-            self.object.assessed_amount = self.object.get_assessed_amount()
+        # Always set the base_calculation_amount through the get_base_calculation_amount priorities
+        self.object.base_calculation_amount = self.object.get_base_calculation_amount()
         if self.object.prefilled_amount_edited is None:
             # Fill out prefilled_amount_edited since we are not allowed to change prefilled_amount.
             self.object.prefilled_amount_edited = self.object.prefilled_amount
@@ -1618,6 +1626,13 @@ class FinalSettlementGenerateView(
                 status=400,
                 content=_(
                     "Der kan kun genereres nye slutopgørelser hvis året er i genoptagelsesperioden"
+                ),
+            )
+        if not self.object.slutlignet:
+            return HttpResponse(
+                status=400,
+                content=_(
+                    "Der kan ikke genereres nye slutopgørelser, hvis der er ikke-slutlignede policer"
                 ),
             )
 

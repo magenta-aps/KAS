@@ -729,6 +729,12 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         null=True
         # Justeret for dage i skatteår
     )
+    base_calculation_amount = models.BigIntegerField(
+        verbose_name=_("Nuværende beløb til grund for skatteberegningen"),
+        blank=True,
+        null=True,
+        # Beløb benyttet til beregningen af kapitalafkastskatten
+    )
 
     year_adjusted_amount = models.BigIntegerField(
         verbose_name=_("Beløb justeret for dage i skatteår"),
@@ -923,17 +929,17 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         # Calculate the tax
         full_tax = math.floor(taxable_amount * settings.KAS_TAX_RATE)
 
-        tax_with_deductions = max(0, full_tax - max(0, foreign_paid_amount))
-        if (
-            abs(tax_with_deductions - preliminary_payment)
-            < settings.TRANSACTION_INDIFFERENCE_LIMIT
-        ):
-            cls(indifference_limited=True)
+        tax_with_deductions = max(
+            0, full_tax - max(0, foreign_paid_amount) - max(0, preliminary_payment)
+        )
 
         if pension_company_pays:
             tax_to_pay = 0
         else:
-            tax_to_pay = tax_with_deductions - preliminary_payment
+            tax_to_pay = tax_with_deductions
+            if abs(tax_to_pay) < settings.TRANSACTION_INDIFFERENCE_LIMIT:
+                cls(indifference_limited=True)
+                tax_to_pay = 0
 
         return {
             "initial_amount": initial_amount,
@@ -957,9 +963,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         """
         Returns the full tax
         """
-        only_adjusted_amounts = False
+        only_adjusted_amounts = True
         calculation_result = self.perform_calculation(
-            initial_amount=int(self.get_assessed_amount(only_adjusted_amounts)),
+            initial_amount=int(self.get_base_calculation_amount(only_adjusted_amounts)),
             taxable_days_in_year=int(self.person_tax_year.number_of_days or 0),
             days_in_year=int(self.person_tax_year.tax_year.days_in_year or 0),
             available_deduction_data=self.calculate_available_yearly_deduction(),
@@ -1060,9 +1066,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         return self.same_policy_qs.filter(person_tax_year__tax_year__year__gt=self.year)
 
     def get_calculation(self):
-        only_adjusted_amounts = False
+        only_adjusted_amounts = True
         return PolicyTaxYear.perform_calculation(
-            self.get_assessed_amount(only_adjusted_amounts),
+            initial_amount=self.get_base_calculation_amount(only_adjusted_amounts),
             days_in_year=self.tax_year.days_in_year,
             taxable_days_in_year=self.person_tax_year.number_of_days,
             available_deduction_data=self.calculate_available_yearly_deduction(),
@@ -1421,12 +1427,12 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             available_by_year[x.year] = min(x.year_adjusted_amount, 0) * -1
             used_by_year[x.year] = 0
             for_year_total[x.year] = 0
-            assessed_amount = x.get_assessed_amount()
+            base_calculation_amount = x.get_base_calculation_amount()
 
-            if assessed_amount is None:
+            if base_calculation_amount is None:
                 for_year_max[x.year] = 0
             else:
-                for_year_max[x.year] = max(0, assessed_amount)
+                for_year_max[x.year] = max(0, base_calculation_amount)
 
         used_matrix = {}
 
@@ -1543,19 +1549,23 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         )
         self.save()
 
-    def get_assessed_amount(self, only_adjusted=True):
+    # def get_assessed_amount(self, only_adjusted=True):
+    def get_base_calculation_amount(self, only_adjusted=True):
         """
-        Return assessed_amount based on estimated_mount, self_reported_amount,
+        Return base_calculation_amount based on estimated_mount, self_reported_amount,
         prefilled_amount_edited and prefilled_amount.
         :param only_adjusted: Whether to use prefilled_adjusted_amount (adjusted) or prefilled_amount (not adjusted)
-        :return: assessed_amount or None
+        :return: base_calculation_amount or None
         """
         amounts_list = [
             self.assessed_amount,
             self.self_reported_amount,
         ]
         if only_adjusted:
-            amounts_list.append(self.prefilled_adjusted_amount)
+            amounts_list += [
+                self.prefilled_adjusted_amount,
+                self.base_calculation_amount,
+            ]
         else:
             amounts_list += [
                 self.prefilled_amount_edited,
@@ -2027,7 +2037,9 @@ class FinalSettlement(EboksDispatch):
 
         total_tax = sum(
             [
-                policy.get_calculation()["tax_with_deductions"]
+                policy.get_calculation()[
+                    "tax_to_pay"
+                ]  # Samme som tax_with_deductions, men med beløb under 100 kr nulstillet
                 for policy in self.person_tax_year.active_policies_qs
                 if not policy.pension_company_pays
             ]
