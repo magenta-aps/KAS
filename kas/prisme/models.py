@@ -57,38 +57,38 @@ class Transaction(models.Model):
     )  # FK to the object who created the transaction
 
     # The batch of Prisme 10Q transactions this belongs to
-    prisme10Q_batch = models.ForeignKey(
+    prisme10q_batch = models.ForeignKey(
         "Prisme10QBatch", null=True, default=None, on_delete=models.PROTECT
     )
     # A summary of how the amount was calculated, used for debug puposes
     summary = models.TextField(blank=True, default="")
     # The three 10Q transaction lines generated for this transaction
-    prisme10Q_content = models.TextField(blank=True, default="")
+    prisme10q_content = models.TextField(blank=True, default="")
 
-    def update_prisme10Q_content(self):
+    def update_prisme10q_content(self):
 
         if self.type != "prisme10q":
             raise ValueError(
                 "Cannot update 10Q content for transaction that is not of type 'prisme10q'"
             )
 
-        transaction_writer = self.prisme10Q_batch.transaction_writer
+        transaction_writer = self.prisme10q_batch.transaction_writer
 
-        self.prisme10Q_content = transaction_writer.serialize_transaction(
+        self.prisme10q_content = transaction_writer.serialize_transaction(
             cpr_nummer=self.person_tax_year.person.cpr,
             amount_in_dkk=self.amount,
             afstem_noegle=str(self.uuid).replace("-", ""),
-            rate_text=self.prisme10Q_batch.tax_year.rate_text_for_transactions,
+            rate_text=self.prisme10q_batch.tax_year.rate_text_for_transactions,
         )
 
     def get_10q_status_display(self):
         # TODO: Have to use special case here since we do not send all transactions
         # in a batch when sending the batch. Therefore we have to use individual
         # status for the transactions when batch status is delivered.
-        if self.prisme10Q_batch.status == Prisme10QBatch.STATUS_DELIVERED:
+        if self.prisme10q_batch.status == Prisme10QBatch.STATUS_DELIVERED:
             return self.get_status_display()
         else:
-            return self.prisme10Q_batch.get_status_display()
+            return self.prisme10q_batch.get_status_display()
 
     def __str__(self):
         return "{type} for {person} på {amount} i {year}".format(
@@ -104,6 +104,9 @@ def payment_file_by_year(instance, filename):
 
 
 class PrePaymentFile(models.Model):
+    class Meta:
+        ordering = ["uploaded_at"]
+
     uploaded_by = models.ForeignKey(get_user_model(), on_delete=models.PROTECT)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     file = models.FileField(
@@ -196,10 +199,13 @@ class Prisme10QBatch(models.Model):
     @property
     def active_transactions_qs(self):
         """Return all transactions which are ready to be sent, and which are not below the indifferent limit
-        Amounts below abs(100) are considered indifferent, and are not sent to prisme"""
+        Amounts below abs(TRANSACTION_INDIFFERENCE_LIMIT) are considered indifferent, and are not sent to prisme"""
         return self.transaction_set.exclude(
             status=["cancelled", "indifferent"]
-        ).exclude(amount__gt=-100, amount__lt=100)
+        ).exclude(
+            amount__gt=-settings.TRANSACTION_INDIFFERENCE_LIMIT,
+            amount__lt=settings.TRANSACTION_INDIFFERENCE_LIMIT,
+        )
 
     @property
     def transactions_below_abs100_qs(self):
@@ -207,14 +213,15 @@ class Prisme10QBatch(models.Model):
         Small amounts below abs(100) are considered indifferent and should be marked for that
         """
         return self.transaction_set.exclude(status=["cancelled", "indifferent"]).filter(
-            amount__gte=-100, amount__lte=100
+            amount__gt=-settings.TRANSACTION_INDIFFERENCE_LIMIT,
+            amount__lt=settings.TRANSACTION_INDIFFERENCE_LIMIT,
         )
 
     def get_content(self, max_entries=None):
         qs = self.active_transactions_qs
         if max_entries is not None:
             qs = qs[:max_entries]
-        return "\r\n".join([x.prisme10Q_content for x in qs])
+        return "\r\n".join([x.prisme10q_content for x in qs])
 
     def add_transaction(self, final_settlement):
         if final_settlement.person_tax_year.tax_year != self.tax_year:
@@ -229,11 +236,11 @@ class Prisme10QBatch(models.Model):
             amount=final_settlement.get_transaction_amount(),
             type="prisme10q",
             source_object=final_settlement,
-            prisme10Q_batch=self,
+            prisme10q_batch=self,
             summary=final_settlement.get_transaction_summary(),
         )
 
-        new_entry.update_prisme10Q_content()
+        new_entry.update_prisme10q_content()
         new_entry.save()
 
     @cached_property

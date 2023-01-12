@@ -1,6 +1,7 @@
 version: "3.4"
 services:
   kas-web:
+    user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
     container_name: kas
     image: kas:latest
     build:
@@ -18,6 +19,7 @@ services:
     volumes:
       - ./kas/:/app
       - ./data/kas:/srv/media
+      - ./data/er/er_html:/app/kas/static/doc/er_html:ro
     environment:
       - MAKE_MIGRATIONS=true
       - MIGRATE=true
@@ -29,6 +31,7 @@ services:
     command: gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output # reload on code changes
 
   kas-cron:
+    user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
     container_name: kas-cron
     image: kas:latest
     depends_on:
@@ -45,6 +48,7 @@ services:
     command: [ "supercronic", "/crontab" ]
 
   worker:
+    user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
     #add more containers like this to add more workers
     container_name: worker-one
     image: kas:latest
@@ -61,6 +65,7 @@ services:
 
 
   postgres:
+    # Do not set `user` here
     container_name: kas-db
     image: postgres:13
     network_mode: "host"
@@ -76,6 +81,7 @@ services:
     network_mode: "host"
 
   selvbetjening:
+    user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
     container_name: kas-selvbetjening
     build:
       context: .
@@ -96,10 +102,10 @@ services:
         gunicorn -b 0.0.0.0:8040 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output
       "
 
-  test-idp:
-    user: "1000:1000"
+  kas-test-idp:
+    user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
     image: kenchan0130/simplesamlphp
-    container_name: idp
+    container_name: kas-test-idp
     network_mode: "host"
     environment:
       SIMPLESAMLPHP_SP_ENTITY_ID: http://localhost:8040/saml/metadata/
@@ -114,6 +120,20 @@ services:
       - ./dev-idp/authsources.php:/var/www/simplesamlphp/config/authsources.php:ro
       - ./dev-idp/saml20-sp-remote.php:/var/www/simplesamlphp/metadata/saml20-sp-remote.php:ro
 
+  kas-er:
+    user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
+    container_name: kas-er
+    image: kas-er:latest
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.er
+    depends_on:
+      - postgres
+    network_mode: "host"
+    env_file:
+      - ./dev-environment/kas.env
+    volumes:
+      - ./data/er:/doc
 
 volumes:
   kas-postgres-data:

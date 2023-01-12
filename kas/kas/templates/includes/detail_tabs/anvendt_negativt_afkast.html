@@ -1,6 +1,10 @@
 {% load i18n %}
-{% with marked_year=policy.year used_negativ_table=policy.previous_year_deduction_table_data %}
-<table class="table table-bordered table-hover table-sm" style="width: auto;">
+{% with marked_year=policy.year %}
+{% with used_negativ_table=policy.previous_year_deduction_table_data %}
+{% with years_with_negative_payout_history=policy.years_with_negative_payout_history %}
+{% with years_with_protected_negative_payout=policy.years_with_protected_negative_payout %}
+{% with latest_used_negativ_table=policy.latest_policy.previous_year_deduction_table_data %}
+<table class="table table-bordered table-hover table-sm" style="width: auto;" label="used_negativ_table">
     <thead>
     <tr class="table-info">
         <th colspan="2"></th>
@@ -29,11 +33,38 @@
                         {% if value == "-" %}
                             <td class="table-secondary"></td>
                         {% else %}
-                            <td class="text-right{% if marked_year == year2 %} table-success{% endif %}">{{ value }}</td>
+                            <td class="text-right{% if marked_year == year2 %} table-success{% endif %}">
+
+                            {% with limit=latest_used_negativ_table|get:year|get:"used_max_by_year"|get:year2%}
+                            {% if  limit > 0 %}
+                            <!-- Edit link -->
+                            <a href="{% url 'kas:define-negative-policy-payout' pk=policy.pk from=year to=year2 %}?back={{policy.year}}">{{ value }}</a>
+                            {% else %}
+                            {{ value }}
+                            {% endif %}
+                            {% endwith %}
+
+                            {% with lookup_tuple=year|make_tuple:year2 %}
+
+                            {% if lookup_tuple in years_with_negative_payout_history %}
+                            <!-- History link -->
+                            <span style="font-size: 0.65em">
+                                <a href="{% url 'kas:define-negative-policy-payout-history' pk=policy.pk from=year to=year2%}?back={{policy.year}}">({% translate 'Historik' %})</a>
+                            </span>
+                            {% endif %}
+
+                            {% if lookup_tuple in years_with_protected_negative_payout %}
+                            <!-- Anchor symbol -->
+                            <span style='font-size: 10px;' class="align-bottom" data-toggle="tooltip" data-placement="bottom" title="{% translate 'Beskyttet mod genberegninger' %}">&#x2693;</span>
+                            {% endif %}
+
+                            {% endwith %}
+
+                            </td>
                         {% endif %}
                     {% endif %}
                 {% endfor%}
-                <td class="text-right">{{ data.remaining }}</td>
+                <td class="text-right" title="{% blocktranslate with remaining=data.remaining %}Tilgængeligt negativt afkast som kan fordeles: {{remaining}} kr.{% endblocktranslate %}">{{ data.remaining }}</td>
             </tr>
         {% endif %}
     {% endfor %}
@@ -41,11 +72,18 @@
         <th colspan="2">{% translate 'Totalt anvendt' %}</th>
         {% for year, data in used_negativ_table.items %}
             {% if not forloop.first %}
-                <td class="text-right{% if marked_year == year %} table-success{% endif %}">{{ data.used_total }}</td>
+                <td
+                        class="text-right{% if marked_year == year %} table-success{% endif %}"
+                        title="{% blocktranslate with used=data.used_total taxable=data.used_max %}Fradrag fra tidligere års tab: {{used}} kr. Totalt skattepligtigt: {{taxable}} kr.{% endblocktranslate %}"
+                >{{ data.used_total }} / {{ data.used_max }}</td>
             {% endif %}
         {% endfor %}
         <td></td>
     </tr>
     </tbody>
 </table>
+{% endwith %}
+{% endwith %}
+{% endwith %}
+{% endwith %}
 {% endwith %}

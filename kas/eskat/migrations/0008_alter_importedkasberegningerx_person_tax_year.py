@@ -13,8 +13,11 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name='importedkasberegningerx',
-            name='person_tax_year',
-            field=models.OneToOneField(null=True, on_delete=django.db.models.deletion.CASCADE, to='kas.persontaxyear'),
+            model_name="importedkasberegningerx",
+            name="person_tax_year",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE, to="kas.persontaxyear",
+                null=True,
+            ),
         ),
     ]

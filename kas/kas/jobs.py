@@ -7,12 +7,15 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 from time import sleep
+from more_itertools import map_except
+from pandas import to_datetime
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import IntegerField, Sum, Q, Count
 from django.db.models.functions import Cast
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from eskat.jobs import delete_protected
 from eskat.models import (
     ImportedKasMandtal,
@@ -137,7 +140,11 @@ def import_mandtal(job):
                 persontaxyearcensus_created += 1
             elif status == PersonTaxYear.UPDATED:
                 persontaxyearcensus_updated += 1
-            person_tax_year.recalculate_mandtal()
+            person_tax_year.recalculate_mandtal(
+                negative_payout_history_note=_(
+                    "Genberegning på grund af import_mandtal job"
+                )
+            )
 
         if i % 1000 == 0:
             progress = progress_start + (i / count) * (100 * progress_factor)
@@ -181,7 +188,7 @@ def import_mandtal(job):
                     co = resultdict.get("co", "")
                     landekode = resultdict.get("landekode", "")
                     civilstand = resultdict.get("civilstand", "")
-                    obj, _ = AddressFromDafo.objects.update_or_create(
+                    obj, __ = AddressFromDafo.objects.update_or_create(
                         cpr=cpr,
                         defaults={
                             "name": name,
@@ -256,6 +263,7 @@ def import_mandtal(job):
 @job_decorator
 def import_r75(job):
     year = job.arguments["year"]
+    tax_year_end_date = to_datetime("%d-09-01" % (year + 1))
 
     job.pretty_title = "%s - %s" % (job.pretty_job_type, year)
     job.save()
@@ -275,9 +283,9 @@ def import_r75(job):
     progress_start = 50
     (policies_created, policies_updated) = (0, 0)
 
-    # This queryset groups results by cpr, res, ktd and creates an sum
+    # This queryset groups results by cpr, res, ktd and creates a sum
     # of extra output field with the sum of the 'renteindtaegt' field.
-    # It must be constructed with the calss in this order to generate
+    # It must be constructed with the calls in this order to generate
     # the correct SELECT .. GROUP BY .. query-
     qs = (
         ImportedR75PrivatePension.objects.values(
@@ -289,6 +297,9 @@ def import_r75(job):
         )
     )
     count = qs.count()
+    users_with_corrected_policies = []
+    users_with_future_r75_data = []
+
     for i, item in enumerate(qs):
         with transaction.atomic():
             person, c = Person.objects.get_or_create(cpr=item["cpr"])
@@ -322,13 +333,64 @@ def import_r75(job):
                     policy_tax_year._change_reason = (
                         "Updated by import"  # needed for autoligning
                     )
-                    policy_tax_year.recalculate()
+                    policy_tax_year.recalculate(
+                        negative_payout_history_note=_(
+                            "Genberegning på grund af import_r75 job"
+                        )
+                    )
                     policy_tax_year.save()
                     policy_tax_year._change_reason = ""
                     if status == PersonTaxYear.CREATED:
                         policies_created += 1
                     elif status == PersonTaxYear.UPDATED:
                         policies_updated += 1
+
+                matching_r75_policies = ImportedR75PrivatePension.objects.filter(
+                    cpr=item["cpr"], tax_year=year, ktd=item["ktd"], res=item["res"]
+                )
+
+                corrected = False
+                r75_amounts = [int(q.renteindtaegt) for q in matching_r75_policies]
+
+                for r75_amount in r75_amounts:
+                    if -r75_amount in r75_amounts:
+                        corrected = True
+                        break
+
+                if corrected:
+                    # Always set corrected = True
+                    person_tax_year.corrected_r75_data = True
+                    person_tax_year.save(update_fields=["corrected_r75_data"])
+                    users_with_corrected_policies.append(item["cpr"])
+                else:
+                    # Only set corrected = False if it was not set to True by this job
+                    if item["cpr"] not in users_with_corrected_policies:
+                        person_tax_year.corrected_r75_data = False
+                        person_tax_year.save(update_fields=["corrected_r75_data"])
+
+                r75_dates = list(
+                    map_except(
+                        lambda dt: to_datetime(dt, format="%Y%m%d"),
+                        [str(q.r75_dato) for q in matching_r75_policies],
+                        ValueError,
+                    )
+                )
+
+                if len(r75_dates) > 0:
+                    future_r75_data = max(r75_dates) >= tax_year_end_date
+                else:
+                    future_r75_data = False
+
+                if future_r75_data:
+                    # Always set future_r75_data = True
+                    person_tax_year.future_r75_data = True
+                    person_tax_year.save(update_fields=["future_r75_data"])
+                    users_with_future_r75_data.append(item["cpr"])
+                else:
+                    # Only set future_r75_data = False if it was not set to True by this job
+                    if item["cpr"] not in users_with_future_r75_data:
+                        person_tax_year.future_r75_data = False
+                        person_tax_year.save(update_fields=["future_r75_data"])
 
             except PersonTaxYear.DoesNotExist:
                 pass
@@ -623,10 +685,14 @@ def autoligning(job):
                 autolignet += 1
 
             # Make sure assessed_amount is stored in the database
-            policy.assessed_amount = policy.get_assessed_amount()
+            policy.base_calculation_amount = policy.get_base_calculation_amount()
 
             # Recalculate used negative amounts etc.
-            policy.recalculate()
+            policy.recalculate(
+                negative_payout_history_note=_(
+                    "Genberegning på grund af autoligning job"
+                )
+            )
 
             total += 1
             policy._change_reason = "autoligning"
@@ -683,10 +749,10 @@ def generate_batch_and_transactions_for_year(job):
         return
 
     collect_date = date.today().replace(month=9, day=1)
-    prisme10Q_batch = Prisme10QBatch(
+    prisme10q_batch = Prisme10QBatch(
         created_by=job.created_by, tax_year=tax_year, collect_date=collect_date
     )
-    prisme10Q_batch.save()
+    prisme10q_batch.save()
 
     settlements = FinalSettlement.objects.filter(
         person_tax_year__tax_year=tax_year,
@@ -698,7 +764,7 @@ def generate_batch_and_transactions_for_year(job):
     for final_settlement in settlements:
         settlements_count += 1
         if final_settlement.get_transaction_amount() != 0:
-            prisme10Q_batch.add_transaction(final_settlement)
+            prisme10q_batch.add_transaction(final_settlement)
             new_transactions += 1
 
     job.result = {
@@ -926,9 +992,7 @@ def generate_pseudo_settlements_and_transactions_for_legacy_years(job):
     for tax_year in TaxYear.objects.filter(year__in=[2018, 2019]).order_by("year"):
         for person_tax_year in PersonTaxYear.objects.filter(tax_year=tax_year):
             sum_tax_after_foreign_paid_deduction = 0
-            for policy in person_tax_year.policytaxyear_set.filter(
-                active=True, pension_company__agreement_present=False
-            ):
+            for policy in person_tax_year.policytaxyear_set.filter(active=True):
                 sum_tax_after_foreign_paid_deduction += (
                     policy.full_tax - policy.foreign_paid_amount_actual
                 )

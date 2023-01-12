@@ -6,7 +6,7 @@ from kas.models import TaxYear
 unique_res_counter = 0
 fictitious_cprs = [  # noqa
     # if you need a fictive cpr number use one of these and remove it from the list
-    "1502062774",
+    "0902410058",
     "2509474829",
     "1105801064",
     "3105841026",
@@ -19,7 +19,6 @@ fictitious_cprs = [  # noqa
     "2301175038",
     "1111111112",
     "0106664862",
-    "0902410058",
     "0312600013",
     "1102640019",
     "0112977724",
@@ -122,6 +121,12 @@ def create_person(
             policy["ktd"] = next_unique_res()
 
         for year, beloeb in policy["years"].items():
+
+            if "r75_dato" in policy:
+                r75_dato = policy["r75_dato"]
+            else:
+                r75_dato = "%04d0116" % (year)
+
             # Make sure we create a mandtal entry for the person for this year
             if int(year) not in person_years:
                 person_years[year] = {}
@@ -130,9 +135,7 @@ def create_person(
                 "pt_census_guid": person_uuid(cpr, year),
                 # tax_year added below
                 # cpr added below
-                "r75_ctl_sekvens_guid": r75_sekvens_uuid(
-                    cpr, year, policy["res"], policy["ktd"]
-                ),
+                "r75_ctl_sekvens_guid": str(uuid.uuid4()),
                 "r75_ctl_indeks_guid": r75_indeks_uuid(
                     cpr, year, policy["res"], policy["ktd"]
                 ),
@@ -146,16 +149,15 @@ def create_person(
                 "ejerstatuskode": 1,
                 "indestaaende": 0,
                 "renteindtaegt": beloeb,
-                "r75_dato": "%04d0116" % (year),
+                "r75_dato": r75_dato,
             }
 
-            MockModels.MockR75Idx4500230.objects.update_or_create(
-                defaults=policy_data,
+            obj = MockModels.MockR75Idx4500230(
+                **policy_data,
                 tax_year=year,
                 cpr=cpr,
-                ktd=policy["ktd"],
-                res=policy["res"],
             )
+            obj.save()
 
     for year, person_year_data in person_years.items():
         # Make sure we have a taxyear for the given year
@@ -183,7 +185,11 @@ def generate_persons():
         cpr="0101570010",
         adresselinje2="Imaneq 32A, 3. sal.",
         adresselinje4="3900 Nuuk",
-        policies=[{"res": 19676889, "years": {2020: 0, 2021: 0}}],
+        policies=[
+            {"res": 19676889, "years": {2018: -200000, 2020: 0, 2021: 0}, "ktd": 300},
+            {"res": 19676889, "years": {2018: 200000}, "ktd": 300},
+            {"res": 19676889, "years": {2018: -30}, "ktd": 300},
+        ],
     )
 
     create_person(
@@ -195,10 +201,21 @@ def generate_persons():
             {
                 "res": 19676889,
                 "years": {
+                    2018: 200,
+                    2019: 200,
                     2020: 2500,
                     2021: 0,
+                    2022: 0,
                 },
-            }
+                "r75_dato": "20210101",
+            },
+            {
+                "res": 55143315,
+                "years": {
+                    2018: 400,
+                    2019: 400,
+                },
+            },
         ],
     )
 
@@ -219,7 +236,7 @@ def generate_persons():
     )
 
     create_person(
-        "Borger med police hos PFA + andre",
+        "Borger med police hos PFA samt andre",
         cpr="2512474856",
         adresselinje2="Imaneq 32A, 2. sal.",
         adresselinje4="3900 Nuuk",
@@ -249,6 +266,7 @@ def generate_persons():
                 "res": 19676889,
                 "years": {
                     2021: 3000,
+                    2022: 3000,
                 },
             },
         ],
@@ -264,6 +282,7 @@ def generate_persons():
                 "res": 19676889,
                 "years": {
                     2021: -3000,
+                    2022: -3000,
                 },
             },
         ],
@@ -281,6 +300,7 @@ def generate_persons():
                 "years": {
                     2020: 3000,
                     2021: 4000,
+                    2022: 4000,
                 },
             },
         ],
@@ -297,6 +317,7 @@ def generate_persons():
                 "res": 19676889,
                 "years": {
                     2021: 3000,
+                    2022: 3000,
                 },
             },
         ],
@@ -314,6 +335,7 @@ def generate_persons():
                 "years": {
                     2020: 3000,
                     2021: 4000,
+                    2022: 4000,
                 },
             },
         ],
@@ -331,6 +353,7 @@ def generate_persons():
                 "years": {
                     2020: -5000,
                     2021: 1000,
+                    2022: 1000,
                 },
             },
         ],
@@ -348,6 +371,7 @@ def generate_persons():
                 "years": {
                     2020: 5000,
                     2021: 1000,
+                    2022: 1000,
                 },
             },
         ],
@@ -365,6 +389,7 @@ def generate_persons():
                 "years": {
                     2020: 3000,
                     2021: 500,
+                    2022: 500,
                 },
             },
         ],
@@ -382,6 +407,7 @@ def generate_persons():
                 "years": {
                     2020: 1000,
                     2021: 1000,
+                    2022: 1000,
                 },
             },
         ],
@@ -404,6 +430,7 @@ def generate_persons():
                     2019: 2000,
                     2020: 3000,
                     2021: 4000,
+                    2022: 4000,
                 },
             },
             {
@@ -413,6 +440,7 @@ def generate_persons():
                     2019: -2500,
                     2020: 3000,
                     2021: 4000,
+                    2022: 4000,
                 },
             },
         ],
@@ -431,6 +459,34 @@ def generate_persons():
                     2019: -1000,
                     2020: 3000,
                     2021: 2500,
+                    2022: 2500,
+                },
+            },
+        ],
+    )
+
+    create_person(
+        "Borger med negativt afkast fra 2010 til 2020",
+        cpr="1502062774",
+        adresselinje2="Imaneq 32A, 3. sal.",
+        adresselinje4="3900 Nuuk",
+        policies=[
+            {
+                "res": 19676889,
+                "years": {
+                    2010: -300,
+                    2011: -400,
+                    2012: -500,
+                    2013: 600,
+                    2014: 0,
+                    2015: 100,
+                    2016: -30_000_000,
+                    2017: -300,
+                    2018: -600,
+                    2019: 1000,
+                    2020: -3000,
+                    2021: 0,
+                    2022: 0,
                 },
             },
         ],

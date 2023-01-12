@@ -96,10 +96,12 @@ class KasBeregningerX(AbstractKasBeregningerX):
     class Meta:
         managed = False
         db_table = "kas_beregninger_x"
+        ordering = ["skatteaar", "cpr", "bank_reg_nr"]
 
 
 class MockKasBeregningerX(AbstractKasBeregningerX):
-    pass
+    class Meta:
+        ordering = ["skatteaar", "cpr"]
 
 
 class ImportedKasBeregningerX(models.Model):
@@ -119,6 +121,7 @@ class ImportedKasBeregningerX(models.Model):
         indexes = [
             models.Index(fields=["cpr", "skatteaar"]),
         ]
+        ordering = ["skatteaar", "cpr"]
 
 
 def get_kas_beregninger_x_model():
@@ -258,6 +261,9 @@ class EskatModels:
             db_table = "r75_idx_4500230"
 
     class R75SpreadsheetImport(AbstractModels.R75Idx4500230):
+        class Meta:
+            ordering = ["tax_year", "cpr"]
+
         file = models.ForeignKey(
             "R75SpreadsheetFile",
             on_delete=models.SET_NULL,
@@ -268,11 +274,13 @@ class EskatModels:
 
 class MockModels:
     class MockKasMandtal(AbstractModels.KasMandtal):
-        pass
+        class Meta:
+            ordering = ["skatteaar", "cpr"]
 
     # R75Idx4500230: Data from index 4500230 in R75. Contains policies and their return as reported by pension companies.
     class MockR75Idx4500230(AbstractModels.R75Idx4500230):
-        pass
+        class Meta:
+            ordering = ["tax_year", "cpr"]
 
 
 # Add methods that can be used to access correct source data models
@@ -294,6 +302,9 @@ def get_r75_private_pension_model():
 class ImportedKasMandtal(AbstractModels.KasMandtal):
 
     history = HistoricalRecords()
+
+    class Meta:
+        ordering = ["skatteaar", "cpr"]
 
     @classmethod
     def import_year(
@@ -348,6 +359,8 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
 
 
 class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
+    class Meta:
+        ordering = ["tax_year", "cpr"]
 
     history = HistoricalRecords()
 
@@ -401,6 +414,9 @@ def r75_spreadsheet_file_path(instance, filename):
 
 
 class R75SpreadsheetFile(models.Model):
+    class Meta:
+        ordering = ["uploaded_at"]
+
     uploaded_by = models.ForeignKey(get_user_model(), on_delete=models.PROTECT)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     file = models.FileField(

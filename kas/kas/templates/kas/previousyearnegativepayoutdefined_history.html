@@ -1,0 +1,29 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+{% block content %}
+
+    <table class="table table-bordered table-hover table-striped">
+        <thead>
+        <tr>
+            <td>{% translate 'Dato' %}</td>
+            <td>{% translate 'Beløb' %}</td>
+            <td>{% translate 'Beskyttet mod genberegninger' %}</td>
+            <td>{% translate 'Af' %}</td>
+            <td>{% translate 'Hændelse' %}</td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for entry in objects.iterator %}
+            <tr>
+                {% with protected=entry.protected_against_recalculations|yesno:"Ja,Nej" %}
+                <td>{{ entry.history_date|date:'SHORT_DATETIME_FORMAT' }}</td>
+                <td>{{ entry.transferred_negative_payout }}</td>
+                <td>{% translate protected %}</td>
+                <td>{{ entry.history_user.username }}</td>
+                <td>{{ entry.history_change_reason }}</td>
+                {% endwith %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

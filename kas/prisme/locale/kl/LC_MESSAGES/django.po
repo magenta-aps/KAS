@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-30 11:57+0000\n"
+"POT-Creation-Date: 2023-01-12 10:39+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,151 +17,149 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: prisme/forms.py:28
+#: prisme/forms.py
 msgid "Destination"
 msgstr ""
 
-#: prisme/models.py:22 prisme/templates/prisme/batch_detail.html:9
-#: prisme/templates/prisme/batch_detail.html:53
-#: prisme/templates/prisme/batch_list.html:19
+#: prisme/models.py prisme/templates/prisme/batch_detail.html
+#: prisme/templates/prisme/batch_list.html
 msgid "Oprettet"
 msgstr ""
 
-#: prisme/models.py:23
+#: prisme/models.py
 msgid "Klar til overførsel"
 msgstr ""
 
-#: prisme/models.py:24
+#: prisme/models.py
 msgid "Overført"
 msgstr ""
 
-#: prisme/models.py:25 prisme/models.py:182
+#: prisme/models.py
 msgid "Annulleret"
 msgstr ""
 
-#: prisme/models.py:26
+#: prisme/models.py
 msgid "Afregnes ikke"
 msgstr ""
 
-#: prisme/models.py:29
+#: prisme/models.py
 msgid "Prisme opkrævning / tilbagebetaling"
 msgstr ""
 
-#: prisme/models.py:30
+#: prisme/models.py
 msgid "Forudindbetaling"
 msgstr ""
 
-#: prisme/models.py:37
+#: prisme/models.py
 msgid "transaktion"
 msgstr ""
 
-#: prisme/models.py:38
+#: prisme/models.py
 msgid "transaktioner"
 msgstr ""
 
-#: prisme/models.py:122
+#: prisme/models.py
 msgid "Undervisningssystem"
 msgstr ""
 
-#: prisme/models.py:123
+#: prisme/models.py
 msgid "Produktionssystem"
 msgstr ""
 
-#: prisme/models.py:124
+#: prisme/models.py
 msgid "Mocking"
 msgstr ""
 
-#: prisme/models.py:140
+#: prisme/models.py
 msgid "prisme 10Q batch"
 msgstr ""
 
-#: prisme/models.py:141
+#: prisme/models.py
 msgid "prisme 10Q batches"
 msgstr ""
 
-#: prisme/models.py:178
+#: prisme/models.py
 msgid "Ikke afsendt"
 msgstr ""
 
-#: prisme/models.py:179
+#: prisme/models.py
 msgid "Afsender"
 msgstr ""
 
-#: prisme/models.py:180
+#: prisme/models.py
 msgid "Afsendelse fejlet"
 msgstr ""
 
-#: prisme/models.py:181
+#: prisme/models.py
 msgid "Afsendt"
 msgstr ""
 
-#: prisme/models.py:250
+#: prisme/models.py
 #, python-brace-format
 msgid "Prisme 10Q bunke {tidsstempel} ({status})"
 msgstr ""
 
-#: prisme/templates/prisme/batch_detail.html:11
-#: prisme/templates/prisme/batch_list.html:20
+#: prisme/templates/prisme/batch_detail.html
+#: prisme/templates/prisme/batch_list.html
 msgid "Oprettet af"
 msgstr ""
 
-#: prisme/templates/prisme/batch_detail.html:14
-#: prisme/templates/prisme/batch_detail.html:52
-#: prisme/templates/prisme/batch_list.html:21
+#: prisme/templates/prisme/batch_detail.html
+#: prisme/templates/prisme/batch_list.html
 msgid "Status"
 msgstr ""
 
-#: prisme/templates/prisme/batch_detail.html:18
+#: prisme/templates/prisme/batch_detail.html
 msgid "Afsendelsesfejl"
 msgstr ""
 
-#: prisme/templates/prisme/batch_detail.html:23
+#: prisme/templates/prisme/batch_detail.html
 msgid "Fremskridt"
 msgstr ""
 
-#: prisme/templates/prisme/batch_detail.html:32
-#: prisme/templates/prisme/batch_list.html:22
+#: prisme/templates/prisme/batch_detail.html
+#: prisme/templates/prisme/batch_list.html
 msgid "Sendt"
 msgstr ""
 
-#: prisme/templates/prisme/batch_detail.html:34
-#: prisme/templates/prisme/batch_list.html:23
+#: prisme/templates/prisme/batch_detail.html
+#: prisme/templates/prisme/batch_list.html
 msgid "Sendt af"
 msgstr ""
 
-#: prisme/templates/prisme/batch_detail.html:40
+#: prisme/templates/prisme/batch_detail.html
 msgid "Hent fil"
 msgstr ""
 
-#: prisme/templates/prisme/batch_detail.html:42
+#: prisme/templates/prisme/batch_detail.html
 msgid "Send til Prisme"
 msgstr ""
 
-#: prisme/templates/prisme/batch_detail.html:50
+#: prisme/templates/prisme/batch_detail.html
 msgid "Person"
 msgstr ""
 
-#: prisme/templates/prisme/batch_detail.html:51
+#: prisme/templates/prisme/batch_detail.html
 msgid "Slutopgørelse"
 msgstr ""
 
-#: prisme/templates/prisme/batch_detail.html:54
+#: prisme/templates/prisme/batch_detail.html
 msgid "Beløb"
 msgstr ""
 
-#: prisme/templates/prisme/batch_detail.html:62
+#: prisme/templates/prisme/batch_detail.html
 msgid "Vis slutopgørelse"
 msgstr ""
 
-#: prisme/templates/prisme/batch_detail.html:70
+#: prisme/templates/prisme/batch_detail.html
 msgid "Ingen transaktioner fundet"
 msgstr ""
 
-#: prisme/templates/prisme/batch_list.html:6
+#: prisme/templates/prisme/batch_list.html
 msgid "Prisme-overførsler"
 msgstr ""
 
-#: prisme/templates/prisme/batch_list.html:10
+#: prisme/templates/prisme/batch_list.html
 msgid ""
 "På denne side oplistes de transaktionsbatches der er oprettet til overførsel "
 "til Prisme.\n"
@@ -172,10 +170,10 @@ msgid ""
 "ikke allerede er sendt."
 msgstr ""
 
-#: prisme/templates/prisme/batch_list.html:18
+#: prisme/templates/prisme/batch_list.html
 msgid "Skatteår"
 msgstr ""
 
-#: prisme/templates/prisme/batch_send.html:19
+#: prisme/templates/prisme/batch_send.html
 msgid "Send"
 msgstr ""

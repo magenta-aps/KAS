@@ -93,7 +93,7 @@ class SetLanguageView(View):
 class HasUserMixin(object):
     @property
     def cpr(self):
-        return self.request.session["user_info"]["cpr"]
+        return self.request.session["user_info"].get("cpr")
 
     @property
     def name(self):
@@ -152,9 +152,13 @@ class YearTabMixin(object):
                     "prior": all_years[self.cutoff_years :],
                 },
                 "latest_year": date.today().year - 1,
-                "latest_tax_year": all_years[0]["tax_year"],
+                "latest_tax_year": all_years[0]["tax_year"] if len(all_years) else None,
             }
         )
+
+
+class ErrorView(HasUserMixin, TemplateView):
+    pass
 
 
 class PolicyFormView(HasUserMixin, CloseMixin, YearTabMixin, FormView):
@@ -347,6 +351,8 @@ class ViewFinalSettlementView(HasUserMixin, View):
         r = RestClient().get_final_settlement(year, self.cpr)
         if r.status_code == 200:
             return FileResponse(r.iter_content(), content_type="application/pdf")
+        if r.status_code in (301, 302):
+            return redirect(r.headers["Location"])
         return HttpResponse(
             content=_("Ingen slutopgørelse for givet år"),
             status=404,

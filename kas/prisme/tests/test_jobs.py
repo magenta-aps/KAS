@@ -145,6 +145,7 @@ class ImportPrePaymentFile(TestCase):
         self.assertEqual(first_person_prepayments.first().amount, -18000)
 
         first_person_10q = first_person_transactions.filter(type="prisme10q")
+
         # one 10Q transaction to transfer
         self.assertEqual(first_person_10q.count(), 1)
         # the citizen is owed 2.742kr

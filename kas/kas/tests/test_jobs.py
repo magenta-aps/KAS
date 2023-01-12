@@ -1,12 +1,14 @@
 from datetime import datetime
 from unittest.mock import patch, MagicMock
 
+from uuid import uuid4
 import django_rq
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.test import override_settings, TransactionTestCase
 from eskat.jobs import generate_sample_data
+from eskat.models import ImportedR75PrivatePension
 from fakeredis import FakeStrictRedis
 from kas.eboks import EboksClient
 from kas.models import (
@@ -31,6 +33,7 @@ from kas.jobs import (
     merge_pension_companies,
     import_mandtal,
     generate_pseudo_settlements_and_transactions_for_legacy_years,
+    import_r75,
 )
 
 test_settings = dict(settings.EBOKS)
@@ -187,10 +190,10 @@ class MandtalImportJobsTest(BaseTransactionTestCase):
             created_by=self.user,
         )
 
-        self.assertEqual(Person.objects.count(), 17)
+        self.assertEqual(Person.objects.count(), 18)
 
         self.assertEqual(Person.objects.filter(updated_from_dafo=True).count(), 2)
-        self.assertEqual(Person.objects.filter(updated_from_dafo=False).count(), 15)
+        self.assertEqual(Person.objects.filter(updated_from_dafo=False).count(), 16)
 
         self.assertEqual(
             Person.objects.filter(status="Alive").count(), 1
@@ -199,7 +202,7 @@ class MandtalImportJobsTest(BaseTransactionTestCase):
             Person.objects.filter(status="Dead").count(), 1
         )  # Mocked af Andes in Dafo
         self.assertEqual(
-            Person.objects.filter(status="Undefined").count(), 15
+            Person.objects.filter(status="Undefined").count(), 16
         )  # 0102031234, the predefined person that is also 'Undefined'
 
         person = Person.objects.get(cpr="0101570010")
@@ -518,11 +521,11 @@ class TestPseudoFinalSettlement(BaseTransactionTestCase):
         self.assertEqual(pseudo_settlements.count(), 2)
         self.assertEqual(
             pseudo_settlements.get(person_tax_year__tax_year__year=2018).pseudo_amount,
-            30,
+            45,
         )
         self.assertEqual(
             pseudo_settlements.get(person_tax_year__tax_year__year=2019).pseudo_amount,
-            60,
+            90,
         )
 
 
@@ -599,3 +602,136 @@ class DispatchAgterskrivelseJobsTest(BaseTransactionTestCase):
         self.assertEqual(
             Agterskrivelse.objects.filter(status="send").count(), 4
         )  # 5 persons is not dead or invalid or testpersons
+
+
+class R75ImportJobTest(BaseTransactionTestCase):
+    def setUp(self) -> None:
+        super(R75ImportJobTest, self).setUp()
+
+        self.cpr = "1234567890"
+        self.person = Person.objects.create(cpr=self.cpr)
+        self.person_tax_year = PersonTaxYear.objects.create(
+            tax_year=self.tax_year,
+            person=self.person,
+            number_of_days=300,
+        )
+        self.user = get_user_model().objects.create(username="test")
+        self.job_kwargs = {"year": self.tax_year.year}
+        self.pension_company = PensionCompany.objects.create()
+        self.policy_tax_year = PolicyTaxYear.objects.create(
+            person_tax_year=self.person_tax_year,
+            pension_company=self.pension_company,
+            prefilled_amount=35,
+            policy_number="1234",
+        )
+
+    @patch.object(
+        django_rq,
+        "get_queue",
+        return_value=Queue(is_async=False, connection=FakeStrictRedis()),
+    )
+    def test_corrected_data(self, django_rq):
+
+        # Insert a faulty amount in R75, and correct it back, then set the proper amount
+        idx = 0
+        for amount in [-200_000, 200_000, -30]:
+            ImportedR75PrivatePension.objects.create(
+                tax_year=self.tax_year.year,
+                cpr=self.cpr,
+                ktd=200,
+                res=100,
+                renteindtaegt=amount,
+                pt_census_guid=uuid4(),
+                r75_ctl_sekvens_guid=uuid4(),
+                r75_ctl_indeks_guid=uuid4(),
+                idx_nr=idx,
+            )
+            idx += 1
+
+        Job.schedule_job(
+            import_r75,
+            "ImportR75Job",
+            job_kwargs=self.job_kwargs,
+            created_by=self.user,
+        )
+
+        person_tax_year = PersonTaxYear.objects.get(
+            tax_year=self.tax_year, person=self.person
+        )
+
+        self.assertEqual(person_tax_year.corrected_r75_data, True)
+        self.assertEqual(person_tax_year.future_r75_data, False)
+
+    @patch.object(
+        django_rq,
+        "get_queue",
+        return_value=Queue(is_async=False, connection=FakeStrictRedis()),
+    )
+    def test_non_corrected_data(self, django_rq):
+
+        # The 'correction' is on a different policy here. It is NOT a correction.
+        idx = 0
+        ktd = 200
+        for amount in [-200_000, 200_000, -30]:
+            ImportedR75PrivatePension.objects.create(
+                tax_year=self.tax_year.year,
+                cpr=self.cpr,
+                ktd=ktd,
+                res=100,
+                renteindtaegt=amount,
+                pt_census_guid=uuid4(),
+                r75_ctl_sekvens_guid=uuid4(),
+                r75_ctl_indeks_guid=uuid4(),
+                idx_nr=idx,
+            )
+            idx += 1
+            ktd += 1
+
+        Job.schedule_job(
+            import_r75,
+            "ImportR75Job",
+            job_kwargs=self.job_kwargs,
+            created_by=self.user,
+        )
+
+        person_tax_year = PersonTaxYear.objects.get(
+            tax_year=self.tax_year, person=self.person
+        )
+
+        self.assertEqual(person_tax_year.corrected_r75_data, False)
+        self.assertEqual(person_tax_year.future_r75_data, False)
+
+    @patch.object(
+        django_rq,
+        "get_queue",
+        return_value=Queue(is_async=False, connection=FakeStrictRedis()),
+    )
+    def test_future_data(self, django_rq):
+
+        # Insert a R75 amount from the future
+        ImportedR75PrivatePension.objects.create(
+            tax_year=self.tax_year.year,
+            cpr=self.cpr,
+            ktd=200,
+            res=100,
+            renteindtaegt=200,
+            pt_census_guid=uuid4(),
+            r75_ctl_sekvens_guid=uuid4(),
+            r75_ctl_indeks_guid=uuid4(),
+            idx_nr=1,
+            r75_dato="%d1201" % (self.tax_year.year + 1),
+        )
+
+        Job.schedule_job(
+            import_r75,
+            "ImportR75Job",
+            job_kwargs=self.job_kwargs,
+            created_by=self.user,
+        )
+
+        person_tax_year = PersonTaxYear.objects.get(
+            tax_year=self.tax_year, person=self.person
+        )
+
+        self.assertEqual(person_tax_year.corrected_r75_data, False)
+        self.assertEqual(person_tax_year.future_r75_data, True)

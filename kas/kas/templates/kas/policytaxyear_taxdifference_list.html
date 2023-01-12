@@ -1,0 +1,83 @@
+{% extends 'kas/layout.html' %}
+{% load i18n %}
+
+{% block content %}
+  <h1>{% translate 'Policer med forskel på fortrykt og selvangivet beløb' %} {% include 'includes/help_text/question_mark.html' with target_id='js-top-collapse' only%}</h1>
+    {% blocktranslate asvar top_help %}
+    Policer, hvor det selvangivne beløb og det fortrykte beløb ikke svarer til hinanden.
+    {% endblocktranslate %}
+    {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
+
+  <div>
+    <form action="" method="GET">
+      <table>
+        {{ view.form.as_table }}
+      </table>
+      <input type="submit" value="{% translate 'Søg' %}" class="btn btn-primary" />
+    </form>
+  </div>
+
+  {% if policytaxyears %}
+  <a class="float-right" href="{{ excel_link }}">{% translate 'Download excel fil'%}</a>
+  <table class="table table-striped">
+    <thead>
+    <tr>
+      <th>
+        {% translate 'Person' as person %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="person_tax_year__person__name" text=person %}
+      </th>
+      <th>
+        {% translate 'Pensionsselskab' as pensionsselskab %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="pension_company__name" text=pensionsselskab %}
+      </th>
+      <th>
+        {% translate 'Policenummer' as policenummer %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="policy_number" text=policenummer %}
+      </th>
+      <th>
+        {% translate 'Næste behandlingsdato' as behandlingsdato %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="next_processing_date_nulllast" text=behandlingsdato %}
+      </th>
+      <th class="text-right">
+        {% translate 'Fortrykt beløb' as fortrykt %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="prefilled_amount_nulllast" text=fortrykt %}
+      </th>
+      <th class="text-right">
+        {% translate 'Selvangivet beløb' as selvangivet %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="self_reported_amount_nulllast" text=selvangivet %}
+      </th>
+      <th class="text-right">
+        {% translate 'Forskel' as forskel %}
+        {% include 'includes/order_by_link.html' with key="order_by" value="difference_nulllast" text=forskel %}
+      </th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for policy_tax_year in policytaxyears %}
+      {% with persontaxyear=policy_tax_year.person_tax_year %}
+      {% with person=persontaxyear.person %}
+      {% url 'kas:policy_detail' policy_tax_year.id as policy_url %}
+      {% url 'kas:person_in_year' persontaxyear.tax_year.year person.id as person_url %}
+      <tr>
+        <td><a href="{{ person_url }}">{{ person.name }} ({{ person.cpr }})</a></td>
+        <td><a href="{{ policy_url }}">{{ policy_tax_year.pension_company.name }}</a></td>
+        <td><a href="{{ policy_url }}">{{ policy_tax_year.policy_number }}</a></td>
+        <td>{{ policy_tax_year.next_processing_date|date:'SHORT_DATE_FORMAT'|default_if_none:'' }}</td>
+        <td class="text-right">{{ policy_tax_year.prefilled_amount|default_if_none:"" }}</td>
+        <td class="text-right">{{ policy_tax_year.self_reported_amount|default_if_none:"" }}</td>
+        <td class="text-right">{{ policy_tax_year.difference|default_if_none:"" }}</td>
+      </tr>
+    {% endwith %}
+    {% endwith %}
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>{% translate 'Ingen policer fundet' %}</p>
+  {% endif %}
+
+  <hr/>
+
+  {% include 'includes/pager.html' %}
+
+{% endblock %}

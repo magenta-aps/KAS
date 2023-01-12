@@ -41,15 +41,25 @@
             {% include 'includes/order_by_link.html' with key="order_by" value="capital_return_tax" text=eskat_amount %}
         </th>
         <th>
-            {% trans 'Beløb i KAS' as kas_amount %}
+            {% translate 'Beløb i KAS' as kas_amount %}
             {% include 'includes/order_by_link.html' with key="order_by" value="pseudo_amount" text=kas_amount %}
         </th>
+        <th>
+            {% translate 'Forskel' as difference %}
+            {% include 'includes/order_by_link.html' with key="order_by" value="difference" text=difference %}
+        </th>
+        <th style="text-align: center">
+            {% trans 'Kræver efterbehandling' as efterbehandling %}
+            {% include 'includes/order_by_link.html' with key="order_by" value="efterbehandling_annotation" text=efterbehandling %}
+        </th>
+
     </tr>
     </thead>
     <tbody>
     {% for person_tax_year in personstaxyears %}
     {% with person_tax_year.person as person %}
     {% url 'kas:person_in_year' person_tax_year.year person.pk as person_url %}
+
     <tr>
         <td><a href="{{ person_url }}">{{ person.cpr }}</a></td>
         <td><a href="{{ person_url }}">{{ person.name }}</a></td>
@@ -58,6 +68,13 @@
         <td>{{ person_tax_year.policy_count }}</td>
         <td>{{ person_tax_year.capital_return_tax }}</td>
         <td>{{ person_tax_year.pseudo_amount }}</td>
+        <td>{{ person_tax_year.difference }}</td>
+        {% with efterbehandling=person_tax_year.efterbehandling|yesno:"Ja,Nej" %}
+            <td align='center'>
+            {% trans 'Kan rettes i: person<br>&#8627;police<br>&#8627;ret efterbehandling' as help_text %}
+            <a href="#" data-toggle="tooltip" title="{{ help_text }}" data-html="true">{{ efterbehandling }}</a>
+            </td>
+        {% endwith %}
     </tr>
     {% endwith %}
     {% endfor %}

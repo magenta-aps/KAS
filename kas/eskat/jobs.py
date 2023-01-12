@@ -12,6 +12,7 @@ from eskat.models import (
     get_kas_beregninger_x_model,
     ImportedKasBeregningerX,
     MockKasBeregningerX,
+    ImportedR75PrivatePension,
 )
 from kas.models import TaxYear
 from worker.job_registry import resolve_job_function
@@ -63,6 +64,7 @@ def generate_sample_data(job):
     MockModels.MockR75Idx4500230.objects.all().delete()
     MockModels.MockKasMandtal.objects.all().delete()
     MockKasBeregningerX.objects.all().delete()
+    ImportedR75PrivatePension.objects.all().delete()
     # Make sure we have pension company data
     call_command("import_default_pension_companies")
     for year in (2018, 2019, 2020, 2021):
@@ -112,10 +114,21 @@ def generate_sample_data(job):
             "1509814844",
             "2512474856",
         ]:
-            #  Ensure mandtal for the cpr
-            MockModels.MockKasMandtal.objects.update_or_create(
-                pt_census_guid=uuid4(), cpr=cpr, skatteaar=tax_year
-            )
+            # Check if we already have this user in another year
+            mock_users_all_years = MockModels.MockKasMandtal.objects.filter(cpr=cpr)
+
+            # If so; Copy all personal info from that year
+            if len(mock_users_all_years) > 0:
+                user = mock_users_all_years[0]
+                user.pk = None  # Setting pk to None creates a copy
+                user.pt_census_guid = uuid4()
+                user.skatteaar = tax_year
+                user.save()
+            else:
+                #  Ensure mandtal for the cpr
+                MockModels.MockKasMandtal.objects.create(
+                    pt_census_guid=uuid4(), cpr=cpr, skatteaar=tax_year
+                )
             # Create kas_beregning for cpr and year
             MockKasBeregningerX.objects.update_or_create(
                 skatteaar=tax_year,
@@ -130,7 +143,10 @@ def generate_sample_data(job):
 @job_decorator
 def importere_kas_beregninger_for_legacy_years(job):
     try:
-        year = TaxYear.objects.get(pk=job.arguments["year_pk"])
+        if "year" in job.arguments.keys():
+            year = TaxYear.objects.get(year=job.arguments["year"])
+        elif "year_pk" in job.arguments.keys():
+            year = TaxYear.objects.get(pk=job.arguments["year_pk"])
     except TaxYear.DoesNotExist:
         raise Exception("skatteår eksisterer ikke")
 
@@ -143,23 +159,26 @@ def importere_kas_beregninger_for_legacy_years(job):
     for beregning in source_model.values(
         "cpr", "pension_crt_calc_guid", "capital_return_tax", "skatteaar"
     ):
-        try:
-            imported_beregning = ImportedKasBeregningerX.objects.get(
-                pension_crt_calc_guid=beregning["pension_crt_calc_guid"]
-            )
-        except ImportedKasBeregningerX.DoesNotExist:
-            imported_beregning = ImportedKasBeregningerX(**beregning)
-            imported_beregning._change_reason = "Created by import"
-        else:
-            for attr, value in beregning.items():
-                # Set all fields
-                setattr(imported_beregning, attr, value)
-            imported_beregning._change_reason = "Updated by import"
-
-        imported_beregning.person_tax_year = PersonTaxYear.objects.get(
+        person_tax_year = PersonTaxYear.objects.get(
             person__cpr=beregning["cpr"],
             tax_year__year=beregning["skatteaar"],
         )
+
+        try:
+            imported_beregning = ImportedKasBeregningerX.objects.get(
+                person_tax_year=person_tax_year,
+            )
+        except ImportedKasBeregningerX.DoesNotExist:
+            imported_beregning = ImportedKasBeregningerX(
+                **beregning, person_tax_year=person_tax_year
+            )
+            imported_beregning._change_reason = "Created by import"
+        else:
+            if imported_beregning.capital_return_tax != beregning["capital_return_tax"]:
+                imported_beregning.capital_return_tax = beregning["capital_return_tax"]
+                imported_beregning._change_reason = "Updated by import"
+            else:
+                continue
         imported_beregning.save()
         gemte_beregninger += 1
 

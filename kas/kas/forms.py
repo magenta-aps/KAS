@@ -4,6 +4,8 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.utils.safestring import mark_safe
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from kas.fields import PensionCompanyChoiceField, DateInput
 from kas.forms_mixin import BootstrapForm
@@ -15,6 +17,7 @@ from kas.models import (
     PensionCompany,
     TaxYear,
     FinalSettlement,
+    PreviousYearNegativePayout,
 )
 
 
@@ -66,6 +69,60 @@ class PersonListFilterForm(BootstrapForm):
             raise ValidationError(_("Ugyldigt cpr-nummer"))
         cpr = re.sub(r"\D", "", cpr)
         return cpr
+
+
+class PersonListFilterFormEskatDiff(PersonListFilterForm):
+
+    label_tooltip = _("Foreligger der en korrektion af beløb i importerede E-skat data")
+    label_text = _("Rettelse i R75 data")
+
+    edited_by_user = forms.NullBooleanField(
+        label=mark_safe(
+            '<a href="#" data-toggle="tooltip" title="%s" data-html="true">%s</a>'
+            % (label_tooltip, label_text)
+        ),
+        widget=forms.Select(
+            choices=[
+                (False, _("Nej")),
+                (True, _("Ja")),
+                (None, _("Alle")),
+            ],
+        ),
+    )
+
+    full_tax_year = forms.NullBooleanField(
+        label=_("Antal skattedage"),
+        widget=forms.Select(
+            choices=[
+                (False, _("0 - 364")),
+                (True, _("365 / 366")),
+                (None, _("Alle")),
+            ],
+        ),
+    )
+
+    label_tooltip = _(
+        (
+            "R75 Beløb blev først indberettet efter at skatteåret var afsluttet."
+            " Det vil sige efter 1. September året efter dette år."
+            " E-skat har muligvis ikke de rigtige oplysninger i disse tilfælde"
+        )
+    )
+    label_text = _("Forsinkede R75 data")
+
+    future_r75_data = forms.NullBooleanField(
+        label=mark_safe(
+            '<a href="#" data-toggle="tooltip" title="%s" data-html="true">%s</a>'
+            % (label_tooltip, label_text)
+        ),
+        widget=forms.Select(
+            choices=[
+                (False, _("Nej")),
+                (True, _("Ja")),
+                (None, _("Alle")),
+            ],
+        ),
+    )
 
 
 class PolicyListFilterForm(BootstrapForm):
@@ -315,7 +372,12 @@ class SelfReportedAmountForm(forms.ModelForm, BootstrapForm):
 
         # Recalculate amounts before saving
         instance = super(SelfReportedAmountForm, self).save(commit=False)
-        instance.recalculate()
+        instance.recalculate(
+            negative_payout_history_note=_(
+                "Automatisk genberegning ved rettelse af selvangivet beløb"
+            ),
+            save_without_negative_payout_history=not commit,
+        )
 
         if commit:
             instance.save()
@@ -332,14 +394,25 @@ class EditAmountsUpdateForm(forms.ModelForm, BootstrapForm):
             "assessed_amount",
             "slutlignet",
             "next_processing_date",
+            "base_calculation_amount",
         )
-        widgets = {"next_processing_date": DateInput()}
+        widgets = {
+            "next_processing_date": DateInput(),
+            "base_calculation_amount": forms.NumberInput(
+                attrs={"disabled": "disabled"}
+            ),
+        }
 
     def save(self, commit=True):
 
         # Recalculate amounts before saving
         instance = super(EditAmountsUpdateForm, self).save(commit=False)
-        instance.recalculate()
+        instance.recalculate(
+            negative_payout_history_note=_(
+                "Automatisk genberegning ved rettelse af beløb"
+            ),
+            save_without_negative_payout_history=not commit,
+        )
 
         if commit:
             instance.save()
@@ -428,3 +501,49 @@ class PensionCompanyMergeForm(BootstrapForm):
                         % cleaned_data["target"].name
                     )
                 )
+
+
+class PreviousYearNegativePayoutForm(forms.ModelForm, BootstrapForm):
+    model = PreviousYearNegativePayout
+
+    class Meta:
+        model = PreviousYearNegativePayout
+        fields = ("transferred_negative_payout", "protected_against_recalculations")
+
+    def __init__(self, **kwargs):
+
+        limit = kwargs.pop("limit")
+
+        super().__init__(**kwargs)
+        self.fields["transferred_negative_payout"].widget.attrs.update(
+            {"min": 0, "max": limit, "autofocus": True}
+        )
+        self.fields["transferred_negative_payout"].validators.append(
+            MaxValueValidator(
+                limit_value=limit,
+                message=_(
+                    (
+                        "Kan ikke bruge mere end {limit} kr, da det er det totale tab"
+                        " der endnu ikke er anvendt"
+                    )
+                ).format(limit=limit),
+            )
+        )
+
+        self.fields["transferred_negative_payout"].validators.append(
+            MinValueValidator(limit_value=0, message=_("Beløb skal være højere end 0"))
+        )
+
+    def save(self):
+
+        instance = super(PreviousYearNegativePayoutForm, self).save(commit=False)
+        instance._change_reason = _("Manuel rettelse")
+        instance.save()
+
+        return instance
+
+
+class EfterbehandlingForm(forms.ModelForm, BootstrapForm):
+    class Meta:
+        model = PolicyTaxYear
+        fields = ("efterbehandling",)

@@ -52,7 +52,7 @@
                         {{ policy.person_tax_year.tax_year.year }}
                     {% else %}
                         <select class="form-control" id="js-year-select">
-                        {% for x in policy.same_policy_qs.all %}
+                        {% for x in policy.same_policy_qs_sorted_by_year.all %}
                             <!--<option {% if x == policy %}selected="selected"{% endif %} value="{% url 'kas:policy_detail' x.pk %}">{{x.tax_year.year}} ({{ x.tax_year.get_year_part_display }})</option>-->
                             <option {% if x == policy %}selected="selected"{% endif %} value="{% url 'kas:policy_tabs' year=x.tax_year.year person_id=person.id %}#policy_{{x.pk}}">
                                 {{x.tax_year.year}} ({{ x.tax_year.get_year_part_display }})
@@ -68,7 +68,7 @@
             </tr>
             <tr>
                 <th>{% translate 'R75 beløb' %}</th>
-                <td>HEPHEY{% if policy.prefilled_amount_edited %}
+                <td>{% if policy.prefilled_amount_edited %}
                         {{ policy.prefilled_amount_edited }}
                     {% else %}
                         {{ policy.prefilled_amount|default_if_none:'' }}
@@ -115,6 +115,7 @@
                 <th>{% translate 'Kræver efterbehandling' %}</th>
                 <td>
                     {% if policy.efterbehandling %}<span>{% translate 'Ja' %}</span>{% else %}<span>{% translate 'Nej' %}</span>{% endif %}
+                    (<a href="{% url 'kas:update-efterbehandling' policy.pk %}?back={{policy.year}}">ret</a>)
                 </td>
             </tr>
             <tr>

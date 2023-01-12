@@ -37,10 +37,11 @@ class BaseTestCase(TestCase):
             policy_number="1234",
         )
 
-    def self_report_policy_tax_year(self):
+    def self_report_policy_tax_year(self, skal_slutlignes=False):
         self.policy_tax_year.self_reported_amount = 1000
         self.policy_tax_year.active_amount = PolicyTaxYear.ACTIVE_AMOUNT_SELF_REPORTED
         self.policy_tax_year.recalculate()
+        self.policy_tax_year.slutlignet = skal_slutlignes
         self.policy_tax_year.save()
 
 
@@ -214,7 +215,16 @@ class EditAmountsUpdateViewTestCase(BaseTestCase):
         r = self.client.get(
             reverse("kas:change-edit-amounts", kwargs={"pk": self.policy_tax_year.pk})
         )
-        self.assertEqual(r.context["form"]["assessed_amount"].value(), 924)
+        self.assertEqual(r.context["form"]["base_calculation_amount"].value(), 924)
+        self.assertEqual(r.context["form"]["prefilled_amount_edited"].value(), 35)
+
+    def test_assessed_amount(self):
+        self.policy_tax_year.assessed_amount = 1723
+        self.policy_tax_year.save()
+        r = self.client.get(
+            reverse("kas:change-edit-amounts", kwargs={"pk": self.policy_tax_year.pk})
+        )
+        self.assertEqual(r.context["form"]["base_calculation_amount"].value(), 1723)
         self.assertEqual(r.context["form"]["prefilled_amount_edited"].value(), 35)
 
     def test_adjusted_r75_amount(self):
@@ -224,7 +234,7 @@ class EditAmountsUpdateViewTestCase(BaseTestCase):
             reverse("kas:change-edit-amounts", kwargs={"pk": self.policy_tax_year.pk})
         )
         self.assertEqual(
-            r.context["form"]["assessed_amount"].value(), 274
+            r.context["form"]["base_calculation_amount"].value(), 274
         )  # Adjusted for 200 taxable days in year
         self.assertEqual(
             r.context["form"]["prefilled_amount_edited"].value(), 501
@@ -235,7 +245,7 @@ class EditAmountsUpdateViewTestCase(BaseTestCase):
             reverse("kas:change-edit-amounts", kwargs={"pk": self.policy_tax_year.pk})
         )
         self.assertEqual(
-            r.context["form"]["assessed_amount"].value(), 19
+            r.context["form"]["base_calculation_amount"].value(), 19
         )  # Adjusted for 200 taxable days in year
         self.assertEqual(
             r.context["form"]["prefilled_amount_edited"].value(), 35
@@ -545,7 +555,7 @@ class PaymentOverrideTestCase(BaseTestCase):
         self.assertTrue(policy_tax_year.efterbehandling)
 
     def test_generate_final_taxslip(self):
-        self.self_report_policy_tax_year()
+        self.self_report_policy_tax_year(skal_slutlignes=True)
         # Tested function wants the tax_year to be in 'genoptagelsesperiode'
         self.tax_year.year_part = "genoptagelsesperiode"
         self.tax_year.save()
@@ -592,7 +602,7 @@ class PaymentOverrideTestCase(BaseTestCase):
         self.assertEqual(transaction.amount, self.policy_tax_year.calculated_result)
         self.assertEqual(transaction.type, "prisme10q")
         self.assertEqual(transaction.status, "created")
-        self.assertEqual(transaction.prisme10Q_batch, batch)
+        self.assertEqual(transaction.prisme10q_batch, batch)
 
 
 class CreateLockForYearTestCase(BaseTestCase):

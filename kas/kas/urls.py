@@ -26,6 +26,7 @@ from kas.views import (
     PersonTaxYearUnfinishedListView,
     PersonTaxYearFailSendListView,
     PolicyTaxYearUnfinishedListView,
+    PolicyTaxYearTaxDifferenceListView,
     PersonTaxYearDocumentsAndNotesUpdateView,
     PersonTaxYearEskatDiffListView,
     PolicyPaymentOverrideView,
@@ -50,7 +51,10 @@ from kas.views import (
     LockDetailView,
     UploadExistingFinalSettlementView,
     CreateLockForYearTemplateView,
+    UpdatePreviousYearNegativePayoutView,
+    PreviousYearNegativePayoutHistoryListView,
     KasLoginView,
+    UpdateEfterbehandlingView,
 )
 from kas.viewsets import (
     CurrentFinalSettlementDownloadView,
@@ -144,6 +148,11 @@ urlpatterns = [
         "policy/unfinished/",
         PolicyTaxYearUnfinishedListView.as_view(),
         name="policy_search_unfinished",
+    ),
+    path(
+        "policy/taxdifference/",
+        PolicyTaxYearTaxDifferenceListView.as_view(),
+        name="policy_search_taxdifference",
     ),
     path(
         "policy/<int:pk>/paymentoverride/",
@@ -293,7 +302,22 @@ urlpatterns = [
     path(
         "agterskrivelse/<uuid:pk>/", AgterskrivelseView.as_view(), name="agterskrivelse"
     ),
+    path(
+        "policy/<int:pk>/negativepayoutdefined/<int:from>/<int:to>/",
+        UpdatePreviousYearNegativePayoutView.as_view(),
+        name="define-negative-policy-payout",
+    ),
+    path(
+        "policy/<int:pk>/negativepayoutdefined/<int:from>/<int:to>/history/",
+        PreviousYearNegativePayoutHistoryListView.as_view(),
+        name="define-negative-policy-payout-history",
+    ),
     path("accounts/login/", KasLoginView.as_view(), name="login"),
+    path(
+        "policy/<int:pk>/update_efterbehandling",
+        UpdateEfterbehandlingView.as_view(),
+        name="update-efterbehandling",
+    ),
 ]
 
 if settings.FEATURE_FLAGS.get("enable_feature_flag_list"):

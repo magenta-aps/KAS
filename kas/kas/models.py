@@ -269,6 +269,8 @@ def create_lock_for_year(sender, instance, created, **kwargs):
 
 
 class Person(HistoryMixin, models.Model):
+    class Meta:
+        ordering = ["cpr"]
 
     history = HistoricalRecords()
 
@@ -534,6 +536,13 @@ class PersonTaxYear(HistoryMixin, models.Model):
     # Charfield instead of User, so if a user is deleted we still remember him
     updated_by = models.CharField(max_length=150, null=True)
 
+    # Whether r75 data is corrected by the pension company or user
+    corrected_r75_data = models.BooleanField(default=False)
+
+    # Whether r75 data for this tax year comes from the 'future'.
+    # i.e. it was submitted after the tax year was closed.
+    future_r75_data = models.BooleanField(default=False)
+
     @property
     def year(self):
         return self.tax_year.year
@@ -560,7 +569,9 @@ class PersonTaxYear(HistoryMixin, models.Model):
             return 1
         return self.number_of_days / self.tax_year.days_in_year
 
-    def recalculate_mandtal(self):
+    def recalculate_mandtal(
+        self, negative_payout_history_note=_("Genberegning af mandtal")
+    ):
         number_of_days = 0
         fully_tax_liable = False
         qs = self.persontaxyearcensus_set.filter(fully_tax_liable=True)
@@ -580,7 +591,9 @@ class PersonTaxYear(HistoryMixin, models.Model):
             self.save()
             for policytaxyear in self.active_policies_qs:
                 old_result = policytaxyear.calculated_result
-                policytaxyear.recalculate()
+                policytaxyear.recalculate(
+                    negative_payout_history_note=negative_payout_history_note
+                )
                 policytaxyear.save()
                 if policytaxyear.calculated_result != old_result:
                     # Tilføj note på policen om at mandtal har ændret resultatet
@@ -627,6 +640,8 @@ class PersonTaxYear(HistoryMixin, models.Model):
 
 
 class PersonTaxYearCensus(HistoryMixin, models.Model):
+    class Meta:
+        ordering = ["person_tax_year"]
 
     person_tax_year = models.ForeignKey(
         PersonTaxYear, null=False, on_delete=models.CASCADE
@@ -642,11 +657,16 @@ class PersonTaxYearCensus(HistoryMixin, models.Model):
 
 
 class PolicyTaxYear(HistoryMixin, models.Model):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__original_year_adjusted_amount = self.year_adjusted_amount
+
     history = HistoricalRecords()
     objects = PolicyTaxYearManager()
 
     class Meta:
         unique_together = ["person_tax_year", "pension_company", "policy_number"]
+        ordering = ["person_tax_year"]
 
     person_tax_year = models.ForeignKey(
         PersonTaxYear,
@@ -709,12 +729,19 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         null=True
         # Justeret for dage i skatteår
     )
+    base_calculation_amount = models.BigIntegerField(
+        verbose_name=_("Nuværende beløb til grund for skatteberegningen"),
+        blank=True,
+        null=True,
+        # Beløb benyttet til beregningen af kapitalafkastskatten
+    )
 
     year_adjusted_amount = models.BigIntegerField(
         verbose_name=_("Beløb justeret for dage i skatteår"),
         default=0
         # Justeret for dage i skatteår (ved at gange faktor på efter behov)
     )
+    __original_year_adjusted_amount = None
 
     CALCULATION_MODEL_DEFAULT = 1
     CALCULATION_MODEL_ALTERNATIVE = 2
@@ -734,6 +761,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         blank=True,
         null=True,
         validators=(MinValueValidator(limit_value=0),),
+        default=0,
     )
 
     from_pension = models.BooleanField(
@@ -825,6 +853,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         on_delete=models.SET_NULL,
     )
 
+    indifference_limited = models.BooleanField(default=False)
+
     @classmethod
     def perform_calculation(
         cls,
@@ -833,7 +863,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         taxable_days_in_year: int = 365,  # Number of days the person is paying tax in Greenland
         available_deduction_data: dict = None,  # Dict of years to available deduction amounts
         foreign_paid_amount: int = 0,  # Amount already paid in taxes in foreign country
+        preliminary_payment: int = 0,  # Amount already paid in taxes domestically
         adjust_for_days_in_year: bool = True,  # Perform adjustment for taxable days in year (false if self-reported)
+        pension_company_pays: bool = False,  # Sets tax_to_pay to zero if pension company pays
     ) -> dict:
 
         if days_in_year not in (365, 366):
@@ -870,7 +902,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         initial_amount = int(initial_amount)
 
         # Adjust for taxable days. Round down because we only operate in integer amounts of money
-        year_adjusted_amount = math.floor(initial_amount * tax_days_adjust_factor)
+        year_adjusted_amount = int(initial_amount * tax_days_adjust_factor)
 
         taxable_amount = max(0, year_adjusted_amount)
         used_negative_return = 0
@@ -897,7 +929,17 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         # Calculate the tax
         full_tax = math.floor(taxable_amount * settings.KAS_TAX_RATE)
 
-        tax_with_deductions = max(0, full_tax - max(0, foreign_paid_amount))
+        tax_with_deductions = max(
+            0, full_tax - max(0, foreign_paid_amount) - max(0, preliminary_payment)
+        )
+
+        if pension_company_pays:
+            tax_to_pay = 0
+        else:
+            tax_to_pay = tax_with_deductions
+            if abs(tax_to_pay) < settings.TRANSACTION_INDIFFERENCE_LIMIT:
+                cls(indifference_limited=True)
+                tax_to_pay = 0
 
         return {
             "initial_amount": initial_amount,
@@ -913,6 +955,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             "tax_with_deductions": tax_with_deductions,
             "desired_deduction_data": desired_deduction_data,
             "adjust_for_days_in_year": adjust_for_days_in_year,
+            "tax_to_pay": tax_to_pay,
         }
 
     @property
@@ -920,9 +963,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         """
         Returns the full tax
         """
-        only_adjusted_amounts = False
+        only_adjusted_amounts = True
         calculation_result = self.perform_calculation(
-            initial_amount=int(self.get_assessed_amount(only_adjusted_amounts)),
+            initial_amount=int(self.get_base_calculation_amount(only_adjusted_amounts)),
             taxable_days_in_year=int(self.person_tax_year.number_of_days or 0),
             days_in_year=int(self.person_tax_year.tax_year.days_in_year or 0),
             available_deduction_data=self.calculate_available_yearly_deduction(),
@@ -963,6 +1006,31 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         )
 
     @property
+    def same_policy_qs_sorted_by_year(self):
+        return self.same_policy_qs.order_by("-person_tax_year__tax_year__year")
+
+    @property
+    def latest_policy(self):
+        policies = list(self.same_policy_qs_sorted_by_year)
+        # If the filtering for same policies returns an empty list, return original policytaxyear
+        if not policies:
+            return self
+        return policies[0]
+
+    @property
+    def updated_policy_tax_year(self):
+        """
+        Possibly redundant fix, in order to be able to call the updated
+        PolicyTaxYear from a history object
+        """
+        policy_qs = self.same_policy_qs.filter(
+            person_tax_year__tax_year__year=self.year
+        )
+        if not policy_qs:
+            return self
+        return policy_qs[0]
+
+    @property
     def reported_difference(self):
         if self.self_reported_amount is None or self.prefilled_adjusted_amount is None:
             return None
@@ -998,15 +1066,17 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         return self.same_policy_qs.filter(person_tax_year__tax_year__year__gt=self.year)
 
     def get_calculation(self):
-        only_adjusted_amounts = False
+        only_adjusted_amounts = True
         return PolicyTaxYear.perform_calculation(
-            self.get_assessed_amount(only_adjusted_amounts),
+            initial_amount=self.get_base_calculation_amount(only_adjusted_amounts),
             days_in_year=self.tax_year.days_in_year,
             taxable_days_in_year=self.person_tax_year.number_of_days,
             available_deduction_data=self.calculate_available_yearly_deduction(),
             foreign_paid_amount=self.foreign_paid_amount_actual,
+            preliminary_payment=self.preliminary_paid_amount or 0,
             adjust_for_days_in_year=(not only_adjusted_amounts)
             and self.should_adjust_for_tax_days,
+            pension_company_pays=self.pension_company_pays,
         )
 
     def calculate_available_yearly_deduction(self):
@@ -1025,18 +1095,139 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             available[policy.year] = (
                 -policy.year_adjusted_amount
             ) - used  # Positive value
+
+        if available:
+            if min(available.values()) < 0:
+                available = self.adjust_deduction_data_for_negative_remaining_values()
+
         return available
 
-    def recalculate(self):
-        self.payouts_used.all().delete()
+    def modify_deduction_data_for_protected_cells(
+        self, original_desired_deduction_data
+    ):
+        """
+        Modifies a desired_deduction_data dictionary such that protected cells will not
+        be updated (if possible)
+
+        A cell is protected when
+        PreviousYearNegativePayout.protected_against_recalculations = True
+        """
+        modified_desired_deduction_data = {}
+
+        # Find protected payouts
+        protected_payouts_used = self.payouts_used.filter(
+            protected_against_recalculations=True
+        ).order_by("-used_from__person_tax_year__tax_year__year")
+
+        # If there are none - There is no need to do anything
+        if not protected_payouts_used:
+            return original_desired_deduction_data
+
+        # Find the transferred negative payout in each year
+        protected_year_dict = {
+            q.used_from.year: q.transferred_negative_payout
+            for q in protected_payouts_used
+        }
+
+        available_deduction_data = self.calculate_available_yearly_deduction()
+
+        protected_amount = sum(protected_year_dict.values())
+        total_amount = sum(original_desired_deduction_data.values())
+        amount_to_put_elsewhere = total_amount - protected_amount
+
+        if amount_to_put_elsewhere == 0:
+            return original_desired_deduction_data
+
+        elif amount_to_put_elsewhere > 0:
+            # Create a new deduction data dictionary - keeping protected values as they are
+            for year in sorted(available_deduction_data):
+                if year not in protected_year_dict:
+
+                    amount_to_put_in_this_year = min(
+                        amount_to_put_elsewhere,
+                        available_deduction_data[year],
+                    )
+
+                    if amount_to_put_in_this_year != 0:
+                        modified_desired_deduction_data[
+                            year
+                        ] = amount_to_put_in_this_year
+                        amount_to_put_elsewhere -= amount_to_put_in_this_year
+
+                else:
+                    modified_desired_deduction_data[year] = protected_year_dict[year]
+        else:
+            # Adjust protected cells down until we reach the desired amount
+            amount_to_deduct = -amount_to_put_elsewhere
+
+            for protected_payout_used in protected_payouts_used:
+                year = protected_payout_used.used_from.year
+                amount_to_deduct_from_this_year = min(
+                    amount_to_deduct,
+                    protected_payout_used.transferred_negative_payout,
+                )
+                protected_payout_used.transferred_negative_payout -= (
+                    amount_to_deduct_from_this_year
+                )
+                protected_payout_used._change_reason = _(
+                    "automatisk rettelse for at undgå at det totale anvendte beløb er over %d"
+                    % total_amount
+                )
+
+                protected_payout_used.save()
+                amount_to_deduct -= amount_to_deduct_from_this_year
+
+                modified_desired_deduction_data[
+                    year
+                ] = protected_payout_used.transferred_negative_payout
+
+                if amount_to_deduct == 0:
+                    break
+
+        return modified_desired_deduction_data
+
+    def recalculate(
+        self,
+        negative_payout_history_note=_("Genberegning"),
+        save_without_negative_payout_history=False,
+    ):
+
+        payouts_used_qs = self.payouts_used.exclude(
+            transferred_negative_payout=0
+        ).exclude(protected_against_recalculations=True)
+
+        # Set payouts to zero rather than deleting. If we delete we lose history.
+        for payout_used in payouts_used_qs:
+            payout_used.transferred_negative_payout = 0
+            payout_used._change_reason = negative_payout_history_note
+            payout_used.save()
+
         result = self.get_calculation()
+
+        result[
+            "desired_deduction_data"
+        ] = self.modify_deduction_data_for_protected_cells(
+            result["desired_deduction_data"]
+        )
+
+        for payout_used in payouts_used_qs:
+            # If this object will be created later on in the code:
+            if payout_used.used_from.year in result["desired_deduction_data"].keys():
+                # Remove the history entry to avoid duplicate history entries
+                latest_history_entry = payout_used.history.order_by("-history_date")[0]
+                latest_history_entry.delete()
 
         other_policies = {
             policy.year: policy
             for policy in self.previous_years_qs().filter(active=True)
         }
         for year, amount in result["desired_deduction_data"].items():
-            other_policies[year].use_amount(amount, self)
+            other_policies[year].use_amount(
+                amount,
+                self,
+                negative_payout_history_note=negative_payout_history_note,
+                save_without_negative_payout_history=save_without_negative_payout_history,
+            )
 
         old_year_adjusted_amount = self.year_adjusted_amount
         self.year_adjusted_amount = result["year_adjusted_amount"]
@@ -1063,6 +1254,99 @@ class PolicyTaxYear(HistoryMixin, models.Model):
                     content=note_text,
                 )
 
+    def adjust_deduction_data_for_negative_remaining_values(self):
+        """
+        Checks and adjusts negative payout table to see if a value in it is too high
+        compared to the available negative payout. And adjusts if necessary.
+        """
+
+        remaining_deduction_data = {
+            year: inner_dict["remaining"]
+            for year, inner_dict in self.latest_policy.previous_year_deduction_table_data.items()
+        }
+
+        years_with_below_zero_amount = [
+            y
+            for y in remaining_deduction_data.keys()
+            if remaining_deduction_data[y] < 0
+        ]
+
+        policies_to_be_recalculated = []
+
+        for year in years_with_below_zero_amount:
+            future_policies = self.same_policy_qs_sorted_by_year.filter(
+                person_tax_year__tax_year__year__gt=year
+            )
+            total_amount_to_adjust = remaining_deduction_data[year] * -1
+
+            negative_payout_objects = []
+            for policy in future_policies:
+                try:
+                    negative_payout_objects.append(
+                        policy.payouts_used.get(
+                            used_from__person_tax_year__tax_year__year=year,
+                            used_for__person_tax_year__tax_year__year=policy.person_tax_year.tax_year.year,
+                        )
+                    )
+                except policy.payouts_used.model.DoesNotExist:
+                    pass
+
+            # Separate into protected and non-protected objects
+            protected_negative_payout_objects = [
+                n for n in negative_payout_objects if n.protected_against_recalculations
+            ]
+
+            non_protected_negative_payout_objects = [
+                n
+                for n in negative_payout_objects
+                if not n.protected_against_recalculations
+            ]
+
+            # Put them together again - so we loop over non-protected objects first
+            negative_payout_objects = (
+                non_protected_negative_payout_objects
+                + protected_negative_payout_objects
+            )
+
+            for negative_payout_object in negative_payout_objects:
+
+                policy = negative_payout_object.used_for
+
+                amount_to_adjust_with = min(
+                    negative_payout_object.transferred_negative_payout,
+                    total_amount_to_adjust,
+                )
+
+                negative_payout_object.transferred_negative_payout -= (
+                    amount_to_adjust_with
+                )
+                negative_payout_object._change_reason = _(
+                    "automatisk rettelse for at undgå at det totale resterende beløb falder under 0"
+                )
+                negative_payout_object.save()
+
+                if policy not in policies_to_be_recalculated:
+                    policies_to_be_recalculated.extend([policy])
+
+                total_amount_to_adjust -= amount_to_adjust_with
+
+                if total_amount_to_adjust == 0:
+                    break
+
+        for policy in policies_to_be_recalculated:
+            policy.recalculate()
+
+        return self.calculate_available_yearly_deduction()
+
+    def save(self, *args, **kwargs):
+        super(PolicyTaxYear, self).save(*args, **kwargs)
+
+        # If year_adjusted_amount was changed:
+        if self.year_adjusted_amount != self.__original_year_adjusted_amount:
+            # Make sure that negative values can never appear in the negative payout table
+            # This can happen if (for example) the self-reported amount is adjusted to a lower value
+            self.adjust_deduction_data_for_negative_remaining_values()
+
     def sum_of_used_amount(self):
         # Deliver the amount of this years loss used in other years deduction
         result = self.payouts_using.aggregate(Sum("transferred_negative_payout"))
@@ -1074,7 +1358,13 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         return value
 
     # Make a registration that we use some ot self's loss as deductoin on 'deducting_policy_tax_year'
-    def use_amount(self, use_up_to_amount, deducting_policy_tax_year):
+    def use_amount(
+        self,
+        use_up_to_amount,
+        deducting_policy_tax_year,
+        negative_payout_history_note="",
+        save_without_negative_payout_history=False,
+    ):
         # Create a relation of usage of this years loss as deduction in other years
         if self.year_adjusted_amount >= 0:
             return 0
@@ -1090,8 +1380,20 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         item, created = PreviousYearNegativePayout.objects.get_or_create(
             used_from=self, used_for=deducting_policy_tax_year
         )
-        item.transferred_negative_payout += to_be_used_amount
-        item.save()
+
+        if created:
+            item.history.last().delete()
+
+        if item.protected_against_recalculations is False:
+
+            item.transferred_negative_payout += to_be_used_amount
+            item._change_reason = negative_payout_history_note
+            item.save()
+
+            if save_without_negative_payout_history:
+                latest_history_entry = item.history.order_by("-history_date")[0]
+                latest_history_entry.delete()
+
         return to_be_used_amount
 
     @property
@@ -1115,6 +1417,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         available_by_year = {}
         used_by_year = {}
         for_year_total = {}
+        for_year_max = {}
 
         for x in self.same_policy_qs.filter(
             person_tax_year__tax_year__year__lte=self.year, active=True
@@ -1124,6 +1427,12 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             available_by_year[x.year] = min(x.year_adjusted_amount, 0) * -1
             used_by_year[x.year] = 0
             for_year_total[x.year] = 0
+            base_calculation_amount = x.get_base_calculation_amount()
+
+            if base_calculation_amount is None:
+                for_year_max[x.year] = 0
+            else:
+                for_year_max[x.year] = max(0, base_calculation_amount)
 
         used_matrix = {}
 
@@ -1151,21 +1460,70 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         # create a year x year table
         for x in years:
             used_in = {}
+            used_max = {}
+            remaining = available_by_year[x] - used_by_year[x]
 
             for y in years:
                 if x >= y:
                     used_in[y] = "-"
                 else:
                     used_in[y] = used_matrix.get(x, {}).get(y, 0)
+                    used_max[y] = min(
+                        remaining + used_in[y],
+                        for_year_max[y] - for_year_total[y] + used_in[y],
+                    )
 
             result[x] = {
                 "available": available_by_year[x],
                 "used_by_year": used_in,
-                "remaining": available_by_year[x] - used_by_year[x],
+                "used_max_by_year": used_max,
+                "remaining": remaining,
                 "used_total": for_year_total[x],
+                "used_max": for_year_max[x],
             }
 
         return result
+
+    @property
+    def years_with_protected_negative_payout(self):
+        """
+        Find out which (from/for) year combinations have protected cells in the negative
+        payout table
+        """
+
+        policies = self.same_policy_qs
+
+        objects_with_protected_cells = PreviousYearNegativePayout.objects.filter(
+            used_from__in=policies,
+            used_for__in=policies,
+            protected_against_recalculations=True,
+        )
+
+        output = [
+            (entry.used_from.year, entry.used_for.year)
+            for entry in objects_with_protected_cells
+        ]
+
+        return list(set(output))
+
+    @property
+    def years_with_negative_payout_history(self):
+        """
+        Find out which (from/for) year combinations have history in the negative
+        payout table
+        """
+        policies = self.same_policy_qs
+
+        objects_with_history = PreviousYearNegativePayout.history.filter(
+            used_from__in=policies, used_for__in=policies
+        )
+
+        output = [
+            (entry.used_from.year, entry.used_for.year)
+            for entry in objects_with_history
+        ]
+
+        return list(set(output))
 
     @property
     def sum_of_deducted_amount(self):
@@ -1191,19 +1549,23 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         )
         self.save()
 
-    def get_assessed_amount(self, only_adjusted=True):
+    # def get_assessed_amount(self, only_adjusted=True):
+    def get_base_calculation_amount(self, only_adjusted=True):
         """
-        Return assessed_amount based on estimated_mount, self_reported_amount,
+        Return base_calculation_amount based on estimated_mount, self_reported_amount,
         prefilled_amount_edited and prefilled_amount.
         :param only_adjusted: Whether to use prefilled_adjusted_amount (adjusted) or prefilled_amount (not adjusted)
-        :return: assessed_amount or None
+        :return: base_calculation_amount or None
         """
         amounts_list = [
             self.assessed_amount,
             self.self_reported_amount,
         ]
         if only_adjusted:
-            amounts_list.append(self.prefilled_adjusted_amount)
+            amounts_list += [
+                self.prefilled_adjusted_amount,
+                self.base_calculation_amount,
+            ]
         else:
             amounts_list += [
                 self.prefilled_amount_edited,
@@ -1257,6 +1619,10 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
 
 class PreviousYearNegativePayout(models.Model):
+    class Meta:
+        ordering = ["used_from"]
+
+    history = HistoricalRecords(history_change_reason_field=models.TextField(null=True))
 
     used_from = models.ForeignKey(
         PolicyTaxYear, related_name="payouts_using", null=True, on_delete=models.PROTECT
@@ -1270,6 +1636,10 @@ class PreviousYearNegativePayout(models.Model):
         verbose_name=_("Overført negativt afkast"),
         blank=True,
         default=0,
+    )
+
+    protected_against_recalculations = models.BooleanField(
+        default=False, verbose_name=_("Beskyt mod genberegning")
     )
 
     @property
@@ -1289,6 +1659,9 @@ def policydocument_file_path(instance, filename):
 
 
 class PolicyDocument(models.Model):
+    class Meta:
+        ordering = ["person_tax_year", "uploaded_at"]
+
     person_tax_year = models.ForeignKey(
         PersonTaxYear, null=False, db_index=True, on_delete=models.PROTECT
     )
@@ -1343,6 +1716,8 @@ post_save.connect(
 
 
 class R75(models.Model):
+    class Meta:
+        ordering = ["person_tax_year"]
 
     person_tax_year = models.ForeignKey(
         PersonTaxYear,
@@ -1355,6 +1730,8 @@ class R75(models.Model):
 
 
 class PriorYear(models.Model):
+    class Meta:
+        ordering = ["person"]
 
     person = models.ForeignKey(Person, on_delete=models.PROTECT)
 
@@ -1370,6 +1747,9 @@ class Payment(models.Model):
     days = models.IntegerField(
         db_index=True, verbose_name=_("Antal dage"), help_text=_("Antal dage")
     )
+
+    class Meta:
+        ordering = ["days"]
 
 
 class Note(models.Model):
@@ -1432,6 +1812,8 @@ def pensioncompanysummaryfile_path(instance, filename):
 
 
 class PensionCompanySummaryFile(models.Model):
+    class Meta:
+        ordering = ["company", "tax_year"]
 
     company = models.ForeignKey(
         PensionCompany,
@@ -1534,6 +1916,8 @@ post_delete.connect(
 
 
 class PensionCompanySummaryFileDownload(models.Model):
+    class Meta:
+        ordering = ["downloaded_at"]
 
     downloaded_by = models.ForeignKey(
         get_user_model(),
@@ -1629,10 +2013,12 @@ class FinalSettlement(EboksDispatch):
     # Final settlement ammount provided by the user when uploading the pdf.
     pseudo_amount = models.DecimalField(
         blank=False,
-        max_digits=5,
+        max_digits=12,
         decimal_places=2,
         default=0,
     )
+
+    indifference_limited = models.BooleanField(default=False)
 
     def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
         return super().dispatch_to_eboks(
@@ -1651,7 +2037,9 @@ class FinalSettlement(EboksDispatch):
 
         total_tax = sum(
             [
-                policy.get_calculation()["tax_with_deductions"]
+                policy.get_calculation()[
+                    "tax_to_pay"
+                ]  # Samme som tax_with_deductions, men med beløb under 100 kr nulstillet
                 for policy in self.person_tax_year.active_policies_qs
                 if not policy.pension_company_pays
             ]
@@ -1688,6 +2076,11 @@ class FinalSettlement(EboksDispatch):
         total_payment = (
             remainder_with_interest + self.extra_payment_for_previous_missing
         )
+        # Enforcing indifference limit on transactions, where abs(amount) < 100kr.
+        if abs(total_payment) < settings.TRANSACTION_INDIFFERENCE_LIMIT:
+            self.indifference_limited = True
+            self.save()
+            total_payment = 0
 
         return {
             "prepayment": prepayment,
@@ -1848,6 +2241,7 @@ class FinalSettlement(EboksDispatch):
                 condition=Q(pseudo=True),
             )
         ]
+        ordering = ["person_tax_year"]
 
 
 def delete_pdf(sender, instance, using, **kwargs):
@@ -1866,6 +2260,9 @@ def agterskrivelse_file_path(instance, filename):
 
 
 class Agterskrivelse(EboksDispatch):
+    class Meta:
+        ordering = ["person_tax_year"]
+
     uuid = models.UUIDField(primary_key=True, default=uuid4)
     person_tax_year = models.ForeignKey(PersonTaxYear, on_delete=models.CASCADE)
     pdf = models.FileField(upload_to=agterskrivelse_file_path)
@@ -1900,6 +2297,9 @@ class AddressFromDafo(models.Model):
     def __str__(self):
         return "%s - %s" % (self.name, self.full_address)
 
+    class Meta:
+        ordering = ["cpr"]
+
 
 @receiver(post_save, sender=FinalSettlement)
 def cancel_batch_on_save(sender, instance, **kwargs):
@@ -1912,7 +2312,7 @@ def cancel_batch_on_save(sender, instance, **kwargs):
         ).exclude(
             status="transferred",
         ):
-            batch = transaction.prisme10Q_batch
+            batch = transaction.prisme10q_batch
             if batch.status in (
                 Prisme10QBatch.STATUS_CREATED,
                 Prisme10QBatch.STATUS_DELIVERY_FAILED,
@@ -1922,6 +2322,9 @@ def cancel_batch_on_save(sender, instance, **kwargs):
 
 
 class RepresentationToken(models.Model):
+    class Meta:
+        ordering = ["created"]
+
     token = models.CharField(
         max_length=64,
         null=False,

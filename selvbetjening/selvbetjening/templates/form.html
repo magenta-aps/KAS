@@ -9,6 +9,10 @@
 
 <div class="container">
 
+    {% if person_tax_years.all|length == 0 %}
+    <p>{% translate 'Du er ikke kendt i systemet' %}</p>
+    {% else %}
+
     <a href="{% url 'selvbetjening:policy-view' year=year %}">{% translate 'Tilbage' %}</a>
 
     <p>{% blocktrans with number_of_days=person_tax_year.number_of_days %}Antal skattepligtige dage i skatteår: {{number_of_days}}{% endblocktrans %}</p>
@@ -66,6 +70,20 @@
                                     </td>
                                 </tr>
                                 {% endif %}
+                                <tr>
+                                    <td class="col-2-sm">{% translate 'Fortrykt beløb' %}</td>
+                                    <td class="col-6-sm">
+                                        {{ policydata.prefilled_amount }}
+                                    </td>
+                                    <td class="col-4-sm"></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-2-sm">{% translate 'Antal skattepligtsdage' %}</td>
+                                    <td class="col-6-sm">
+                                        {{ person_tax_year.number_of_days }}
+                                    </td>
+                                    <td class="col-4-sm"></td>
+                                </tr>
 
                                 <tr>
                                     <td class="col-2-sm">{% translate 'Kapitalafkast PBL (DK) § 53 A' %}</td>
@@ -74,7 +92,12 @@
                                         {% blocktrans with value=policyform.prefilled_adjusted_amount.value|localize %}Vores beregning: {{value}}{% endblocktrans %}
                                         {% if person_tax_year.number_of_days != person_tax_year.tax_year.days_in_year %}
                                         <br/>
-                                        {% trans 'Beløbet er justeret for antal skattepligtige dage i skatteåret' %}
+                                        
+                                        {% blocktranslate with amount=policydata.prefilled_amount year=person_tax_year.tax_year.year taxable_days=person_tax_year.number_of_days days=person_tax_year.tax_year.days_in_year %}
+                                        Beløbet er justeret for antal skattepligtige dage i skatteåret jf. følgende udregning:<br>
+                                        Fortrykt beløb ({{ amount }}) &times; skattepligtsdage ({{ taxable_days }}) / dage i {{ year }} ({{ days }})
+                                        {% endblocktranslate %}                                                     
+                                        
                                         {% endif %}
                                         {% else %}
                                         {% endif %}
@@ -266,5 +289,6 @@
             $(".policyform .company_select").each(changeCompanySelect);
         });
     </script>
+    {% endif %}
 </div>
 {% endblock %}

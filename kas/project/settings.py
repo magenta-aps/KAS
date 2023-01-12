@@ -18,7 +18,7 @@ WHITENOISE_USE_FINDERS = True
 # DEFAULT_AUTO_FIELD  er sat da vi benytter 3 parts biblioteker der ikke har fuldt implementeret app_config
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = os.path.join(BASE_DIR, "kas", "static")
 # Application definition
 
 INSTALLED_APPS = [
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django_filters",
     "simple_history",
     "watchman",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
@@ -189,6 +190,10 @@ if ENVIRONMENT not in ("development", "staging", "production"):
 KAS_TAX_RATE = 0.153
 KAS_TAX_RATE_IN_PERCENT = KAS_TAX_RATE * 100
 
+TRANSACTION_INDIFFERENCE_LIMIT = int(
+    os.environ.get("TRANSACTION_INDIFFERENCE_LIMIT") or 100
+)
+
 REPORT_EXCLUDE_ALREADY_GENERATED = False
 
 EBOKS_MOCK = bool(strtobool(os.environ.get("EBOKS_MOCK", "False")))
@@ -237,9 +242,9 @@ TENQ = {
 
 DAFO = {
     "mock": strtobool(os.environ.get("PITU_MOCK", "False")),
-    "certificate": "/ssl/kas+ressourcerenter.cert",
-    "private_key": "/ssl/kas+ressourcerenter.key",
-    "root_ca": "/ssl/pitu_ca.cert",
+    "certificate": os.environ.get("PITU_CERTIFICATE"),
+    "private_key": os.environ.get("PITU_KEY"),
+    "root_ca": os.environ.get("PITU_ROOT_CA"),
     "service_header_cpr": os.environ.get("PITU_UXP_SERVICE_CPR"),
     "client_header": os.environ.get("PITU_UXP_CLIENT"),
     "url": os.environ.get("PITU_URL"),
