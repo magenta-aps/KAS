@@ -398,7 +398,9 @@ class EditAmountsUpdateForm(forms.ModelForm, BootstrapForm):
         )
         widgets = {
             "next_processing_date": DateInput(),
-            "base_calculation_amount": forms.NumberInput(attrs={"disabled": "disabled"})
+            "base_calculation_amount": forms.NumberInput(
+                attrs={"disabled": "disabled"}
+            ),
         }
 
     def save(self, commit=True):
