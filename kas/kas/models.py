@@ -1046,7 +1046,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             or prefilled_adjusted_amount == 0
         ):
             return None
-        return diff / prefilled_adjusted_amount * 100
+        return round(diff / prefilled_adjusted_amount * 100, 2)
 
     @property
     def used_from(self):
