@@ -17,7 +17,7 @@ class Command(BaseCommand):
     """
 
     help = """
-    Searches for policies, where the assessed_amount == prefilled_amount_edited or 
+    Searches for policies, where the assessed_amount == prefilled_amount_edited or
     prefilled_amount, AND where the taxable number_of_days < days_in_year.
     Passing the tag --execute resets the assessed amount to assessed_amount=None, and
     runs the get_base_calculation_amount() function.
@@ -49,7 +49,7 @@ class Command(BaseCommand):
             year_days[taxyear.year] = taxyear.days_in_year
 
         for year, days in year_days.items():
-            policytaxyears = PolicyTaxYear, objects.filter(
+            policytaxyears = PolicyTaxYear.objects.filter(
                 Q(assessed_amount=F("prefilled_amount_edited"))
                 | Q(assessed_amount=F("prefilled_amount")),
                 Q(person_tax_year__tax_year__year=year)
