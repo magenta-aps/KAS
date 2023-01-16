@@ -62,7 +62,7 @@ class Command(BaseCommand):
                     or policy.assessed_amount == policy.prefilled_amount
                 ), f"Policy with pk={policy.pk} has (assessed_amount != prefilled_amount_edited) or (assessed_amount != prefilled_amount AND prefilled_amount_edited = None)"
                 assert (
-                    policy.person_tax_year.tax_year.number_of_days
+                    policy.person_tax_year.number_of_days
                     < policy.person_tax_year.tax_year.days_in_year
                 ), f"Policy with pk={policy.pk} has (number_of_days>=days_in_year)"
                 policytaxyear_pk_list.append(policy.pk)
