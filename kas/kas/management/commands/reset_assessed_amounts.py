@@ -41,7 +41,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options) -> None:
-        policytaxyear_pk_list = []
+        policytaxyear_list = []
 
         # Create dict of days in year, since this can't be queried in the ORM
         year_days = {}
@@ -57,23 +57,27 @@ class Command(BaseCommand):
                 Q(active=True),
             ).exclude(assessed_amount=None)
             for policy in policytaxyears:
-                assert (
-                    policy.assessed_amount == policy.prefilled_amount_edited
-                    or policy.assessed_amount == policy.prefilled_amount
-                ), f"Policy with pk={policy.pk} has (assessed_amount != prefilled_amount_edited) or (assessed_amount != prefilled_amount AND prefilled_amount_edited = None)"
-                assert (
-                    policy.person_tax_year.number_of_days
-                    < policy.person_tax_year.tax_year.days_in_year
-                ), f"Policy with pk={policy.pk} has (number_of_days>=days_in_year)"
-                policytaxyear_pk_list.append(policy.pk)
-                if options["execute"]:
-                    policy.assessed_amount = None
-                    policy.base_calculation_amount = (
-                        policy.get_base_calculation_amount()
-                    )
-                    policy._change_reason = "Reset af assessed_amount"
-                    policy.save()
+                print_tuple = (
+                    policy.year,
+                    policy.person.cpr,
+                    policy.pk,
+                    policy.person.name,
+                )
+                policytaxyear_list.append(print_tuple)
 
-        print(policytaxyear_pk_list)
+        if options["execute"]:
+            for policy_tuple in policytaxyear_list:
+                policy=PolicyTaxYear.objects.filter(pk=policy_tuple[2])[0]
+                policy.assessed_amount = None
+                policy.base_calculation_amount = (
+                    policy.get_base_calculation_amount()
+                )
+                policy._change_reason = "Reset af assessed_amount"
+                policy.save()
+            print("Følgende policer har fået det ansatte beløb (assessed_amount) nulstillet:")
+        print("Årstal\tPersonnummer\tPolicyTaxYear\tNavn")
+        for tup in policytaxyear_list:
+            line = f"{tup[0]}\t{tup[1]}\t{tup[2]}\t{tup[3]}"
+            print(line)
 
         return
