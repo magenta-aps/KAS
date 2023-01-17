@@ -67,14 +67,14 @@ class Command(BaseCommand):
 
         if options["execute"]:
             for policy_tuple in policytaxyear_list:
-                policy=PolicyTaxYear.objects.filter(pk=policy_tuple[2])[0]
+                policy = PolicyTaxYear.objects.filter(pk=policy_tuple[2])[0]
                 policy.assessed_amount = None
-                policy.base_calculation_amount = (
-                    policy.get_base_calculation_amount()
-                )
+                policy.base_calculation_amount = policy.get_base_calculation_amount()
                 policy._change_reason = "Reset af assessed_amount"
                 policy.save()
-            print("Følgende policer har fået det ansatte beløb (assessed_amount) nulstillet:")
+            print(
+                "Følgende policer har fået det ansatte beløb (assessed_amount) nulstillet:"
+            )
         print("Årstal\tPersonnummer\tPolicyTaxYear\tNavn")
         for tup in policytaxyear_list:
             line = f"{tup[0]}\t{tup[1]}\t{tup[2]}\t{tup[3]}"
