@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-12 10:39+0100\n"
+"POT-Creation-Date: 2023-01-16 14:42+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -940,7 +940,12 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
-msgid "Kapitalafkast"
+#, python-format
+msgid ""
+"\n"
+"            Kapitalafkast (%(taxable_days)s skattedage ud af %(total_days)s "
+"dage)\n"
+"            "
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
@@ -2489,7 +2494,8 @@ msgstr ""
 
 #: kas/views.py
 msgid ""
-"Der kan ikke generes nye slutopgørelser, hvis der er ikke-slutlignede policer"
+"Der kan ikke genereres nye slutopgørelser, hvis der er ikke-slutlignede "
+"policer"
 msgstr ""
 
 #: kas/views.py
