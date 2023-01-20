@@ -938,7 +938,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         else:
             tax_to_pay = tax_with_deductions
             if abs(tax_to_pay) < settings.TRANSACTION_INDIFFERENCE_LIMIT:
-                cls.indifference_limited = True
+                indifference_limited = True
                 tax_to_pay = 0
 
         return {
@@ -956,6 +956,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             "desired_deduction_data": desired_deduction_data,
             "adjust_for_days_in_year": adjust_for_days_in_year,
             "tax_to_pay": tax_to_pay,
+            "indifference_limited": indifference_limited,
         }
 
     @property
@@ -1214,6 +1215,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             result["desired_deduction_data"]
         )
 
+        self.indifference_limited = result["indifference_limited"]
         for payout_used in payouts_used_qs:
             # If this object will be created later on in the code:
             if payout_used.used_from.year in result["desired_deduction_data"].keys():
@@ -1885,7 +1887,6 @@ class PensionCompanySummaryFile(models.Model):
             if policy_tax_year.indifference_limited:
                 pension_company_tax_to_pay = 0
                 note += f"Kapitalafkastskat sat til 0kr., da den beregnede kapitalafkastskat {calculation['tax_with_deductions']}kr. er under minimumsgrænsen på {settings.TRANSACTION_INDIFFERENCE_LIMIT}kr."
-            print(policy_tax_year.indifference_limited)
             line = [
                 policy_tax_year.tax_year.year,  # TaxYear (Integer, 4 digits, positive. XXXX eg. 2013)
                 pension_company.res,  # Reg_se_nr (Integer, positive)
