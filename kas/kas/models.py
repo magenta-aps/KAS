@@ -932,14 +932,13 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         tax_with_deductions = max(
             0, full_tax - max(0, foreign_paid_amount) - max(0, preliminary_payment)
         )
+        
+        # Calculating if tax payment is indifference_limited
+        indifference_limited = abs(tax_to_pay) < settings.TRANSACTION_INDIFFERENCE_LIMIT
 
-        if pension_company_pays:
+        tax_to_pay = tax_with_deductions
+        if indifference_limited or pension_company_pays:
             tax_to_pay = 0
-        else:
-            tax_to_pay = tax_with_deductions
-            if abs(tax_to_pay) < settings.TRANSACTION_INDIFFERENCE_LIMIT:
-                indifference_limited = True
-                tax_to_pay = 0
 
         return {
             "initial_amount": initial_amount,
@@ -1881,7 +1880,7 @@ class PensionCompanySummaryFile(models.Model):
             if calculation["year_adjusted_amount"] != calculation["initial_amount"]:
                 note = "Afkast reduceret pga. af delvis skattepligt i året"
             pension_company_tax_to_pay = calculation["tax_with_deductions"]
-            if policy_tax_year.indifference_limited:
+            if calculation["indifference_limited"]:
                 pension_company_tax_to_pay = 0
                 note += f"Kapitalafkastskat sat til 0kr., da den beregnede kapitalafkastskat {calculation['tax_with_deductions']}kr. er under minimumsgrænsen på {settings.TRANSACTION_INDIFFERENCE_LIMIT}kr."
             line = [
