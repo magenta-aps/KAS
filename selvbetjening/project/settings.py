@@ -124,52 +124,12 @@ LOGGING = {
     },
 }
 
-LOGOUT_REDIRECT = (
-    "sullissivik:openid:login"  # url reverse name to redirect to when logged out
-)
-LOGIN_UNAUTH_REDIRECT = (
-    "sullissivik:openid:login"  # url reverse name to redirect to when not logged in
-)
-LOGIN_DEFAULT_REDIRECT = "selvbetjening:policy-edit"  # url reverse name to redirect to when logged in (unless another is explicitly specified in params)
-LOGIN_REQUIREMENT_WHITELIST = ["/favicon.ico"]
-
 REST_HOST = os.environ["REST_HOST"]
 REST_TOKEN = os.environ["REST_TOKEN"]
 # REST_CA_CERT = os.environ['REST_CA_CERT']
 KAS_REPRESENTATION_STOP = os.environ["KAS_REPRESENTATION_STOP"]
 
 DEFAULT_CPR = os.environ.get("DEFAULT_CPR", None)
-
-OPENID_CONNECT = {
-    "enabled": bool(strtobool(os.environ["OPENID_ENABLED"])),
-    "issuer": os.environ["OPENID_ISSUER"],
-    "scope": os.environ["OPENID_SCOPE"],
-    "client_id": os.environ["OPENID_CLIENT_ID"],
-    "client_certificate": os.environ["OPENID_CLIENT_CERTIFICATE_FILE"],
-    "private_key": os.environ["OPENID_PRIVATE_KEY_FILE"],
-    "redirect_uri": os.environ["OPENID_LOGIN_CALLBACK"],
-    "login_callback": os.environ[
-        "OPENID_LOGIN_CALLBACK"
-    ],  # This must be equal to fqdn + reverse('sullissivik:openid:login-callback')
-    "front_channel_logout_uri": os.environ[
-        "OPENID_FRONT_CHANNEL_LOGOUT_URI"
-    ],  # This must be equal to fqdn + reverse('sullissivik:openid:logout-callback')
-    "logout_uri": os.environ["OPENID_LOGOUT_URI"],
-    "post_logout_redirect_uri": os.environ["OPENID_POST_LOGOUT_REDIRECT_URI"],
-}
-
-NEMID_CONNECT = {
-    "enabled": False,
-    "federation_service": '""',
-    "cookie_name": '""',
-    "cookie_path": '""',
-    "cookie_domain": '""',
-    "login_url": '""',
-    "redirect_field": '""',
-    "client_certificate": '""',
-    "private_key": '""',
-    "get_user_service": '""',
-}
 
 # Month and day where the interface should be closed
 CLOSE_AT = {
