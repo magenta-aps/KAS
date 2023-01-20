@@ -1067,6 +1067,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     def get_calculation(self):
         only_adjusted_amounts = True
+        self.indifference_limited = False
         calculation = PolicyTaxYear.perform_calculation(
             initial_amount=self.get_base_calculation_amount(only_adjusted_amounts),
             days_in_year=self.tax_year.days_in_year,
