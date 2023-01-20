@@ -932,11 +932,11 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         tax_with_deductions = max(
             0, full_tax - max(0, foreign_paid_amount) - max(0, preliminary_payment)
         )
+        tax_to_pay = tax_with_deductions
 
         # Calculating if tax payment is indifference_limited
         indifference_limited = abs(tax_to_pay) < settings.TRANSACTION_INDIFFERENCE_LIMIT
 
-        tax_to_pay = tax_with_deductions
         if indifference_limited or pension_company_pays:
             tax_to_pay = 0
 
