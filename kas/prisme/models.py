@@ -139,7 +139,7 @@ batch_destinations_available = tuple(
 
 class Prisme10QBatch(models.Model):
     class Meta:
-        ordering = ["created"]
+        ordering = ["-created"]
         verbose_name = _("prisme 10Q batch")
         verbose_name_plural = _("prisme 10Q batches")
 
