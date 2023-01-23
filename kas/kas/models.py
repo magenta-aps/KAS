@@ -932,14 +932,13 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         tax_with_deductions = max(
             0, full_tax - max(0, foreign_paid_amount) - max(0, preliminary_payment)
         )
+        tax_to_pay = tax_with_deductions
 
-        if pension_company_pays:
+        if (
+            pension_company_pays
+            or abs(tax_to_pay) < settings.TRANSACTION_INDIFFERENCE_LIMIT
+        ):
             tax_to_pay = 0
-        else:
-            tax_to_pay = tax_with_deductions
-            if abs(tax_to_pay) < settings.TRANSACTION_INDIFFERENCE_LIMIT:
-                cls(indifference_limited=True)
-                tax_to_pay = 0
 
         return {
             "initial_amount": initial_amount,
@@ -1210,6 +1209,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             result["desired_deduction_data"]
         )
 
+        self.indifference_limited = (
+            result["tax_with_deductions"] < settings.TRANSACTION_INDIFFERENCE_LIMIT
+        )
         for payout_used in payouts_used_qs:
             # If this object will be created later on in the code:
             if payout_used.used_from.year in result["desired_deduction_data"].keys():
@@ -1549,7 +1551,6 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         )
         self.save()
 
-    # def get_assessed_amount(self, only_adjusted=True):
     def get_base_calculation_amount(self, only_adjusted=True):
         """
         Return base_calculation_amount based on estimated_mount, self_reported_amount,
@@ -1878,6 +1879,14 @@ class PensionCompanySummaryFile(models.Model):
             note = ""
             if calculation["year_adjusted_amount"] != calculation["initial_amount"]:
                 note = "Afkast reduceret pga. af delvis skattepligt i året"
+            pension_company_tax_to_pay = calculation["tax_with_deductions"]
+
+            if (
+                calculation["tax_with_deductions"]
+                < settings.TRANSACTION_INDIFFERENCE_LIMIT
+            ):
+                pension_company_tax_to_pay = 0
+                note += f"Kapitalafkastskat sat til 0kr., da den beregnede kapitalafkastskat {calculation['tax_with_deductions']}kr. er under minimumsgrænsen på {settings.TRANSACTION_INDIFFERENCE_LIMIT}kr."
             line = [
                 policy_tax_year.tax_year.year,  # TaxYear (Integer, 4 digits, positive. XXXX eg. 2013)
                 pension_company.res,  # Reg_se_nr (Integer, positive)
@@ -1894,7 +1903,7 @@ class PensionCompanySummaryFile(models.Model):
                 ],  # Tax base 2 (Tax base 1 minus the previous year's negative return)(Integer, 10 digits)
                 policy_tax_year.preliminary_paid_amount
                 or 0,  # Provisional tax paid (Integer, 10 digits, positive)
-                calculation["tax_with_deductions"],  # Wanted cash tax (Integer)
+                pension_company_tax_to_pay,  # Tax to be paid by pension company (Integer)
                 None,  # Actual settlement pension company (Empty column)
                 note,
             ]
