@@ -1743,16 +1743,6 @@ class PriorYear(models.Model):
     )
 
 
-class Payment(models.Model):
-
-    days = models.IntegerField(
-        db_index=True, verbose_name=_("Antal dage"), help_text=_("Antal dage")
-    )
-
-    class Meta:
-        ordering = ["days"]
-
-
 class Note(models.Model):
     class Meta:
         ordering = ["date"]
