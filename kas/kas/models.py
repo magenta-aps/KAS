@@ -934,10 +934,10 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         )
         tax_to_pay = tax_with_deductions
 
-        # Calculating if tax payment is indifference_limited
-        indifference_limited = abs(tax_to_pay) < settings.TRANSACTION_INDIFFERENCE_LIMIT
-
-        if indifference_limited or pension_company_pays:
+        if (
+            pension_company_pays
+            or abs(tax_to_pay) < settings.TRANSACTION_INDIFFERENCE_LIMIT
+        ):
             tax_to_pay = 0
 
         return {
@@ -955,7 +955,6 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             "desired_deduction_data": desired_deduction_data,
             "adjust_for_days_in_year": adjust_for_days_in_year,
             "tax_to_pay": tax_to_pay,
-            "indifference_limited": indifference_limited,
         }
 
     @property
@@ -1210,7 +1209,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             result["desired_deduction_data"]
         )
 
-        self.indifference_limited = result["indifference_limited"]
+        self.indifference_limited = (
+            result["tax_with_deductions"] < settings.TRANSACTION_INDIFFERENCE_LIMIT
+        )
         for payout_used in payouts_used_qs:
             # If this object will be created later on in the code:
             if payout_used.used_from.year in result["desired_deduction_data"].keys():
@@ -1879,7 +1880,11 @@ class PensionCompanySummaryFile(models.Model):
             if calculation["year_adjusted_amount"] != calculation["initial_amount"]:
                 note = "Afkast reduceret pga. af delvis skattepligt i året"
             pension_company_tax_to_pay = calculation["tax_with_deductions"]
-            if calculation["indifference_limited"]:
+
+            if (
+                calculation["tax_with_deductions"]
+                < settings.TRANSACTION_INDIFFERENCE_LIMIT
+            ):
                 pension_company_tax_to_pay = 0
                 note += f"Kapitalafkastskat sat til 0kr., da den beregnede kapitalafkastskat {calculation['tax_with_deductions']}kr. er under minimumsgrænsen på {settings.TRANSACTION_INDIFFERENCE_LIMIT}kr."
             line = [
