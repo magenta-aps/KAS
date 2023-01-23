@@ -21,7 +21,7 @@ class Prisme10QBatchListView(KasMixin, PermissionRequiredWithMessage, ListView):
     model = Prisme10QBatch
     template_name = "prisme/batch_list.html"
     context_object_name = "batches"
-    paginate_by = 10
+    paginate_by = 20
 
 
 class Prisme10QBatchView(
@@ -29,7 +29,7 @@ class Prisme10QBatchView(
 ):
     template_name = "prisme/batch_detail.html"
     permission_required = "prisme.view_prisme10qbatch"
-    paginate_by = 10
+    paginate_by = 20
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object(queryset=Prisme10QBatch.objects.all())
