@@ -1846,7 +1846,7 @@ class PensionCompanySummaryFile(models.Model):
 
         csvfile = StringIO()
         writer = csv.writer(
-            csvfile, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL
+            csvfile, delimiter=";", quotechar='"', quoting=csv.QUOTE_MINIMAL
         )
 
         headers = [
