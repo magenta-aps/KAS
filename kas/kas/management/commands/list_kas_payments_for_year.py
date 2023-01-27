@@ -29,8 +29,8 @@ class Command(BaseCommand):
                         [
                             final_settlement.person_tax_year.person.cpr,
                             final_settlement.person_tax_year.person.name,
-                            transaction.amount,
-                            taxable,
+                            str(transaction.amount),
+                            str(taxable),
                         ]
                     )
                 )
