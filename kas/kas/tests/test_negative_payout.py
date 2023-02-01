@@ -36,7 +36,6 @@ class BaseNegativePayoutTestCase(TestCase):
             )
 
             for for_year, for_year_value in zip(for_years, for_year_values):
-
                 # for year needs to be equal or smaller than from year;
                 # It is not possible to transfer negative payout to years in the past
                 if for_year <= from_year:
@@ -233,7 +232,6 @@ class NegativePayoutTestCase(BaseNegativePayoutTestCase):
         )
 
         for counter, test_case in enumerate(test_cases):
-
             if self.debug:
                 print("Testing the following case:")
                 print(test_case)
@@ -405,7 +403,6 @@ class NegativePayoutTestCase(BaseNegativePayoutTestCase):
         )
 
         for test_case in test_cases:
-
             if test_case is not None:
                 self.client.post(
                     reverse(
@@ -610,7 +607,6 @@ class NegativePayoutTestCase(BaseNegativePayoutTestCase):
         )
 
         for test_case in test_cases:
-
             assessed_amount = test_case["assessed_amount"]
             from_year = test_case["from_year"]
             to_year = test_case["to_year"]

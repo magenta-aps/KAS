@@ -132,7 +132,6 @@ def get_kas_beregninger_x_model():
 
 
 class AbstractModels:
-
     # This is only here because we got it from the eSkat integration. It is not used as all
     # imports will use the KasBeregningerX view, which has the connection to CPR numbers we need.
     class KasBeregninger(models.Model):
@@ -300,7 +299,6 @@ def get_r75_private_pension_model():
 
 
 class ImportedKasMandtal(AbstractModels.KasMandtal):
-
     history = HistoricalRecords()
 
     class Meta:
@@ -379,7 +377,6 @@ class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
         created, updated = (0, 0)
 
         for i, x in enumerate(qs.iterator()):
-
             # Get dict from model instance x, but only fields we have in our current model
             modelfield_names = {field.name for field in cls._meta.get_fields()}
             data = {k: v for k, v in model_to_dict(x).items() if k in modelfield_names}

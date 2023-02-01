@@ -141,7 +141,6 @@ class TestCalculationMath(TestCase):
         self.assertEquals(result["full_tax"], 153)
 
     def test_deductions(self):
-
         # Test with available deductions that fully cover the income
         result = PolicyTaxYear.perform_calculation(
             1000,
@@ -293,7 +292,6 @@ class TestCalculationMath(TestCase):
         policy.get_calculation()
 
     def test_model_calculation(self):
-
         # Set up two older policies with losses, and one new policy that will deduct those losses
         person, pension_company, person_tax_year, policy = self.create_test_person_data(
             foreign_paid_amount_actual=200

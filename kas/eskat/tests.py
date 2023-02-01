@@ -14,7 +14,6 @@ class EskatModelsTestCase(TestCase):
         generate_persons()
 
     def test_models_points_to_mock_database(self):
-
         for model in (
             eskat_models.get_kas_beregninger_x_model(),
             eskat_models.get_kas_mandtal_model(),
@@ -24,7 +23,6 @@ class EskatModelsTestCase(TestCase):
 
     @override_settings(ENVIRONMENT="production")
     def test_prod_models_points_to_real_database(self):
-
         for model in (
             eskat_models.get_kas_beregninger_x_model(),
             eskat_models.get_kas_mandtal_model(),

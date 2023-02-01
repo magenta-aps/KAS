@@ -15,11 +15,9 @@ from django.conf import settings
 
 
 class DeductionTest(TestCase):
-
     # Validate that losses can be used as deductions in future years, until all is used.
     # Validate than when all losses us used, other years can be used as basis for the deduction
     def test_Using_up_loss_from_2019(self):
-
         """
         The reason for generating the large amount of data for this test, is to make sure we can show customers
         examples of remoprts with large amounts of data i reports

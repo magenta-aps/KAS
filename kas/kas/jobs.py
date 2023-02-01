@@ -658,7 +658,6 @@ def autoligning(job):
                 )
                 | Q(history_type="+", history_user=rest_user)
             ).exists():
-
                 # policy has changes or policy was created by citizen
                 policy.efterbehandling = True
                 policy.slutlignet = False

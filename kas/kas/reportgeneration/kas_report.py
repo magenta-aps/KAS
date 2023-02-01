@@ -7,7 +7,6 @@ from kas.models import PolicyTaxYear, PersonTaxYear, TaxSlipGenerated
 
 
 class TaxPDF(FPDF):
-
     std_document_width = 171
     left_margin = 17.0
     default_line_width = 0.2
@@ -255,7 +254,6 @@ class TaxPDF(FPDF):
         top_border=None,
         **kwargs,
     ):
-
         # Makes sure defaults are set, and that arguments, which are iterated over, are lists
         length = len(self.listify(col_texts))
         if not col_widths:
@@ -497,7 +495,6 @@ class TaxPDF(FPDF):
 
         # Write out policies
         for policy in self.policies:
-
             if policy_index == policys_per_page:
                 self.add_page()
                 policy_index = 0
@@ -679,7 +676,6 @@ class TaxPDF(FPDF):
 
 class TaxSlipHandling(FPDF):
     def perform_complete_write_of_one_tax_year(self, tax_year, title):
-
         list_of_person_tax_year = PersonTaxYear.objects.filter(tax_year__year=tax_year)
 
         for person_tax_year in list_of_person_tax_year:

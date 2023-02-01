@@ -23,7 +23,6 @@ class PrePaymentFileModelForm(BootstrapForm, ModelForm):
 
 
 class BatchSendForm(BootstrapForm, Form):
-
     destination = ChoiceField(
         label=_("Destination"), choices=batch_destinations_available
     )

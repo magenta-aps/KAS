@@ -4,7 +4,6 @@ from django.utils.translation import ngettext as __
 
 @register.filter
 def duration(td):
-
     total_seconds = int(td.total_seconds())
     days = int(total_seconds / 86400)
     remaining_hours = total_seconds % 86400

@@ -27,7 +27,6 @@ logger = logging.getLogger(__name__)
 
 
 class CustomJavaScriptCatalog(JavaScriptCatalog):
-
     js_catalog_template = r"""
     {% autoescape off %}
     (function(globals) {

@@ -10,7 +10,6 @@ from project.utils import first_not_none
 
 
 class AgterskrivelsePDF(FPDF):
-
     std_font_name = "arial"
     std_document_width = 171
     container_width = 139
@@ -24,10 +23,8 @@ class AgterskrivelsePDF(FPDF):
         self.policy_tax_years = policy_tax_years
 
     def print(self, lang):
-
         translation.activate(lang)
         try:
-
             self.add_page()
             self.page_counter = 1
             self.set_fill_color(180, 180, 180)
@@ -137,7 +134,6 @@ class AgterskrivelsePDF(FPDF):
             self.pos += line_height
 
             for policy in self.policy_tax_years:
-
                 topdanmark_beskatningsgrundlag = policy.prefilled_adjusted_amount
                 selvangivet_beskatningsgrundlag = policy.self_reported_amount or 0
                 ansat_beskatningsgrundlag = first_not_none(

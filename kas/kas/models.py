@@ -43,7 +43,6 @@ def get_admin_user():
 
 
 class HistoryMixin(object):
-
     UNCHANGED = 0
     UPDATED = 1
     CREATED = 2
@@ -487,7 +486,6 @@ class EboksDispatch(models.Model):
 
 
 class TaxSlipGenerated(EboksDispatch):
-
     file = models.FileField(upload_to=taxslip_path_by_year, null=True)
 
 
@@ -867,7 +865,6 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         adjust_for_days_in_year: bool = True,  # Perform adjustment for taxable days in year (false if self-reported)
         pension_company_pays: bool = False,  # Sets tax_to_pay to zero if pension company pays
     ) -> dict:
-
         if days_in_year not in (365, 366):
             raise ValueError("Days in year must be either 365 or 366")
 
@@ -1141,7 +1138,6 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             # Create a new deduction data dictionary - keeping protected values as they are
             for year in sorted(available_deduction_data):
                 if year not in protected_year_dict:
-
                     amount_to_put_in_this_year = min(
                         amount_to_put_elsewhere,
                         available_deduction_data[year],
@@ -1190,7 +1186,6 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         negative_payout_history_note=_("Genberegning"),
         save_without_negative_payout_history=False,
     ):
-
         payouts_used_qs = self.payouts_used.exclude(
             transferred_negative_payout=0
         ).exclude(protected_against_recalculations=True)
@@ -1311,7 +1306,6 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             )
 
             for negative_payout_object in negative_payout_objects:
-
                 policy = negative_payout_object.used_for
 
                 amount_to_adjust_with = min(
@@ -1387,7 +1381,6 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             item.history.last().delete()
 
         if item.protected_against_recalculations is False:
-
             item.transferred_negative_payout += to_be_used_amount
             item._change_reason = negative_payout_history_note
             item.save()
@@ -2025,7 +2018,6 @@ class FinalSettlement(EboksDispatch):
         )
 
     def get_calculation_amounts(self):
-
         # Prepayment is zero or a negative number
         prepayment = (
             self.person_tax_year.transaction_set.filter(type="prepayment").aggregate(

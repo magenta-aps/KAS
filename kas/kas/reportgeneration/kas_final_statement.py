@@ -15,7 +15,6 @@ import datetime
 
 
 class TaxFinalStatementPDF(FPDF):
-
     std_document_width = 171
     left_margin = 17.0
     default_line_width = 0.2
@@ -1020,7 +1019,6 @@ class TaxFinalStatementPDF(FPDF):
             self.yposition = self.get_y()
 
         if self.remainder_calculation["applicable_previous_statements_exist"]:
-
             self.set_font(self.std_font_name, "", self.std_table_font_size)
             self.set_xy(self.left_margin, self.yposition)
             self.multi_cell(

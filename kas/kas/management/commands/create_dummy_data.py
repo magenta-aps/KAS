@@ -27,7 +27,6 @@ class Command(BaseCommand):
 
         # Run jobs specified in https://git.magenta.dk/gronlandsprojekter/kas/-/merge_requests/355
         for year in [2018, 2019]:
-
             # Import mandtal
             prev = Job.schedule_job(
                 import_mandtal,
