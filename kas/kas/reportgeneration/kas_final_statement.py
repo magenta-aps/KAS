@@ -632,8 +632,8 @@ class TaxFinalStatementPDF(FPDF):
             base_calculation_amount = policy.get("base_calculation_amount")
 
             if (
-                policy.get("assessed_amount") is None and 
-                policy.get("self_reported_amount") is None
+                policy.get("assessed_amount") is None
+                and policy.get("self_reported_amount") is None
             ):
                 self.multi_cell(
                     h=self.tablerowheight,
@@ -661,8 +661,8 @@ class TaxFinalStatementPDF(FPDF):
                 < self._person_tax_year.tax_year.days_in_year
             )
             if fewer_than_max_days and (
-                policy.get("assessed_amount") is None and
-                policy.get("self_reported_amount") is None
+                policy.get("assessed_amount") is None
+                and policy.get("self_reported_amount") is None
             ):
                 self.set_xy(self.left_margin, self.yposition)
                 self.multi_cell(
@@ -1021,10 +1021,9 @@ class TaxFinalStatementPDF(FPDF):
             self.yposition = self.get_y()
 
         if (
-            self.remainder_calculation["applicable_previous_statements_exist"] and
-            self.remainder_calculation["remainder_with_interest"] != 0
+            self.remainder_calculation["applicable_previous_statements_exist"]
+            and self.remainder_calculation["remainder_with_interest"] != 0
         ):
-        
             self.set_font(self.std_font_name, "", self.std_table_font_size)
             self.set_xy(self.left_margin, self.yposition)
             self.multi_cell(
