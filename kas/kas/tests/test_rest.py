@@ -255,7 +255,6 @@ class PersonTest(RestTest):
 
 
 class PensionCompanyTest(RestTest):
-
     url = "/rest/pension_company/"
 
     extra_fields = {
@@ -1061,7 +1060,6 @@ class PolicyTaxYearTest(RestTest):
 
 
 class PolicyDocumentTest(RestTest):
-
     url = "/rest/policy_document/"
 
     def test_upload(self):

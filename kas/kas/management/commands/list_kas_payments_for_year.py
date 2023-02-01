@@ -10,7 +10,6 @@ class Command(BaseCommand):
         parser.add_argument("year", type=int)
 
     def handle(self, *args, **options):
-
         year = options["year"]
         print(";".join(["CPR", "Navn", "KAS", "Skattepligtigt beløb"]))
         for final_settlement in FinalSettlement.objects.filter(

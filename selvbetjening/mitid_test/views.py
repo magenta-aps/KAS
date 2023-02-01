@@ -17,7 +17,6 @@ class ClearSessionView(View):
 
 
 class PrivilegeView(TemplateView):
-
     template_name = "mitid_test/dummy.html"
     description = "dummy page"
 

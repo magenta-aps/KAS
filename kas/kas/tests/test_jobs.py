@@ -631,7 +631,6 @@ class R75ImportJobTest(BaseTransactionTestCase):
         return_value=Queue(is_async=False, connection=FakeStrictRedis()),
     )
     def test_corrected_data(self, django_rq):
-
         # Insert a faulty amount in R75, and correct it back, then set the proper amount
         idx = 0
         for amount in [-200_000, 200_000, -30]:
@@ -668,7 +667,6 @@ class R75ImportJobTest(BaseTransactionTestCase):
         return_value=Queue(is_async=False, connection=FakeStrictRedis()),
     )
     def test_non_corrected_data(self, django_rq):
-
         # The 'correction' is on a different policy here. It is NOT a correction.
         idx = 0
         ktd = 200
@@ -707,7 +705,6 @@ class R75ImportJobTest(BaseTransactionTestCase):
         return_value=Queue(is_async=False, connection=FakeStrictRedis()),
     )
     def test_future_data(self, django_rq):
-
         # Insert a R75 amount from the future
         ImportedR75PrivatePension.objects.create(
             tax_year=self.tax_year.year,

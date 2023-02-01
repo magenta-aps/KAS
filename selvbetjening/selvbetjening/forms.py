@@ -7,7 +7,6 @@ from django.utils.translation import gettext as _
 
 
 class PolicyForm(forms.Form):
-
     id = fields.IntegerField(
         widget=widgets.HiddenInput(),
         disabled=True,
@@ -70,7 +69,6 @@ class PolicyForm(forms.Form):
         if "initial" in kwargs and "documents" in kwargs["initial"]:
             self.existing_files = []
             for i, policy_document in enumerate(kwargs["initial"]["documents"]):
-
                 id_key = key = f"file_existing_id_{i}"
                 self.fields[key] = fields.IntegerField(
                     widget=widgets.HiddenInput(), disabled=True
@@ -167,7 +165,6 @@ class PolicyForm(forms.Form):
 
 
 class PersonTaxYearForm(forms.Form):
-
     foreign_pension_notes = fields.CharField(
         widget=widgets.Textarea(attrs={"autocomplete": "off", "class": "form-control"}),
         required=False,

@@ -22,7 +22,6 @@ from kas.models import (
 
 
 class PersonListFilterForm(BootstrapForm):
-
     year = forms.IntegerField(label=_("År"), required=False, widget=forms.Select())
     cpr = forms.CharField(label=_("Personnummer"), required=False)
     name = forms.CharField(label=_("Navn"), required=False)
@@ -72,7 +71,6 @@ class PersonListFilterForm(BootstrapForm):
 
 
 class PersonListFilterFormEskatDiff(PersonListFilterForm):
-
     label_tooltip = _("Foreligger der en korrektion af beløb i importerede E-skat data")
     label_text = _("Rettelse i R75 data")
 
@@ -126,7 +124,6 @@ class PersonListFilterFormEskatDiff(PersonListFilterForm):
 
 
 class PolicyListFilterForm(BootstrapForm):
-
     year = forms.IntegerField(label=_("År"), required=False, widget=forms.Select())
     pension_company = forms.CharField(label=_("Pensionsselskab"), required=False)
     policy_number = forms.CharField(label=_("Policenummer"), required=False)
@@ -369,7 +366,6 @@ class SelfReportedAmountForm(forms.ModelForm, BootstrapForm):
         widgets = {"next_processing_date": DateInput()}
 
     def save(self, commit=True):
-
         # Recalculate amounts before saving
         instance = super(SelfReportedAmountForm, self).save(commit=False)
         instance.recalculate(
@@ -404,7 +400,6 @@ class EditAmountsUpdateForm(forms.ModelForm, BootstrapForm):
         }
 
     def save(self, commit=True):
-
         # Recalculate amounts before saving
         instance = super(EditAmountsUpdateForm, self).save(commit=False)
         instance.recalculate(
@@ -511,7 +506,6 @@ class PreviousYearNegativePayoutForm(forms.ModelForm, BootstrapForm):
         fields = ("transferred_negative_payout", "protected_against_recalculations")
 
     def __init__(self, **kwargs):
-
         limit = kwargs.pop("limit")
 
         super().__init__(**kwargs)
@@ -535,7 +529,6 @@ class PreviousYearNegativePayoutForm(forms.ModelForm, BootstrapForm):
         )
 
     def save(self):
-
         instance = super(PreviousYearNegativePayoutForm, self).save(commit=False)
         instance._change_reason = _("Manuel rettelse")
         instance.save()

@@ -121,7 +121,6 @@ def create_person(
             policy["ktd"] = next_unique_res()
 
         for year, beloeb in policy["years"].items():
-
             if "r75_dato" in policy:
                 r75_dato = policy["r75_dato"]
             else:
@@ -179,7 +178,6 @@ def create_person(
 
 
 def generate_persons():
-
     create_person(
         "Borger med 0 afkast",
         cpr="0101570010",

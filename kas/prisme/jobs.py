@@ -84,7 +84,6 @@ def send_batch(job):
         "10q_mocking": Prisme10QBatch.STATUS_DELIVERED,
     }
     try:
-
         # Extra check for chosen destination
         available = {
             destination_id for destination_id, _ in batch_destinations_available

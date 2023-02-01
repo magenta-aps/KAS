@@ -4,7 +4,6 @@ from django.conf import settings
 
 
 class RestClient(object):
-
     PERSON_SLUG_FIELD = "cpr"
     TAX_YEAR_SLUG_FIELD = "year"
     INSURANCE_COMPANY_SLUG_FIELD = "res"

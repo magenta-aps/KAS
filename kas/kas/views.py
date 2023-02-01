@@ -289,7 +289,6 @@ class PersonTaxYearListView(
 
 
 class PersonTaxYearSpecialListView(PersonTaxYearListView):
-
     default_order_by = "person__cpr"
 
     excel_headers = [
@@ -316,7 +315,6 @@ class PersonTaxYearSpecialListView(PersonTaxYearListView):
 
 
 class PersonTaxYearUnfinishedListView(PersonTaxYearSpecialListView):
-
     template_name = "kas/persontaxyear_unfinished_list.html"
     default_order_by = "-efterbehandling_count"
     filename = "unfinished_person.xlsx"
@@ -334,7 +332,6 @@ class PersonTaxYearUnfinishedListView(PersonTaxYearSpecialListView):
 
 
 class PersonTaxYearFailSendListView(PersonTaxYearSpecialListView):
-
     template_name = "kas/persontaxyear_failsend_list.html"
     default_order_by = "person__name"
     filename = "failed_eboks.xls"
@@ -402,7 +399,6 @@ class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
     ]
 
     def get_form(self, *args, **kwargs):
-
         initial = {"year": 2018}
         kwargs = {"initial": initial}
         if self.request.GET:
@@ -714,7 +710,6 @@ class PolicyTaxYearListView(KasMixin, PermissionRequiredWithMessage, ListView):
 
 
 class PolicyTaxYearSpecialListView(PolicyTaxYearListView):
-
     default_order_by = "policy_number"
 
     def should_search(self, form):
@@ -722,7 +717,6 @@ class PolicyTaxYearSpecialListView(PolicyTaxYearListView):
         return not form.errors
 
     def get_queryset(self):
-
         order_by = self.request.GET.get("order_by", self.default_order_by)
 
         # Handle fields that should always have null last when sorting
@@ -744,7 +738,6 @@ class PolicyTaxYearSpecialListView(PolicyTaxYearListView):
 class PolicyTaxYearTaxDifferenceListView(
     SpecialExcelMixin, PolicyTaxYearSpecialListView
 ):
-
     template_name = "kas/policytaxyear_taxdifference_list.html"
     default_order_by = "difference_nulllast"
     filename = "selvangivet_forskel_policer.xls"
@@ -1039,7 +1032,6 @@ class PdfDownloadView(KasMixin, PermissionRequiredWithMessage, SingleObjectMixin
         return obj
 
     def get(self, *args, **kwargs):
-
         obj = self.get_object()
         filefield = obj.file
         file_obj = filefield.file
@@ -1781,7 +1773,6 @@ class UpdateSingleMandtal(PermissionRequiredWithMessage, SingleObjectMixin, View
     job = None
 
     def post(self, request, *args, **kwargs):
-
         obj = self.get_object()
         job = None
 
@@ -2114,7 +2105,6 @@ class UpdatePreviousYearNegativePayoutView(BaseNegativePayoutView, UpdateView):
     model = PreviousYearNegativePayout
 
     def get_form_kwargs(self):
-
         kwargs = super().get_form_kwargs()
 
         from_year = self.kwargs["from"]
@@ -2137,7 +2127,6 @@ class UpdatePreviousYearNegativePayoutView(BaseNegativePayoutView, UpdateView):
         return kwargs
 
     def get_object(self):
-
         if self.kwargs["to"] <= self.kwargs["from"]:
             raise SuspiciousOperation("This cell cannot be edited")
 

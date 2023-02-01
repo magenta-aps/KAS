@@ -6,7 +6,6 @@ from kas.models import RepresentationToken
 
 
 class Command(BaseCommand):
-
     help = "Removes obsolete RepresentationTokens"
 
     def handle(self, *args, **options):

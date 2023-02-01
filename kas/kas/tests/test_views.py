@@ -523,7 +523,6 @@ class PaymentOverrideTestCase(BaseTestCase):
         self.assertFalse(policy_tax_year.efterbehandling)
 
     def test_override(self):
-
         self.assertFalse(self.policy_tax_year.efterbehandling)
         self.pension_company.agreement_present = True
         self.assertTrue(self.policy_tax_year.pension_company_pays)
@@ -538,7 +537,6 @@ class PaymentOverrideTestCase(BaseTestCase):
         self.assertTrue(policy_tax_year.efterbehandling)
 
     def test_remove_override(self):
-
         self.assertFalse(self.policy_tax_year.efterbehandling)
         self.pension_company.agreement_present = True
         self.pension_company.save()

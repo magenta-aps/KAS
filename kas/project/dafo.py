@@ -18,7 +18,6 @@ class DatafordelerClient(object):
         timeout=60,
         mock_data=None,
     ):
-
         self.mock_data = mock_data
         self.mock = mock
         self.client_header = client_header

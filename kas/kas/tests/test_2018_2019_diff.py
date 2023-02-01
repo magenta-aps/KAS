@@ -66,7 +66,6 @@ class LegacyYearsTestCase(BaseTestCase):
     def get_persons_with_difference_from_context(
         self, corrected=None, full_tax_year=None
     ):
-
         if corrected is None:
             corrected_searchString = "edited_by_user="
         else:
@@ -182,7 +181,6 @@ class LegacyYearsTestCase(BaseTestCase):
         testDict = {None: 1, True: 0, False: 1}
 
         for corrected, expected_amount_of_persons in testDict.items():
-
             persons = self.get_persons_with_difference_from_context(corrected=corrected)
             self.assertEqual(len(persons), expected_amount_of_persons)
 
@@ -194,7 +192,6 @@ class LegacyYearsTestCase(BaseTestCase):
         testDict = {None: 1, True: 1, False: 0}
 
         for corrected, expected_amount_of_persons in testDict.items():
-
             persons = self.get_persons_with_difference_from_context(corrected=corrected)
             self.assertEqual(len(persons), expected_amount_of_persons)
 
@@ -217,7 +214,6 @@ class LegacyYearsTestCase(BaseTestCase):
         testDict = {None: 1, True: 1, False: 0}
 
         for full_tax_year, expected_amount_of_persons in testDict.items():
-
             persons = self.get_persons_with_difference_from_context(
                 full_tax_year=full_tax_year
             )
@@ -231,7 +227,6 @@ class LegacyYearsTestCase(BaseTestCase):
         testDict = {None: 1, True: 0, False: 1}
 
         for full_tax_year, expected_amount_of_persons in testDict.items():
-
             persons = self.get_persons_with_difference_from_context(
                 full_tax_year=full_tax_year
             )

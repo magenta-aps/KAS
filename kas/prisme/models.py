@@ -66,7 +66,6 @@ class Transaction(models.Model):
     prisme10q_content = models.TextField(blank=True, default="")
 
     def update_prisme10q_content(self):
-
         if self.type != "prisme10q":
             raise ValueError(
                 "Cannot update 10Q content for transaction that is not of type 'prisme10q'"
@@ -199,7 +198,8 @@ class Prisme10QBatch(models.Model):
     @property
     def active_transactions_qs(self):
         """Return all transactions which are ready to be sent, and which are not below the indifferent limit
-        Amounts below abs(TRANSACTION_INDIFFERENCE_LIMIT) are considered indifferent, and are not sent to prisme"""
+        Amounts below abs(TRANSACTION_INDIFFERENCE_LIMIT) are considered indifferent, and are not sent to prisme
+        """
         return self.transaction_set.exclude(
             status=["cancelled", "indifferent"]
         ).exclude(
