@@ -1056,7 +1056,6 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         if not policy_qs:
             return None
         return policy_qs.order_by("-history_date")[0]
-        
 
     @property
     def reported_difference(self):
