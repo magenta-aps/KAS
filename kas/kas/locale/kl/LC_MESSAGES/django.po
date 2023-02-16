@@ -878,12 +878,20 @@ msgid "Ingen bilag fundet"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
+<<<<<<< HEAD
 msgid "Senest opdaterede oplysninger"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
 =======
+=======
+msgid "Senest gældende oplysninger"
+msgstr ""
+
+#: kas/templates/includes/detail_tabs/beregnings_detaljer.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
+>>>>>>> 0d3ab9f (Up to date .po files)
 #, python-format
 msgid ""
 "\n"
@@ -1148,11 +1156,14 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 msgid "Beløb for dækkelse af tidlgiere ikke-betalt regning"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
+=======
+>>>>>>> 0d3ab9f (Up to date .po files)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
@@ -1165,6 +1176,7 @@ msgid ""
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
+<<<<<<< HEAD
 #, python-format
 msgid "Kapitalafkastskat at betale i alt for policer i %(year)s"
 msgstr ""
@@ -1174,18 +1186,42 @@ msgid ""
 "\n"
 "                Skat at betale minus forudbetalt kapitalafkastskat, hvor den "
 "udestående betaling overstiger 100 kr.\n"
+=======
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+msgid "Kapitalafkastskat at betale i alt for policer i "
+msgstr ""
+
+#: kas/templates/includes/detail_tabs/beregnings_detaljer.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+msgid ""
+"\n"
+"                Skat at betale for policer, hvor betalingen overstiger "
+"100kr. - Forudbetalt kapitalafkastskat\n"
+>>>>>>> 0d3ab9f (Up to date .po files)
 "                "
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
+<<<<<<< HEAD
 msgid "* Opkrævninger under minimumsgrænsen på 100kr. bortfalder"
 msgstr ""
 
+=======
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+msgid "* Opkrævninger under minimumsgrænsen på 100kr. bortfalder"
+msgstr ""
+
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+msgid "Senest opdaterede oplysninger"
+msgstr ""
+
+>>>>>>> 0d3ab9f (Up to date .po files)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Seneste slutopgørelse"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
+<<<<<<< HEAD
 #, python-format
 msgid ""
 "\n"
@@ -1201,6 +1237,13 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Ikke-betalt kapitalafkastskat ifølge tidligere meddelelse"
+=======
+msgid "Beløb for dækkelse af tidlgiere ikke-betalt regning"
+msgstr ""
+
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
+msgid "Ikke betalt kapitalafkastskat ifølge tidligere meddelelse"
+>>>>>>> 0d3ab9f (Up to date .po files)
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
@@ -1246,6 +1289,7 @@ msgid ""
 msgstr ""
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
@@ -1272,6 +1316,8 @@ msgid "* Opkrævninger under minimumsgrænsen på 100kr. bortfalder"
 msgstr ""
 
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> 0d3ab9f (Up to date .po files)
 #: kas/templates/includes/detail_tabs/foreign_notes.html
 #: kas/templates/includes/detail_tabs/general_notes.html
 msgid "Ingen noter"
