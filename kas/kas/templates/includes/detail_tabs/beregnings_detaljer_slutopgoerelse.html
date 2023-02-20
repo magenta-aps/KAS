@@ -7,11 +7,7 @@
 <b>{% translate 'Seneste slutopgørelse' %}</b>
 
     {% blocktranslate asvar help_text_final_settlement_header with date=final_settlement.created_at %}
-<<<<<<< HEAD
     Nedenstående oplysninger stammer fra policeoplysningerne gældende ved generering af slutopgørelse d. {{ date }}.
-=======
-    Nedenstående oplysninger stammer fra policeoplysningerne gældende ved generering af slutopgørelse d.{{ date }}.
->>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
     Bemærk at oplysningerne kan være blevet opdateret siden.
     {% endblocktranslate %}
     {% include 'includes/help_text/question_mark.html' with target_id='final_settlement_header' %}
