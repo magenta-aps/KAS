@@ -1019,13 +1019,13 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         If policy is involved in a final settlement, returns the version of policy
         that was valid, when the final settlement was generated
         """
-        final_settlement_creation_date = FinalSettlement.objects.filter(
+        final_settlements = FinalSettlement.objects.filter(
             person_tax_year__person__id=self.person_tax_year.person.id,
             person_tax_year__tax_year__year=self.person_tax_year.tax_year.year,
         )
-        if not final_settlement_creation_date:
+        if not final_settlements:
             return None
-        final_settlement_creation_date = final_settlement_creation_date.order_by(
+        final_settlement_creation_date = final_settlements.order_by(
             "-created_at"
         )[0].created_at
         policy_qs = self.history.filter(
