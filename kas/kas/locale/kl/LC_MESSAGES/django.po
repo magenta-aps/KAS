@@ -420,9 +420,12 @@ msgstr ""
 
 #: kas/models.py kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #: kas/templates/includes/detail_tabs/policies_list.html
 msgid "Ansat beløb"
@@ -879,6 +882,7 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 msgid "Senest opdaterede oplysninger"
 msgstr ""
 
@@ -887,10 +891,14 @@ msgstr ""
 =======
 =======
 msgid "Senest gældende oplysninger"
+=======
+msgid "Senest opdaterede oplysninger"
+>>>>>>> a98ef5f (Retskrivning)
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
+<<<<<<< HEAD
 >>>>>>> 0d3ab9f (Up to date .po files)
 #, python-format
 msgid ""
@@ -905,23 +913,31 @@ msgstr ""
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
+=======
+>>>>>>> a98ef5f (Retskrivning)
 msgid "Udfyldes fra R75"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Ændret beløb fra pensionsselskab"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid ""
 "Beløb fra pensionsselskab, ændret af administrator i forhold til de "
@@ -930,9 +946,12 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
@@ -944,9 +963,12 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
@@ -958,27 +980,36 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Selvangivet beløb fra borgeren"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Beløb angivet af ansat under sagsbehandling eller autoligning"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
@@ -990,18 +1021,24 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Negativt afkast til fremførsel"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
@@ -1012,9 +1049,12 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid "Modregning af tidligere negativt kapitalafkast (%(year)s)"
@@ -1022,9 +1062,12 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
@@ -1036,18 +1079,24 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Modregning af tidligere negativt kapitalafkast"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid ""
 "\n"
@@ -1058,18 +1107,24 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Beskatningsgrundlag (kapitalafkast efter modregning)"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
@@ -1081,9 +1136,12 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid "Kapitalafkastskat (15,3%% af beskatningsgrundlag)"
@@ -1091,9 +1149,12 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
@@ -1105,27 +1166,36 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Nedslag for betalt skat i udlandet"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Tilbageværende kapitalafkastskat"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
@@ -1138,23 +1208,30 @@ msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Betales af pensionsselskabet"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Forudbetalt kapitalafkastskat"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -1166,6 +1243,8 @@ msgstr ""
 >>>>>>> 0d3ab9f (Up to date .po files)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 >>>>>>> 3e98844 (The program works now. There is still some cleanup to do in the templates, and unnecessary comments and templates must be deleted)
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
@@ -1176,6 +1255,7 @@ msgid ""
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
+<<<<<<< HEAD
 <<<<<<< HEAD
 #, python-format
 msgid "Kapitalafkastskat at betale i alt for policer i %(year)s"
@@ -1188,11 +1268,12 @@ msgid ""
 "udestående betaling overstiger 100 kr.\n"
 =======
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+=======
+>>>>>>> a98ef5f (Retskrivning)
 msgid "Kapitalafkastskat at betale i alt for policer i "
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
 msgid ""
 "\n"
 "                Skat at betale for policer, hvor betalingen overstiger "
@@ -1202,6 +1283,7 @@ msgid ""
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
+<<<<<<< HEAD
 <<<<<<< HEAD
 msgid "* Opkrævninger under minimumsgrænsen på 100kr. bortfalder"
 msgstr ""
@@ -1216,29 +1298,44 @@ msgid "Senest opdaterede oplysninger"
 msgstr ""
 
 >>>>>>> 0d3ab9f (Up to date .po files)
+=======
+msgid "* Opkrævninger under minimumsgrænsen på 100kr. bortfalder"
+msgstr ""
+
+>>>>>>> a98ef5f (Retskrivning)
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Seneste slutopgørelse"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> a98ef5f (Retskrivning)
 #, python-format
 msgid ""
 "\n"
 "    Nedenstående oplysninger stammer fra policeoplysningerne gældende ved "
+<<<<<<< HEAD
 "generering af slutopgørelse d. %(date)s.\n"
+=======
+"generering af slutopgørelse d.%(date)s.\n"
+>>>>>>> a98ef5f (Retskrivning)
 "    Bemærk at oplysningerne kan være blevet opdateret siden.\n"
 "    "
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Beløb til dækning af tidligere ikke-betalt regning"
+<<<<<<< HEAD
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Ikke-betalt kapitalafkastskat ifølge tidligere meddelelse"
 =======
 msgid "Beløb for dækkelse af tidlgiere ikke-betalt regning"
+=======
+>>>>>>> a98ef5f (Retskrivning)
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
