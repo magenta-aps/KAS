@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-26 12:25+0100\n"
+"POT-Creation-Date: 2023-02-20 11:06+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -419,7 +419,7 @@ msgid "Justeret R75 beløb"
 msgstr ""
 
 #: kas/models.py kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #: kas/templates/includes/detail_tabs/policies_list.html
 msgid "Ansat beløb"
 msgstr ""
@@ -874,38 +874,28 @@ msgid "Ingen bilag fundet"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-msgid "Seneste slutopgørelse"
+msgid "Senest opdaterede oplysninger"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#, python-format
-msgid ""
-"\n"
-"    Nedenstående oplysninger stammer fra policeoplysningerne gældende ved "
-"generering af slutopgørelse d.%(date)s.\n"
-"    Bemærk at oplysningerne kan være blevet opdateret siden.\n"
-"    "
-msgstr ""
-
-#: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Udfyldes fra R75"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Ændret beløb fra pensionsselskab"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid ""
 "Beløb fra pensionsselskab, ændret af administrator i forhold til de "
 "oprindelige R75 data"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
 "\n"
@@ -915,7 +905,7 @@ msgid ""
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
 "\n"
@@ -925,17 +915,17 @@ msgid ""
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Selvangivet beløb fra borgeren"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Beløb angivet af ansat under sagsbehandling eller autoligning"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
 "\n"
@@ -945,12 +935,12 @@ msgid ""
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Negativt afkast til fremførsel"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
 "\n"
@@ -959,13 +949,13 @@ msgid ""
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid "Modregning af tidligere negativt kapitalafkast (%(year)s)"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
 "\n"
@@ -975,12 +965,12 @@ msgid ""
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Modregning af tidligere negativt kapitalafkast"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid ""
 "\n"
 "            Der er ikke noget tilgængeligt negativt kapitalafkast til "
@@ -989,12 +979,12 @@ msgid ""
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Beskatningsgrundlag (kapitalafkast efter modregning)"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
 "\n"
@@ -1004,13 +994,13 @@ msgid ""
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid "Kapitalafkastskat (15,3%% af beskatningsgrundlag)"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
 "\n"
@@ -1020,42 +1010,38 @@ msgid ""
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Nedslag for betalt skat i udlandet"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Tilbageværende kapitalafkastskat"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
 "\n"
-"            Skat før fraregning af skat betalt i udlandet (%(tax)s) - Skat "
-"betalt i udlandet (%(paid_foreign)s) - Foreløbigt modtaget indbetaling "
+"            Skat før fraregning af skat betalt i udlandet (%(tax)s) - skat "
+"betalt i udlandet (%(paid_foreign)s) - foreløbigt modtaget indbetaling "
 "(%(paid_preliminary)s)\n"
 "            "
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Betales af pensionsselskabet"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Forudbetalt kapitalafkastskat"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-msgid "Beløb for dækkelse af tidlgiere ikke-betalt regning"
-msgstr ""
-
-#: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
 "\n"
@@ -1065,10 +1051,45 @@ msgid ""
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
-msgid "Ikke betalt kapitalafkastskat ifølge tidligere meddelelse"
+#, python-format
+msgid "Kapitalafkastskat at betale i alt for policer i %(year)s"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
+msgid ""
+"\n"
+"                Skat at betale minus forudbetalt kapitalafkastskat, hvor den "
+"udestående betaling overstiger 100 kr.\n"
+"                "
+msgstr ""
+
+#: kas/templates/includes/detail_tabs/beregnings_detaljer.html
+msgid "* Opkrævninger under minimumsgrænsen på 100kr. bortfalder"
+msgstr ""
+
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
+msgid "Seneste slutopgørelse"
+msgstr ""
+
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
+#, python-format
+msgid ""
+"\n"
+"    Nedenstående oplysninger stammer fra policeoplysningerne gældende ved "
+"generering af slutopgørelse d. %(date)s.\n"
+"    Bemærk at oplysningerne kan være blevet opdateret siden.\n"
+"    "
+msgstr ""
+
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
+msgid "Beløb til dækning af tidligere ikke-betalt regning"
+msgstr ""
+
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
+msgid "Ikke-betalt kapitalafkastskat ifølge tidligere meddelelse"
+msgstr ""
+
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
 "\n"
@@ -1077,7 +1098,7 @@ msgid ""
 "                    "
 msgstr ""
 
-#: kas/templates/includes/detail_tabs/beregnings_detaljer.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
 "\n"
@@ -1086,48 +1107,28 @@ msgid ""
 "                    "
 msgstr ""
 
-#: kas/templates/includes/detail_tabs/beregnings_detaljer.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
 "\n"
-"                    Skat at betale i alt for policer (%(tax)s) + Ikke betalt "
-"skat fra tidligere (%(missing_payment)s) - Foreløbigt modtagne indbetalinger "
+"                    Skat at betale i alt for policer (%(tax)s) + ikke betalt "
+"skat fra tidligere (%(missing_payment)s) - foreløbigt modtagne indbetalinger "
 "i alt (%(paid)s)\n"
 "                    "
 msgstr ""
 
-#: kas/templates/includes/detail_tabs/beregnings_detaljer.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 msgid "Kapitalafkastskat til udbetaling i alt for policer i "
 msgstr ""
 
-#: kas/templates/includes/detail_tabs/beregnings_detaljer.html
+#: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
 #, python-format
 msgid ""
 "\n"
-"                Skat at betale i alt for policer (%(tax)s) + Ikke betalt "
-"skat fra tidligere (%(missing_payment)s) - Foreløbigt modtagne indbetalinger "
+"                Skat at betale i alt for policer (%(tax)s) + ikke betalt "
+"skat fra tidligere (%(missing_payment)s) - foreløbigt modtagne indbetalinger "
 "i alt (%(paid)s)\n"
 "                "
-msgstr ""
-
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
-msgid "Senest opdaterede oplysninger"
-msgstr ""
-
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
-msgid "Kapitalafkastskat at betale i alt for policer i "
-msgstr ""
-
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
-msgid ""
-"\n"
-"                Skat at betale for policer, hvor betalingen overstiger "
-"100kr. - Forudbetalt kapitalafkastskat\n"
-"                "
-msgstr ""
-
-#: kas/templates/includes/detail_tabs/beregnings_detaljer_nyeste.html
-msgid "* Opkrævninger under minimumsgrænsen på 100kr. bortfalder"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/foreign_notes.html

@@ -1014,17 +1014,26 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         return policies[0]
 
     @property
-    def updated_policy_tax_year(self):
+    def policy_at_final_settlement(self):
         """
-        Possibly redundant fix, in order to be able to call the updated
-        PolicyTaxYear from a history object
+        If policy is involved in a final settlement, returns the version of policy
+        that was valid, when the final settlement was generated
         """
-        policy_qs = self.same_policy_qs.filter(
-            person_tax_year__tax_year__year=self.year
+        final_settlements = FinalSettlement.objects.filter(
+            person_tax_year__person__id=self.person_tax_year.person.id,
+            person_tax_year__tax_year__year=self.person_tax_year.tax_year.year,
+        )
+        if not final_settlements:
+            return None
+        final_settlement_creation_date = final_settlements.order_by("-created_at")[
+            0
+        ].created_at
+        policy_qs = self.history.filter(
+            history_date__lte=final_settlement_creation_date
         )
         if not policy_qs:
-            return self
-        return policy_qs[0]
+            return None
+        return policy_qs.order_by("-history_date")[0]
 
     @property
     def reported_difference(self):
