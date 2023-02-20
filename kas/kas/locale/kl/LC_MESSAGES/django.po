@@ -1257,6 +1257,7 @@ msgstr ""
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #, python-format
 msgid "Kapitalafkastskat at betale i alt for policer i %(year)s"
 msgstr ""
@@ -1271,14 +1272,23 @@ msgid ""
 =======
 >>>>>>> a98ef5f (Retskrivning)
 msgid "Kapitalafkastskat at betale i alt for policer i "
+=======
+#, python-format
+msgid "Kapitalafkastskat at betale i alt for policer i %(year)s"
+>>>>>>> eb26d88 (Update .po files)
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer.html
 msgid ""
 "\n"
+<<<<<<< HEAD
 "                Skat at betale for policer, hvor betalingen overstiger "
 "100kr. - Forudbetalt kapitalafkastskat\n"
 >>>>>>> 0d3ab9f (Up to date .po files)
+=======
+"                Skat at betale minus forudbetalt kapitalafkastskat, hvor den "
+"udestående betaling overstiger 100 kr.\n"
+>>>>>>> eb26d88 (Update .po files)
 "                "
 msgstr ""
 
@@ -1317,10 +1327,14 @@ msgid ""
 "\n"
 "    Nedenstående oplysninger stammer fra policeoplysningerne gældende ved "
 <<<<<<< HEAD
+<<<<<<< HEAD
 "generering af slutopgørelse d. %(date)s.\n"
 =======
 "generering af slutopgørelse d.%(date)s.\n"
 >>>>>>> a98ef5f (Retskrivning)
+=======
+"generering af slutopgørelse d. %(date)s.\n"
+>>>>>>> eb26d88 (Update .po files)
 "    Bemærk at oplysningerne kan være blevet opdateret siden.\n"
 "    "
 msgstr ""
@@ -1339,8 +1353,12 @@ msgid "Beløb for dækkelse af tidlgiere ikke-betalt regning"
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
+<<<<<<< HEAD
 msgid "Ikke betalt kapitalafkastskat ifølge tidligere meddelelse"
 >>>>>>> 0d3ab9f (Up to date .po files)
+=======
+msgid "Ikke-betalt kapitalafkastskat ifølge tidligere meddelelse"
+>>>>>>> eb26d88 (Update .po files)
 msgstr ""
 
 #: kas/templates/includes/detail_tabs/beregnings_detaljer_slutopgoerelse.html
