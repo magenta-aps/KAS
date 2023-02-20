@@ -7,16 +7,16 @@
     <li class="nav-item" role="presentation">
         <a
                 class="nav-link {% if forloop.first %}active{% endif %}"
-                id="policy_{{policy.history_object.id}}_tab"
+                id="policy_{{policy.id}}_tab"
                 data-toggle="tab"
-                href="#policy_{{policy.history_object.id}}"
+                href="#policy_{{policy.id}}"
                 role="tab"
-                aria-controls="policy_{{policy.history_object.id}}"
+                aria-controls="policy_{{policy.id}}"
                 {% if forloop.first %}aria-selected="true"{% endif %}
                 data-tab-history="true"
                 data-tab-history-changer="push"
                 data-tab-history-update-url="true"
-        >{{policy.history_object.pension_company.name}}</a>
+        >{{policy.pension_company.name}}</a>
     </li>
     {% endfor %}
 </ul>
@@ -25,15 +25,11 @@
     {% for policy in object_list %}
     <div
             class="tab-pane {% if forloop.first %}show active{% endif %}"
-            id="policy_{{policy.history_object.id}}"
+            id="policy_{{policy.id}}"
             role="tabpanel"
-            aria-labelledby="policy_{{policy.history_object.id}}_tab"
+            aria-labelledby="policy_{{policy.id}}_tab"
     >
-        {% if final_settlement %}
-            {% include 'kas/policytaxyear_detail_tabbed.html' with policy=policy.history_object %}
-        {% else %}
-            {% include 'kas/policytaxyear_detail_tabbed.html' with policy=policy.history_object.updated_policy_tax_year %}
-        {% endif %}
+        {% include 'kas/policytaxyear_detail_tabbed.html' %}
     </div>
     {% endfor %}
 </div>

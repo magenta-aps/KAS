@@ -819,37 +819,18 @@ class PolicyTaxYearUnfinishedListView(SpecialExcelMixin, PolicyTaxYearSpecialLis
 class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
     permission_required = "kas.view_policytaxyear"
     template_name = "kas/policytaxyear_tabs.html"
-    # Utilizing that the most recent history object == the updated non-history object
-    model = PolicyTaxYear.history.model
+    model = PolicyTaxYear
 
     def get_queryset(self):
-        if self.final_settlements.exists():
-            final_settlement_creation_date = self.final_settlements.order_by(
-                "-created_at"
-            )[0].created_at
-        else:
-            final_settlement_creation_date = timezone.now()
-
         qs = (
             super()
             .get_queryset()
             .filter(
                 person_tax_year__person__id=self.kwargs["person_id"],
                 person_tax_year__tax_year__year=self.kwargs["year"],
-                history_date__lte=final_settlement_creation_date,
             )
         )
-
-        qs_list = []
-        policy_number_list = set(
-            [x["policy_number"] for x in qs.values("policy_number")]
-        )
-        for policy_number in policy_number_list:
-            qs_temp = qs.filter(policy_number=policy_number).order_by("-history_date")[
-                0
-            ]
-            qs_list.append(qs_temp)
-        return qs_list
+        return qs
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -865,32 +846,24 @@ class PolicyTaxYearTabView(KasMixin, PermissionRequiredWithMessage, ListView):
         context["policy_count"] = len(context["object_list"])
         context["total_tax_with_deductions"] = sum(
             [
-                policytaxyear.history_object.get_calculation()["tax_with_deductions"]
+                policytaxyear.get_calculation()["tax_with_deductions"]
                 for policytaxyear in context["object_list"]
-                if not policytaxyear.history_object.pension_company_pays
+                if not policytaxyear.pension_company_pays
             ]
         )
         context["total_payment"] = sum(
             [
-                policytaxyear.history_object.get_calculation()["tax_to_pay"]
+                policytaxyear.get_calculation()["tax_to_pay"]
                 for policytaxyear in context["object_list"]
-                if not policytaxyear.history_object.pension_company_pays
+                if not policytaxyear.pension_company_pays
             ]
         )
-        context["updated_total_payment"] = sum(
-            [
-                policytaxyear.history_object.updated_policy_tax_year.get_calculation()[
-                    "tax_to_pay"
-                ]
-                for policytaxyear in context["object_list"]
-                if not policytaxyear.history_object.pension_company_pays
-            ]
-        )
+        context["indifference_limit"] = settings.TRANSACTION_INDIFFERENCE_LIMIT
+
         if abs(context["total_payment"]) < settings.TRANSACTION_INDIFFERENCE_LIMIT:
             context["original_total_payment"] = context["total_payment"]
             context["total_payment"] = 0
             context["indifference_limited"] = True
-            context["indifference_limit"] = settings.TRANSACTION_INDIFFERENCE_LIMIT
         if self.final_settlements.exists():
             context["final_settlement"] = self.final_settlements.order_by(
                 "-created_at"
