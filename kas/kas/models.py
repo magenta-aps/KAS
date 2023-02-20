@@ -1025,9 +1025,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         )
         if not final_settlements:
             return None
-        final_settlement_creation_date = final_settlements.order_by(
-            "-created_at"
-        )[0].created_at
+        final_settlement_creation_date = final_settlements.order_by("-created_at")[
+            0
+        ].created_at
         policy_qs = self.history.filter(
             history_date__lte=final_settlement_creation_date
         )
