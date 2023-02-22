@@ -71,11 +71,10 @@
             Kapitalafkast ({{taxable_days}} skattedage ud af {{total_days}} dage)
             {% endblocktranslate %}
         </td>
-        <th>{{ finalsettlement_policy.get_base_calculation_amount }}</th>
+        <th>{{ finalsettlement_policy.year_adjusted_amount }}</th>
     </tr>
 
-
-    {% if finalsettlement_policy.get_calculation.year_adjusted_amount <= 0 %}
+    {% if finalsettlement_policy.get_base_calculation_amount <= 0 %}
     <tr>
         <td>
             {% blocktranslate %}Negativt afkast til fremførsel{% endblocktranslate %}
@@ -85,11 +84,11 @@
             {% include 'includes/help_text/question_mark.html' with target_id='finalsettlementdeduction_future' right=True %}
             {% include 'includes/help_text/collapse.html' with help_text=help_text_negative target_id='finalsettlementdeduction_future' %}
         </td>
-        <th>{{ finalsettlement_policy.get_calculation.year_adjusted_amount|negative }}</th>
+        <th>{{ finalsettlement_policy.year_adjusted_amount|negative }}</th>
     </tr>
     {% else %}
 
-
+    
     {% for year, amount in finalsettlement_policy.get_calculation.desired_deduction_data.items %}
     <tr>
         <td>
