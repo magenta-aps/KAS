@@ -1,6 +1,5 @@
 import mimetypes
 import os
-from datetime import date
 
 from django.conf import settings
 from django.contrib import messages
@@ -87,7 +86,6 @@ from project.view_mixins import (
     PermissionRequiredWithMessage,
     administrator_required,
 )
-from tenQ.dates import get_due_date
 from worker.models import Job
 
 from kas.jobs import dispatch_final_settlement, import_mandtal, merge_pension_companies
@@ -1606,12 +1604,10 @@ class FinalSettlementGenerateView(
         )
 
         if final_statement.get_transaction_amount() != 0:
-            collect_date = get_due_date(date.today())
-
             prisme10q_batch = Prisme10QBatch.objects.create(
                 created_by=self.request.user,
                 tax_year=self.object.tax_year,
-                collect_date=collect_date,
+                collect_date=final_statement.due_date_used,
             )
             prisme10q_batch.add_transaction(final_statement)
 

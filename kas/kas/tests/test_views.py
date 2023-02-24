@@ -593,6 +593,7 @@ class PaymentOverrideTestCase(BaseTestCase):
         if collect_date.month < date.today().month:
             collect_date = collect_date.replace(year=collect_date.year + 1)
 
+        self.assertEqual(statement.due_date_used, collect_date)
         self.assertEqual(batch.collect_date, collect_date)
         self.assertEqual(self.person_tax_year.transaction_set.count(), 1)
         transaction = self.person_tax_year.transaction_set.first()
@@ -601,6 +602,33 @@ class PaymentOverrideTestCase(BaseTestCase):
         self.assertEqual(transaction.type, "prisme10q")
         self.assertEqual(transaction.status, "created")
         self.assertEqual(transaction.prisme10q_batch, batch)
+
+    def test_generate_final_taxslip_due(self):
+        self.self_report_policy_tax_year(skal_slutlignes=True)
+        # Tested function wants the tax_year to be in 'genoptagelsesperiode'
+        self.tax_year.year_part = "genoptagelsesperiode"
+        self.tax_year.save()
+
+        self.assertTrue(
+            self.client.login(username=self.username, password=self.password)
+        )
+        response = self.client.post(
+            reverse(
+                "kas:generate-final-settlement", kwargs={"pk": self.person_tax_year.pk}
+            ),
+            {
+                "interest_on_remainder": "0.0",
+                "extra_payment_for_previous_missing": "0",
+                "text_used_for_payment": FinalSettlement.PAYMENT_TEXT_DUE,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Prisme10QBatch.objects.count(), 1)
+        self.assertEqual(FinalSettlement.objects.count(), 1)
+        statement = FinalSettlement.objects.first()
+        collect_date = date(self.tax_year.year, 9, 1)
+
+        self.assertEqual(statement.due_date_used, collect_date)
 
 
 class CreateLockForYearTestCase(BaseTestCase):
