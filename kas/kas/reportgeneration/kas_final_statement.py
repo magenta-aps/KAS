@@ -1304,9 +1304,18 @@ class TaxFinalStatementPDF(FPDF):
 
     @classmethod
     def generate_pdf(cls, person_tax_year: PersonTaxYear, **modelform_fields):
+        due_date = FinalSettlement.calculate_due_date(
+            payment_type=modelform_fields.get(
+                "text_used_for_payment", FinalSettlement.PAYMENT_TEXT_BULK
+            ),
+            reference_date=date.today(),
+            tax_year=person_tax_year.tax_year,
+        )
+
         final_settlement = FinalSettlement(
             person_tax_year=person_tax_year,
             lock=person_tax_year.tax_year.get_current_lock,
+            due_date_used=due_date,
             **modelform_fields,
         )
         pdf_generator = cls(

@@ -1,6 +1,7 @@
 import base64
 import calendar
 import csv
+import datetime
 import math
 import random
 import re
@@ -31,6 +32,8 @@ from kas.managers import PolicyTaxYearManager
 from prisme.models import Prisme10QBatch, Transaction
 from requests.exceptions import RequestException
 from simple_history.models import HistoricalRecords
+
+from tenQ.dates import get_due_date, get_last_payment_date_from_due_date
 
 
 def filefield_path(instance, filename):
@@ -2021,10 +2024,39 @@ class FinalSettlement(EboksDispatch):
 
     indifference_limited = models.BooleanField(default=False)
 
+    due_date_used = models.DateField(
+        null=True,
+    )
+
+    @property
+    def last_payment_date_used(self):
+        return (
+            get_last_payment_date_from_due_date(self.due_date_used)
+            if self.due_date_used is not None
+            else None
+        )
+
     def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
         return super().dispatch_to_eboks(
             client, generator, self.pdf, self.person_tax_year.person.cpr
         )
+
+    @staticmethod
+    def calculate_due_date(
+        payment_type: int, reference_date: datetime.date, tax_year: TaxYear
+    ):
+        if payment_type in (
+            FinalSettlement.PAYMENT_TEXT_DUE_ON_DATE,
+            FinalSettlement.PAYMENT_TEXT_PREV_AMOUNT_DUE,
+        ):
+            return get_due_date(reference_date)
+        if payment_type in (
+            FinalSettlement.PAYMENT_TEXT_DUE,
+            FinalSettlement.PAYMENT_TEXT_REFUND,
+            FinalSettlement.PAYMENT_TEXT_BULK,
+        ):
+            return datetime.date(year=tax_year.year, month=9, day=1)
+        return None
 
     def get_calculation_amounts(self):
         # Prepayment is zero or a negative number
