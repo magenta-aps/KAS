@@ -10,7 +10,7 @@ whitenoise==6.0.0
 fpdf2==2.5.1
 requests==2.27.1
 lxml==4.8.0
-fakeredis==1.7.1
+fakeredis==2.10.1
 django-ipware>=4.0.2
 openpyxl==3.0.9
 prometheus_client==0.13.1
