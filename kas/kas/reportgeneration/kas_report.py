@@ -291,25 +291,13 @@ class TaxPDF(FPDF):
             cell_rows = self.count_rows(txt[i], width - 2)
             if cell_rows < required_rows:
                 txt[i] += "\n " * (required_rows - cell_rows)
-            try:
-                self.multi_cell(
-                    h=height,
-                    align=align[i],
-                    w=width,
-                    txt=txt[i],
-                    border=border[i],
-                )
-            except Exception:
-                print(
-                    dict(
-                        h=height,
-                        align=align[i],
-                        w=width,
-                        txt=txt[i],
-                        border=border[i],
-                    )
-                )
-                raise
+            self.multi_cell(
+                h=height,
+                align=align[i],
+                w=width,
+                txt=txt[i],
+                border=border[i],
+            )
             left_border += width
         self.yposition += height * required_rows
         return None
