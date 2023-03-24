@@ -157,7 +157,7 @@ class Job(models.Model):
             result_ttl=0,
             depends_on=depends_on,
             meta={"job_uuid": job.uuid},
-            job_timeout=3600,
+            job_timeout=settings.JOB_TIMEOUT,
         )
 
         job.rq_job_id = rq_job.get_id()
