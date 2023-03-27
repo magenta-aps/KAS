@@ -59,6 +59,11 @@ def get_job_types():
             "form_class": YearPkForm,
             "function": "kas.jobs.dispatch_tax_year",
         },
+        "DispatchTaxYearDebug": {
+            "label": _("Test-afsendelse af KAS selvangivelser for et givet år"),
+            "form_class": YearPkForm,
+            "function": "kas.jobs.dispatch_tax_year_debug",
+        },
         "GenerateFinalSettlements": {
             "label": _("Generering af KAS slutopgørelser for et givet år"),
             "form_class": YearPkForm,

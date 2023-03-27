@@ -139,7 +139,7 @@ class EboksClient(object):
             sys_id=self._system_id.zfill(6), client_id=self._client_id, uuid=uuid4().hex
         )
 
-    def send_message(self, message, message_id, retries=0, retry_wait_time=10):
+    def send_message(self, message, message_id, retries=3, retry_wait_time=10):
         if self._mock:
             return MockResponse(message_id)
         url = urllib.parse.urljoin(
@@ -151,14 +151,14 @@ class EboksClient(object):
         try:
             return self._make_request(url=url, method="PUT", data=message)
         except HTTPError as e:
-            if retries <= 3:
+            if retries > 0:
                 if hasattr(e, "response"):
                     if e.response.status_code == 409:
-                        # message_id is all ready used
+                        # message_id is already used
                         message_id = self.get_message_id()
                 sleep(retry_wait_time)  # 10, 20 ,40 seconds
                 return self.send_message(
-                    message, message_id, retries + 1, retry_wait_time * 2
+                    message, message_id, retries - 1, retry_wait_time * 2
                 )
             else:
                 raise
