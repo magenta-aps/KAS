@@ -163,6 +163,8 @@ KAS Unittest:
     TENQ_PASSWORD: ""
     TENQ_KNOWN_HOSTS: ""
     TENQ_PROJECT_ID: "KAS"
+    TENQ_PROD_PATH: ""
+    TENQ_TEST_PATH: ""
     # Simulate development environment while running tests so we use mockup data
     ENVIRONMENT: development
     DISABLE_METRICS: 'True'
@@ -254,6 +256,8 @@ KAS Django check:
     TENQ_USER: ""
     TENQ_PASSWORD: ""
     TENQ_KNOWN_HOSTS: ""
+    TENQ_PROD_PATH: ""
+    TENQ_TEST_PATH: ""
     TENQ_PROJECT_ID: "KAS"
     ENVIRONMENT: development
   script:

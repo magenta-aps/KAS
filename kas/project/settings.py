@@ -224,8 +224,8 @@ TENQ = {
     "password": os.environ["TENQ_PASSWORD"],
     "known_hosts": os.environ.get("TENQ_KNOWN_HOSTS") or None,
     "dirs": {
-        "10q_production": "/nanoq/prod/q",
-        "10q_development": "/nanoq/uddannelse/KAS",
+        "10q_production": os.environ["TENQ_PROD_PATH"],
+        "10q_development": os.environ["TENQ_TEST_PATH"],
     },
     "destinations": {
         "production": [
