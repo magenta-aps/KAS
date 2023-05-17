@@ -352,7 +352,7 @@ Deploy to Staging:
   needs: ["Release KAS image", "Release Selvbetjening image", "Release ER image", "Configure Test"]
   variables:
     SALTBERT_ORCHESTRATION: kas.service-test
-    SALTBERT_URL: https://ctrldev1.magenta-aps.dk
+    SALTBERT_URL: https://saltmaster.groenland.magentahosted.dk
   when: manual
   environment:
     name: test
@@ -366,7 +366,7 @@ Deploy to Production:
   needs: ["Release KAS image", "Release Selvbetjening image", "Configure Production"]
   variables:
     SALTBERT_ORCHESTRATION: kas.service-prod
-    SALTBERT_URL: https://ctrl1.magenta-aps.dk
+    SALTBERT_URL: https://saltmaster.groenland.magentahosted.dk
   when: manual
   environment:
     name: production
