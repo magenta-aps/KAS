@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kas-default
+  namespace: default
+data:
+  POSTGRES_USER: kas
+  POSTGRES_PASSWORD: kas
+  POSTGRES_DB: kas
+  POSTGRES_HOST: kas-db
+  ESKAT_USER: xyz
+  ESKAT_PASSWORD: xyz 
+  ESKAT_HOST: 172.17.0.1
+  ESKAT_PORT: "16523"
+  ESKAT_DB: DBSERVICE_AKA_KAS
+  VERSION: LOKAL
+  DJANGO_DEBUG: "true"
+  DJANGO_TIMEZONE: Europe/Copenhagen
+  DJANGO_SECRET_KEY: 2v^$ie(ikp@$vt_9ti-qfz*9j1c**bmg(8&wt#93_=3yz0ms-4
+  DJANGO_ADMIN_GROUP: admins
+  REST_TOKEN: 1c18073a-e39c-4ac4-a128-151488e5eb00
+  ADMIN_PASSWORD: admin
+  STAFF_PASSWORD: staff
+  ENVIRONMENT: development
+  TRANSACTION_INDIFFERENCE_LIMIT: 
+  SELVBETJENING_REPRESENTATION_START: http://localhost:8040/represent-start/
+  SELVBETJENING_REPRESENTATION_STOP: http://localhost:8040/represent-stop/
+  SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE: "60"
+  LOGIN_BYPASS_ENABLED: "false"
+  EBOKS_DISPATCH_BULK_SIZE: "100"
+  EBOKS_MOCK: "True"
+  TENQ_HOST: ''
+  TENQ_USER: ''
+  TENQ_PASSWORD: '' 
+  TENQ_PORT: ''
+  TENQ_KNOWN_HOSTS: '' 
+  TENQ_PROD_PATH: ''
+  TENQ_TEST_PATH: ''
+  TENQ_PROJECT_ID: KAS
+  PITU_MOCK: "True"
+  REDIS_HOST: localhost

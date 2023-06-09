@@ -1,0 +1,26 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kas-db
+  labels:
+    app: kas-db
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kas-db
+  template:
+    metadata:
+      labels:
+        app: kas-db
+    spec:
+      containers:
+      - name: kas-db
+        image: postgres:13
+        envFrom:
+        - configMapRef:
+            name: kas-default
+        ports:
+          - containerPort: 5432
+

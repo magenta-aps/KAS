@@ -1,0 +1,31 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kas-web
+  labels:
+    app: kas-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kas-web
+  template:
+    metadata:
+      labels:
+        app: kas-web
+    spec:
+      containers:
+      - name: kas
+        image: magentaaps/kas:2.3.8-rc1-kas 
+        command: ["gunicorn","-b","0.0.0.0:8000","project.wsgi:application","-w 4", "--error-logfile", "-","--capture-output"]
+        envFrom:
+        - configMapRef:
+            name: kas-default
+        ports:
+          - containerPort: 8000
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "1000m"
+
