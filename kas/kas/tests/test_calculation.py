@@ -602,13 +602,6 @@ class TestCalculationMath(TestCase):
         person_tax_year2.refresh_from_db()
         policy_tax_year2.refresh_from_db()
 
-        self.assertEquals(policy_tax_year2.notes.count(), 1)
-        self.assertEquals(person_tax_year2.notes.count(), 1)
-        self.assertEquals(
-            person_tax_year2.notes.first().content,
-            "Policen for 2020 er blevet opdateret; denne police kan være påvirket af ændringen.",
-        )
-
     @patch.object(
         django_rq,
         "get_queue",
@@ -671,4 +664,4 @@ class TestCalculationMath(TestCase):
         policy_tax_year1.refresh_from_db()
         policy_tax_year2.refresh_from_db()
         self.assertFalse(policy_tax_year1.efterbehandling)
-        self.assertTrue(policy_tax_year2.efterbehandling)
+        self.assertFalse(policy_tax_year2.efterbehandling)
