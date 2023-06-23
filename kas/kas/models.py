@@ -1238,30 +1238,10 @@ class PolicyTaxYear(HistoryMixin, models.Model):
                 save_without_negative_payout_history=save_without_negative_payout_history,
             )
 
-        old_year_adjusted_amount = self.year_adjusted_amount
         self.year_adjusted_amount = result["year_adjusted_amount"]
         self.calculated_full_tax = result["full_tax"]
         self.available_negative_return = result["available_negative_return"]
         self.calculated_result = result["tax_with_deductions"]
-
-        if (
-            old_year_adjusted_amount <= 0 or self.year_adjusted_amount <= 0
-        ) and old_year_adjusted_amount != self.year_adjusted_amount:
-            # When tax base is changed from or to negative, mark subsequent policies,
-            # as the available deductible amount will have changed
-            # This text has not been translated by request of the customer
-            note_text = f"Policen for {self.year} er blevet opdateret; denne police kan være påvirket af ændringen."
-
-            for other_policy_tax_year in self.subsequent_years_qs():
-                other_policy_tax_year.efterbehandling = True
-                other_policy_tax_year.save()
-
-                Note.objects.create(
-                    person_tax_year=other_policy_tax_year.person_tax_year,
-                    policy_tax_year=other_policy_tax_year,
-                    author=get_admin_user(),
-                    content=note_text,
-                )
 
     def adjust_deduction_data_for_negative_remaining_values(self):
         """
