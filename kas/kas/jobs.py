@@ -729,6 +729,7 @@ def autoligning(job):
                         history_type="~",
                     )
                     & ~Q(history_change_reason="Updated by import")
+                    & ~Q(history_change_reason="autoligning")
                 )
                 | Q(history_type="+", history_user=rest_user)
             ).exists():
