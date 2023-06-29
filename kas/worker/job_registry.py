@@ -48,16 +48,25 @@ def get_job_types():
             "label": _("Forcering af slutligning på alle udestående policer"),
             "form_class": YearPkForm,
             "function": "kas.jobs.force_finalize_settlement",
+            "result_template": "worker/includes/raw.html",
         },
         "GenerateReportsForYear": {
             "label": _("Generering af KAS selvangivelser for et givet år"),
             "form_class": YearAndTitleForm,
             "function": "kas.jobs.generate_reports_for_year",
+            "result_template": "worker/includes/raw.html",
         },
         "DispatchTaxYear": {
             "label": _("Afsendelse af KAS selvangivelser for et givet år"),
             "form_class": YearPkForm,
             "function": "kas.jobs.dispatch_tax_year",
+            "result_template": "worker/includes/raw.html",
+        },
+        "DispatchTaxYearDebug": {
+            "label": _("Test-afsendelse af KAS selvangivelser for et givet år"),
+            "form_class": YearPkForm,
+            "function": "kas.jobs.dispatch_tax_year_debug",
+            "result_template": "worker/includes/raw.html",
         },
         "GenerateFinalSettlements": {
             "label": _("Generering af KAS slutopgørelser for et givet år"),

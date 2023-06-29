@@ -609,6 +609,80 @@ def dispatch_eboks_tax_slips(job):
         )
 
 
+def dispatch_tax_year_debug():
+    rq_job = get_current_job()
+    with transaction.atomic():
+        job = Job.objects.select_for_update().filter(uuid=rq_job.meta["job_uuid"])[0]
+        job.status = rq_job.get_status()
+        job.progress = 0
+        job.started_at = timezone.now()
+        total = TaxSlipGenerated.objects.filter(
+            Q(persontaxyear__person__name="Bent Handberg")
+            | Q(persontaxyear__person__name="Person som kan logges ind på test"),
+            persontaxyear__tax_year__pk=job.arguments["year_pk"],
+        ).count()
+        job.arguments["total_count"] = total
+        job.arguments["current_count"] = 0
+        job.save(update_fields=["status", "progress", "started_at", "arguments"])
+
+    if job.arguments["total_count"] > 0:
+        Job.schedule_job(
+            dispatch_eboks_tax_slip_debug,
+            "dispatch_tax_year_child_debug",
+            job.created_by,
+            parent=job,
+        )
+    else:
+        job.finish()
+
+
+@job_decorator
+def dispatch_eboks_tax_slip_debug(job):
+    print("dispatch_eboks_tax_slip_debug")
+    generator = EboksDispatchGenerator.from_settings()
+    slips = TaxSlipGenerated.objects.filter(
+        Q(persontaxyear__person__name="Bent Handberg")
+        | Q(persontaxyear__person__name="Person som kan logges ind på test"),
+        persontaxyear__tax_year__pk=job.parent.arguments["year_pk"],
+    )
+    count = slips.count()
+    client = EboksClient.from_settings()
+    try:
+        for slip in slips:
+            message_id = client.get_message_id()
+            slip.file.open(mode="rb")
+            try:
+                message = generator.generate_dispatch(
+                    slip.title,
+                    slip.persontaxyear.person.cpr,
+                    pdf_data=base64.b64encode(slip.file.read()),
+                )
+                print(f"Sending message (id={message_id}): {message}")
+                resp = client.send_message(
+                    message=message,
+                    message_id=message_id,
+                )
+            except (ConnectionError, HTTPError) as e:
+                job.status = "failed"
+                job.result = client.parse_exception(e)
+                print(job.result)
+                job.save(update_fields=["status", "result"])
+                mark_parent_job_as_failed(job)
+                break
+            else:
+                print(resp.json())
+            finally:
+                slip.file.close()
+    finally:
+        client.close()
+
+    with transaction.atomic():
+        parent = Job.objects.filter(pk=job.parent.pk).select_for_update()[0]
+        job.set_progress(count, parent.arguments["total_count"])
+        parent.result = {"dispatched_items": count}
+        parent.finish()
+
+
 def check_year_period(year, job, periode):
     """
     Checks that the year is in the correct periode otherwise logs the error on the job
@@ -655,6 +729,7 @@ def autoligning(job):
                         history_type="~",
                     )
                     & ~Q(history_change_reason="Updated by import")
+                    & ~Q(history_change_reason="autoligning")
                 )
                 | Q(history_type="+", history_user=rest_user)
             ).exists():
