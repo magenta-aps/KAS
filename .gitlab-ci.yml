@@ -171,7 +171,7 @@ KAS Unittest:
   script:
     - cd /app
     - coverage run --source='.' --omit=manage.py,project/wsgi.py,*/admin.py manage.py test
-    - coverage report
+    - coverage report --show-missing --fail-under=79
     - coverage xml
   coverage: '/^TOTAL.+?(\d+\%)$/'
   artifacts:
@@ -219,7 +219,7 @@ Selvbetjening Unittest:
   script:
     - cd /app
     - coverage run --source='.' --omit=manage.py,project/wsgi.py,*/admin.py manage.py test
-    - coverage report
+    - coverage report --show-missing --fail-under=32
     - coverage xml
   coverage: '/^TOTAL.+?(\d+\%)$/'
   artifacts:
