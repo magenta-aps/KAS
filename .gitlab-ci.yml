@@ -291,7 +291,7 @@ Release KAS image:
     - .release-kas
   script:
     - skopeo copy
-      --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
+      --src-creds=${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD}
       --dest-creds=${RELEASE_REGISTRY_USER}:${RELEASE_REGISTRY_PASSWORD}
       "docker://${KAS_IMAGE_SHA}"
       "docker://${KAS_IMAGE_TAG}"
@@ -302,7 +302,7 @@ Release Selvbetjening image:
     - .release-self
   script:
     - skopeo copy
-      --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
+      --src-creds=${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD}
       --dest-creds=${RELEASE_REGISTRY_USER}:${RELEASE_REGISTRY_PASSWORD}
       "docker://${SELF_IMAGE_SHA}"
       "docker://${SELF_IMAGE_TAG}"
@@ -313,7 +313,7 @@ Release ER image:
     - .release-kas
   script:
     - skopeo copy
-      --src-creds=${CI_REGISTRY_USER}:${CI_BUILD_TOKEN}
+      --src-creds=${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD}
       --dest-creds=${RELEASE_REGISTRY_USER}:${RELEASE_REGISTRY_PASSWORD}
       "docker://${ER_IMAGE_SHA}"
       "docker://${ER_IMAGE_TAG}"
