@@ -24,8 +24,9 @@
   </h1>
 
   {% blocktranslate asvar summary_help_text %}På denne side kan der genereres opsummeringer pr. pensionsselskab, samt oplistes og hentes allerede genererede opsummeringer.
-  For at generere en ny opsummering for et selskab, vælg selskabet i boksen til højre, og tryk på "Generér og hent"
-  For at downloade en eksisterende opsummering, tryk på "Download"-linket i den relevante række i tabellen.{% endblocktranslate %}
+  For at generere en ny opsummering for et selskab, vælg selskabet i boksen til højre, og tryk på "Generér."
+  For at downloade en genereret opsummering, tryk på "Download"-linket i den relevante række i tabellen.
+  Hvis en genereret opsummering ikke fremgår i tabellen, prøv først at opdatere siden.{% endblocktranslate %}
 
   {% include 'includes/help_text/collapse.html' with help_text=summary_help_text target_id='help_text' %}
 
@@ -48,7 +49,7 @@
       <div class="ml-auto col-2">
         {{ form.pension_company }}
       </div>
-      <button type="submit" class="btn btn-primary">{% translate 'Generér og hent' %}</button>
+      <button type="submit" class="btn btn-primary">{% translate 'Generér' %}</button>
 
       </div>
   </form>
@@ -67,13 +68,21 @@
     </thead>
     <tbody>
     {% for file in object_list %}
-    <tr>
-      <td>{{file.company.name}}</td>
-      <td>{{file.tax_year.year}}</td>
-      <td>{{file.creator.username}}</td>
-      <td>{{file.created}}</td>
-      <td><a href="{% url 'kas:policy_summary' object.year file.id %}">{% translate 'Download' %}</a></td>
-    </tr>
+      <tr>
+      {% if file.job_type %}
+        <td>{{file.arguments.pension_company}}</td>
+        <td>{{file.arguments.year}}</td>
+        <td>{{file.created_by}}</td>
+        <td>{{file.created_at}}</td>
+        <td>{% translate 'Job kører' %}<a href="{% url 'kas:policy_summary_list' object.year %}">{% translate 'Genindlæs siden' %}</a></td>
+      {% else %}
+        <td>{{file.company.name}}</td>
+        <td>{{file.tax_year.year}}</td>
+        <td>{{file.creator.username}}</td>
+        <td>{{file.created}}</td>
+        <td><a href="{% url 'kas:policy_summary' object.year file.id %}">{% translate 'Download' %}</a></td>
+      {% endif %}
+      </tr>
     {% empty %}
     <tr>
       <td colspan="4">
