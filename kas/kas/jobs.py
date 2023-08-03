@@ -878,6 +878,25 @@ def generate_agterskrivelser(job):
         job.set_progress(i, total_count)
 
 
+@job_decorator
+def generate_pension_company_summary_file(job):
+    pension_company = PensionCompany.objects.get(pk=job.arguments["pension_company"])
+    year = TaxYear.objects.get(year=job.arguments["year"])
+    PensionCompanySummaryFile.create(pension_company, year, job.created_by)
+
+    job.result = {
+        "summary": [
+            {
+                "label": "Årssummationsfil genereret",
+                "value": [
+                    {"label": "Pensionsselskab", "value": pension_company.name},
+                    {"label": "Årstal", "value": year.year},
+                ],
+            },
+        ]
+    }
+
+
 def dispatch_final_settlements_for_year():
     rq_job = get_current_job()
     with transaction.atomic():
