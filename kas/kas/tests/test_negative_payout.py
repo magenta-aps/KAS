@@ -428,7 +428,7 @@ class NegativePayoutTestCase(BaseNegativePayoutTestCase):
 
             for year_from, value_from in context_data.items():
                 for year_to, value_to in value_from["used_by_year"].items():
-                    if type(value_to) != str:
+                    if type(value_to) is not str:
                         limit = context_data[year_from]["used_max_by_year"][year_to]
                     else:
                         continue
