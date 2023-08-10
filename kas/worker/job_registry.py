@@ -15,6 +15,7 @@ def get_job_types():
         YearPkForm,
         AutoligningsYearForm,
         LegacyYearsForm,
+        WorkerPensionCompanySummaryFileForm,
         # R75ImportSpreadsheetJobForm,
     )
     from prisme.forms import PrePaymentFileModelForm
@@ -72,6 +73,12 @@ def get_job_types():
             "label": _("Generering af KAS slutopgørelser for et givet år"),
             "form_class": YearPkForm,
             "function": "kas.jobs.generate_final_settlements_for_year",
+            "result_template": "worker/includes/status_only.html",
+        },
+        "GeneratePensionCompanySummary": {
+            "label": _("Generering af årssummationsfil for et pensionsselskab"),
+            "form_class": WorkerPensionCompanySummaryFileForm,
+            "function": "kas.jobs.generate_pension_company_summary_file",
             "result_template": "worker/includes/status_only.html",
         },
         "GenerateBatchAndTransactions": {

@@ -20,6 +20,7 @@ from kas.models import (
     PensionCompany,
     TaxSlipGenerated,
     FinalSettlement,
+    PensionCompanySummaryFile,
 )
 from prisme.models import Prisme10QBatch
 from project.dafo import DatafordelerClient
@@ -34,6 +35,7 @@ from kas.jobs import (
     import_mandtal,
     generate_pseudo_settlements_and_transactions_for_legacy_years,
     import_r75,
+    generate_pension_company_summary_file,
 )
 
 test_settings = dict(settings.EBOKS)
@@ -732,3 +734,47 @@ class R75ImportJobTest(BaseTransactionTestCase):
 
         self.assertEqual(person_tax_year.corrected_r75_data, False)
         self.assertEqual(person_tax_year.future_r75_data, True)
+
+
+class GeneratePensionCompanySummaryFileJobTest(BaseTransactionTestCase):
+    def setUp(self) -> None:
+        super(GeneratePensionCompanySummaryFileJobTest, self).setUp()
+        for i in range(1, 51):
+            person = Person.objects.create(cpr=f"{i}".rjust(10, "7"))
+
+            person_tax_year = PersonTaxYear.objects.create(
+                tax_year=self.tax_year, person=person
+            )
+            policy_tax_year = PolicyTaxYear.objects.create(
+                person_tax_year=person_tax_year,
+                pension_company=self.pension_company,
+                policy_number=f"{i}".rjust(5, "0"),
+            )
+            policy_tax_year.save()
+
+        self.user = get_user_model().objects.create(username="testman")
+        self.job_kwargs = {
+            "year": self.tax_year.year,
+            "pension_company": self.pension_company.pk,
+        }
+
+    @patch.object(
+        django_rq,
+        "get_queue",
+        return_value=Queue(is_async=False, connection=FakeStrictRedis()),
+    )
+    def test_succesful(self, django_rq):
+        self.assertEqual(
+            PensionCompanySummaryFile.objects.filter(creator=self.user).count(),
+            0,
+        )
+        Job.schedule_job(
+            generate_pension_company_summary_file,
+            job_type="GeneratePensionCompanySummary",
+            created_by=self.user,
+            job_kwargs=self.job_kwargs,
+        )
+        self.assertEqual(
+            PensionCompanySummaryFile.objects.filter(creator=self.user).count(),
+            1,
+        )

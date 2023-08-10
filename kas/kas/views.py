@@ -88,7 +88,12 @@ from project.view_mixins import (
 )
 from worker.models import Job
 
-from kas.jobs import dispatch_final_settlement, import_mandtal, merge_pension_companies
+from kas.jobs import (
+    dispatch_final_settlement,
+    import_mandtal,
+    merge_pension_companies,
+    generate_pension_company_summary_file,
+)
 
 
 class StatisticsView(KasMixin, PermissionRequiredWithMessage, TemplateView):
@@ -1167,6 +1172,13 @@ class PensionCompanySummaryFileView(
 
     def get_context_data(self, **kwargs):
         self.object = self.get_object()
+        summaryfiles = PensionCompanySummaryFile.objects.filter(tax_year=self.object)
+        summaryjobs = Job.objects.filter(
+            job_type="GeneratePensionCompanySummary",
+            arguments__year__eq=self.object.year,
+        ).annotate(created=F("created_at"))
+        all_objects = [*summaryfiles, *summaryjobs]
+        all_objects.sort(key=lambda e: e.created.timestamp())
         return super().get_context_data(
             **{
                 "object_list": PensionCompanySummaryFile.objects.filter(
@@ -1175,6 +1187,7 @@ class PensionCompanySummaryFileView(
                 "years": TaxYear.objects.values_list("year", flat=True).order_by(
                     "-year"
                 ),
+                "all_objects": all_objects,
                 **kwargs,
             }
         )
@@ -1186,13 +1199,18 @@ class PensionCompanySummaryFileView(
 
     def form_valid(self, form):
         self.object = self.get_object()
-        file_entry = PensionCompanySummaryFile.create(
-            form.cleaned_data["pension_company"], self.object, self.request.user
+
+        Job.schedule_job(
+            generate_pension_company_summary_file,
+            job_type="GeneratePensionCompanySummary",
+            created_by=self.request.user,
+            job_kwargs={
+                "pension_company": form.data["pension_company"],
+                "year": str(self.object),
+            },
         )
-        # Instruct the client to download the file after refreshing the page
-        return HttpResponseRedirect(
-            self.get_success_url() + f"?download={file_entry.id}"
-        )
+
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class PensionCompanySummaryFileDownloadView(
