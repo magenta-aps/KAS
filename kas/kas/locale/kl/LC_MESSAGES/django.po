@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-29 12:32+0200\n"
+"POT-Creation-Date: 2023-08-24 12:32+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1724,8 +1724,8 @@ msgstr ""
 #: kas/templates/kas/persontaxyear_detail.html
 #, python-format
 msgid ""
-" Denne side viser en tidligere version af personskatteåret fra <b>"
-"%(history_date)s</b> "
+" Denne side viser en tidligere version af personskatteåret fra "
+"<b>%(history_date)s</b> "
 msgstr ""
 
 #: kas/templates/kas/persontaxyear_detail.html
@@ -2073,9 +2073,11 @@ msgid ""
 "På denne side kan der genereres opsummeringer pr. pensionsselskab, samt "
 "oplistes og hentes allerede genererede opsummeringer.\n"
 "  For at generere en ny opsummering for et selskab, vælg selskabet i boksen "
-"til højre, og tryk på \"Generér og hent\"\n"
-"  For at downloade en eksisterende opsummering, tryk på \"Download\"-linket "
-"i den relevante række i tabellen."
+"til højre, og tryk på \"Generér.\"\n"
+"  For at downloade en genereret opsummering, tryk på \"Download\"-linket i "
+"den relevante række i tabellen.\n"
+"  Hvis en genereret opsummering ikke fremgår i tabellen, prøv først at "
+"opdatere siden."
 msgstr ""
 
 #: kas/templates/kas/policycompanysummary_list.html
@@ -2083,11 +2085,19 @@ msgid "Skift år"
 msgstr ""
 
 #: kas/templates/kas/policycompanysummary_list.html
-msgid "Generér og hent"
+msgid "Generér"
 msgstr ""
 
 #: kas/templates/kas/policycompanysummary_list.html
 msgid "Oprettet tidspunkt"
+msgstr ""
+
+#: kas/templates/kas/policycompanysummary_list.html
+msgid "Job kører"
+msgstr ""
+
+#: kas/templates/kas/policycompanysummary_list.html
+msgid "Genindlæs siden"
 msgstr ""
 
 #: kas/templates/kas/policycompanysummary_list.html

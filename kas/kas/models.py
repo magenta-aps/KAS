@@ -30,9 +30,8 @@ from eskat.models import ImportedR75PrivatePension
 from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.managers import PolicyTaxYearManager
 from prisme.models import Prisme10QBatch, Transaction
-from requests.exceptions import RequestException
+from requests.exceptions import ReadTimeout
 from simple_history.models import HistoricalRecords
-
 from tenQ.dates import get_due_date, get_last_payment_date_from_due_date
 
 
@@ -457,14 +456,33 @@ class EboksDispatch(models.Model):
             )
         file.open(mode="rb")
         try:
-            resp = client.send_message(
-                message=generator.generate_dispatch(
-                    title=self.title, number=cpr, pdf_data=base64.b64encode(file.read())
-                ),
-                message_id=client.get_message_id(),
-            )
-            jsonresponse = resp.json()
-        except RequestException:
+            retries = 5
+            retry_delay = 10
+            jsonresponse = None
+            last_exception = None
+
+            for j in range(retries):
+                try:
+                    resp = client.send_message(
+                        message=generator.generate_dispatch(
+                            title=self.title,
+                            number=cpr,
+                            pdf_data=base64.b64encode(file.read()),
+                        ),
+                        message_id=client.get_message_id(),
+                    )
+                    jsonresponse = resp.json()
+                except (ReadTimeout, ConnectionError) as e:
+                    last_exception = e
+                    sleep(retry_delay)
+                else:
+                    break
+            if not jsonresponse:
+                raise Exception(
+                    f"Failed to send message to ebox; retried {retries} times spaced {retry_delay} seconds apart. Last exception was: {last_exception}"
+                )
+
+        except Exception:
             self.status = "failed"
             self.save(update_fields=["status"])
             raise

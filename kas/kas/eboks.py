@@ -169,15 +169,17 @@ class EboksClient(object):
         """
         parse Request exception and return a error dict
         :param e:
-        :return: error dictinary
+        :return: error dictionary
         """
-        error = {"error": e.__class__.__name__}
-        if e.response is not None:
+        error = {"error": str(e)}
+        try:
             status_code = e.response.status_code
             try:
                 error = {"status_code": status_code, "error": e.response.json()}
             except ValueError:
                 error = {"status_code": status_code, "error": e.response.text}
+        except AttributeError:
+            pass
         return error
 
     def close(self):

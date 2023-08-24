@@ -7,9 +7,8 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 from time import sleep
-from more_itertools import map_except
-from pandas import to_datetime
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import IntegerField, Sum, Q, Count
@@ -42,14 +41,25 @@ from kas.models import (
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.reportgeneration.kas_report import TaxPDF
 from kas.reportgeneration.kas_topdanmark_agterskrivelse import AgterskrivelsePDF
+from more_itertools import map_except
 from openpyxl import load_workbook
+from pandas import to_datetime
 from prisme.models import Prisme10QBatch
 from project.dafo import DatafordelerClient
-from django.conf import settings
 from requests.exceptions import HTTPError, ConnectionError
 from rq import get_current_job
 from worker.job_registry import resolve_job_function
 from worker.models import job_decorator, Job
+
+
+def mark_job_failed(job, result, exception):
+    job.status = "failed"
+    job.result = result
+    job.traceback = repr(
+        traceback.format_exception(type(exception), exception, exception.__traceback__)
+    )
+    job.save(update_fields=["status", "result", "traceback"])
+    mark_parent_job_as_failed(job)
 
 
 @job_decorator
@@ -493,13 +503,15 @@ def dispatch_tax_year():
 
 def mark_parent_job_as_failed(child_job, progress=None):
     parent = child_job.parent
-    parent.status = child_job.status
-    parent.result = child_job.result
-    update_fields = ["status", "result"]
-    if progress:
-        parent.progress = progress
-        update_fields.append("progress")
-    parent.save(update_fields=update_fields)
+    if parent:
+        parent.status = child_job.status
+        parent.result = child_job.result
+        parent.traceback = child_job.traceback
+        update_fields = ["status", "result", "traceback"]
+        if progress:
+            parent.progress = progress
+            update_fields.append("progress")
+        parent.save(update_fields=update_fields)
 
 
 @job_decorator
@@ -952,14 +964,8 @@ def dispatch_final_settlements(job):
             break
         try:
             send_settlement = settlement.dispatch_to_eboks(client, generator)
-        except (ConnectionError, HTTPError) as e:
-            job.status = "failed"
-            job.result = client.parse_exception(e)
-            job.traceback = repr(
-                traceback.format_exception(type(e), e, e.__traceback__)
-            )
-            job.save(update_fields=["status", "result", "traceback"])
-            mark_parent_job_as_failed(job)
+        except Exception as e:
+            mark_job_failed(job, client.parse_exception(e), e)
             break
         else:
             if send_settlement.status == "post_processing":
@@ -1008,16 +1014,20 @@ def dispatch_final_settlements(job):
 @job_decorator
 def dispatch_final_settlement(job):
     """
-    expects a final_settlmenet uuid
+    expects a final_settlement uuid
     :return:
     """
     client = EboksClient.from_settings()
     settlement = FinalSettlement.objects.get(uuid=job.arguments["uuid"])
     generator = EboksDispatchGenerator.from_settings()
-    send_settlement = settlement.dispatch_to_eboks(client, generator)
-    if send_settlement.status == "post_processing":
-        job.set_progress_pct(50)
-        send_settlement.get_final_status(client)
+    try:
+        send_settlement = settlement.dispatch_to_eboks(client, generator)
+    except Exception as e:
+        mark_job_failed(job, client.parse_exception(e), e)
+    else:
+        if send_settlement.status == "post_processing":
+            job.set_progress_pct(50)
+            send_settlement.get_final_status(client)
 
 
 @job_decorator
@@ -1287,13 +1297,7 @@ def dispatch_agterskrivelser(job):
         try:
             sent_agterskrivelse = agterskrivelse.dispatch_to_eboks(client, generator)
         except (ConnectionError, HTTPError) as e:
-            job.status = "failed"
-            job.result = client.parse_exception(e)
-            job.traceback = repr(
-                traceback.format_exception(type(e), e, e.__traceback__)
-            )
-            job.save(update_fields=["status", "result", "traceback"])
-            mark_parent_job_as_failed(job)
+            mark_job_failed(job, client.parse_exception(e), e)
             break
         else:
             if sent_agterskrivelse.status == "post_processing":
