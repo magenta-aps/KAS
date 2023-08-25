@@ -1594,29 +1594,32 @@ class FinalSettlementGenerateView(
         self.object = self.get_object()
         return super(FinalSettlementGenerateView, self).post(request, *args, **kwargs)
 
-    def form_valid(self, form):
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(
+            **{**kwargs, "errors": self.get_object_errors()}
+        )
+
+    def get_object_errors(self):
+        errors = []
         if not self.object.policytaxyear_set.exists():
-            return HttpResponse(
-                status=400,
-                content=_(
-                    "Der skal mindst være én police for at generere en slutopgørelse"
-                ),
+            errors.append(
+                _("Der skal mindst være én police for at generere en slutopgørelse")
             )
         if self.object.tax_year.year_part != "genoptagelsesperiode":
-            return HttpResponse(
-                status=400,
-                content=_(
+            errors.append(
+                _(
                     "Der kan kun genereres nye slutopgørelser hvis året er i genoptagelsesperioden"
-                ),
+                )
             )
         if not self.object.slutlignet:
-            return HttpResponse(
-                status=400,
-                content=_(
+            errors.append(
+                _(
                     "Der kan ikke genereres nye slutopgørelser, hvis der er ikke-slutlignede policer"
-                ),
+                )
             )
+        return errors
 
+    def form_valid(self, form):
         final_statement = TaxFinalStatementPDF.generate_pdf(
             person_tax_year=self.object, **form.cleaned_data
         )
