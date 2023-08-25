@@ -2,28 +2,36 @@
 {% load i18n %}
 
 {% block content %}
+
+{% if errors %}
+    {% for error in errors %}
+        <div class="alert alert-danger">{{error}}</div>
+    {% endfor %}
+{% else %}
+
 <form method="POST">
     {% csrf_token %}
 
-<div class="form-row">
-    {% for field in form %}
-    {% if field.field.widget.input_type == 'checkbox' %}
-    <div class="form-group form-check">
-        {{ field }}<label class="form-check-label" for="{{field.id_for_label}}">{{ field.label }}</label>
+    <div class="form-row">
+        {% for field in form %}
+        {% if field.field.widget.input_type == 'checkbox' %}
+        <div class="form-group form-check">
+            {{ field }}<label class="form-check-label" for="{{field.id_for_label}}">{{ field.label }}</label>
+        </div>
+        {% else %}
+        <div class="col form-group">
+            <label class="" for="{{field.id_for_label}}">{{ field.label }}:</label>{{ field }}
+        </div>
+        {% endif %}
+        {% endfor %}
     </div>
-    {% else %}
-    <div class="col form-group">
-        <label class="" for="{{field.id_for_label}}">{{ field.label }}:</label>{{ field }}
-    </div>
-    {% endif %}
-    {% endfor %}
-</div>
 
     <div class="form-row mt-5">
         <div class="col">
             <input class="btn btn-success float-right" type="submit" value="{% translate 'Opret' %}"/>
         </div>
     </div>
-
 </form>
+{% endif %}
+
 {% endblock %}
