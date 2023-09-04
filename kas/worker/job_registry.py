@@ -10,6 +10,7 @@ def get_job_types():
     from worker.forms import (
         MandtalImportJobForm,
         R75ImportJobForm,
+        R75ImportSpreadsheetJobForm,
         YearAndTitleForm,
         ConfirmForm,
         YearPkForm,
@@ -124,12 +125,6 @@ def get_job_types():
             "result_template": "worker/includes/status_only.html",
             "function": "kas.jobs.generate_pseudo_settlements_and_transactions_for_legacy_years",
         },
-        # 'ImportSpreadsheetR75Job': {
-        #    'label': _('Import af data fra R75 i regneark'),  # translated label
-        #    'form_class': R75ImportSpreadsheetJobForm,  # form class used in the start job workflow
-        #    'result_template': 'worker/includes/r75.html',
-        #    'function': 'kas.jobs.import_spreadsheet_r75',
-        # },
         # 'DispatchAgterskrivelser': {
         #     'label': _('Afsendelse af Agterskrivelser for et givet år'),
         #     'form_class': YearPkForm,
@@ -144,6 +139,12 @@ def get_job_types():
                     "form_class": YearPkForm,  # form class used in the start job workflow
                     "result_template": "worker/includes/status_only.html",
                     "function": "kas.jobs.reset_tax_year",
+                },
+                "ImportSpreadsheetR75Job": {
+                    "label": _("Import af data fra R75 i regneark"),
+                    "form_class": R75ImportSpreadsheetJobForm,
+                    "result_template": "worker/includes/r75.html",
+                    "function": "kas.jobs.import_spreadsheet_r75",
                 },
             }
         )
