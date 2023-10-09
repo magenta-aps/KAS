@@ -1199,13 +1199,22 @@ def import_spreadsheet_r75(job):
                             "cpr": cpr,
                             "tax_year": year,
                         }
-                        policy_tax_year_idents.append(
-                            {
-                                "pension_company__pk": company.pk,
-                                "person_tax_year__tax_year__year": year,
-                                "policy_number": policy_number,
-                            }
-                        )
+                        policy_tax_year_ident = {
+                            "pension_company__pk": company.pk,
+                            "person_tax_year__tax_year__year": year,
+                            "policy_number": policy_number,
+                        }
+                        policy_tax_year_idents.append(policy_tax_year_ident)
+
+                        # Get previously reported R75 amounts to override
+                        if PolicyTaxYear.objects.filter(
+                            **policy_tax_year_ident
+                        ).exists():
+                            old_imported_sum = PolicyTaxYear.objects.get(
+                                **policy_tax_year_ident
+                            ).prefilled_amount
+                        else:
+                            old_imported_sum = 0
 
                         model.objects.update_or_create(
                             # Identificerende; skal være den samme for en given importeret entry (ikke autogen)
@@ -1214,7 +1223,8 @@ def import_spreadsheet_r75(job):
                             ),
                             **identifying_data,
                             defaults={
-                                "renteindtaegt": int(rowdata["PensionsOrdningBeløb"]),
+                                "renteindtaegt": int(rowdata["PensionsOrdningBeløb"])
+                                - old_imported_sum,
                                 "company_pay_override": company_pay_override,
                                 # Dummydata, not used in calculations
                                 "pt_census_guid": uuid.uuid4(),
@@ -1234,14 +1244,6 @@ def import_spreadsheet_r75(job):
                 "source_model": "eskat.models:EskatModels.R75SpreadsheetImport",
             },
         )
-
-    Job.schedule_job(
-        function=generate_agterskrivelser,
-        job_type="generate_agterskrivelser",
-        created_by=job.created_by,
-        parent=job,
-        job_kwargs={"policy_tax_year_idents": policy_tax_year_idents},
-    )
 
 
 @job_decorator
