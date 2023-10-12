@@ -1,4 +1,6 @@
-from kas.models import (
+from rest_framework import serializers
+
+from kas.models import (  # isort: skip
     PensionCompany,
     Person,
     PersonTaxYear,
@@ -6,7 +8,6 @@ from kas.models import (
     PolicyTaxYear,
     TaxYear,
 )
-from rest_framework import serializers
 
 
 class PensionCompanySerializer(serializers.ModelSerializer):

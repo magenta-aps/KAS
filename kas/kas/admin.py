@@ -5,14 +5,14 @@ from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
 from project.admin import kasadmin  # used by the administrator group
 
-from kas.models import (
+from kas.models import (  # isort: skip
     FinalSettlement,
-    TaxYear,
     Person,
     PersonTaxYear,
-    PolicyTaxYear,
     PolicyDocument,
+    PolicyTaxYear,
     TaxSlipGenerated,
+    TaxYear,
 )
 
 

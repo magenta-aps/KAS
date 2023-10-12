@@ -3,26 +3,24 @@ from unittest import mock
 from unittest.mock import patch
 
 import django_rq
+import pysftp
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from fakeredis import FakeStrictRedis
+from prisme.jobs import import_pre_payment_file, send_batch
+from prisme.models import PrePaymentFile, Prisme10QBatch, Transaction
 from rq import Queue
-
-from kas.jobs import (
-    generate_final_settlements_for_year,
-    generate_batch_and_transactions_for_year,
-)
-from prisme.jobs import send_batch
-from kas.models import TaxYear, PersonTaxYear, Person, PolicyTaxYear, PensionCompany
-from prisme.jobs import import_pre_payment_file
-from prisme.models import PrePaymentFile, Transaction
 from worker.models import Job
-from django.test import override_settings
-from django.conf import settings
-import pysftp
-from prisme.models import Prisme10QBatch
+
+from kas.models import PensionCompany, Person, PersonTaxYear, PolicyTaxYear, TaxYear
+
+from kas.jobs import (  # isort: skip
+    generate_batch_and_transactions_for_year,
+    generate_final_settlements_for_year,
+)
 
 test_settings = dict(settings.TENQ)
 test_settings["dirs"]["10q_mocking"] = "dummy"

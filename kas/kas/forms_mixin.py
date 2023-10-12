@@ -1,4 +1,4 @@
-from django.forms import Form, CheckboxInput, RadioSelect, FileInput
+from django.forms import CheckboxInput, FileInput, Form, RadioSelect
 
 
 class BootstrapForm(Form):

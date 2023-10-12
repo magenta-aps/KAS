@@ -1,8 +1,8 @@
 import re
 
 from django.core.exceptions import ValidationError
-from django.core.validators import MinLengthValidator, MaxLengthValidator
-from django.forms import forms, fields, widgets, Field
+from django.core.validators import MaxLengthValidator, MinLengthValidator
+from django.forms import Field, fields, forms, widgets
 from django.utils.translation import gettext as _
 
 

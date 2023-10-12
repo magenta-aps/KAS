@@ -1,6 +1,7 @@
-from kas.models import PolicyTaxYear, TaxYear
 from django.core.management.base import BaseCommand
-from django.db.models import Q, F
+from django.db.models import F, Q
+
+from kas.models import PolicyTaxYear, TaxYear
 
 
 class Command(BaseCommand):

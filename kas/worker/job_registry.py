@@ -1,25 +1,26 @@
-from django.utils.translation import gettext as _
-from django.conf import settings
 import importlib
+
+from django.conf import settings
+from django.utils.translation import gettext as _
 
 
 def get_job_types():
     """
     :returns available jobs based on environment
     """
-    from worker.forms import (
+    from prisme.forms import PrePaymentFileModelForm
+
+    from worker.forms import (  # isort: skip
+        AutoligningsYearForm,  # R75ImportSpreadsheetJobForm,
+        ConfirmForm,
+        LegacyYearsForm,
         MandtalImportJobForm,
         R75ImportJobForm,
         R75ImportSpreadsheetJobForm,
-        YearAndTitleForm,
-        ConfirmForm,
-        YearPkForm,
-        AutoligningsYearForm,
-        LegacyYearsForm,
         WorkerPensionCompanySummaryFileForm,
-        # R75ImportSpreadsheetJobForm,
+        YearAndTitleForm,
+        YearPkForm,
     )
-    from prisme.forms import PrePaymentFileModelForm
 
     jobs = {
         "Autoligning": {

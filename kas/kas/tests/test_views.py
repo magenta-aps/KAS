@@ -6,12 +6,16 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-
-from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear
-
 from prisme.models import Prisme10QBatch, Transaction
 
-from kas.models import FinalSettlement
+from kas.models import (  # isort: skip
+    FinalSettlement,
+    PensionCompany,
+    Person,
+    PersonTaxYear,
+    PolicyTaxYear,
+    TaxYear,
+)
 
 
 class BaseTestCase(TestCase):
