@@ -169,7 +169,8 @@ class PolicyFormView(HasUserMixin, CloseMixin, YearTabMixin, FormView):
             self.load_initial()
         except PersonNotFoundException:
             logger.info(
-                f"Attempted PolicyFormView with CPR {self.cpr}, but this CPR was not found in database"
+                f"Attempted PolicyFormView with CPR {self.cpr},"
+                + " but this CPR was not found in database"
             )
             return redirect(reverse("selvbetjening:person-not-found"))
         return super(PolicyFormView, self).get(request, *args, **kwargs)
@@ -222,7 +223,8 @@ class PolicyFormView(HasUserMixin, CloseMixin, YearTabMixin, FormView):
 
     def load_initial(self):
         # Load known policy_tax_year data to populate form with initial data
-        # We should only do this once per get-post cycle, because it contains requests to the REST backend (and is thus "expensive")
+        # We should only do this once per get-post cycle, because it contains
+        # requests to the REST backend (and is thus "expensive")
         client = RestClient()
         person_tax_year = client.get_person_tax_year(self.cpr, self.year)
         if person_tax_year is not None:

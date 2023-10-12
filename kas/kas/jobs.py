@@ -215,8 +215,10 @@ def import_mandtal(job):
                         },
                     )
 
-                    # Read the person fetched from madtal@eskat. Compare the address with the address from dafo.
-                    # Overwrite the address from mandtal if the address from dafo is better
+                    # Read the person fetched from madtal@eskat. Compare the
+                    # address with the address from dafo.
+                    # Overwrite the address from mandtal if the address from
+                    # dafo is better
                     person = Person.objects.get(cpr=cpr)
                     person.status = "Dead" if (civilstand == "D") else "Alive"
                     if obj.is_dafo_address_better(person):
@@ -232,7 +234,8 @@ def import_mandtal(job):
 
                     person.save()
 
-                # If there is any requested cpr-numbers that is not recieved in a response, it means that the cpr-number is invalid
+                # If there is any requested cpr-numbers that is not received in
+                # a response, it means that the cpr-number is invalid.
                 if requested_cprs:
                     Person.objects.filter(cpr__in=requested_cprs, status="").update(
                         status="Invalid"
@@ -401,7 +404,8 @@ def import_r75(job):
                     person_tax_year.save(update_fields=["future_r75_data"])
                     users_with_future_r75_data.append(item["cpr"])
                 else:
-                    # Only set future_r75_data = False if it was not set to True by this job
+                    # Only set future_r75_data = False if it was not set to
+                    # True by this job.
                     if item["cpr"] not in users_with_future_r75_data:
                         person_tax_year.future_r75_data = False
                         person_tax_year.save(update_fields=["future_r75_data"])
@@ -757,7 +761,8 @@ def autoligning(job):
                 policy.person_tax_year.general_notes
                 and len(policy.person_tax_year.general_notes.replace(" ", "")) > 0
             ):
-                # General note on PersonTaxYear is not null and contains at least 1 character
+                # General note on PersonTaxYear is not null and contains at
+                # least 1 character
                 policy.efterbehandling = True
                 policy.slutlignet = False
                 post_processing += 1
@@ -859,8 +864,9 @@ def generate_batch_and_transactions_for_year(job):
 
     job.result = {
         "status": "Genererede batch og transaktioner",
-        "message": "Genererede {transactions} på baggrund af {settlements} slutopgørelser".format(
-            transactions=new_transactions, settlements=settlements_count
+        "message": (
+            f"Genererede {new_transactions} på baggrund af"
+            "{settlements_count} slutopgørelser"
         ),
     }
 
@@ -1065,7 +1071,8 @@ def merge_pension_companies(job):
             moved_policies = PolicyTaxYear.objects.filter(
                 pension_company__in=job.arguments["to_be_merged"]
             ).update(pension_company=target)
-            # This is safe and will fail, because pension_company is protected on policytaxyear.
+            # This is safe and will fail, because pension_company is protected
+            # on policytaxyear.
             deleted_count, _ = PensionCompany.objects.filter(
                 id__in=job.arguments["to_be_merged"]
             ).delete()
@@ -1184,7 +1191,8 @@ def import_spreadsheet_r75(job):
                                         value = Decimal(value)
                                     if type(value) not in expected_type:
                                         raise Exception(
-                                            f"Expected type {expected_type} in column {colindex+1}, "
+                                            f"Expected type {expected_type} in"
+                                            " column {colindex+1}, "
                                             f"row {rowindex+1}, got type {type(value)} "
                                             f"for value {str(value)}"
                                         )
@@ -1221,7 +1229,8 @@ def import_spreadsheet_r75(job):
                             old_imported_sum = 0
 
                         model.objects.update_or_create(
-                            # Identificerende; skal være den samme for en given importeret entry (ikke autogen)
+                            # Identificerende; skal være den samme for en given
+                            # importeret entry (ikke autogen)
                             r75_ctl_sekvens_guid=uuid.uuid5(
                                 namespace=uuid_namespace, name=str(identifying_data)
                             ),
