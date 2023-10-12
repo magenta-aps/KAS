@@ -6,13 +6,13 @@ from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
 
-from kas.models import (
-    TaxYear,
+from kas.models import (  # isort: skip
     PensionCompany,
     Person,
-    PolicyTaxYear,
     PersonTaxYear,
+    PolicyTaxYear,
     PreviousYearNegativePayout,
+    TaxYear,
 )
 
 

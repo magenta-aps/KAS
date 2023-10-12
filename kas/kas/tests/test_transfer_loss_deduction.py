@@ -1,5 +1,6 @@
 from django.test import TestCase
-from kas.models import TaxYear, PensionCompany, Person, PolicyTaxYear, PersonTaxYear
+
+from kas.models import PensionCompany, Person, PersonTaxYear, PolicyTaxYear, TaxYear
 
 
 class DeductionTest(TestCase):

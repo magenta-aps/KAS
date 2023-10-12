@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 from datetime import date
 from operator import abs
 
 from django.core.files.base import ContentFile
 from django.utils import translation
 from django.utils.translation import gettext as _
-from tenQ.dates import get_due_date, get_last_payment_date
 from fpdf import FPDF
+from tenQ.dates import get_due_date, get_last_payment_date
 
-from kas.models import PersonTaxYear, FinalSettlement
-
-import datetime
+from kas.models import FinalSettlement, PersonTaxYear
 
 
 class TaxFinalStatementPDF(FPDF):

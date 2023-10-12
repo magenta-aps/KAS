@@ -1,9 +1,10 @@
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.views import LogoutView
-from django.urls import path, include, reverse_lazy
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.conf import settings
+from django.urls import include, path, reverse_lazy
 from project.admin import kasadmin
+
 from kas.viewsets import router
 
 urlpatterns = [

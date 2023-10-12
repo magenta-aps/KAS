@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
+from eskat.models import ImportedKasMandtal
 
 from kas.models import PersonTaxYear, PolicyTaxYear
-from eskat.models import ImportedKasMandtal
 
 
 class Command(BaseCommand):

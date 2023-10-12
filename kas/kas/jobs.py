@@ -11,45 +11,49 @@ from time import sleep
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import IntegerField, Sum, Q, Count
+from django.db.models import Count, IntegerField, Q, Sum
 from django.db.models.functions import Cast
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from eskat.jobs import delete_protected
-from eskat.models import (
-    ImportedKasMandtal,
-    ImportedR75PrivatePension,
-    get_kas_mandtal_model,
-    get_r75_private_pension_model,
-)
-from eskat.models import R75SpreadsheetFile, EskatModels
-from kas.eboks import EboksClient, EboksDispatchGenerator
-from kas.models import (
-    Person,
-    PersonTaxYear,
-    TaxYear,
-    PolicyTaxYear,
-    PensionCompany,
-    FinalSettlement,
-    AddressFromDafo,
-    PersonTaxYearCensus,
-    HistoryMixin,
-    TaxSlipGenerated,
-    PensionCompanySummaryFile,
-    Agterskrivelse,
-)
-from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
-from kas.reportgeneration.kas_report import TaxPDF
-from kas.reportgeneration.kas_topdanmark_agterskrivelse import AgterskrivelsePDF
 from more_itertools import map_except
 from openpyxl import load_workbook
 from pandas import to_datetime
 from prisme.models import Prisme10QBatch
 from project.dafo import DatafordelerClient
-from requests.exceptions import HTTPError, ConnectionError
+from requests.exceptions import ConnectionError, HTTPError
 from rq import get_current_job
 from worker.job_registry import resolve_job_function
-from worker.models import job_decorator, Job
+from worker.models import Job, job_decorator
+
+from kas.eboks import EboksClient, EboksDispatchGenerator
+from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
+from kas.reportgeneration.kas_report import TaxPDF
+from kas.reportgeneration.kas_topdanmark_agterskrivelse import AgterskrivelsePDF
+
+from eskat.models import (  # isort: skip
+    EskatModels,
+    ImportedKasMandtal,
+    ImportedR75PrivatePension,
+    R75SpreadsheetFile,
+    get_kas_mandtal_model,
+    get_r75_private_pension_model,
+)
+
+from kas.models import (  # isort: skip
+    AddressFromDafo,
+    Agterskrivelse,
+    FinalSettlement,
+    HistoryMixin,
+    PensionCompany,
+    PensionCompanySummaryFile,
+    Person,
+    PersonTaxYear,
+    PersonTaxYearCensus,
+    PolicyTaxYear,
+    TaxSlipGenerated,
+    TaxYear,
+)
 
 
 def mark_job_failed(job, result, exception):

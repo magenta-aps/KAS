@@ -1,12 +1,19 @@
 from django.conf.urls import include
 from django.urls import path
 from django.views.generic import RedirectView, TemplateView
-from selvbetjening.views import CustomJavaScriptCatalog, SetLanguageView
-from selvbetjening.views import ErrorView
-from selvbetjening.views import PolicyFormView, PolicyDetailView, PolicyDetailPriorView
-from selvbetjening.views import RepresentationStartView, RepresentationStopView
-from selvbetjening.views import ViewFinalSettlementView
 from django_mitid_auth.saml.views import AccessDeniedView
+
+from selvbetjening.views import (  # isort: skip
+    CustomJavaScriptCatalog,
+    ErrorView,
+    PolicyDetailPriorView,
+    PolicyDetailView,
+    PolicyFormView,
+    RepresentationStartView,
+    RepresentationStopView,
+    SetLanguageView,
+    ViewFinalSettlementView,
+)
 
 app_name = "selvbetjening"
 

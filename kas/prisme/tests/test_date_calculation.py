@@ -1,7 +1,8 @@
 from datetime import date
 
 from django.test import TestCase
-from tenQ.dates import (
+
+from tenQ.dates import (  # isort: skip
     get_due_date,
     get_last_payment_date,
     get_last_payment_date_from_due_date,

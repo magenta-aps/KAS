@@ -1,7 +1,8 @@
 import os
 from distutils.util import strtobool
-from django.utils.translation import gettext_lazy as _
+
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.translation import gettext_lazy as _
 
 VERSION = os.environ["VERSION"]
 
