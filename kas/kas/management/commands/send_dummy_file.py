@@ -3,7 +3,6 @@ import tempfile
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.datetime_safe import datetime
-
 from tenQ.client import put_file_in_prisme_folder
 
 

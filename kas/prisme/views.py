@@ -2,18 +2,19 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import dateformat
-from django.views.generic import ListView, View, FormView
+from django.views.generic import FormView, ListView, View
 from django.views.generic.detail import SingleObjectMixin
-
 from prisme.forms import BatchSendForm
 from prisme.models import Prisme10QBatch
-from project.view_mixins import (
+from worker.job_registry import resolve_job_function
+from worker.models import Job
+
+from kas.view_mixins import KasMixin
+
+from project.view_mixins import (  # isort: skip
     PermissionRequiredWithMessage,
     regnskab_or_administrator_required,
 )
-from worker.job_registry import resolve_job_function
-from worker.models import Job
-from kas.view_mixins import KasMixin
 
 
 class Prisme10QBatchListView(KasMixin, PermissionRequiredWithMessage, ListView):

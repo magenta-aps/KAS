@@ -1,16 +1,17 @@
 from django.test import TestCase
+from prisme.models import Transaction
 
-from kas.models import (
-    TaxYear,
-    PensionCompany,
-    Person,
-    PolicyTaxYear,
-    PersonTaxYear,
-    FinalSettlement,
-)
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.tests.test_mixin import create_admin_user
-from prisme.models import Transaction
+
+from kas.models import (  # isort: skip
+    FinalSettlement,
+    PensionCompany,
+    Person,
+    PersonTaxYear,
+    PolicyTaxYear,
+    TaxYear,
+)
 
 
 class DeductionTest(TestCase):

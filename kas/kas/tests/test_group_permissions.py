@@ -1,9 +1,10 @@
-from django.test import TestCase
 from django.apps import apps
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from kas.models import RepresentationToken
 from django.db.models import Q
+from django.test import TestCase
+
+from kas.models import RepresentationToken
 
 
 class GroupPermissionTestCase(TestCase):

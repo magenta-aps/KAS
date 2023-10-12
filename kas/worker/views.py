@@ -2,16 +2,16 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import models
 from django.forms import FileField
-from django.http import HttpResponseRedirect, Http404
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import FormView
-
 from project.view_mixins import administrator_required
 from worker.forms import JobTypeSelectForm
 from worker.job_registry import get_job_types, resolve_job_function
 from worker.models import Job
+
 from kas.view_mixins import KasMixin
 
 

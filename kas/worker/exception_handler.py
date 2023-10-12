@@ -1,7 +1,8 @@
+import traceback
+
 from django.db.transaction import atomic
 from django.utils import timezone
 from worker.models import Job
-import traceback
 
 
 def write_exception_to_db(rq_job, exc_type, exc_value, tb):

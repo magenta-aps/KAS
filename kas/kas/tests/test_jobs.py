@@ -1,41 +1,42 @@
 from datetime import datetime
-from unittest.mock import patch, MagicMock
-
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
+
 import django_rq
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
-from django.test import override_settings, TransactionTestCase
+from django.test import TransactionTestCase, override_settings
 from eskat.jobs import generate_sample_data
 from eskat.models import ImportedR75PrivatePension
 from fakeredis import FakeStrictRedis
-from kas.eboks import EboksClient
-from kas.models import (
-    Agterskrivelse,
-    TaxYear,
-    PersonTaxYear,
-    Person,
-    PolicyTaxYear,
-    PensionCompany,
-    TaxSlipGenerated,
-    FinalSettlement,
-    PensionCompanySummaryFile,
-)
 from prisme.models import Prisme10QBatch
 from project.dafo import DatafordelerClient
 from rq import Queue
 from worker.models import Job
 
-from kas.jobs import dispatch_agterskrivelser_for_year
-from kas.jobs import (
+from kas.eboks import EboksClient
+
+from kas.jobs import (  # isort: skip
+    dispatch_agterskrivelser_for_year,
     dispatch_tax_year,
     generate_batch_and_transactions_for_year,
-    merge_pension_companies,
-    import_mandtal,
-    generate_pseudo_settlements_and_transactions_for_legacy_years,
-    import_r75,
     generate_pension_company_summary_file,
+    generate_pseudo_settlements_and_transactions_for_legacy_years,
+    import_mandtal,
+    import_r75,
+    merge_pension_companies,
+)
+from kas.models import (  # isort: skip
+    Agterskrivelse,
+    FinalSettlement,
+    PensionCompany,
+    PensionCompanySummaryFile,
+    Person,
+    PersonTaxYear,
+    PolicyTaxYear,
+    TaxSlipGenerated,
+    TaxYear,
 )
 
 test_settings = dict(settings.EBOKS)
