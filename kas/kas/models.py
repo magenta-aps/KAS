@@ -52,7 +52,8 @@ class HistoryMixin(object):
 
     """
     :param data: dict to populate model instance
-    :param keys: keys in dict that define how to look for an existing instance. KvPs in data are extracted by keys for the lookup
+    :param keys: keys in dict that define how to look for an existing instance.
+    KvPs in data are extracted by keys for the lookup
     Updates an existing instance, or creates a new one if one doesn't exist.
     """
 
@@ -157,7 +158,7 @@ class TaxYear(models.Model):
         ordering = ["-year"]
 
     year = models.IntegerField(
-        db_index=True,  # This should most likely be removed unless there is a point in having 2 exact same indices?
+        db_index=True,  # Is there a point in having 2 exact same indices?
         verbose_name=_("Skatteår"),
         help_text=_("Skatteår"),
         unique=True,
@@ -189,7 +190,8 @@ class TaxYear(models.Model):
     def get_current_lock(self):
         """
         There should always be at least one "active" lock for each year.
-        So this should never raise an IndexError if it does this would be a serious problem and should result in a 500.
+        So this should never raise an IndexError if it does this would be a
+        serious problem and should result in a 500.
         """
         return self.locks.filter(interval_to__isnull=True).order_by("-interval_from")[0]
 
@@ -197,8 +199,10 @@ class TaxYear(models.Model):
         return str(self.year)
 
 
-# If a person has the status undefined, it means that we have not tryed finding a status in Dafo, und we do not show a statustekst in UI
-# If a person has the status Alive, it is a standard status that we do nat want to show in the UI
+# If a person has the status undefined, it means that we have not tryed
+# finding a status in Dafo, und we do not show a statustekst in UI.
+# If a person has the status Alive, it is a standard status that we do not
+# want to show in the UI
 recipient_recieve_statuses = (
     ("Undefined", ""),
     ("Invalid", _("Ugyldig")),
@@ -247,8 +251,9 @@ class Lock(models.Model):
     @property
     def allow_closing(self):
         """
-        All transactions should have been transfered to prisme before we can close the lock
-        And you cannot close a lock that is all ready closed.
+        All transactions should have been transfered to prisme before we can
+        close the lock.
+        You cannot close a lock that is already closed.
         """
         if not self.interval_to and self.remaining_transaction_sum == 0:
             return True
@@ -325,10 +330,13 @@ class Person(HistoryMixin, models.Model):
 
     def __str__(self):
         return (
-            f"{self.__class__.__name__}(cpr={self.cpr},municipality_code={self.municipality_code},"
+            f"{self.__class__.__name__}(cpr={self.cpr},"
+            + f"municipality_code={self.municipality_code},"
             f"municipality_name={self.municipality_name},"
-            f"address_line_1={self.address_line_1},address_line_2={self.address_line_2},"
-            f"address_line_3={self.address_line_1},address_line_4={self.address_line_2},"
+            f"address_line_1={self.address_line_1},"
+            + f"address_line_2={self.address_line_2},"
+            f"address_line_3={self.address_line_1},"
+            + f"address_line_4={self.address_line_2},"
             f"address_line_5={self.address_line_2},"
             f"full_address={self.full_address})"
         )
@@ -413,9 +421,8 @@ class EboksDispatch(models.Model):
     def get_final_status(self, client: EboksClient):
         if self.status != "post_processing":
             raise RuntimeError(
-                "Cannot get updates for status {status} (needs status post_processing)".format(
-                    status=self.status
-                )
+                f"Cannot get updates for status {self.status}"
+                + " (needs status post_processing)"
             )
         while self.status == "post_processing":
             resp = client.get_recipient_status([self.message_id])
@@ -435,7 +442,8 @@ class EboksDispatch(models.Model):
 
     @property
     def allow_dispatch(self):
-        # a message is allowed to be dispatch if the status is either created or failed (re-trying)
+        # a message is allowed to be dispatch if the status is either created
+        # or failed (re-trying)
         if self.status in ("created", "failed"):
             return True
         return False
@@ -480,7 +488,9 @@ class EboksDispatch(models.Model):
                     break
             if not jsonresponse:
                 raise Exception(
-                    f"Failed to send message to ebox; retried {retries} times spaced {retry_delay} seconds apart. Last exception was: {last_exception}"
+                    f"Failed to send message to ebox; retried {retries}"
+                    + f" times spaced {retry_delay} seconds apart. Last"
+                    + f" exception was: {last_exception}"
                 )
 
         except Exception:
@@ -619,7 +629,8 @@ class PersonTaxYear(HistoryMixin, models.Model):
                     # Tilføj note på policen om at mandtal har ændret resultatet
                     note_text = (
                         f"Personens antal skattedage i {self.year} er blevet opdateret;"
-                        f" denne police er blevet påvirket af ændringen, og beregningen kan afvige fra en evt. oprettet slutopgørelse."
+                        " denne police er blevet påvirket af ændringen, og"
+                        " beregningen kan afvige fra en evt. oprettet slutopgørelse."
                     )
                     Note.objects.create(
                         person_tax_year=self,
@@ -647,7 +658,10 @@ class PersonTaxYear(HistoryMixin, models.Model):
         return self.policytaxyear_set.filter(active=True)
 
     def __str__(self):
-        return f"{self.__class__.__name__}(cpr={self.person.cpr}, year={self.tax_year.year})"
+        return (
+            f"{self.__class__.__name__}(cpr={self.person.cpr},"
+            + f" year={self.tax_year.year})"
+        )
 
     history = HistoricalRecords()
 
@@ -847,7 +861,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         null=True, blank=True, verbose_name=_("Næste behandlingsdato")
     )
 
-    # Overstyring af pensionsselskabs-betaling; borgeren skal betale selvom der foreligger aftale med pensionsselskab
+    # Overstyring af pensionsselskabs-betaling; borgeren skal betale selvom der
+    # foreligger aftale med pensionsselskab
     citizen_pay_override = models.BooleanField(
         default=False,
         verbose_name=_(
@@ -855,13 +870,16 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         ),
     )
 
-    # Overstyring af pensionsselskabs-betaling; selskabet betaler selvom der ikke foreligger aftale med pensionsselskab
-    # citizen_pay_override tager præcedens over company_pay_override; hvis citizen_pay_override er True, betaler borgeren
+    # Overstyring af pensionsselskabs-betaling; selskabet betaler selvom der ikke
+    # foreligger aftale med pensionsselskab.
+    # citizen_pay_override tager præcedens over company_pay_override; hvis
+    # citizen_pay_override er True, betaler borgeren
     # uanset hvad company_pay_override er sat til
     company_pay_override = models.BooleanField(
         default=False,
         verbose_name=_(
-            "Pensionsselskabet betaler selvom der ikke foreligger aftale med pensionsselskab"
+            "Pensionsselskabet betaler selvom der ikke foreligger aftale med"
+            + " pensionsselskab"
         ),
     )
 
@@ -880,12 +898,12 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         cls,
         initial_amount: int,  # The full base amount for the whole tax year
         days_in_year: int = 365,  # Days in the year of the calculation
-        taxable_days_in_year: int = 365,  # Number of days the person is paying tax in Greenland
-        available_deduction_data: dict = None,  # Dict of years to available deduction amounts
+        taxable_days_in_year: int = 365,  # #days the person is paying tax in Greenland
+        available_deduction_data: dict = None,  # available deduction amounts per year
         foreign_paid_amount: int = 0,  # Amount already paid in taxes in foreign country
         preliminary_payment: int = 0,  # Amount already paid in taxes domestically
-        adjust_for_days_in_year: bool = True,  # Perform adjustment for taxable days in year (false if self-reported)
-        pension_company_pays: bool = False,  # Sets tax_to_pay to zero if pension company pays
+        adjust_for_days_in_year: bool = True,  # False if self-reported
+        pension_company_pays: bool = False,  # Zero tax_to_pay if pension company pays
     ) -> dict:
         if days_in_year not in (365, 366):
             raise ValueError("Days in year must be either 365 or 366")
@@ -920,7 +938,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         # Make sure initial amount is an integer
         initial_amount = int(initial_amount)
 
-        # Adjust for taxable days. Round down because we only operate in integer amounts of money
+        # Adjust for taxable days. Round down because we only operate in integer
+        # amounts of money
         year_adjusted_amount = int(initial_amount * tax_days_adjust_factor)
 
         taxable_amount = max(0, year_adjusted_amount)
@@ -1030,7 +1049,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     @property
     def latest_policy(self):
         policies = list(self.same_policy_qs_sorted_by_year)
-        # If the filtering for same policies returns an empty list, return original policytaxyear
+        # If the filtering for same policies returns an empty list, return
+        # original policytaxyear
         if not policies:
             return self
         return policies[0]
@@ -1113,7 +1133,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             .filter(year_adjusted_amount__lt=0, active=True)
             .order_by("person_tax_year__tax_year__year")
         )
-        # Loop over prior years, using deductible amounts from them until either we have used it all, or nothing more is needed
+        # Loop over prior years, using deductible amounts from them until either
+        # we have used it all, or nothing more is needed
         for policy in qs.iterator():
             result = policy.payouts_using.exclude(used_for=self.id).aggregate(
                 Sum("transferred_negative_payout")
@@ -1166,7 +1187,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
             return original_desired_deduction_data
 
         elif amount_to_put_elsewhere > 0:
-            # Create a new deduction data dictionary - keeping protected values as they are
+            # Create a new deduction data dictionary - keeping protected values
+            # as they are.
             for year in sorted(available_deduction_data):
                 if year not in protected_year_dict:
                     amount_to_put_in_this_year = min(
@@ -1196,8 +1218,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
                     amount_to_deduct_from_this_year
                 )
                 protected_payout_used._change_reason = _(
-                    "automatisk rettelse for at undgå at det totale anvendte beløb er over %d"
-                    % total_amount
+                    "automatisk rettelse for at undgå at det totale anvendte"
+                    " beløb er over %d" % total_amount
                 )
 
                 protected_payout_used.save()
@@ -1254,7 +1276,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
                 amount,
                 self,
                 negative_payout_history_note=negative_payout_history_note,
-                save_without_negative_payout_history=save_without_negative_payout_history,
+                save_without_negative_payout_history=save_without_negative_payout_history,  # noqa
             )
 
         self.year_adjusted_amount = result["year_adjusted_amount"]
@@ -1267,10 +1289,10 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         Checks and adjusts negative payout table to see if a value in it is too high
         compared to the available negative payout. And adjusts if necessary.
         """
-
+        deduction_table_data = self.latest_policy.previous_year_deduction_table_data
         remaining_deduction_data = {
             year: inner_dict["remaining"]
-            for year, inner_dict in self.latest_policy.previous_year_deduction_table_data.items()
+            for year, inner_dict in deduction_table_data.items()
         }
 
         years_with_below_zero_amount = [
@@ -1293,7 +1315,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
                     negative_payout_objects.append(
                         policy.payouts_used.get(
                             used_from__person_tax_year__tax_year__year=year,
-                            used_for__person_tax_year__tax_year__year=policy.person_tax_year.tax_year.year,
+                            used_for__person_tax_year__tax_year__year=policy.person_tax_year.tax_year.year,  # noqa
                         )
                     )
                 except policy.payouts_used.model.DoesNotExist:
@@ -1328,7 +1350,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
                     amount_to_adjust_with
                 )
                 negative_payout_object._change_reason = _(
-                    "automatisk rettelse for at undgå at det totale resterende beløb falder under 0"
+                    "automatisk rettelse for at undgå at det totale"
+                    + " resterende beløb falder under 0"
                 )
                 negative_payout_object.save()
 
@@ -1350,8 +1373,10 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
         # If year_adjusted_amount was changed:
         if self.year_adjusted_amount != self.__original_year_adjusted_amount:
-            # Make sure that negative values can never appear in the negative payout table
-            # This can happen if (for example) the self-reported amount is adjusted to a lower value
+            # Make sure that negative values can never appear in the negative
+            # payout table.
+            # This can happen if (for example) the self-reported amount is
+            # adjusted to a lower value
             self.adjust_deduction_data_for_negative_remaining_values()
 
     def sum_of_used_amount(self):
@@ -1364,7 +1389,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
         return value
 
-    # Make a registration that we use some ot self's loss as deductoin on 'deducting_policy_tax_year'
+    # Make a registration that we use some ot self's loss as deduction on
+    # 'deducting_policy_tax_year'
     def use_amount(
         self,
         use_up_to_amount,
@@ -1412,7 +1438,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     @property
     def applied_deduction_from_previous_years(self):
-        # Return the amount of deductions used by this policy (losses from other years used as deductions in this year)
+        # Return the amount of deductions used by this policy (losses from
+        # other years used as deductions in this year)
         result = self.payouts_used.aggregate(Sum("transferred_negative_payout"))
         return result["transferred_negative_payout__sum"] or 0
 
@@ -1493,8 +1520,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     @property
     def years_with_protected_negative_payout(self):
         """
-        Find out which (from/for) year combinations have protected cells in the negative
-        payout table
+        Find out which (from/for) year combinations have protected cells in the
+        negative payout table
         """
 
         policies = self.same_policy_qs
@@ -1533,7 +1560,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     @property
     def sum_of_deducted_amount(self):
-        # Return the amount of this years deduction (losses used as deductions in other years)
+        # Return the amount of this years deduction (losses used as
+        # deductions in other years)
         result = self.payouts_using.aggregate(Sum("transferred_negative_payout"))
         return result["transferred_negative_payout__sum"] or 0
 
@@ -1559,7 +1587,8 @@ class PolicyTaxYear(HistoryMixin, models.Model):
         """
         Return base_calculation_amount based on estimated_mount, self_reported_amount,
         prefilled_amount_edited and prefilled_amount.
-        :param only_adjusted: Whether to use prefilled_adjusted_amount (adjusted) or prefilled_amount (not adjusted)
+        :param only_adjusted: Whether to use prefilled_adjusted_amount (adjusted) or
+        prefilled_amount (not adjusted)
         :return: base_calculation_amount or None
         """
         amounts_list = [
@@ -1611,15 +1640,21 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     def __str__(self):
         return (
-            f"{self.__class__.__name__}(policy_number={self.policy_number}, cpr={self.person.cpr}, "
+            f"{self.__class__.__name__}(policy_number={self.policy_number},"
+            + f"cpr={self.person.cpr}, "
             f"year={self.tax_year.year}), prefilled_amount={self.prefilled_amount}, "
             f"self_reported_amount={self.self_reported_amount}, "
-            f"calculations_model_options={self.calculations_model_options}, active_amount={self.active_amount}, "
-            f"year_adjusted_amount={self.year_adjusted_amount}, calculation_model={self.calculation_model}, "
-            f"preliminary_paid_amount={self.preliminary_paid_amount}, from_pension={self.from_pension}, "
-            f"foreign_paid_amount_self_reported={self.foreign_paid_amount_self_reported}, "
+            f"calculations_model_options={self.calculations_model_options},"
+            + f"active_amount={self.active_amount}, "
+            f"year_adjusted_amount={self.year_adjusted_amount},"
+            + f" calculation_model={self.calculation_model}, "
+            f"preliminary_paid_amount={self.preliminary_paid_amount},"
+            + f" from_pension={self.from_pension}, "
+            f"foreign_paid_amount_self_reported="
+            + f"{self.foreign_paid_amount_self_reported}, "
             f"foreign_paid_amount_actual={self.foreign_paid_amount_actual}, "
-            f"applied_deduction_from_previous_years={self.applied_deduction_from_previous_years}"
+            f"applied_deduction_from_previous_years="
+            + f"{self.applied_deduction_from_previous_years}"
         )
 
 
@@ -1656,7 +1691,10 @@ class PreviousYearNegativePayout(models.Model):
         return self.used_for.year
 
     def __str__(self):
-        return f"used from :{self.used_from} used for :{self.used_for} payout :{self.transferred_negative_payout}"
+        return (
+            f"used from :{self.used_from} used for :{self.used_for}"
+            + f" payout :{self.transferred_negative_payout}"
+        )
 
 
 def policydocument_file_path(instance, filename):
@@ -1880,9 +1918,14 @@ class PensionCompanySummaryFile(models.Model):
                 < settings.TRANSACTION_INDIFFERENCE_LIMIT
             ):
                 pension_company_tax_to_pay = 0
-                note += f"Kapitalafkastskat sat til 0kr., da den beregnede kapitalafkastskat {calculation['tax_with_deductions']}kr. er under minimumsgrænsen på {settings.TRANSACTION_INDIFFERENCE_LIMIT}kr."
+                note += (
+                    "Kapitalafkastskat sat til 0kr., da den beregnede"
+                    + f" kapitalafkastskat {calculation['tax_with_deductions']}kr."
+                    + " er under minimumsgrænsen på"
+                    + f" {settings.TRANSACTION_INDIFFERENCE_LIMIT}kr."
+                )
             line = [
-                policy_tax_year.tax_year.year,  # TaxYear (Integer, 4 digits, positive. XXXX eg. 2013)
+                policy_tax_year.tax_year.year,  # Integer, 4 digits, positive
                 pension_company.res,  # Reg_se_nr (Integer, positive)
                 policy_tax_year.cpr,  # Cpr: The CPR on the person
                 policy_tax_year.policy_number,  # Police_no (Integer, positive)
@@ -1894,10 +1937,10 @@ class PensionCompanySummaryFile(models.Model):
                 ],  # The previous year's negative return (Integer)
                 calculation[
                     "taxable_amount"
-                ],  # Tax base 2 (Tax base 1 minus the previous year's negative return)(Integer, 10 digits)
+                ],  # Tax base 2 (Tax base 1 minus the previous year's negative return)
                 policy_tax_year.preliminary_paid_amount
                 or 0,  # Provisional tax paid (Integer, 10 digits, positive)
-                pension_company_tax_to_pay,  # Tax to be paid by pension company (Integer)
+                pension_company_tax_to_pay,  # To be paid by pension company (Integer)
                 None,  # Actual settlement pension company (Empty column)
                 note,
             ]
@@ -1969,7 +2012,8 @@ class FinalSettlement(EboksDispatch):
         max_digits=5,
         decimal_places=2,
         verbose_name=_(
-            "Procentsats for hvor mange renter der skal lægges til for meget / for lidt opkrævet"
+            "Procentsats for hvor mange renter der skal lægges til for meget"
+            + " / for lidt opkrævet"
         ),
         blank=False,
         null=False,
@@ -1979,7 +2023,8 @@ class FinalSettlement(EboksDispatch):
         default=0,
         validators=(MinValueValidator(limit_value=0),),
         verbose_name=_(
-            "Ekstra beløb til betaling der dækker en delmængde af en tidligere ikke-betalt regning"
+            "Ekstra beløb til betaling der dækker en delmængde af en"
+            + " tidligere ikke-betalt regning"
         ),
         blank=False,
         null=False,
@@ -2009,9 +2054,10 @@ class FinalSettlement(EboksDispatch):
         null=False,
         default=PAYMENT_TEXT_BULK,
     )
-    # pseudo final settlement original exists in eskat for 2018/2019
+    # Pseudo final settlement original exists in eskat for 2018/2019.
     # Being "pseudo" means that the FinalSettlement is not actually dispatched,
-    # but only used for comparison to our own calculations, flagging the user if there are differences
+    # but only used for comparison to our own calculations, flagging the user if
+    # there are differences.
     pseudo = models.BooleanField(default=False)
     # Final settlement ammount provided by the user when uploading the pdf.
     pseudo_amount = models.DecimalField(
@@ -2070,7 +2116,7 @@ class FinalSettlement(EboksDispatch):
             [
                 policy.get_calculation()[
                     "tax_to_pay"
-                ]  # Samme som tax_with_deductions, men med beløb under 100 kr nulstillet
+                ]  # Som tax_with_deductions, men med beløb under 100 kr nulstillet
                 for policy in self.person_tax_year.active_policies_qs
                 if not policy.pension_company_pays
             ]
@@ -2115,15 +2161,15 @@ class FinalSettlement(EboksDispatch):
 
         return {
             "prepayment": prepayment,
-            "applicable_previous_statements_exist": applicable_previous_statements_exist,
+            "applicable_previous_statements_exist": applicable_previous_statements_exist,  # noqa
             "total_tax": total_tax,  # Positive when paying tax
-            "previous_transactions_sum": previous_transactions_sum,  # Positive for paid (or billed) tax
-            "remainder": remainder,  # Difference; positive when paying tax, negative when refunding
+            "previous_transactions_sum": previous_transactions_sum,
+            "remainder": remainder,
             "interest_percent": self.interest_on_remainder,
             "interest_factor": interest_factor,
-            "interest_amount_on_remainder": interest_amount_on_remainder,  # Interest; positive when paying tax, negative when refunding. None if no previous transactions
+            "interest_amount_on_remainder": interest_amount_on_remainder,
             "remainder_with_interest": remainder_with_interest,
-            "extra_payment_for_previous_missing": self.extra_payment_for_previous_missing,  # Employee-specified amount; positive when paying tax
+            "extra_payment_for_previous_missing": self.extra_payment_for_previous_missing,  # noqa
             "total_payment": total_payment,
         }
 
@@ -2141,7 +2187,7 @@ class FinalSettlement(EboksDispatch):
                 result.append(
                     {
                         "text": _(
-                            "Afgift for police nr. {policenummer} ved {pensionsselskab} (betalt af pensionsselskab)"
+                            "Afgift for police nr. {policenummer} ved {pensionsselskab} (betalt af pensionsselskab)"  # noqa
                         ).format(
                             policenummer=policy.policy_number,
                             pensionsselskab=policy.pension_company.name,
@@ -2175,7 +2221,7 @@ class FinalSettlement(EboksDispatch):
                 result.append(
                     {
                         "text": _("Forudindbetaling"),
-                        "amount": transaction.amount,  # prepayment are stored as negative so add the amount
+                        "amount": transaction.amount,
                         "source_object": transaction,
                     }
                 )
@@ -2213,7 +2259,6 @@ class FinalSettlement(EboksDispatch):
 
     def get_transaction_summary(self):
         if self.pseudo:
-            # TODO: Hvilken tekst skal stå ved transaktion for uploadet slutopgørelse?
             return _("Importeret:") + " " + str(self.pseudo_amount)
 
         payment_info = self.get_payment_info()
@@ -2265,7 +2310,7 @@ class FinalSettlement(EboksDispatch):
 
     class Meta:
         constraints = [
-            # Ensure there can only by a single pseudo final settlement per person_tax_year
+            # There can only by a single pseudo final settlement per person_tax_year
             UniqueConstraint(
                 name="idx_pseudo_true",
                 fields=["person_tax_year", "pseudo"],

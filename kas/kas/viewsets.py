@@ -138,7 +138,8 @@ class CurrentFinalSettlementExistsView(APIView):
             return None
 
     def get_remote_href(self):
-        # Når vi får info om urls for slutopgørelser fra skattestyrelsen skal denne genbesøges
+        # Når vi får info om urls for slutopgørelser fra Skattestyrelsen skal
+        # denne genbesøges
         # TODO: use correct url
         return None
 

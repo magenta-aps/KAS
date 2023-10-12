@@ -46,7 +46,8 @@ class CreateOrUpdateViewWithNotesAndDocuments:
         """
         Should always return a PersonTaxYear.
         By default we look for the url param pk.
-        Could be used to lookup related instances if the PK passed in related to another model.
+        Could be used to lookup related instances if the PK passed in related
+        to another model.
         Override as needed.
         """
         if not hasattr(self, "person_tax_year"):
@@ -117,7 +118,8 @@ class CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear(
         """
         Should always return a PolicyTaxYear.
         By default we look for the url param pk.
-        Could be used to lookup related instances if the PK passed in related to another model.
+        Could be used to lookup related instances if the PK passed in related
+        to another model.
         Override as needed.
         """
         if not hasattr(self, "policy_tax_year"):
@@ -129,7 +131,7 @@ class CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear(
     def get_person_tax_year(self):
         """
         Should not be overriden.
-        Handles setting the persontaxyear "automatically". based on policytaxyear.
+        Handles setting the persontaxyear "automatically" based on policytaxyear.
         """
         return self.get_policy_tax_year().person_tax_year
 
@@ -191,7 +193,7 @@ class SpecialExcelMixin(object):
             ws.append(row)
 
         response = HttpResponse(
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"  # noqa
         )
         response["Content-Disposition"] = "attachment; filename={}".format(
             self.filename
@@ -214,7 +216,8 @@ class KasMixin(object):
             ctx["test_environment"] = True
         ctx["version"] = settings.VERSION
         if isinstance(self, ListView):
-            # Convenience url for pagers; append the page parameter to this to get a full url with all search parameters
+            # Convenience url for pagers; append the page parameter to this
+            # to get a full url with all search parameters
             params = self.request.GET.dict()
             if "page" in params:
                 del params["page"]

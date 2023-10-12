@@ -96,7 +96,8 @@ def send_batch(job):
         }
         if destination not in available:
             raise ValueError(
-                "Kan ikke sende batch til {destination}, det er kun {available} der er tilgængelig på dette system".format(
+                "Kan ikke sende batch til {destination}, det er kun"
+                " {available} der er tilgængelig på dette system".format(
                     destination=destination, available=", ".join(available)
                 )
             )

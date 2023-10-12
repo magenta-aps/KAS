@@ -25,7 +25,7 @@ def get_job_types():
     jobs = {
         "Autoligning": {
             "label": _("Kør autoligning"),
-            "form_class": AutoligningsYearForm,  # form class used in the start job workflow
+            "form_class": AutoligningsYearForm,  # form class used to start job
             "result_template": "worker/includes/autoligning.html",
             "function": "kas.jobs.autoligning",
         },
@@ -37,13 +37,13 @@ def get_job_types():
         },
         "ImportMandtalJob": {
             "label": _("Import af mandtal"),  # translated label
-            "form_class": MandtalImportJobForm,  # form class used in the start job workflow
+            "form_class": MandtalImportJobForm,  # form class used to start job
             "result_template": "worker/includes/mandtal.html",
             "function": "kas.jobs.import_mandtal",
         },
         "ImportR75Job": {
             "label": _("Import af data fra R75"),  # translated label
-            "form_class": R75ImportJobForm,  # form class used in the start job workflow
+            "form_class": R75ImportJobForm,  # form class used to start job
             "result_template": "worker/includes/r75.html",
             "function": "kas.jobs.import_r75",
         },
@@ -124,7 +124,7 @@ def get_job_types():
             "label": _("Generering af pseudo slutopgørelser (2018/2019)"),
             "form_class": ConfirmForm,
             "result_template": "worker/includes/status_only.html",
-            "function": "kas.jobs.generate_pseudo_settlements_and_transactions_for_legacy_years",
+            "function": "kas.jobs.generate_pseudo_settlements_and_transactions_for_legacy_years",  # noqa
         },
         "ImportSpreadsheetR75Job": {
             "label": _("Import af data fra R75 i regneark"),
@@ -143,7 +143,7 @@ def get_job_types():
             {
                 "ResetTaxYear": {
                     "label": _("Reset data for skatteår"),  # translated label
-                    "form_class": YearPkForm,  # form class used in the start job workflow
+                    "form_class": YearPkForm,  # form class used to start job
                     "result_template": "worker/includes/status_only.html",
                     "function": "kas.jobs.reset_tax_year",
                 },
@@ -156,7 +156,7 @@ def get_job_types():
             {
                 "GenerateSampleData": {
                     "label": _("Generate sample data"),  # translated label
-                    "form_class": ConfirmForm,  # form class used in the start job workflow
+                    "form_class": ConfirmForm,  # form class used to start job
                     "result_template": "worker/includes/status_only.html",
                     "function": "eskat.jobs.generate_sample_data",
                 },

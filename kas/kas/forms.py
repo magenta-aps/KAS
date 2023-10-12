@@ -227,7 +227,8 @@ class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
             or self.cleaned_data["attachment"]
             or "next_processing_date" in self.changed_data
         ):
-            # save the instance if either one of the 2 fields where set or 'next_processing_date' where changed
+            # save the instance if either one of the 2 fields where set or
+            # 'next_processing_date' where changed
             # this ensures we dont do spurious saves when none of the fields are set
             # (but validates) and the user clicks save to go back
             instance.efterbehandling = True

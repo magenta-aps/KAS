@@ -132,8 +132,9 @@ def get_kas_beregninger_x_model():
 
 
 class AbstractModels:
-    # This is only here because we got it from the eSkat integration. It is not used as all
-    # imports will use the KasBeregningerX view, which has the connection to CPR numbers we need.
+    # This is only here because we got it from the eSkat integration. It is not
+    # used as all imports will use the KasBeregningerX view, which has the
+    # connection to CPR numbers we need.
     class KasBeregninger(models.Model):
         pt_census_guid = models.UUIDField(primary_key=True)
         pension_crt_calc_guid = models.UUIDField()
@@ -208,7 +209,8 @@ class AbstractModels:
         def __str__(self):
             return "%s - %s" % (self.navn, self.skatteaar)
 
-    # R75Idx4500230: Data from index 4500230 in R75. Contains policies and their return as reported by pension companies.
+    # R75Idx4500230: Data from index 4500230 in R75. Contains policies and
+    # their return as reported by pension companies.
     class R75Idx4500230(models.Model):
         pt_census_guid = models.UUIDField()
         tax_year = models.IntegerField()
@@ -253,7 +255,8 @@ class EskatModels:
             managed = False  # Created from a view. Don't remove.
             db_table = "kas_mandtal"
 
-    # R75Idx4500230: Data from index 4500230 in R75. Contains policies and their return as reported by pension companies.
+    # R75Idx4500230: Data from index 4500230 in R75. Contains policies and
+    # their return as reported by pension companies.
     class R75Idx4500230(AbstractModels.R75Idx4500230):
         class Meta:
             managed = False  # Created from a view. Don't remove.
@@ -276,7 +279,8 @@ class MockModels:
         class Meta:
             ordering = ["skatteaar", "cpr"]
 
-    # R75Idx4500230: Data from index 4500230 in R75. Contains policies and their return as reported by pension companies.
+    # R75Idx4500230: Data from index 4500230 in R75. Contains policies and
+    # their return as reported by pension companies.
     class MockR75Idx4500230(AbstractModels.R75Idx4500230):
         class Meta:
             ordering = ["tax_year", "cpr"]
@@ -322,7 +326,8 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
         if cpr_limit is not None:
             qs = qs.filter(cpr=cpr_limit)
 
-        # In case we share progress with another function, we want to only fill part of the progress, e.g. up to 50%
+        # In case we share progress with another function, we want to only
+        # fill part of the progress, e.g. up to 50%
         count = qs.count()
         created, updated = (0, 0)
 
@@ -377,7 +382,8 @@ class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
         created, updated = (0, 0)
 
         for i, x in enumerate(qs.iterator()):
-            # Get dict from model instance x, but only fields we have in our current model
+            # Get dict from model instance x, but only fields
+            # we have in our current model.
             modelfield_names = {field.name for field in cls._meta.get_fields()}
             data = {k: v for k, v in model_to_dict(x).items() if k in modelfield_names}
 

@@ -41,7 +41,8 @@ class Transaction(models.Model):
     person_tax_year = models.ForeignKey(
         "kas.PersonTaxYear", null=False, db_index=True, on_delete=models.PROTECT
     )
-    # Positive amount means something the person must pay, negative means something that should be paid back to the user
+    # Positive amount means something the person must pay, negative means
+    # something that should be paid back to the user.
     amount = models.IntegerField(
         null=False, blank=False
     )  # prisme only uses negative og positive integers not decimals.
@@ -68,7 +69,8 @@ class Transaction(models.Model):
     def update_prisme10q_content(self):
         if self.type != "prisme10q":
             raise ValueError(
-                "Cannot update 10Q content for transaction that is not of type 'prisme10q'"
+                "Cannot update 10Q content for transaction that is not of type"
+                " 'prisme10q'"
             )
 
         transaction_writer = self.prisme10q_batch.transaction_writer
@@ -197,8 +199,10 @@ class Prisme10QBatch(models.Model):
 
     @property
     def active_transactions_qs(self):
-        """Return all transactions which are ready to be sent, and which are not below the indifferent limit
-        Amounts below abs(TRANSACTION_INDIFFERENCE_LIMIT) are considered indifferent, and are not sent to prisme
+        """Return all transactions which are ready to be sent, and which are
+        not below the indifferent limit.
+        Amounts below abs(TRANSACTION_INDIFFERENCE_LIMIT) are considered
+        indifferent and are not sent to prisme.
         """
         return self.transaction_set.exclude(
             status=["cancelled", "indifferent"]
@@ -209,8 +213,10 @@ class Prisme10QBatch(models.Model):
 
     @property
     def transactions_below_abs100_qs(self):
-        """Return all transactions which are ready to be sent, and which are below the indifferent limit
-        Small amounts below abs(100) are considered indifferent and should be marked for that
+        """Return all transactions which are ready to be sent, and which
+        are below the indifferent limit.
+        Small amounts below abs(100) are considered indifferent and should
+        be marked as such.
         """
         return self.transaction_set.exclude(status=["cancelled", "indifferent"]).filter(
             amount__gt=-settings.TRANSACTION_INDIFFERENCE_LIMIT,
@@ -226,7 +232,8 @@ class Prisme10QBatch(models.Model):
     def add_transaction(self, final_settlement):
         if final_settlement.person_tax_year.tax_year != self.tax_year:
             raise ValueError(
-                "Cannot add final settlement to 10Q batch: Wrong tax year {tax_year}".format(
+                "Cannot add final settlement to 10Q batch:"
+                "Wrong tax year {tax_year}".format(
                     tax_year=final_settlement.person_tax_year.tax_year.year
                 )
             )

@@ -62,7 +62,7 @@ class MockResponse:
 
     def json(self):
         """
-        This mocks a response for a valid GL citizen and the message is delivered to E-boks.
+        This mocks a response for a valid GL citizen.
         Please note that normally the nr field would be the CPR number of the citizen.
         """
         return {
