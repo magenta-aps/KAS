@@ -1075,8 +1075,8 @@ class EditAmountsUpdateView(
                 **kwargs,
                 "text_after_form": _(
                     "Bemærk at Selvangivet beløb og Ansat beløb ikke bliver"
-                    "justeret for antal skattedage i året; det antages at"
-                    "beløbene allerede er justerede"
+                    " justeret for antal skattedage i året; det antages at"
+                    " beløbene allerede er justerede"
                 ),
             }
         )
