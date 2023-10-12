@@ -76,7 +76,8 @@ class Prisme10QBatchSendView(KasMixin, PermissionRequiredWithMessage, FormView):
         # Start job
         batch = self.get_object()
         job_kwargs = {**form.cleaned_data, "pk": batch.pk}
-        # Set status now, so even if it takes some time for the job to start, the user can see that something has happened
+        # Set status now, so even if it takes some time for the job to start,
+        # the user can see that something has happened
         batch.status = Prisme10QBatch.STATUS_DELIVERING
         batch.delivered_by = None
         batch.delivered = None

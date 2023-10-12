@@ -183,5 +183,6 @@ def importere_kas_beregninger_for_legacy_years(job):
         gemte_beregninger += 1
 
     job.result = {
-        "message": f"Fandt {fundet_beregninger} beregninger og gemte {gemte_beregninger} beregninger"
+        "message": f"Fandt {fundet_beregninger} beregninger og"
+        + f" gemte {gemte_beregninger} beregninger"
     }

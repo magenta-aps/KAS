@@ -133,10 +133,11 @@ class Job(models.Model):
         :param job_kwargs: kwargs to pass to the job
         :param job_type: used to indicate the job type
         :param queue: queue to schedule the function to
-        :param parent the parent job that created this child job. Only used when spawning new jobs insides the job function.
+        :param parent the parent job that created this child job. Only used
+        when spawning new jobs insides the job function.
         :param depends_on: Makes a job wait until the depending job is finished.
-        result ttl no point in storing the result value in redis when we use this model to track state and we dont use
-        result values.
+        result ttl no point in storing the result value in redis when we use
+        this model to track state and we dont use result values.
         """
         if job_kwargs is None:
             job_kwargs = {}
@@ -172,7 +173,8 @@ class Job(models.Model):
         No reason to call this explicit when using the job_decorator.
         """
         if self.status == "failed":
-            # if the job is marked as failed just return instead of overwriting the the status
+            # if the job is marked as failed just return instead of overwriting
+            # the status.
             return
         self.status = "finished"
         self.progress = 100

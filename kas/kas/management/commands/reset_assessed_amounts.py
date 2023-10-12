@@ -37,7 +37,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--execute",
             action="store_true",
-            help=" For each policy found, set assessed_amount=None and base_calculation_amount=get_base_calculation_amount()",
+            help=" For each policy found, set assessed_amount=None and"
+            "base_calculation_amount=get_base_calculation_amount()",
         )
 
     def handle(self, *args, **options) -> None:
@@ -73,7 +74,8 @@ class Command(BaseCommand):
                 policy._change_reason = "Reset af assessed_amount"
                 policy.save()
             print(
-                "Følgende policer har fået det ansatte beløb (assessed_amount) nulstillet:"
+                "Følgende policer har fået det ansatte beløb"
+                "(assessed_amount) nulstillet:"
             )
         print("Årstal\tPersonnummer\tPolicyTaxYear\tNavn")
         for tup in policytaxyear_list:

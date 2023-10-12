@@ -428,10 +428,11 @@ class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
             if hasattr(form, "cleaned_data"):
                 # A value is corrected by a user if:
                 #   - there is a high NEGATIVE amount registered in R75
-                #   - There is an equally high POSITIVE amount registered on the same policy
-                # We need to be able to filter for this, becuase eskat does not handle
-                # cases like this properly; Eskat does not subtract negative values found
-                # in R75 pension data.
+                #   - There is an equally high POSITIVE amount registered on
+                #     the same policy
+                # We need to be able to filter for this, because eskat does not handle
+                # cases like this properly; Eskat does not subtract negative values
+                # found in R75 pension data.
                 corrected = form.cleaned_data["edited_by_user"]
 
                 if corrected is not None:
@@ -448,7 +449,8 @@ class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
                 if future_r75_data is not None:
                     qs = qs.filter(future_r75_data=future_r75_data)
 
-        # find persontaxyears hvor FinalSettlement.pseudo_amount != ImportedKasBeregningerX.capital_return_tax
+        # find persontaxyears hvor
+        # FinalSettlement.pseudo_amount != ImportedKasBeregningerX.capital_return_tax
 
         qs = qs.annotate(
             pseudo_settlement=FilteredRelation(
@@ -477,7 +479,8 @@ class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
         qs = qs.annotate(difference=F("pseudo_amount") - F("capital_return_tax"))
 
         # Note: 'efterbehandling' already exists as a property method.
-        # But we need an annotated twin of it, because decorated properties cannot be queried.
+        # But we need an annotated twin of it, because decorated properties
+        # cannot be queried.
         qs = qs.annotate(
             efterbehandling_annotation=ExpressionWrapper(
                 Q(efterbehandling_count__gt=0), output_field=BooleanField()
@@ -1071,23 +1074,27 @@ class EditAmountsUpdateView(
             **{
                 **kwargs,
                 "text_after_form": _(
-                    "Bemærk at Selvangivet beløb og Ansat beløb ikke bliver justeret for antal skattedage i året; det antages at beløbene allerede er justerede"
+                    "Bemærk at Selvangivet beløb og Ansat beløb ikke bliver"
+                    " justeret for antal skattedage i året; det antages at"
+                    " beløbene allerede er justerede"
                 ),
             }
         )
 
     def get_form_kwargs(self):
-        # Always set the base_calculation_amount through the get_base_calculation_amount priorities
+        # Always set the base_calculation_amount through the
+        # get_base_calculation_amount priorities
         self.object.base_calculation_amount = self.object.get_base_calculation_amount()
         if self.object.prefilled_amount_edited is None:
-            # Fill out prefilled_amount_edited since we are not allowed to change prefilled_amount.
+            # Fill out prefilled_amount_edited since we are not allowed to
+            # change prefilled_amount.
             self.object.prefilled_amount_edited = self.object.prefilled_amount
         return super(EditAmountsUpdateView, self).get_form_kwargs()
 
     def form_valid(self, form):
         if self.has_changes or form.changed_data:
-            # if the formsets or the form has changes we need to set efterbehandling=True
-            # unless slutlignet=True
+            # if the formsets or the form has changes we need to set
+            # efterbehandling=True unless slutlignet=True
             self.object = form.save(False)
             if self.object.slutlignet:
                 # always clear efterbehandling when slutlignet is set
@@ -1095,7 +1102,8 @@ class EditAmountsUpdateView(
             else:
                 self.object.efterbehandling = True
                 # super handles saving of the object
-            # When selfreported amount is being used, make sure to set active_amount accordingly
+            # When selfreported amount is being used, make sure to set
+            # active_amount accordingly
             if self.object.assessed_amount is None:
                 if self.object.self_reported_amount is not None:
                     self.object.active_amount = (
@@ -1437,9 +1445,12 @@ class PersonTaxYearHistoryListView(KasMixin, PermissionRequiredWithMessage, Deta
             )
         )
 
-        # It appears that queryset.union() doesn't give the correct output, specifically putting values under the wrong keys
-        # e.g. putting the `klass` value under the `updated_by` key for items from _some_ querysets
-        # So instead we extract the values from each queryset and join them together in code
+        # It appears that queryset.union() doesn't give the correct output,
+        # specifically putting values under the wrong keys.
+        # e.g. putting the `klass` value under the `updated_by` key for items
+        # from _some_ querysets
+        # So instead we extract the values from each queryset and join them together
+        # in code
         items = []
         keys = (
             "history_date",
@@ -1465,11 +1476,6 @@ class PersonTaxYearHistoryListView(KasMixin, PermissionRequiredWithMessage, Deta
                 items.append({key: obj[index] for index, key in enumerate(keys)})
         items.sort(key=lambda item: item["history_date"], reverse=True)
         ctx["objects"] = items
-
-        #         ctx['objects'] = qs.union(policy_qs, person_qs, notes_qs, documents_qs,
-        #                                   tax_slip_generated_qs, tax_slip_sendt_qs, final_settlement_generated_qs,
-        #                                   final_settlement_send_qs,
-        #                                   all=True).order_by('-history_date')
 
         return ctx
 
@@ -1620,13 +1626,15 @@ class FinalSettlementGenerateView(
         if self.object.tax_year.year_part != "genoptagelsesperiode":
             errors.append(
                 _(
-                    "Der kan kun genereres nye slutopgørelser hvis året er i genoptagelsesperioden"
+                    "Der kan kun genereres nye slutopgørelser hvis året er"
+                    " i genoptagelsesperioden"
                 )
             )
         if not self.object.slutlignet:
             errors.append(
                 _(
-                    "Der kan ikke genereres nye slutopgørelser, hvis der er ikke-slutlignede policer"
+                    "Der kan ikke genereres nye slutopgørelser, hvis der er"
+                    " ikke-slutlignede policer"
                 )
             )
         return errors
@@ -1672,7 +1680,8 @@ class MarkFinalSettlementAsInvalid(
             return HttpResponse(
                 status=400,
                 content=_(
-                    "Du kan kun markere slutopgørelser der ikke er afsendt som ugyldige."
+                    "Du kan kun markere slutopgørelser der ikke"
+                    " er afsendt som ugyldige."
                 ),
             )
         self.object.invalid = True
@@ -2051,7 +2060,7 @@ class LockDetailView(KasMixin, PermissionRequiredWithMessage, DetailView):
                     ]
                 )
             response = HttpResponse(
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"  # noqa
             )
             response["Content-Disposition"] = "attachment; filename={}".format(
                 "export.xlsx"

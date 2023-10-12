@@ -48,8 +48,8 @@ Lint Python:
     - pip3 install isort==5.12.0
     #- pip3 install -r django/requirements.txt
   script:
-    - flake8 --extend-ignore E501,E226,E203 kas/
-    - flake8 --extend-ignore E501,E226,E203 selvbetjening/
+    - flake8 --max-line-length 88 --exclude=tests,migrations,reportgeneration --extend-ignore E226,E203 kas/
+    - flake8 --max-line-length 88 --exclude=tests,migrations --extend-ignore E226,E203 selvbetjening/
     - black --check --diff --exclude=migrations kas/
     - black --check --diff --exclude=migrations selvbetjening/
     - isort -c --diff -l 88 --skip migrations kas/
