@@ -1234,6 +1234,7 @@ def import_spreadsheet_r75(job):
                             r75_ctl_sekvens_guid=uuid.uuid5(
                                 namespace=uuid_namespace, name=str(identifying_data)
                             ),
+                            r75_dato=date.today(),
                             **identifying_data,
                             defaults={
                                 "renteindtaegt": int(rowdata["PensionsOrdningBeløb"])
