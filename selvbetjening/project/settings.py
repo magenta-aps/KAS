@@ -195,8 +195,10 @@ SAML = {
     "debug": 1,
     "entityid": os.environ.get("SAML_SP_ENTITY_ID"),
     "idp_entity_id": os.environ.get("SAML_IDP_ENTITY_ID"),
-    "name": os.environ.get("SAML_SP_NAME") or "KAS",
-    "description": os.environ.get("SAML_SP_DESCRIPTION") or "Kapitalafkastskat",
+    "name": base64.b64encode((os.environ.get("SAML_SP_NAME") or "KAS").encode("utf-8")),
+    "description": base64.b64encode(
+        (os.environ.get("SAML_SP_DESCRIPTION") or "Kapitalafkastskat").encode("utf-8")
+    ),
     "verify_ssl_cert": False,
     "metadata_remote": os.environ.get("SAML_IDP_METADATA"),
     "metadata": {"local": ["/var/cache/kas/idp_metadata.xml"]},  # IdP Metadata
