@@ -1,3 +1,5 @@
+from rest_framework import serializers
+
 from kas.models import (
     PensionCompany,
     Person,
@@ -6,7 +8,6 @@ from kas.models import (
     PolicyTaxYear,
     TaxYear,
 )
-from rest_framework import serializers
 
 
 class PensionCompanySerializer(serializers.ModelSerializer):

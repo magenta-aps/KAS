@@ -1,5 +1,5 @@
-from requests import Session
 from django.conf import settings
+from requests import Session
 
 
 class DatafordelerClient(object):

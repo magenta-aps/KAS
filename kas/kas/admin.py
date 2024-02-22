@@ -7,12 +7,12 @@ from project.admin import kasadmin  # used by the administrator group
 
 from kas.models import (
     FinalSettlement,
-    TaxYear,
     Person,
     PersonTaxYear,
-    PolicyTaxYear,
     PolicyDocument,
+    PolicyTaxYear,
     TaxSlipGenerated,
+    TaxYear,
 )
 
 

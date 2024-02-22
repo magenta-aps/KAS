@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from django.conf import settings
 from django.core.files.base import ContentFile
 from fpdf import FPDF
-from django.conf import settings
-from kas.models import PolicyTaxYear, PersonTaxYear, TaxSlipGenerated
+
+from kas.models import PersonTaxYear, PolicyTaxYear, TaxSlipGenerated
 
 
 class TaxPDF(FPDF):

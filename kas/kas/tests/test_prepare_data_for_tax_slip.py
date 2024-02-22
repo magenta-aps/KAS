@@ -1,17 +1,19 @@
 import os
+import tempfile
 from builtins import len
+
+from django.conf import settings
 from django.test import TestCase
+
 from kas.models import (
-    TaxYear,
     PensionCompany,
     Person,
-    PolicyTaxYear,
     PersonTaxYear,
+    PolicyTaxYear,
     TaxSlipGenerated,
+    TaxYear,
 )
 from kas.reportgeneration.kas_report import TaxSlipHandling
-import tempfile
-from django.conf import settings
 
 
 class DeductionTest(TestCase):

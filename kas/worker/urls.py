@@ -1,11 +1,10 @@
 from django.urls import path
-
 from worker.views import (
+    JobDetailView,
+    JobListHtmxView,
     JobListTemplateView,
     JobTypeSelectFormView,
     StartJobView,
-    JobDetailView,
-    JobListHtmxView,
 )
 
 urlpatterns = [

@@ -3,12 +3,11 @@ import logging
 
 from django.conf import settings
 from django.forms import formset_factory
-from django.http import FileResponse
-from django.http import JsonResponse, HttpResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import redirect
-from django.template import Engine, Context
+from django.template import Context, Engine
 from django.urls import reverse
-from django.utils import translation, timezone
+from django.utils import timezone, translation
 from django.utils.datetime_safe import date
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
@@ -16,11 +15,11 @@ from django.utils.translation.trans_real import DjangoTranslation
 from django.views import View
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import FormView, TemplateView, RedirectView
+from django.views.generic import FormView, RedirectView, TemplateView
 from django.views.i18n import JavaScriptCatalog
 
 from selvbetjening.exceptions import PersonNotFoundException
-from selvbetjening.forms import PolicyForm, PersonTaxYearForm, RepresentationTokenForm
+from selvbetjening.forms import PersonTaxYearForm, PolicyForm, RepresentationTokenForm
 from selvbetjening.restclient import RestClient
 
 logger = logging.getLogger(__name__)

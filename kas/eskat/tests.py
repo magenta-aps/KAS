@@ -1,11 +1,11 @@
-from django.test import TestCase, override_settings
-
 import eskat.models as eskat_models
+from django.apps import apps
+from django.test import TestCase, override_settings
+from eskat.jobs import delete_protected
 from eskat.mockupdata import generate_persons
 from eskat.models import MockModels
-from kas.models import Person, PersonTaxYear, TaxYear, PolicyDocument
-from eskat.jobs import delete_protected
-from django.apps import apps
+
+from kas.models import Person, PersonTaxYear, PolicyDocument, TaxYear
 
 
 class EskatModelsTestCase(TestCase):

@@ -1,10 +1,9 @@
 from django.urls import path
-
 from prisme.views import (
-    Prisme10QBatchListView,
-    Prisme10QBatchView,
     Prisme10QBatchDownloadView,
+    Prisme10QBatchListView,
     Prisme10QBatchSendView,
+    Prisme10QBatchView,
 )
 
 app_name = "prisme"

@@ -5,20 +5,18 @@ from django.conf import settings
 from django.core.management import call_command
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
-
 from eskat.mockupdata import generate_persons
 from eskat.models import (
+    ImportedKasBeregningerX,
+    ImportedR75PrivatePension,
+    MockKasBeregningerX,
     MockModels,
     get_kas_beregninger_x_model,
-    ImportedKasBeregningerX,
-    MockKasBeregningerX,
-    ImportedR75PrivatePension,
 )
-from kas.models import TaxYear
 from worker.job_registry import resolve_job_function
-from worker.models import job_decorator, Job
+from worker.models import Job, job_decorator
 
-from kas.models import PersonTaxYear
+from kas.models import PersonTaxYear, TaxYear
 
 rate_text = (
     "Pigisanit pissarsiat ilaasa akileraaruserneqartarnerat pil-\n"

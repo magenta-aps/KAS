@@ -1,7 +1,8 @@
 from django.db.models import Q
-from django_filters import FilterSet, CharFilter, ModelChoiceFilter
-from kas.models import Lock, TaxYear
+from django_filters import CharFilter, FilterSet, ModelChoiceFilter
+
 from kas.forms_mixin import BootstrapForm
+from kas.models import Lock, TaxYear
 
 
 class PensionCompanyFilterSet(FilterSet):

@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-from django.core.management.base import BaseCommand
-from django.conf import settings
-from kas.models import PensionCompany
-
 import csv
 import os
+
+from django.conf import settings
+from django.core.management.base import BaseCommand
+
+from kas.models import PensionCompany
 
 KAS_DIR = os.path.join(settings.BASE_DIR, "kas")
 DATA_DIR = os.path.join(KAS_DIR, "data")

@@ -3,96 +3,106 @@ import os
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView
 from django.contrib.contenttypes.models import ContentType
-from django.db import models, transaction
-from django.db.models import Count, F, Q, Min, FilteredRelation, Sum
-from django.http import Http404, HttpResponse, HttpResponseRedirect, FileResponse
 from django.core.exceptions import SuspiciousOperation
-from django.db.models import Case, Value, When
+from django.db import models, transaction
+from django.db.models import (
+    BooleanField,
+    Case,
+    Count,
+    ExpressionWrapper,
+    F,
+    FilteredRelation,
+    Min,
+    Q,
+    Sum,
+    Value,
+    When,
+)
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from django.views.generic import (
-    TemplateView,
-    ListView,
-    View,
-    UpdateView,
     CreateView,
     FormView,
+    ListView,
     RedirectView,
+    TemplateView,
+    UpdateView,
+    View,
 )
-from django.views.generic.detail import DetailView, SingleObjectMixin, BaseDetailView
+from django.views.generic.detail import BaseDetailView, DetailView, SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
-from django.db.models import BooleanField, ExpressionWrapper
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from ipware import get_client_ip
-from kas.filters import PensionCompanyFilterSet, LockFilterSet
+from openpyxl import Workbook
+from prisme.models import Prisme10QBatch, Transaction
+from project.view_mixins import (
+    PermissionRequiredWithMessage,
+    administrator_required,
+    sagsbehandler_or_administrator_or_borgerservice_required,
+    sagsbehandler_or_administrator_required,
+)
+from worker.models import Job
+
+from kas.filters import LockFilterSet, PensionCompanyFilterSet
 from kas.forms import (
-    PersonListFilterForm,
-    SelfReportedAmountForm,
-    EditAmountsUpdateForm,
-    PensionCompanySummaryFileForm,
     CreatePolicyTaxYearForm,
-    PolicyTaxYearActivationForm,
-    PolicyNotesAndAttachmentForm,
-    PersonNotesAndAttachmentForm,
-    PaymentOverrideUpdateForm,
-    PolicyListFilterForm,
+    EditAmountsUpdateForm,
+    EfterbehandlingForm,
     FinalStatementForm,
+    NoteUpdateForm,
+    PaymentOverrideUpdateForm,
+    PensionCompanyMergeForm,
+    PensionCompanyModelForm,
+    PensionCompanySummaryFileForm,
+    PersonListFilterForm,
+    PersonListFilterFormEskatDiff,
+    PersonNotesAndAttachmentForm,
+    PolicyListFilterForm,
+    PolicyNotesAndAttachmentForm,
+    PolicyTaxYearActivationForm,
     PolicyTaxYearCompanyForm,
     PolicyTaxYearNumberForm,
-    PensionCompanyModelForm,
-    PensionCompanyMergeForm,
-    NoteUpdateForm,
-    UploadExistingFinalSettlementForm,
     PreviousYearNegativePayoutForm,
-    EfterbehandlingForm,
-    PersonListFilterFormEskatDiff,
+    SelfReportedAmountForm,
+    UploadExistingFinalSettlementForm,
+)
+from kas.jobs import (
+    dispatch_final_settlement,
+    generate_pension_company_summary_file,
+    import_mandtal,
+    merge_pension_companies,
 )
 from kas.models import (
+    Agterskrivelse,
+    FinalSettlement,
+    Lock,
+    Note,
+    PensionCompany,
     PensionCompanySummaryFile,
     PensionCompanySummaryFileDownload,
-    Note,
-    TaxYear,
-    PersonTaxYear,
-    PolicyTaxYear,
-    TaxSlipGenerated,
-    PolicyDocument,
-    FinalSettlement,
-    PensionCompany,
-    RepresentationToken,
     Person,
-    Lock,
-    Agterskrivelse,
+    PersonTaxYear,
+    PolicyDocument,
+    PolicyTaxYear,
     PreviousYearNegativePayout,
+    RepresentationToken,
+    TaxSlipGenerated,
+    TaxYear,
 )
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.view_mixins import (
     CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear,
     HighestSingleObjectMixin,
-    SpecialExcelMixin,
     KasMixin,
-)
-from openpyxl import Workbook
-from prisme.models import Transaction, Prisme10QBatch
-from project.view_mixins import (
-    sagsbehandler_or_administrator_required,
-    sagsbehandler_or_administrator_or_borgerservice_required,
-    PermissionRequiredWithMessage,
-    administrator_required,
-)
-from worker.models import Job
-
-from kas.jobs import (
-    dispatch_final_settlement,
-    import_mandtal,
-    merge_pension_companies,
-    generate_pension_company_summary_file,
+    SpecialExcelMixin,
 )
 
 

@@ -8,7 +8,9 @@ from django.urls import reverse
 from django.utils import formats
 from django.utils.formats import date_format
 from django.utils.http import urlencode
-from django.utils.translation import to_locale, get_language, gettext as _
+from django.utils.translation import get_language
+from django.utils.translation import gettext as _
+from django.utils.translation import to_locale
 from django.views.generic import ListView
 from django.views.generic.detail import SingleObjectMixin
 from openpyxl import Workbook

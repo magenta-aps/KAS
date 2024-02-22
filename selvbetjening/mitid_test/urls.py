@@ -1,6 +1,5 @@
-from mitid_test import views
 from django.urls import path
-
+from mitid_test import views
 
 app_name = "mitid_test"
 

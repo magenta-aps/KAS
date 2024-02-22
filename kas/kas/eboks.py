@@ -1,12 +1,13 @@
-import requests
-from requests.exceptions import HTTPError
 import urllib
 import urllib.parse
-from uuid import uuid4
-from lxml import etree
-from django.conf import settings
-from time import sleep
 from dataclasses import dataclass
+from time import sleep
+from uuid import uuid4
+
+import requests
+from django.conf import settings
+from lxml import etree
+from requests.exceptions import HTTPError
 
 
 class EboksDispatchGenerator(object):

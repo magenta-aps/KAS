@@ -1,4 +1,5 @@
-from datetime import datetime, date, timezone
+from datetime import date, datetime, timezone
+
 from django.test import TestCase
 from tenQ.writer import TenQTransactionWriter
 

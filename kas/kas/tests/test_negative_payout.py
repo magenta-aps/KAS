@@ -7,12 +7,12 @@ from django.test import TestCase
 from django.urls import reverse
 
 from kas.models import (
-    TaxYear,
     PensionCompany,
     Person,
-    PolicyTaxYear,
     PersonTaxYear,
+    PolicyTaxYear,
     PreviousYearNegativePayout,
+    TaxYear,
 )
 
 

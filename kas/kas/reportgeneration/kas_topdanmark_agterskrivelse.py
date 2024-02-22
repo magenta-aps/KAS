@@ -5,8 +5,9 @@ from django.core.files.base import ContentFile
 from django.utils import translation
 from django.utils.translation import gettext as _
 from fpdf import FPDF
-from kas.models import PersonTaxYear, PolicyTaxYear, Agterskrivelse
 from project.utils import first_not_none
+
+from kas.models import Agterskrivelse, PersonTaxYear, PolicyTaxYear
 
 
 class AgterskrivelsePDF(FPDF):

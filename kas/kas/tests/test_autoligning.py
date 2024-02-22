@@ -7,18 +7,18 @@ from fakeredis import FakeStrictRedis
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 from rq import Queue
+from worker.models import Job
 
 from kas.jobs import autoligning
 from kas.models import (
-    TaxYear,
+    Note,
+    PensionCompany,
     Person,
     PersonTaxYear,
-    PensionCompany,
-    PolicyTaxYear,
-    Note,
     PolicyDocument,
+    PolicyTaxYear,
+    TaxYear,
 )
-from worker.models import Job
 
 
 class AutoligningTestCase(TestCase):
