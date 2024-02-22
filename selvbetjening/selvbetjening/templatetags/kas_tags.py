@@ -39,7 +39,7 @@ def format(text, params):
             params = jsonlib.loads(params)
         for key in params:
             value = params[key]
-            if type(value) == tuple:
+            if type(value) is tuple:
                 # If a value is a tuple, it must be (message:string, params:dict,)
                 value = format(value[0], value[1])
             else:
@@ -61,12 +61,12 @@ def analyze(data):
 
 @register.filter
 def startswith(text, prefix):
-    return type(text) == str and text.startswith(prefix)
+    return type(text) is str and text.startswith(prefix)
 
 
 @register.filter
 def after(text, prefix):
-    if type(text) == str:
+    if type(text) is str:
         try:
             return text[text.index(prefix) + len(prefix) :]
         except ValueError:
@@ -97,7 +97,7 @@ def urlparam(url, param):
 @register.filter
 def get(item, attribute):
     if item is not None:
-        if type(attribute) == str:
+        if type(attribute) is str:
             if hasattr(item, attribute):
                 return getattr(item, attribute)
             if hasattr(item, "get"):
