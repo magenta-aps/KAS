@@ -1138,7 +1138,7 @@ def import_spreadsheet_r75(job):
                         value = get_formatted_cell_value(cell)
                         if colindex < len(title_fields):
                             fieldname = title_fields[colindex]
-                            if type(value) == str and value.strip() == "":
+                            if type(value) is str and value.strip() == "":
                                 value = None
                             if value is not None:
                                 expected_type = spreadsheet_fields.get(fieldname)

@@ -27,7 +27,7 @@ def make_tuple(value1, value2):
 @register.filter
 def get(item, attribute):
     if item is not None:
-        if type(attribute) == str:
+        if type(attribute) is str:
             if hasattr(item, attribute):
                 return getattr(item, attribute)
             if hasattr(item, "get"):

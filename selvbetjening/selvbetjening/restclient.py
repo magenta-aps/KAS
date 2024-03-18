@@ -96,11 +96,11 @@ class RestClient(object):
     def get_policies(self, **params):
         policies = self.get("policy_tax_year", **params)
         for p in policies:
-            if type(p["person_tax_year"]) == int:
+            if type(p["person_tax_year"]) is int:
                 p["person_tax_year"] = self.get_person_tax_year_by_id(
                     p["person_tax_year"]
                 )
-            if type(p["pension_company"]) == int:
+            if type(p["pension_company"]) is int:
                 p["pension_company"] = self.get_pension_company_by_id(
                     p["pension_company"]
                 )

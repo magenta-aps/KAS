@@ -354,7 +354,7 @@ class TaxFinalStatementPDF(FPDF):
     # since greenlandic formats and translations have not been implemented.
     @staticmethod
     def format_date(date_or_datetime, language):
-        if type(date_or_datetime) == datetime.datetime:
+        if type(date_or_datetime) is datetime.datetime:
             date = date_or_datetime.date()
         else:
             date = date_or_datetime

@@ -53,9 +53,9 @@ class RestTest(TestCase):
 
     @staticmethod
     def strip_id(item):
-        if type(item) == list:
+        if type(item) is list:
             return [RestTest.strip_id(i) for i in item]
-        if type(item) == dict and "id" in item:
+        if type(item) is dict and "id" in item:
             del item["id"]
         return item
 
