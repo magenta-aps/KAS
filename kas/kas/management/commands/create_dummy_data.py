@@ -1,13 +1,14 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
-
-from eskat.jobs import generate_sample_data
-from eskat.jobs import importere_kas_beregninger_for_legacy_years
-from kas.jobs import import_r75
-from kas.jobs import import_mandtal
-from kas.jobs import generate_pseudo_settlements_and_transactions_for_legacy_years
+from eskat.jobs import generate_sample_data, importere_kas_beregninger_for_legacy_years
 from worker.models import Job
-from django.conf import settings
+
+from kas.jobs import (  # isort: skip
+    generate_pseudo_settlements_and_transactions_for_legacy_years,
+    import_mandtal,
+    import_r75,
+)
 
 
 class Command(BaseCommand):
@@ -25,7 +26,6 @@ class Command(BaseCommand):
             admin_user,
         )
 
-        # Run jobs specified in https://git.magenta.dk/gronlandsprojekter/kas/-/merge_requests/355
         for year in [2018, 2019]:
             # Import mandtal
             prev = Job.schedule_job(

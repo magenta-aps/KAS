@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-29 12:32+0200\n"
+"POT-Creation-Date: 2024-02-22 10:58+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -90,6 +90,10 @@ msgid "Generering af KAS slutopgørelser for et givet år"
 msgstr ""
 
 #: worker/job_registry.py
+msgid "Generering af årssummationsfil for et pensionsselskab"
+msgstr ""
+
+#: worker/job_registry.py
 msgid "Generering af Transaktioner og batch for et givent år"
 msgstr ""
 
@@ -115,6 +119,10 @@ msgstr ""
 
 #: worker/job_registry.py
 msgid "Generering af pseudo slutopgørelser (2018/2019)"
+msgstr ""
+
+#: worker/job_registry.py
+msgid "Import af data fra R75 i regneark"
 msgstr ""
 
 #: worker/job_registry.py
@@ -223,8 +231,8 @@ msgid ""
 "        Med knappen \"Start nyt job\" kan der påbegyndes en ny jobkørsel, "
 "som foretager en længerevarende operation på de data der ligger i systemet, "
 "som f.eks. autoligning eller oprettelse af selvangivelser.\n"
-"        Yderligere information kan findes i <a href=\"%(link)s"
-"\">Overbliksmanualen</a>"
+"        Yderligere information kan findes i <a "
+"href=\"%(link)s\">Overbliksmanualen</a>"
 msgstr ""
 
 #: worker/templates/worker/job_list.html

@@ -1,11 +1,11 @@
 from django.urls import path
 
-from worker.views import (
+from worker.views import (  # isort: skip
+    JobDetailView,
+    JobListHtmxView,
     JobListTemplateView,
     JobTypeSelectFormView,
     StartJobView,
-    JobDetailView,
-    JobListHtmxView,
 )
 
 urlpatterns = [

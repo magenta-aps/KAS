@@ -3,92 +3,109 @@ import os
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView
 from django.contrib.contenttypes.models import ContentType
-from django.db import models, transaction
-from django.db.models import Count, F, Q, Min, FilteredRelation, Sum
-from django.http import Http404, HttpResponse, HttpResponseRedirect, FileResponse
 from django.core.exceptions import SuspiciousOperation
-from django.db.models import Case, Value, When
+from django.db import models, transaction
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
-from django.views.generic import (
-    TemplateView,
-    ListView,
-    View,
-    UpdateView,
-    CreateView,
-    FormView,
-    RedirectView,
-)
-from django.views.generic.detail import DetailView, SingleObjectMixin, BaseDetailView
+from django.views.generic.detail import BaseDetailView, DetailView, SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
-from django.db.models import BooleanField, ExpressionWrapper
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from ipware import get_client_ip
-from kas.filters import PensionCompanyFilterSet, LockFilterSet
-from kas.forms import (
-    PersonListFilterForm,
-    SelfReportedAmountForm,
-    EditAmountsUpdateForm,
-    PensionCompanySummaryFileForm,
-    CreatePolicyTaxYearForm,
-    PolicyTaxYearActivationForm,
-    PolicyNotesAndAttachmentForm,
-    PersonNotesAndAttachmentForm,
-    PaymentOverrideUpdateForm,
-    PolicyListFilterForm,
-    FinalStatementForm,
-    PolicyTaxYearCompanyForm,
-    PolicyTaxYearNumberForm,
-    PensionCompanyModelForm,
-    PensionCompanyMergeForm,
-    NoteUpdateForm,
-    UploadExistingFinalSettlementForm,
-    PreviousYearNegativePayoutForm,
-    EfterbehandlingForm,
-    PersonListFilterFormEskatDiff,
-)
-from kas.models import (
-    PensionCompanySummaryFile,
-    PensionCompanySummaryFileDownload,
-    Note,
-    TaxYear,
-    PersonTaxYear,
-    PolicyTaxYear,
-    TaxSlipGenerated,
-    PolicyDocument,
-    FinalSettlement,
-    PensionCompany,
-    RepresentationToken,
-    Person,
-    Lock,
-    Agterskrivelse,
-    PreviousYearNegativePayout,
-)
-from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
-from kas.view_mixins import (
-    CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear,
-    HighestSingleObjectMixin,
-    SpecialExcelMixin,
-    KasMixin,
-)
 from openpyxl import Workbook
-from prisme.models import Transaction, Prisme10QBatch
-from project.view_mixins import (
-    sagsbehandler_or_administrator_required,
-    sagsbehandler_or_administrator_or_borgerservice_required,
-    PermissionRequiredWithMessage,
-    administrator_required,
-)
+from prisme.models import Prisme10QBatch, Transaction
 from worker.models import Job
 
-from kas.jobs import dispatch_final_settlement, import_mandtal, merge_pension_companies
+from kas.filters import LockFilterSet, PensionCompanyFilterSet
+from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
+
+from django.db.models import (  # isort: skip
+    BooleanField,
+    Case,
+    Count,
+    ExpressionWrapper,
+    F,
+    FilteredRelation,
+    Min,
+    Q,
+    Sum,
+    Value,
+    When,
+)
+from django.views.generic import (  # isort: skip
+    CreateView,
+    FormView,
+    ListView,
+    RedirectView,
+    TemplateView,
+    UpdateView,
+    View,
+)
+from project.view_mixins import (  # isort: skip
+    PermissionRequiredWithMessage,
+    administrator_required,
+    sagsbehandler_or_administrator_or_borgerservice_required,
+    sagsbehandler_or_administrator_required,
+)
+
+from kas.forms import (  # isort: skip
+    CreatePolicyTaxYearForm,
+    EditAmountsUpdateForm,
+    EfterbehandlingForm,
+    FinalStatementForm,
+    NoteUpdateForm,
+    PaymentOverrideUpdateForm,
+    PensionCompanyMergeForm,
+    PensionCompanyModelForm,
+    PensionCompanySummaryFileForm,
+    PersonListFilterForm,
+    PersonListFilterFormEskatDiff,
+    PersonNotesAndAttachmentForm,
+    PolicyListFilterForm,
+    PolicyNotesAndAttachmentForm,
+    PolicyTaxYearActivationForm,
+    PolicyTaxYearCompanyForm,
+    PolicyTaxYearNumberForm,
+    PreviousYearNegativePayoutForm,
+    SelfReportedAmountForm,
+    UploadExistingFinalSettlementForm,
+)
+from kas.jobs import (  # isort: skip
+    dispatch_final_settlement,
+    generate_pension_company_summary_file,
+    import_mandtal,
+    merge_pension_companies,
+)
+from kas.models import (  # isort: skip
+    Agterskrivelse,
+    FinalSettlement,
+    Lock,
+    Note,
+    PensionCompany,
+    PensionCompanySummaryFile,
+    PensionCompanySummaryFileDownload,
+    Person,
+    PersonTaxYear,
+    PolicyDocument,
+    PolicyTaxYear,
+    PreviousYearNegativePayout,
+    RepresentationToken,
+    TaxSlipGenerated,
+    TaxYear,
+)
+from kas.view_mixins import (  # isort: skip
+    CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear,
+    HighestSingleObjectMixin,
+    KasMixin,
+    SpecialExcelMixin,
+)
 
 
 class StatisticsView(KasMixin, PermissionRequiredWithMessage, TemplateView):
@@ -411,10 +428,11 @@ class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
             if hasattr(form, "cleaned_data"):
                 # A value is corrected by a user if:
                 #   - there is a high NEGATIVE amount registered in R75
-                #   - There is an equally high POSITIVE amount registered on the same policy
-                # We need to be able to filter for this, becuase eskat does not handle
-                # cases like this properly; Eskat does not subtract negative values found
-                # in R75 pension data.
+                #   - There is an equally high POSITIVE amount registered on
+                #     the same policy
+                # We need to be able to filter for this, because eskat does not handle
+                # cases like this properly; Eskat does not subtract negative values
+                # found in R75 pension data.
                 corrected = form.cleaned_data["edited_by_user"]
 
                 if corrected is not None:
@@ -431,7 +449,8 @@ class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
                 if future_r75_data is not None:
                     qs = qs.filter(future_r75_data=future_r75_data)
 
-        # find persontaxyears hvor FinalSettlement.pseudo_amount != ImportedKasBeregningerX.capital_return_tax
+        # find persontaxyears hvor
+        # FinalSettlement.pseudo_amount != ImportedKasBeregningerX.capital_return_tax
 
         qs = qs.annotate(
             pseudo_settlement=FilteredRelation(
@@ -460,7 +479,8 @@ class PersonTaxYearEskatDiffListView(PersonTaxYearSpecialListView):
         qs = qs.annotate(difference=F("pseudo_amount") - F("capital_return_tax"))
 
         # Note: 'efterbehandling' already exists as a property method.
-        # But we need an annotated twin of it, because decorated properties cannot be queried.
+        # But we need an annotated twin of it, because decorated properties
+        # cannot be queried.
         qs = qs.annotate(
             efterbehandling_annotation=ExpressionWrapper(
                 Q(efterbehandling_count__gt=0), output_field=BooleanField()
@@ -1054,23 +1074,27 @@ class EditAmountsUpdateView(
             **{
                 **kwargs,
                 "text_after_form": _(
-                    "Bemærk at Selvangivet beløb og Ansat beløb ikke bliver justeret for antal skattedage i året; det antages at beløbene allerede er justerede"
+                    "Bemærk at Selvangivet beløb og Ansat beløb ikke bliver"
+                    " justeret for antal skattedage i året; det antages at"
+                    " beløbene allerede er justerede"
                 ),
             }
         )
 
     def get_form_kwargs(self):
-        # Always set the base_calculation_amount through the get_base_calculation_amount priorities
+        # Always set the base_calculation_amount through the
+        # get_base_calculation_amount priorities
         self.object.base_calculation_amount = self.object.get_base_calculation_amount()
         if self.object.prefilled_amount_edited is None:
-            # Fill out prefilled_amount_edited since we are not allowed to change prefilled_amount.
+            # Fill out prefilled_amount_edited since we are not allowed to
+            # change prefilled_amount.
             self.object.prefilled_amount_edited = self.object.prefilled_amount
         return super(EditAmountsUpdateView, self).get_form_kwargs()
 
     def form_valid(self, form):
         if self.has_changes or form.changed_data:
-            # if the formsets or the form has changes we need to set efterbehandling=True
-            # unless slutlignet=True
+            # if the formsets or the form has changes we need to set
+            # efterbehandling=True unless slutlignet=True
             self.object = form.save(False)
             if self.object.slutlignet:
                 # always clear efterbehandling when slutlignet is set
@@ -1078,7 +1102,8 @@ class EditAmountsUpdateView(
             else:
                 self.object.efterbehandling = True
                 # super handles saving of the object
-            # When selfreported amount is being used, make sure to set active_amount accordingly
+            # When selfreported amount is being used, make sure to set
+            # active_amount accordingly
             if self.object.assessed_amount is None:
                 if self.object.self_reported_amount is not None:
                     self.object.active_amount = (
@@ -1167,6 +1192,13 @@ class PensionCompanySummaryFileView(
 
     def get_context_data(self, **kwargs):
         self.object = self.get_object()
+        summaryfiles = PensionCompanySummaryFile.objects.filter(tax_year=self.object)
+        summaryjobs = Job.objects.filter(
+            job_type="GeneratePensionCompanySummary",
+            arguments__year__eq=self.object.year,
+        ).annotate(created=F("created_at"))
+        all_objects = [*summaryfiles, *summaryjobs]
+        all_objects.sort(key=lambda e: e.created.timestamp())
         return super().get_context_data(
             **{
                 "object_list": PensionCompanySummaryFile.objects.filter(
@@ -1175,6 +1207,7 @@ class PensionCompanySummaryFileView(
                 "years": TaxYear.objects.values_list("year", flat=True).order_by(
                     "-year"
                 ),
+                "all_objects": all_objects,
                 **kwargs,
             }
         )
@@ -1186,13 +1219,18 @@ class PensionCompanySummaryFileView(
 
     def form_valid(self, form):
         self.object = self.get_object()
-        file_entry = PensionCompanySummaryFile.create(
-            form.cleaned_data["pension_company"], self.object, self.request.user
+
+        Job.schedule_job(
+            generate_pension_company_summary_file,
+            job_type="GeneratePensionCompanySummary",
+            created_by=self.request.user,
+            job_kwargs={
+                "pension_company": form.data["pension_company"],
+                "year": str(self.object),
+            },
         )
-        # Instruct the client to download the file after refreshing the page
-        return HttpResponseRedirect(
-            self.get_success_url() + f"?download={file_entry.id}"
-        )
+
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class PensionCompanySummaryFileDownloadView(
@@ -1407,9 +1445,12 @@ class PersonTaxYearHistoryListView(KasMixin, PermissionRequiredWithMessage, Deta
             )
         )
 
-        # It appears that queryset.union() doesn't give the correct output, specifically putting values under the wrong keys
-        # e.g. putting the `klass` value under the `updated_by` key for items from _some_ querysets
-        # So instead we extract the values from each queryset and join them together in code
+        # It appears that queryset.union() doesn't give the correct output,
+        # specifically putting values under the wrong keys.
+        # e.g. putting the `klass` value under the `updated_by` key for items
+        # from _some_ querysets
+        # So instead we extract the values from each queryset and join them together
+        # in code
         items = []
         keys = (
             "history_date",
@@ -1435,11 +1476,6 @@ class PersonTaxYearHistoryListView(KasMixin, PermissionRequiredWithMessage, Deta
                 items.append({key: obj[index] for index, key in enumerate(keys)})
         items.sort(key=lambda item: item["history_date"], reverse=True)
         ctx["objects"] = items
-
-        #         ctx['objects'] = qs.union(policy_qs, person_qs, notes_qs, documents_qs,
-        #                                   tax_slip_generated_qs, tax_slip_sendt_qs, final_settlement_generated_qs,
-        #                                   final_settlement_send_qs,
-        #                                   all=True).order_by('-history_date')
 
         return ctx
 
@@ -1576,29 +1612,34 @@ class FinalSettlementGenerateView(
         self.object = self.get_object()
         return super(FinalSettlementGenerateView, self).post(request, *args, **kwargs)
 
-    def form_valid(self, form):
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(
+            **{**kwargs, "errors": self.get_object_errors()}
+        )
+
+    def get_object_errors(self):
+        errors = []
         if not self.object.policytaxyear_set.exists():
-            return HttpResponse(
-                status=400,
-                content=_(
-                    "Der skal mindst være én police for at generere en slutopgørelse"
-                ),
+            errors.append(
+                _("Der skal mindst være én police for at generere en slutopgørelse")
             )
         if self.object.tax_year.year_part != "genoptagelsesperiode":
-            return HttpResponse(
-                status=400,
-                content=_(
-                    "Der kan kun genereres nye slutopgørelser hvis året er i genoptagelsesperioden"
-                ),
+            errors.append(
+                _(
+                    "Der kan kun genereres nye slutopgørelser hvis året er"
+                    " i genoptagelsesperioden"
+                )
             )
         if not self.object.slutlignet:
-            return HttpResponse(
-                status=400,
-                content=_(
-                    "Der kan ikke genereres nye slutopgørelser, hvis der er ikke-slutlignede policer"
-                ),
+            errors.append(
+                _(
+                    "Der kan ikke genereres nye slutopgørelser, hvis der er"
+                    " ikke-slutlignede policer"
+                )
             )
+        return errors
 
+    def form_valid(self, form):
         final_statement = TaxFinalStatementPDF.generate_pdf(
             person_tax_year=self.object, **form.cleaned_data
         )
@@ -1639,7 +1680,8 @@ class MarkFinalSettlementAsInvalid(
             return HttpResponse(
                 status=400,
                 content=_(
-                    "Du kan kun markere slutopgørelser der ikke er afsendt som ugyldige."
+                    "Du kan kun markere slutopgørelser der ikke"
+                    " er afsendt som ugyldige."
                 ),
             )
         self.object.invalid = True
@@ -2018,7 +2060,7 @@ class LockDetailView(KasMixin, PermissionRequiredWithMessage, DetailView):
                     ]
                 )
             response = HttpResponse(
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"  # noqa
             )
             response["Content-Disposition"] = "attachment; filename={}".format(
                 "export.xlsx"

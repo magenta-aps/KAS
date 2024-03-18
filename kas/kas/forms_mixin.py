@@ -1,4 +1,4 @@
-from django.forms import Form, CheckboxInput, RadioSelect, FileInput
+from django.forms import CheckboxInput, FileInput, Form, RadioSelect
 
 
 class BootstrapForm(Form):
@@ -16,7 +16,9 @@ class BootstrapForm(Form):
 
     def as_table(self):
         return self._html_output(
-            normal_row="<tr%(html_class_attr)s><th>%(label)s</th><td>%(field)s%(help_text)s</td><td>%(errors)s</td></tr>",
+            # TODO: This should really be in a template.
+            normal_row="<tr%(html_class_attr)s><th>%(label)s</th><td>%"
+            + "(field)s%(help_text)s</td><td>%(errors)s</td></tr>",
             error_row='<tr><td colspan="3">%s</td></tr>',
             row_ender="</td></tr>",
             help_text_html='<small class="form-text text-muted mb-2 ml-1">%s</small>',

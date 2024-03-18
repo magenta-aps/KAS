@@ -1,6 +1,7 @@
 import uuid
 
 from eskat.models import MockModels
+
 from kas.models import TaxYear
 
 unique_res_counter = 0
@@ -261,7 +262,7 @@ def generate_persons():
         adresselinje4="3900 Nuuk",
         policies=[
             {
-                "res": 19676889,
+                "res": 19625087,
                 "years": {
                     2021: 3000,
                     2022: 3000,

@@ -1,30 +1,30 @@
 from datetime import timedelta
+
+import requests
 from django.conf import settings
 from django.db.models import Prefetch
-from django.http import HttpResponse, FileResponse, HttpResponseBadRequest, JsonResponse
-from django.shortcuts import Http404
-from django_filters import rest_framework as filters
-from rest_framework import routers, viewsets
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.views import APIView
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
+from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.shortcuts import Http404, redirect
 from django.utils import timezone
-import requests
-from django.shortcuts import redirect
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django_filters import rest_framework as filters
+from project.renders import PdfProxyRender
+from rest_framework import routers, viewsets
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.views import APIView
 
-
-from kas.models import (
+from kas.models import (  # isort: skip
+    FinalSettlement,
     PensionCompany,
     Person,
     PersonTaxYear,
     PolicyDocument,
     PolicyTaxYear,
-    TaxYear,
-    FinalSettlement,
     RepresentationToken,
+    TaxYear,
 )
-from kas.serializers import (
+from kas.serializers import (  # isort: skip
     PensionCompanySerializer,
     PersonSerializer,
     PersonTaxYearSerializer,
@@ -32,7 +32,6 @@ from kas.serializers import (
     PolicyTaxYearSerializer,
     TaxYearSerializer,
 )
-from project.renders import PdfProxyRender
 
 
 class TaxYearFilter(filters.FilterSet):
@@ -139,7 +138,8 @@ class CurrentFinalSettlementExistsView(APIView):
             return None
 
     def get_remote_href(self):
-        # Når vi får info om urls for slutopgørelser fra skattestyrelsen skal denne genbesøges
+        # Når vi får info om urls for slutopgørelser fra Skattestyrelsen skal
+        # denne genbesøges
         # TODO: use correct url
         return None
 

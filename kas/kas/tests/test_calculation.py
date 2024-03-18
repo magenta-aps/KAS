@@ -6,25 +6,25 @@ import django_rq
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.test import TestCase
-from django.test import override_settings
+from django.test import TestCase, override_settings
 from eskat.jobs import generate_sample_data
 from fakeredis import FakeStrictRedis
-from kas.models import PersonTaxYearCensus
-from kas.models import (
-    PolicyTaxYear,
-    PersonTaxYear,
-    TaxYear,
-    Person,
-    PensionCompany,
-    FinalSettlement,
-)
-from kas.tests.test_mixin import create_admin_user
-from prisme.models import Transaction, Prisme10QBatch
+from prisme.models import Prisme10QBatch, Transaction
 from rq import Queue
 from worker.models import Job
 
 from kas.jobs import import_mandtal
+from kas.tests.test_mixin import create_admin_user
+
+from kas.models import (  # isort: skip
+    FinalSettlement,
+    PensionCompany,
+    Person,
+    PersonTaxYear,
+    PersonTaxYearCensus,
+    PolicyTaxYear,
+    TaxYear,
+)
 
 
 @override_settings(FEATURE_FLAGS={"enable_dafo_override_of_address": False})

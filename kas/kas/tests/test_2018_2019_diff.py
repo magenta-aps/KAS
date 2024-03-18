@@ -1,21 +1,23 @@
-import pandas as pd
 import io
+import uuid
+
+import pandas as pd
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
-import uuid
+from eskat.models import ImportedKasBeregningerX
 
-from kas.models import (
-    TaxYear,
+from kas.views import PersonTaxYearEskatDiffListView
+
+from kas.models import (  # isort: skip
+    FinalSettlement,
     PensionCompany,
     Person,
-    PolicyTaxYear,
     PersonTaxYear,
-    FinalSettlement,
+    PolicyTaxYear,
+    TaxYear,
 )
-from eskat.models import ImportedKasBeregningerX
-from kas.views import PersonTaxYearEskatDiffListView
 
 
 class BaseTestCase(TestCase):

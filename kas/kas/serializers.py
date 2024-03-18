@@ -1,4 +1,6 @@
-from kas.models import (
+from rest_framework import serializers
+
+from kas.models import (  # isort: skip
     PensionCompany,
     Person,
     PersonTaxYear,
@@ -6,7 +8,6 @@ from kas.models import (
     PolicyTaxYear,
     TaxYear,
 )
-from rest_framework import serializers
 
 
 class PensionCompanySerializer(serializers.ModelSerializer):
@@ -112,7 +113,8 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
         ]
         depth = 2
 
-    # Explicitly define this to be required; PolicyTaxYears may have this empty in the DB, but we don't accept incoming objects without it
+    # Explicitly define this to be required; PolicyTaxYears may have this
+    # empty in the DB, but we don't accept incoming objects without it.
     self_reported_amount = serializers.IntegerField(required=True)
 
     person_tax_year = serializers.PrimaryKeyRelatedField(
@@ -121,7 +123,8 @@ class PolicyTaxYearSerializer(serializers.ModelSerializer):
     pension_company = serializers.PrimaryKeyRelatedField(
         queryset=PensionCompany.objects.all()
     )
-    # Serializer based on the prefetch defined in the viewset. "documents" must match the prefetch to_attr
+    # Serializer based on the prefetch defined in the viewset.
+    # "documents" must match the prefetch to_attr
     documents = PolicyDocumentSerializer(many=True, required=False, allow_null=True)
 
     def get_citizen_documents(self, policy_tax_year):

@@ -1,4 +1,4 @@
-from functools import wraps, cached_property
+from functools import cached_property, wraps
 from logging import getLogger
 from uuid import uuid4
 
@@ -6,7 +6,7 @@ import django_rq
 import redis
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db import transaction, models
+from django.db import models, transaction
 from django.db.models import JSONField
 from django.utils import timezone
 from django.utils.datetime_safe import datetime
@@ -133,10 +133,11 @@ class Job(models.Model):
         :param job_kwargs: kwargs to pass to the job
         :param job_type: used to indicate the job type
         :param queue: queue to schedule the function to
-        :param parent the parent job that created this child job. Only used when spawning new jobs insides the job function.
+        :param parent the parent job that created this child job. Only used
+        when spawning new jobs insides the job function.
         :param depends_on: Makes a job wait until the depending job is finished.
-        result ttl no point in storing the result value in redis when we use this model to track state and we dont use
-        result values.
+        result ttl no point in storing the result value in redis when we use
+        this model to track state and we dont use result values.
         """
         if job_kwargs is None:
             job_kwargs = {}
@@ -172,7 +173,8 @@ class Job(models.Model):
         No reason to call this explicit when using the job_decorator.
         """
         if self.status == "failed":
-            # if the job is marked as failed just return instead of overwriting the the status
+            # if the job is marked as failed just return instead of overwriting
+            # the status.
             return
         self.status = "finished"
         self.progress = 100

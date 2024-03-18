@@ -8,19 +8,19 @@ SKIP_IDP_METADATA=${SKIP_IDP_METADATA:=false}
 
 python manage.py wait_for_db
 python manage.py createcachetable
-if [ "$SKIP_IDP_METADATA" = false ]; then
+if [ "${SKIP_IDP_METADATA,,}" = false ]; then
   python manage.py update_mitid_idp_metadata
 fi
-if [ "$MAKE_MIGRATIONS" = true ]; then
+if [ "${MAKE_MIGRATIONS,,}" = true ]; then
   echo 'generating migrations'
   python manage.py makemigrations
 fi
-if [ "$MIGRATE" = true ]; then
+if [ "${MIGRATE,,}" = true ]; then
   echo 'running migrations'
   python manage.py migrate
 fi
 
-if [ "$DJANGO_DEBUG" = false ]; then
+if [ "${DJANGO_DEBUG,,}" = false ]; then
   echo 'collection static files for whitenoise!'
   ./manage.py collectstatic --no-input --clear
 fi

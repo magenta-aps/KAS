@@ -2,22 +2,23 @@ import re
 
 from django import forms
 from django.core.exceptions import ValidationError
-from django.utils import timezone
-from django.utils.translation import gettext as _
-from django.utils.safestring import mark_safe
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils import timezone
+from django.utils.safestring import mark_safe
+from django.utils.translation import gettext as _
 
-from kas.fields import PensionCompanyChoiceField, DateInput
+from kas.fields import DateInput, PensionCompanyChoiceField
 from kas.forms_mixin import BootstrapForm
-from kas.models import (
-    PersonTaxYear,
-    PolicyTaxYear,
-    Note,
-    PolicyDocument,
-    PensionCompany,
-    TaxYear,
+
+from kas.models import (  # isort: skip
     FinalSettlement,
+    Note,
+    PensionCompany,
+    PersonTaxYear,
+    PolicyDocument,
+    PolicyTaxYear,
     PreviousYearNegativePayout,
+    TaxYear,
 )
 
 
@@ -226,7 +227,8 @@ class PolicyNotesAndAttachmentForm(forms.ModelForm, BootstrapForm):
             or self.cleaned_data["attachment"]
             or "next_processing_date" in self.changed_data
         ):
-            # save the instance if either one of the 2 fields where set or 'next_processing_date' where changed
+            # save the instance if either one of the 2 fields where set or
+            # 'next_processing_date' where changed
             # this ensures we dont do spurious saves when none of the fields are set
             # (but validates) and the user clicks save to go back
             instance.efterbehandling = True

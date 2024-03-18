@@ -1,12 +1,13 @@
-import requests
-from requests.exceptions import HTTPError
 import urllib
 import urllib.parse
-from uuid import uuid4
-from lxml import etree
-from django.conf import settings
-from time import sleep
 from dataclasses import dataclass
+from time import sleep
+from uuid import uuid4
+
+import requests
+from django.conf import settings
+from lxml import etree
+from requests.exceptions import HTTPError
 
 
 class EboksDispatchGenerator(object):
@@ -61,7 +62,7 @@ class MockResponse:
 
     def json(self):
         """
-        This mocks a response for a valid GL citizen and the message is delivered to E-boks.
+        This mocks a response for a valid GL citizen.
         Please note that normally the nr field would be the CPR number of the citizen.
         """
         return {
@@ -169,15 +170,17 @@ class EboksClient(object):
         """
         parse Request exception and return a error dict
         :param e:
-        :return: error dictinary
+        :return: error dictionary
         """
-        error = {"error": e.__class__.__name__}
-        if e.response is not None:
+        error = {"error": str(e)}
+        try:
             status_code = e.response.status_code
             try:
                 error = {"status_code": status_code, "error": e.response.json()}
             except ValueError:
                 error = {"status_code": status_code, "error": e.response.text}
+        except AttributeError:
+            pass
         return error
 
     def close(self):

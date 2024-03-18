@@ -1,5 +1,5 @@
 from django.contrib import admin
-from prisme.models import Transaction, Prisme10QBatch
+from prisme.models import Prisme10QBatch, Transaction
 
 
 class TransactionAdmin(admin.ModelAdmin):

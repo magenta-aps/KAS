@@ -1,8 +1,8 @@
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
+from django.utils import timezone
 from worker.job_registry import get_job_types, resolve_job_function
 from worker.models import Job
-from django.contrib.auth import get_user_model
-from django.utils import timezone
 
 
 class Command(BaseCommand):

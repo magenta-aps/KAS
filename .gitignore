@@ -4,6 +4,7 @@ env/
 .idea/
 docker-compose.override.yml
 data/kas/*
+data/er/*
 !data/kas/.gitkeep
 .spyproject/**
 # Generated documentation

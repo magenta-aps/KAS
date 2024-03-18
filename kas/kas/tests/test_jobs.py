@@ -1,39 +1,42 @@
 from datetime import datetime
-from unittest.mock import patch, MagicMock
-
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
+
 import django_rq
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
-from django.test import override_settings, TransactionTestCase
+from django.test import TransactionTestCase, override_settings
 from eskat.jobs import generate_sample_data
 from eskat.models import ImportedR75PrivatePension
 from fakeredis import FakeStrictRedis
-from kas.eboks import EboksClient
-from kas.models import (
-    Agterskrivelse,
-    TaxYear,
-    PersonTaxYear,
-    Person,
-    PolicyTaxYear,
-    PensionCompany,
-    TaxSlipGenerated,
-    FinalSettlement,
-)
 from prisme.models import Prisme10QBatch
 from project.dafo import DatafordelerClient
 from rq import Queue
 from worker.models import Job
 
-from kas.jobs import dispatch_agterskrivelser_for_year
-from kas.jobs import (
+from kas.eboks import EboksClient
+
+from kas.jobs import (  # isort: skip
+    dispatch_agterskrivelser_for_year,
     dispatch_tax_year,
     generate_batch_and_transactions_for_year,
-    merge_pension_companies,
-    import_mandtal,
+    generate_pension_company_summary_file,
     generate_pseudo_settlements_and_transactions_for_legacy_years,
+    import_mandtal,
     import_r75,
+    merge_pension_companies,
+)
+from kas.models import (  # isort: skip
+    Agterskrivelse,
+    FinalSettlement,
+    PensionCompany,
+    PensionCompanySummaryFile,
+    Person,
+    PersonTaxYear,
+    PolicyTaxYear,
+    TaxSlipGenerated,
+    TaxYear,
 )
 
 test_settings = dict(settings.EBOKS)
@@ -732,3 +735,47 @@ class R75ImportJobTest(BaseTransactionTestCase):
 
         self.assertEqual(person_tax_year.corrected_r75_data, False)
         self.assertEqual(person_tax_year.future_r75_data, True)
+
+
+class GeneratePensionCompanySummaryFileJobTest(BaseTransactionTestCase):
+    def setUp(self) -> None:
+        super(GeneratePensionCompanySummaryFileJobTest, self).setUp()
+        for i in range(1, 51):
+            person = Person.objects.create(cpr=f"{i}".rjust(10, "7"))
+
+            person_tax_year = PersonTaxYear.objects.create(
+                tax_year=self.tax_year, person=person
+            )
+            policy_tax_year = PolicyTaxYear.objects.create(
+                person_tax_year=person_tax_year,
+                pension_company=self.pension_company,
+                policy_number=f"{i}".rjust(5, "0"),
+            )
+            policy_tax_year.save()
+
+        self.user = get_user_model().objects.create(username="testman")
+        self.job_kwargs = {
+            "year": self.tax_year.year,
+            "pension_company": self.pension_company.pk,
+        }
+
+    @patch.object(
+        django_rq,
+        "get_queue",
+        return_value=Queue(is_async=False, connection=FakeStrictRedis()),
+    )
+    def test_succesful(self, django_rq):
+        self.assertEqual(
+            PensionCompanySummaryFile.objects.filter(creator=self.user).count(),
+            0,
+        )
+        Job.schedule_job(
+            generate_pension_company_summary_file,
+            job_type="GeneratePensionCompanySummary",
+            created_by=self.user,
+            job_kwargs=self.job_kwargs,
+        )
+        self.assertEqual(
+            PensionCompanySummaryFile.objects.filter(creator=self.user).count(),
+            1,
+        )

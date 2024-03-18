@@ -1,8 +1,8 @@
 import re
 
 from django.core.exceptions import ValidationError
-from django.core.validators import MinLengthValidator, MaxLengthValidator
-from django.forms import forms, fields, widgets, Field
+from django.core.validators import MaxLengthValidator, MinLengthValidator
+from django.forms import Field, fields, forms, widgets
 from django.utils.translation import gettext as _
 
 
@@ -132,7 +132,8 @@ class PolicyForm(forms.Form):
 
     def clean(self):
         cleaned_data = self.cleaned_data
-        # For the extra form (the one that creates a new policy_tax_year), if any field is set, the policy_number_new field is required
+        # For the extra form (the one that creates a new policy_tax_year),
+        # if any field is set, the policy_number_new field is required
         extra_form_has_data = False
         if cleaned_data["id"] is None:
             for value in cleaned_data.values():

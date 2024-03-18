@@ -7,49 +7,63 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 from time import sleep
-from more_itertools import map_except
-from pandas import to_datetime
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import IntegerField, Sum, Q, Count
+from django.db.models import Count, IntegerField, Q, Sum
 from django.db.models.functions import Cast
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from eskat.jobs import delete_protected
-from eskat.models import (
-    ImportedKasMandtal,
-    ImportedR75PrivatePension,
-    get_kas_mandtal_model,
-    get_r75_private_pension_model,
-)
-from eskat.models import R75SpreadsheetFile, EskatModels
+from more_itertools import map_except
+from openpyxl import load_workbook
+from pandas import to_datetime
+from prisme.models import Prisme10QBatch
+from project.dafo import DatafordelerClient
+from requests.exceptions import ConnectionError, HTTPError
+from rq import get_current_job
+from worker.job_registry import resolve_job_function
+from worker.models import Job, job_decorator
+
 from kas.eboks import EboksClient, EboksDispatchGenerator
-from kas.models import (
-    Person,
-    PersonTaxYear,
-    TaxYear,
-    PolicyTaxYear,
-    PensionCompany,
-    FinalSettlement,
-    AddressFromDafo,
-    PersonTaxYearCensus,
-    HistoryMixin,
-    TaxSlipGenerated,
-    PensionCompanySummaryFile,
-    Agterskrivelse,
-)
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.reportgeneration.kas_report import TaxPDF
 from kas.reportgeneration.kas_topdanmark_agterskrivelse import AgterskrivelsePDF
-from openpyxl import load_workbook
-from prisme.models import Prisme10QBatch
-from project.dafo import DatafordelerClient
-from django.conf import settings
-from requests.exceptions import HTTPError, ConnectionError
-from rq import get_current_job
-from worker.job_registry import resolve_job_function
-from worker.models import job_decorator, Job
+
+from eskat.models import (  # isort: skip
+    EskatModels,
+    ImportedKasMandtal,
+    ImportedR75PrivatePension,
+    R75SpreadsheetFile,
+    get_kas_mandtal_model,
+    get_r75_private_pension_model,
+)
+
+from kas.models import (  # isort: skip
+    AddressFromDafo,
+    Agterskrivelse,
+    FinalSettlement,
+    HistoryMixin,
+    PensionCompany,
+    PensionCompanySummaryFile,
+    Person,
+    PersonTaxYear,
+    PersonTaxYearCensus,
+    PolicyTaxYear,
+    TaxSlipGenerated,
+    TaxYear,
+)
+
+
+def mark_job_failed(job, result, exception):
+    job.status = "failed"
+    job.result = result
+    job.traceback = repr(
+        traceback.format_exception(type(exception), exception, exception.__traceback__)
+    )
+    job.save(update_fields=["status", "result", "traceback"])
+    mark_parent_job_as_failed(job)
 
 
 @job_decorator
@@ -201,8 +215,10 @@ def import_mandtal(job):
                         },
                     )
 
-                    # Read the person fetched from madtal@eskat. Compare the address with the address from dafo.
-                    # Overwrite the address from mandtal if the address from dafo is better
+                    # Read the person fetched from madtal@eskat. Compare the
+                    # address with the address from dafo.
+                    # Overwrite the address from mandtal if the address from
+                    # dafo is better
                     person = Person.objects.get(cpr=cpr)
                     person.status = "Dead" if (civilstand == "D") else "Alive"
                     if obj.is_dafo_address_better(person):
@@ -218,7 +234,8 @@ def import_mandtal(job):
 
                     person.save()
 
-                # If there is any requested cpr-numbers that is not recieved in a response, it means that the cpr-number is invalid
+                # If there is any requested cpr-numbers that is not received in
+                # a response, it means that the cpr-number is invalid.
                 if requested_cprs:
                     Person.objects.filter(cpr__in=requested_cprs, status="").update(
                         status="Invalid"
@@ -387,7 +404,8 @@ def import_r75(job):
                     person_tax_year.save(update_fields=["future_r75_data"])
                     users_with_future_r75_data.append(item["cpr"])
                 else:
-                    # Only set future_r75_data = False if it was not set to True by this job
+                    # Only set future_r75_data = False if it was not set to
+                    # True by this job.
                     if item["cpr"] not in users_with_future_r75_data:
                         person_tax_year.future_r75_data = False
                         person_tax_year.save(update_fields=["future_r75_data"])
@@ -493,13 +511,15 @@ def dispatch_tax_year():
 
 def mark_parent_job_as_failed(child_job, progress=None):
     parent = child_job.parent
-    parent.status = child_job.status
-    parent.result = child_job.result
-    update_fields = ["status", "result"]
-    if progress:
-        parent.progress = progress
-        update_fields.append("progress")
-    parent.save(update_fields=update_fields)
+    if parent:
+        parent.status = child_job.status
+        parent.result = child_job.result
+        parent.traceback = child_job.traceback
+        update_fields = ["status", "result", "traceback"]
+        if progress:
+            parent.progress = progress
+            update_fields.append("progress")
+        parent.save(update_fields=update_fields)
 
 
 @job_decorator
@@ -741,7 +761,8 @@ def autoligning(job):
                 policy.person_tax_year.general_notes
                 and len(policy.person_tax_year.general_notes.replace(" ", "")) > 0
             ):
-                # General note on PersonTaxYear is not null and contains at least 1 character
+                # General note on PersonTaxYear is not null and contains at
+                # least 1 character
                 policy.efterbehandling = True
                 policy.slutlignet = False
                 post_processing += 1
@@ -843,8 +864,9 @@ def generate_batch_and_transactions_for_year(job):
 
     job.result = {
         "status": "Genererede batch og transaktioner",
-        "message": "Genererede {transactions} på baggrund af {settlements} slutopgørelser".format(
-            transactions=new_transactions, settlements=settlements_count
+        "message": (
+            f"Genererede {new_transactions} på baggrund af"
+            "{settlements_count} slutopgørelser"
         ),
     }
 
@@ -876,6 +898,25 @@ def generate_agterskrivelser(job):
         person_tax_year.agterskrivelse_set.all().delete()
         AgterskrivelsePDF.generate_pdf(person_tax_year, policy_tax_years)
         job.set_progress(i, total_count)
+
+
+@job_decorator
+def generate_pension_company_summary_file(job):
+    pension_company = PensionCompany.objects.get(pk=job.arguments["pension_company"])
+    year = TaxYear.objects.get(year=job.arguments["year"])
+    PensionCompanySummaryFile.create(pension_company, year, job.created_by)
+
+    job.result = {
+        "summary": [
+            {
+                "label": "Årssummationsfil genereret",
+                "value": [
+                    {"label": "Pensionsselskab", "value": pension_company.name},
+                    {"label": "Årstal", "value": year.year},
+                ],
+            },
+        ]
+    }
 
 
 def dispatch_final_settlements_for_year():
@@ -933,14 +974,8 @@ def dispatch_final_settlements(job):
             break
         try:
             send_settlement = settlement.dispatch_to_eboks(client, generator)
-        except (ConnectionError, HTTPError) as e:
-            job.status = "failed"
-            job.result = client.parse_exception(e)
-            job.traceback = repr(
-                traceback.format_exception(type(e), e, e.__traceback__)
-            )
-            job.save(update_fields=["status", "result", "traceback"])
-            mark_parent_job_as_failed(job)
+        except Exception as e:
+            mark_job_failed(job, client.parse_exception(e), e)
             break
         else:
             if send_settlement.status == "post_processing":
@@ -989,16 +1024,20 @@ def dispatch_final_settlements(job):
 @job_decorator
 def dispatch_final_settlement(job):
     """
-    expects a final_settlmenet uuid
+    expects a final_settlement uuid
     :return:
     """
     client = EboksClient.from_settings()
     settlement = FinalSettlement.objects.get(uuid=job.arguments["uuid"])
     generator = EboksDispatchGenerator.from_settings()
-    send_settlement = settlement.dispatch_to_eboks(client, generator)
-    if send_settlement.status == "post_processing":
-        job.set_progress_pct(50)
-        send_settlement.get_final_status(client)
+    try:
+        send_settlement = settlement.dispatch_to_eboks(client, generator)
+    except Exception as e:
+        mark_job_failed(job, client.parse_exception(e), e)
+    else:
+        if send_settlement.status == "post_processing":
+            job.set_progress_pct(50)
+            send_settlement.get_final_status(client)
 
 
 @job_decorator
@@ -1032,7 +1071,8 @@ def merge_pension_companies(job):
             moved_policies = PolicyTaxYear.objects.filter(
                 pension_company__in=job.arguments["to_be_merged"]
             ).update(pension_company=target)
-            # This is safe and will fail, because pension_company is protected on policytaxyear.
+            # This is safe and will fail, because pension_company is protected
+            # on policytaxyear.
             deleted_count, _ = PensionCompany.objects.filter(
                 id__in=job.arguments["to_be_merged"]
             ).delete()
@@ -1151,7 +1191,8 @@ def import_spreadsheet_r75(job):
                                         value = Decimal(value)
                                     if type(value) not in expected_type:
                                         raise Exception(
-                                            f"Expected type {expected_type} in column {colindex+1}, "
+                                            f"Expected type {expected_type} in"
+                                            " column {colindex+1}, "
                                             f"row {rowindex+1}, got type {type(value)} "
                                             f"for value {str(value)}"
                                         )
@@ -1170,22 +1211,33 @@ def import_spreadsheet_r75(job):
                             "cpr": cpr,
                             "tax_year": year,
                         }
-                        policy_tax_year_idents.append(
-                            {
-                                "pension_company__pk": company.pk,
-                                "person_tax_year__tax_year__year": year,
-                                "policy_number": policy_number,
-                            }
-                        )
+                        policy_tax_year_ident = {
+                            "pension_company__pk": company.pk,
+                            "person_tax_year__tax_year__year": year,
+                            "policy_number": policy_number,
+                        }
+                        policy_tax_year_idents.append(policy_tax_year_ident)
+
+                        # Get previously reported R75 amounts to override
+                        if PolicyTaxYear.objects.filter(
+                            **policy_tax_year_ident
+                        ).exists():
+                            old_imported_sum = PolicyTaxYear.objects.get(
+                                **policy_tax_year_ident
+                            ).prefilled_amount
+                        else:
+                            old_imported_sum = 0
 
                         model.objects.update_or_create(
-                            # Identificerende; skal være den samme for en given importeret entry (ikke autogen)
+                            # Identificerende; skal være den samme for en given
+                            # importeret entry (ikke autogen)
                             r75_ctl_sekvens_guid=uuid.uuid5(
                                 namespace=uuid_namespace, name=str(identifying_data)
                             ),
                             **identifying_data,
                             defaults={
-                                "renteindtaegt": int(rowdata["PensionsOrdningBeløb"]),
+                                "renteindtaegt": int(rowdata["PensionsOrdningBeløb"])
+                                - old_imported_sum,
                                 "company_pay_override": company_pay_override,
                                 # Dummydata, not used in calculations
                                 "pt_census_guid": uuid.uuid4(),
@@ -1205,14 +1257,6 @@ def import_spreadsheet_r75(job):
                 "source_model": "eskat.models:EskatModels.R75SpreadsheetImport",
             },
         )
-
-    Job.schedule_job(
-        function=generate_agterskrivelser,
-        job_type="generate_agterskrivelser",
-        created_by=job.created_by,
-        parent=job,
-        job_kwargs={"policy_tax_year_idents": policy_tax_year_idents},
-    )
 
 
 @job_decorator
@@ -1268,13 +1312,7 @@ def dispatch_agterskrivelser(job):
         try:
             sent_agterskrivelse = agterskrivelse.dispatch_to_eboks(client, generator)
         except (ConnectionError, HTTPError) as e:
-            job.status = "failed"
-            job.result = client.parse_exception(e)
-            job.traceback = repr(
-                traceback.format_exception(type(e), e, e.__traceback__)
-            )
-            job.save(update_fields=["status", "result", "traceback"])
-            mark_parent_job_as_failed(job)
+            mark_job_failed(job, client.parse_exception(e), e)
             break
         else:
             if sent_agterskrivelse.status == "post_processing":

@@ -5,14 +5,14 @@ from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
 from project.admin import kasadmin  # used by the administrator group
 
-from kas.models import (
+from kas.models import (  # isort: skip
     FinalSettlement,
-    TaxYear,
     Person,
     PersonTaxYear,
-    PolicyTaxYear,
     PolicyDocument,
+    PolicyTaxYear,
     TaxSlipGenerated,
+    TaxYear,
 )
 
 
@@ -26,7 +26,8 @@ class KasUserAdmin(UserAdmin):
         if not obj:
             return self.add_fieldsets
         if not request.user.is_superuser:
-            # Staff users (not superadmins) don't need to change users' groups, permissions, superuser status etc.
+            # Staff users (not superadmins) don't need to change users' groups,
+            # permissions, superuser status etc.
             return (
                 (None, {"fields": ("username", "password")}),
                 (_("Personal info"), {"fields": ("first_name", "last_name", "email")}),
@@ -55,7 +56,8 @@ class LogEntryAdmin(admin.ModelAdmin):
     # to filter the resultes by users, content types and action flags
     list_filter = ["user", "action_flag"]
 
-    # when searching the user will be able to search in both object_repr and change_message
+    # when searching the user will be able to search in both object_repr
+    # and change_message
     search_fields = ["object_repr", "change_message"]
 
     list_display = ["action_time", "get_user", "action_flag", "get_changed_object"]

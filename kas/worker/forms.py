@@ -3,9 +3,11 @@ from django.conf import settings
 from django.forms import ModelForm
 from django.utils.translation import gettext as _
 from eskat.models import R75SpreadsheetFile
+from worker.job_registry import get_job_types
+
+from kas.forms import PensionCompanySummaryFileForm
 from kas.forms_mixin import BootstrapForm
 from kas.models import TaxYear
-from worker.job_registry import get_job_types
 
 
 class JobTypeSelectForm(BootstrapForm):
@@ -113,6 +115,21 @@ class AutoligningsYearForm(BootstrapForm):
         self.fields["year_pk"].choices = (
             (year.pk, "{} ({})".format(year.year, year.year_part))
             for year in TaxYear.objects.filter(year_part="selvangivelse")
+        )
+
+
+class WorkerPensionCompanySummaryFileForm(PensionCompanySummaryFileForm):
+    """
+    PensionCompanySummaryFileForm with explicit year field, for use in the worker
+    job administration
+    """
+
+    year = forms.ChoiceField(choices=[], required=True, label=_("År"))
+
+    def __init__(self, *args, **kwargs):
+        super(WorkerPensionCompanySummaryFileForm, self).__init__(*args, **kwargs)
+        self.fields["year"].choices = (
+            (year.year, str(year.year)) for year in TaxYear.objects.all()
         )
 
 

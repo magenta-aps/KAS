@@ -1,6 +1,8 @@
-from django.utils.translation import gettext as _, ungettext_lazy
+from django.utils.translation import gettext as _
+from django.utils.translation import ungettext_lazy
 
-# Strings in django core or other modules that we use, and don't have a greenlandic translation
+# Strings in django core or other modules that we use
+# and don't have a greenlandic translation.
 
 # From django.forms.fields
 _("This field is required.")
