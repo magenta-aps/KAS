@@ -1,4 +1,5 @@
 import os
+import sys
 from distutils.util import strtobool
 
 from django.core.exceptions import ImproperlyConfigured
@@ -279,3 +280,10 @@ for x in FEATURE_FLAGS:
         FEATURE_FLAGS[x] = bool(strtobool(value))
 
 LEGACY_YEARS = (2018, 2019)
+
+TESTING = bool(len(sys.argv) > 1 and sys.argv[1] == "test")
+
+if TESTING:
+    import logging
+
+    logging.disable(logging.CRITICAL)
