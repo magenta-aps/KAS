@@ -614,7 +614,9 @@ def dispatch_eboks_tax_slips(job):
     with transaction.atomic():
         parent = Job.objects.filter(pk=job.parent.pk).select_for_update()[0]
         current_count = parent.arguments["current_count"] + min(i, dispatch_page_size)
-        job.set_progress(current_count, parent.arguments["total_count"])
+        parent.set_progress(current_count, parent.arguments["total_count"])
+        parent.arguments["current_count"] = current_count
+        parent.save()
         if has_more is False:
             # if we are done mark the parent job as finished
             parent.result = {"dispatched_items": current_count}
