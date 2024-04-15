@@ -10,7 +10,6 @@ data/er/*
 # Generated documentation
 kas/kas/static/doc/er_html/
 kas/kas/static/doc/kas_models.png
-/.pre-commit-config.yaml
 /kas/.coverage
 
 
