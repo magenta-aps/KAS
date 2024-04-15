@@ -26,7 +26,7 @@ class TaxFinalStatementPDF(FPDF):
     tablerowheight = 8
     std_text_space = 5
     std_table_font_size = 8.5
-    std_font_name = "arial"
+    std_font_name = "helvetica"
     table_header_height = 10
     table_header_font_size = 10
 
@@ -821,7 +821,7 @@ class TaxFinalStatementPDF(FPDF):
             self.yposition = self.get_y()
             self.set_xy(self.left_margin, self.yposition)
             if policy.get("agreement_present"):
-                self.set_font("arial", "B", self.table_header_font_size)
+                self.set_font("helvetica", "B", self.table_header_font_size)
                 self.set_xy(self.left_margin, self.yposition)
                 self.multi_cell(
                     h=self.table_header_height,
