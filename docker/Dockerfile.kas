@@ -10,6 +10,7 @@ groupadd -g 75050 -r kas && \
 groupadd -g 75100 -r certificate_exporter && \
 useradd -u 75050 --no-log-init -r -g kas -G certificate_exporter kas && chown kas:kas /srv/media
 COPY kas/requirements.txt /app/requirements.txt
+COPY kas/.coveragerc /app/.coveragerc
 RUN pip install --no-cache-dir -r /app/requirements.txt
 # hadolint ignore=DL3008
 RUN apt-get update && \
