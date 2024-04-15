@@ -12,5 +12,6 @@ omit =
     */tests/*
     */management/commands/create_dummy_*.py
     */management/commands/wait_for_db.py
+    */management/commands/devrqworker.py  # No need to test dev-only functionality.
 parallel = true
 concurrency=multiprocessing
