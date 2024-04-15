@@ -22,3 +22,4 @@ django-extensions
 pydotplus
 pandas==1.5.1
 more_itertools==8.14.0
+tblib==3.0.0
