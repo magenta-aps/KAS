@@ -11,7 +11,7 @@ from kas.models import Agterskrivelse, PersonTaxYear, PolicyTaxYear
 
 
 class AgterskrivelsePDF(FPDF):
-    std_font_name = "arial"
+    std_font_name = "helvetica"
     std_document_width = 171
     container_width = 139
     left_margin = 17.0

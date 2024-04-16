@@ -61,7 +61,11 @@ services:
     volumes:
       - ./kas/:/app
       - ./data/kas:/srv/media
-    command: python manage.py rqworker high default low # listening on all three queues by default
+      
+    # Note: Don't use "devrqworker" in production. Use the "rqworker" command instead
+    # "devrqworker" reloads automatically on code-changes and eats a lot of memory.
+    # See https://github.com/rq/rq/issues/2 for details
+    command: python manage.py devrqworker high default low # listening on all three queues by default
 
 
   postgres:

@@ -225,7 +225,7 @@ class TaxPDF(FPDF):
         self.set_xy(self.left_margin, self.yposition)
 
     def footer(self):
-        self.set_font("arial", "", 11)
+        self.set_font("helvetica", "", 11)
         self.set_xy(self.left_margin, self.h - 17)
         self.cell(h=5.0, align="C", w=30.0, txt=self.person_number, border=0)
         self.set_xy(self.std_document_width - 5, self.h - 17)
@@ -313,7 +313,7 @@ class TaxPDF(FPDF):
         self.page_counter = 1
         self.set_fill_color(180, 180, 180)
 
-        self.set_font("arial", "B", 15.0)
+        self.set_font("helvetica", "B", 15.0)
         self.set_xy(125.0, 8.0)
         self.cell(
             h=self.contact_info_table_cell.get("h"),
@@ -323,7 +323,7 @@ class TaxPDF(FPDF):
             border=0,
         )
 
-        self.set_font("arial", "B", 12.0)
+        self.set_font("helvetica", "B", 12.0)
 
         # Set yposition for first cell
         self.yposition = 8
@@ -333,14 +333,14 @@ class TaxPDF(FPDF):
             border=0,
         )
 
-        self.set_font("arial", "", 9.0)
+        self.set_font("helvetica", "", 9.0)
         self.write_multi_cell_row(
             self.text4[language].format(self.tax_return_date_limit),
             align="L",
             border=0,
         )
 
-        self.set_font("arial", "", 8.5)
+        self.set_font("helvetica", "", 8.5)
         # Adressing reciever
         self.write_multi_cell_row(
             [self.receiver_name + "\n" + self.receiver_postal_address],
@@ -446,7 +446,7 @@ class TaxPDF(FPDF):
         # Set yposition for main text
         self.yposition = 80
 
-        self.set_font("arial", "B", 8.5)
+        self.set_font("helvetica", "B", 8.5)
         self.write_multi_cell_row(self.text10[language], align="L", border=0)
         text_fields = [
             self.text11[language],
@@ -464,7 +464,7 @@ class TaxPDF(FPDF):
             "   ",
             self.text14[language].format(self.tax_year, self.request_pay),
         ]
-        self.set_font("arial", "", 8.5)
+        self.set_font("helvetica", "", 8.5)
         for field in text_fields:
             self.write_multi_cell_row(field, align="L", border=0)
 
@@ -500,13 +500,13 @@ class TaxPDF(FPDF):
                 self.add_page()
                 policy_index = 0
             policy_index += 1
-            self.set_font("arial", "B", 12)
+            self.set_font("helvetica", "B", 12)
             self.write_multi_cell_row(
                 policy.get("policy"),
                 height=headerheight,
             )
 
-            self.set_font("arial", "B", 9)
+            self.set_font("helvetica", "B", 9)
 
             # Create function, which, given widths and text, creates and write to cols
             self.write_multi_cell_row(
@@ -521,7 +521,7 @@ class TaxPDF(FPDF):
                 height=columnheaderheight,
             )
 
-            self.set_font("arial", "", 8.5)
+            self.set_font("helvetica", "", 8.5)
 
             self.write_multi_cell_row(
                 [
@@ -558,7 +558,7 @@ class TaxPDF(FPDF):
         )
 
         self.yposition += columnheaderheight
-        self.set_font("arial", "B", 9)
+        self.set_font("helvetica", "B", 9)
         self.write_multi_cell_row(
             [
                 self.text17C[language],
@@ -581,7 +581,7 @@ class TaxPDF(FPDF):
             )
 
         self.yposition += columnheaderheight
-        self.set_font("arial", "", 8.5)
+        self.set_font("helvetica", "", 8.5)
 
         self.write_multi_cell_row(self.text26E[language], align="L")
         self.write_multi_cell_row("   ", height=40)

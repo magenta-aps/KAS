@@ -173,8 +173,9 @@ KAS Unittest:
     DISABLE_METRICS: 'True'
   script:
     - cd /app
-    - coverage run --source='.' --omit=manage.py,project/wsgi.py,*/admin.py manage.py test
-    - coverage report --show-missing --fail-under=79
+    - coverage run manage.py test --parallel 4
+    - coverage combine
+    - coverage report --show-missing --fail-under=72
     - coverage xml
   coverage: '/^TOTAL.+?(\d+\%)$/'
   artifacts:
@@ -221,8 +222,9 @@ Selvbetjening Unittest:
     SKIP_IDP_METADATA: "true"
   script:
     - cd /app
-    - coverage run --source='.' --omit=manage.py,project/wsgi.py,*/admin.py manage.py test
-    - coverage report --show-missing --fail-under=32
+    - coverage run manage.py test --parallel 4
+    - coverage combine   
+    - coverage report --show-missing --fail-under=25
     - coverage xml
   coverage: '/^TOTAL.+?(\d+\%)$/'
   artifacts:

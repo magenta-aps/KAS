@@ -1,0 +1,16 @@
+[run]
+relative_files = True
+source = .
+omit =
+    manage.py
+    project/*
+    */admin.py
+    */urls.py
+    */tests.py
+    */__init__.py
+    */migrations/*
+    */tests/*
+    */management/commands/create_dummy_*.py
+    */management/commands/wait_for_db.py
+parallel = true
+concurrency=multiprocessing
