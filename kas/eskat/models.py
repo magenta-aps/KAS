@@ -358,7 +358,24 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
         if job is not None:
             job.set_progress_pct(progress_start + (100 * progress_factor))
 
-        return created, updated
+        delete_qs = ImportedKasMandtal.objects.filter(
+            skatteaar=year,
+        )
+        if cpr_limit is not None:
+            delete_qs = delete_qs.filter(cpr=cpr_limit)
+        delete_qs = delete_qs.exclude(
+            pk__in=list(
+                # We could use qs.values_list("pk", flat=True) here, but if
+                # qs and delete are not subject to the same filtering
+                # (e.g. qs is filtered more than delete_qs) we risk finding
+                # too many objects in delete_qs and thus nuking the
+                # ImportedKasMandtal table. Better to be safe.
+                source_model.objects.filter(skatteaar=year).values_list("pk", flat=True)
+            )
+        )
+        cleared = delete_qs.update(skattedage=0, skatteomfang="ikke fuld skattepligtig")
+
+        return created, updated, cleared
 
 
 class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
