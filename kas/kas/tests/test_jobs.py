@@ -8,7 +8,13 @@ from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.test import TransactionTestCase, override_settings
 from eskat.jobs import generate_sample_data
-from eskat.models import ImportedR75PrivatePension
+from eskat.mockupdata import create_person
+from eskat.models import (
+    ImportedKasMandtal,
+    ImportedR75PrivatePension,
+    MockModels,
+    get_kas_mandtal_model,
+)
 from fakeredis import FakeStrictRedis
 from prisme.models import Prisme10QBatch
 from project.dafo import DatafordelerClient
@@ -216,6 +222,87 @@ class MandtalImportJobsTest(BaseTransactionTestCase):
         person = Person.objects.get(cpr="2512484916")
         self.assertEqual(person.name, "Andersine And")
         self.assertEqual(person.updated_from_dafo, True)
+
+    @patch.object(
+        django_rq,
+        "get_queue",
+        return_value=Queue(is_async=False, connection=FakeStrictRedis()),
+    )
+    def test_eskat_delete(self, django_rq):
+        # Create test mandtal data
+        create_person(
+            "Borger med 0 afkast",
+            cpr="0101570010",
+            adresselinje2="Imaneq 32A, 3. sal.",
+            adresselinje4="3900 Nuuk",
+            policies=[
+                {
+                    "res": 19676889,
+                    "years": {2018: -200000, 2020: 0, 2021: 0},
+                    "ktd": 300,
+                },
+                {"res": 19676889, "years": {2018: 200000}, "ktd": 300},
+                {"res": 19676889, "years": {2018: -30}, "ktd": 300},
+            ],
+        )
+        self.assertTrue(
+            MockModels.MockKasMandtal.objects.filter(
+                cpr="0101570010", skatteaar=2018
+            ).exists()
+        )
+        create_person(
+            "Borger med dækkende negativt afkast",
+            cpr="0103897769",
+            adresselinje2="Imaneq 32A, 1. sal.",
+            adresselinje4="3900 Nuuk",
+            policies=[{"res": 19676889, "years": {2018: 2500, 2021: 0}}],
+        )
+        self.assertTrue(
+            MockModels.MockKasMandtal.objects.filter(
+                cpr="0103897769", skatteaar=2018
+            ).exists()
+        )
+
+        # Import mandtal data
+        Job.schedule_job(
+            import_mandtal,
+            job_type="ImportMandtalJob",
+            job_kwargs={"year": "2018"},
+            created_by=self.user,
+        )
+        self.assertTrue(
+            ImportedKasMandtal.objects.filter(cpr="0101570010", skatteaar=2018).exists()
+        )
+        imported1 = ImportedKasMandtal.objects.filter(
+            cpr="0101570010", skatteaar=2018
+        ).first()
+        imported2 = ImportedKasMandtal.objects.filter(
+            cpr="0103897769", skatteaar=2018
+        ).first()
+        self.assertEqual(imported1.skattedage, 365)
+        self.assertEqual(imported1.skatteomfang, "fuld skattepligtig")
+        self.assertEqual(imported2.skattedage, 365)
+        self.assertEqual(imported2.skatteomfang, "fuld skattepligtig")
+
+        # Remove test mandtal 1 from mock eboks db
+        MockModels.MockKasMandtal.objects.filter(
+            cpr="0101570010", skatteaar=2018
+        ).delete()
+        # Do not delete mandtal 2
+
+        # Re-import, and check that imported data gets zeroed
+        Job.schedule_job(
+            import_mandtal,
+            job_type="ImportMandtalJob",
+            job_kwargs={"year": "2018"},
+            created_by=self.user,
+        )
+        imported1.refresh_from_db()
+        self.assertEqual(imported1.skattedage, 0)
+        self.assertEqual(imported1.skatteomfang, "ikke fuld skattepligtig")
+        imported2.refresh_from_db()
+        self.assertEqual(imported2.skattedage, 365)
+        self.assertEqual(imported2.skatteomfang, "fuld skattepligtig")
 
 
 class TaxslipGeneratedJobsTest(BaseTransactionTestCase):
