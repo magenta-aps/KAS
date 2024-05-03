@@ -9,12 +9,6 @@ from django.core.files.base import ContentFile
 from django.test import TransactionTestCase, override_settings
 from eskat.jobs import generate_sample_data
 from eskat.mockupdata import create_person
-from eskat.models import (
-    ImportedKasMandtal,
-    ImportedR75PrivatePension,
-    MockModels,
-    get_kas_mandtal_model,
-)
 from fakeredis import FakeStrictRedis
 from prisme.models import Prisme10QBatch
 from project.dafo import DatafordelerClient
@@ -23,6 +17,12 @@ from worker.models import Job
 
 from kas.eboks import EboksClient
 
+from eskat.models import (  # isort: skip
+    ImportedKasMandtal,
+    ImportedR75PrivatePension,
+    MockModels,
+    get_kas_mandtal_model,
+)
 from kas.jobs import (  # isort: skip
     dispatch_agterskrivelser_for_year,
     dispatch_tax_year,
