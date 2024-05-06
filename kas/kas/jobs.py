@@ -82,7 +82,7 @@ def import_mandtal(job):
     number_of_progress_segments = 2
     progress_factor = 1 / number_of_progress_segments
 
-    mandtal_created, mandtal_updated = ImportedKasMandtal.import_year(
+    mandtal_created, mandtal_updated, mandtal_cleared = ImportedKasMandtal.import_year(
         year,
         job,
         progress_factor,
@@ -250,6 +250,7 @@ def import_mandtal(job):
                 "value": [
                     {"label": "Tilføjet", "value": mandtal_created},
                     {"label": "Opdateret", "value": mandtal_updated},
+                    {"label": "Nulstillet", "value": mandtal_cleared},
                 ],
             },
             {

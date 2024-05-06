@@ -358,7 +358,25 @@ class ImportedKasMandtal(AbstractModels.KasMandtal):
         if job is not None:
             job.set_progress_pct(progress_start + (100 * progress_factor))
 
-        return created, updated
+        # When an ImportedKasMandtal exists that does not have a corresponding
+        # source item, the source has been deleted from their database, and
+        # we must set our object to zero
+        orphan_qs = ImportedKasMandtal.objects.filter(skatteaar=year)
+        if cpr_limit is not None:
+            orphan_qs = orphan_qs.filter(cpr=cpr_limit)
+        orphan_qs = orphan_qs.exclude(
+            pk__in=list(
+                # We could use qs.values_list("pk", flat=True) here, but if
+                # qs and delete are not subject to the same filtering
+                # (e.g. qs is filtered more than delete_qs) we risk finding
+                # too many objects in delete_qs and thus nuking the
+                # ImportedKasMandtal table. Better to be safe.
+                source_model.objects.filter(skatteaar=year).values_list("pk", flat=True)
+            )
+        )
+        cleared = orphan_qs.update(skattedage=0, skatteomfang="ikke fuld skattepligtig")
+
+        return created, updated, cleared
 
 
 class ImportedR75PrivatePension(AbstractModels.R75Idx4500230):
