@@ -74,3 +74,11 @@ table.table tr td > a:only-child {
     font-size: 18pt;
     text-align: right;
 }
+
+.autowidth {
+    width: auto;
+}
+
+.inline {
+    display: inline;
+}

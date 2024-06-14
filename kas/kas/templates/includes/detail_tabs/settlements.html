@@ -107,7 +107,7 @@
         </div>
     </div>
 </div>
-<script type="application/javascript">
+<script nonce="{{ request.csp_nonce }}">
     $('div.modal').on('show.bs.modal', function (event) {
         //used for both modals
         const button = $(event.relatedTarget);

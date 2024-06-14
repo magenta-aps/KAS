@@ -54,6 +54,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
+    "csp.middleware.CSPMiddleware",
 ]
 
 ROOT_URLCONF = "project.urls"
@@ -72,6 +73,9 @@ TEMPLATES = [
                 "project.context_processors.feature_flag_processor",
                 "kas.context_processors.representation_processor",
             ],
+            "libraries": {
+                "csp": "csp.templatetags.csp",
+            },
         },
     },
 ]

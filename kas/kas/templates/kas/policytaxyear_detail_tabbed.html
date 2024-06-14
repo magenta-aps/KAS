@@ -28,7 +28,7 @@
           <b>Aktiv</b> Policen er aktiv og gældende.{% endblocktranslate %}
       {% include 'includes/help_text/collapse.html' with help_text=top_help target_id='js-top-collapse' %}
   {% endif %}
-    <table class="table table-bordered table-sm" style="width: auto;">
+    <table class="table table-bordered table-sm autowidth">
         {% with person=policy.person_tax_year.person %}
             <tbody>
             <tr>
@@ -164,7 +164,7 @@
                     {% else %}
                         <button type="button" class="btn btn-warning"  disabled="disabled" aria-disabled="true" title="{% translate 'Policen er afregistreret' %}">{% translate 'Ret beløb' %}</button>
                     {% endif %}
-                    <form style="display: inline" method="POST" action="{% url 'kas:policy_activate' policy.pk %}">
+                    <form class="inline" method="POST" action="{% url 'kas:policy_activate' policy.pk %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-primary">{% translate 'Aktivér' %}</button>
                         <input type="hidden" name="active" value="true"/>
@@ -233,7 +233,7 @@
         </div>
       </div>
     </div>
-    <script type="application/javascript">
+    <script nonce="{{ request.csp_nonce }}">
         $( document ).ready(function() {
             $('select#js-year-select').on('change', function(){
                 window.location = this.value;

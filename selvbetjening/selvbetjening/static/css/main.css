@@ -234,9 +234,17 @@ table {
     display: table;
     clear: both
 }
-.hidden-sm {
+.hidden-sm,
+.hidden {
     display: none
 }
+.autowidth {
+    width: auto;
+}
+.inline {
+    display: inline;
+}
+
 @media only screen and (min-width:45rem) {
     .col-1 {
         width: 4.33%
