@@ -7,7 +7,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- afventer nyt tag på htmx https://github.com/bigskysoftware/htmx/tags -->
+    <!-- afventer nyt tag på htmx https://github.com/bigskysoftware/htmx/tags (https://github.com/bigskysoftware/htmx/pull/2542 er merged men ikke med i en release) -->
     <meta name="htmx-config" content='{"inlineStyleNonce":"{{ request.csp_nonce }}","includeIndicatorStyles":false}'>
     <link rel="stylesheet" href="{% static 'bootstrap/bootstrap.min.css' %}" nonce="{{ request.csp_nonce }}">
     <link rel="stylesheet" href="{% static 'font-awesome/css/all.min.css' %}" nonce="{{ request.csp_nonce }}">
