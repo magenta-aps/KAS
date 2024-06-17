@@ -27,6 +27,6 @@
                 <th>{% translate 'Status' %}</th>
             </tr>
         </thead>
-        <tbody hx-get="{% url 'worker:joblist_htmx' %}" hx-trigger="load"/>
+        <tbody hx-get="{% url 'worker:joblist_htmx' %}?csp_nonce={{request.csp_nonce}}" hx-trigger="load"/>
     </table>
 {% endblock %}

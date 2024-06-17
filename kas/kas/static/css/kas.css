@@ -82,3 +82,15 @@ table.table tr td > a:only-child {
 .inline {
     display: inline;
 }
+
+.historylink {
+    font-size: 0.65em;
+}
+
+.anchor-symbol {
+    font-size: 10px;
+}
+
+.subprocess {
+    height: 30px;
+}

@@ -1,7 +1,6 @@
 {% load i18n %}
 
 {% if form.slutlignet or form.next_processing_date %}
-
     {{ object.next_processing_date|json_script:"next_processing_date" }}
     {{ form.next_processing_date.id_for_label|json_script:"next_processing_date_id" }}
     {{ form.slutlignet.id_for_label|json_script:"slutlignet_id" }}

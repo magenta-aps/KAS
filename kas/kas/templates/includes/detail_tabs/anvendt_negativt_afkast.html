@@ -48,14 +48,14 @@
 
                             {% if lookup_tuple in years_with_negative_payout_history %}
                             <!-- History link -->
-                            <span style="font-size: 0.65em">
+                            <span class="historylink">
                                 <a href="{% url 'kas:define-negative-policy-payout-history' pk=policy.pk from=year to=year2%}?back={{policy.year}}">({% translate 'Historik' %})</a>
                             </span>
                             {% endif %}
 
                             {% if lookup_tuple in years_with_protected_negative_payout %}
                             <!-- Anchor symbol -->
-                            <span style='font-size: 10px;' class="align-bottom" data-toggle="tooltip" data-placement="bottom" title="{% translate 'Beskyttet mod genberegninger' %}">&#x2693;</span>
+                            <span class="align-bottom anchor-symbol" data-toggle="tooltip" data-placement="bottom" title="{% translate 'Beskyttet mod genberegninger' %}">&#x2693;</span>
                             {% endif %}
 
                             {% endwith %}

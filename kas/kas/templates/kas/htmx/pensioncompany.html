@@ -9,7 +9,7 @@
         {% if company.agreement %}
             <a href="{% url 'kas:pensioncompany-agreementdownload' company.id %}"><span class="fa fa-file"/></a>
         {% elif company.agreement_present %}
-            <span style="color:green" class="fa fa-check"></span>
+            <span class="text-success" class="fa fa-check"></span>
         {% endif %}
     </td>
     <td>{{ company.policies_count }}</td>

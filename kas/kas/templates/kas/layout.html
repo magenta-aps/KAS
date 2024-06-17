@@ -6,7 +6,9 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="htmx-config" content='{"inlineStyleNonce":"{{ request.csp_nonce }}"}'>
+
+    <!-- afventer nyt tag på htmx https://github.com/bigskysoftware/htmx/tags -->
+    <meta name="htmx-config" content='{"inlineStyleNonce":"{{ request.csp_nonce }}","includeIndicatorStyles":false}'>
     <link rel="stylesheet" href="{% static 'bootstrap/bootstrap.min.css' %}" nonce="{{ request.csp_nonce }}">
     <link rel="stylesheet" href="{% static 'font-awesome/css/all.min.css' %}" nonce="{{ request.csp_nonce }}">
     <link rel="stylesheet" href="{% static 'css/select2.min.css' %}" nonce="{{ request.csp_nonce }}">
