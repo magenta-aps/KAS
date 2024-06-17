@@ -22,7 +22,7 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        for year in (2018, 2019, 2020, 2021, 2022, 2023, 2024):
+        for year in (2018, 2019, 2020, 2021):
             year_part = "selvangivelse"
 
             # Older years should default to genoptagelsesperiode
