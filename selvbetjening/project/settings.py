@@ -173,6 +173,7 @@ LOGIN_NAMESPACE = (
 LOGIN_TIMEOUT_URL = reverse_lazy("selvbetjening:login-timeout")
 LOGIN_REPEATED_URL = reverse_lazy("selvbetjening:login-repeat")
 LOGIN_NO_CPRCVR_URL = reverse_lazy("selvbetjening:login-no-cpr")
+LOGIN_ASSURANCE_LEVEL_URL = reverse_lazy("selvbetjening:login-assurance-level")
 LOGIN_WHITELISTED_URLS = [
     "/favicon.ico",
     reverse_lazy("selvbetjening:representation-start"),
@@ -182,6 +183,7 @@ LOGIN_WHITELISTED_URLS = [
     LOGIN_TIMEOUT_URL,
     LOGIN_REPEATED_URL,
     LOGIN_NO_CPRCVR_URL,
+    LOGIN_ASSURANCE_LEVEL_URL,
 ]
 MITID_TEST_ENABLED = bool(strtobool(os.environ.get("MITID_TEST_ENABLED", "False")))
 SESSION_EXPIRE_SECONDS = int(os.environ.get("SESSION_EXPIRE_SECONDS") or 1800)
