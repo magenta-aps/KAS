@@ -286,14 +286,8 @@ for x in FEATURE_FLAGS:
 LEGACY_YEARS = (2018, 2019)
 
 # django-csp
-CSP_DEFAULT_SRC = (
-    "'self'",
-    "localhost:8000" if DEBUG else "kas.aka.nanoq.gl",
-)
-CSP_SCRIPT_SRC_ATTR = (
-    "'self'",
-    "localhost:8000" if DEBUG else "kas.aka.nanoq.gl",
-)
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC_ATTR = ("'self'",)
 CSP_STYLE_SRC_ATTR = ("'self'",)
 CSP_IMG_SRC = ("'self'", "data:")
 
