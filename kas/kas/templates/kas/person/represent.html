@@ -5,7 +5,7 @@
         <input type="hidden" name="{{key}}" value="{{value}}"/>
     {% endfor %}
 </form>
-<script>
+<script nonce="{{ request.csp_nonce }}">
     document.getElementById("autosubmitform").submit();
 </script>
 </body>

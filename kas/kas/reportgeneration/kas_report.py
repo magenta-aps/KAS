@@ -644,9 +644,11 @@ class TaxPDF(FPDF):
                     + policy.policy_number
                 ),
                 "preliminary_paid_amount": policy.preliminary_paid_amount,
-                "prefilled_amount": policy.prefilled_amount_edited
-                if policy.prefilled_amount_edited is not None
-                else policy.prefilled_amount,
+                "prefilled_amount": (
+                    policy.prefilled_amount_edited
+                    if policy.prefilled_amount_edited is not None
+                    else policy.prefilled_amount
+                ),
                 "pension_company_pays": policy.pension_company_pays,
                 "year_adjusted_amount": policy.year_adjusted_amount,
                 "available_negative_return": policy.available_negative_return,

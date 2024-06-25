@@ -43,8 +43,8 @@ variables:
 Lint Python:
   <<: *lint-default
   before_script:
-    - pip3 install flake8
-    - pip3 install black==23.1.0
+    - pip3 install flake8==7.1.0
+    - pip3 install black==24.4.1
     - pip3 install isort==5.12.0
     #- pip3 install -r django/requirements.txt
   script:
@@ -144,6 +144,7 @@ KAS Unittest:
     POSTGRES_PASSWORD: kas
     POSTGRES_DB: kas
     POSTGRES_HOST: kas-db
+    HOST_DOMAIN: http://localhost
     REST_HOST: http://kas:8000
     REST_TOKEN: 1799c88d-10e6-489d-8fe9-adeb2fd8a36f
     SELVBETJENING_REPRESENTATION_START: http://kas-selvbetjening:8080/represent-start/

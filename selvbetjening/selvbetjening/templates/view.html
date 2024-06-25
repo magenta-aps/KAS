@@ -29,7 +29,7 @@
         </div>
     {% endif %}
 
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
         $("select[data-change-href]").change(function(){
             const $this = $(this);
             window.location = $this.attr("data-change-href").replaceAll("{value}", $this.val());

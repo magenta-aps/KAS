@@ -1,7 +1,7 @@
 {# used as a modal from the locks view to either show an error or allow the user to confirm the creation of the new lock #}
 {% load i18n %}
-<div id="modal-backdrop" class="modal-backdrop fade show" style="display:block;"></div>
-<div id="modal" class="modal fade show" tabindex="-1" style="display:block;">
+<div id="modal-backdrop" class="modal-backdrop fade show"></div>
+<div id="modal" class="modal fade show" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -19,12 +19,12 @@
                 </p>
             </div>
             <div class="modal-footer">
-                <button onclick="closeModal()" type="button" class="btn btn-secondary">{% translate 'Luk' %}</button>
+                <button type="button" class="btn btn-secondary">{% translate 'Luk' %}</button>
                 {% if object.get_current_lock.allow_closing %}
                     <form>
                         {% csrf_token %}
                         <input type="hidden" name="taxyear" value="{{ object.pk }}"/>
-                        <button onclick="closeModal()" hx-target="#js-locks-tr" hx-post="{% url 'kas:lock-create' %}" type="button" class="btn btn-success">{% translate 'Bekræft oprettelse' %}</button>
+                        <button hx-target="#js-locks-tr" hx-post="{% url 'kas:lock-create' %}" type="button" class="btn btn-success">{% translate 'Bekræft oprettelse' %}</button>
                     </form>
                 {% endif %}
             </div>
