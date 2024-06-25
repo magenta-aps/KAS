@@ -19,12 +19,12 @@
                 </p>
             </div>
             <div class="modal-footer">
-                <button onclick="closeModal()" type="button" class="btn btn-secondary">{% translate 'Luk' %}</button>
+                <button type="button" class="btn btn-secondary">{% translate 'Luk' %}</button>
                 {% if object.get_current_lock.allow_closing %}
                     <form>
                         {% csrf_token %}
                         <input type="hidden" name="taxyear" value="{{ object.pk }}"/>
-                        <button onclick="closeModal()" hx-target="#js-locks-tr" hx-post="{% url 'kas:lock-create' %}" type="button" class="btn btn-success">{% translate 'Bekræft oprettelse' %}</button>
+                        <button hx-target="#js-locks-tr" hx-post="{% url 'kas:lock-create' %}" type="button" class="btn btn-success">{% translate 'Bekræft oprettelse' %}</button>
                     </form>
                 {% endif %}
             </div>

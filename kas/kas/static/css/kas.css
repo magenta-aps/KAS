@@ -94,3 +94,8 @@ table.table tr td > a:only-child {
 .subprocess {
     height: 30px;
 }
+
+.modal-backdrop,
+.modal {
+    display: block;
+}
