@@ -8,7 +8,7 @@
 <p><a href="{% url 'kas:person_in_year' year=person_tax_year.year person_id=person_tax_year.person.pk %}">{% translate 'Klik her for at vende tilbage til personskatteåret.' %}</a></p>
 {% else %}
 <p>{% translate 'Venter på opdatering af mandtal' %}, {{ elapsed }} {% translate 'sekunder siden import blev sat i gang.'%}</p>
-<script type="text/javascript">
+<script nonce="{{ request.csp_nonce }}">
     // reload page every two seconds
     setTimeout(function() {
         document.location.href=document.location.href;

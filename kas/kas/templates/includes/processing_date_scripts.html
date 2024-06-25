@@ -1,11 +1,10 @@
 {% load i18n %}
 
 {% if form.slutlignet or form.next_processing_date %}
-
     {{ object.next_processing_date|json_script:"next_processing_date" }}
     {{ form.next_processing_date.id_for_label|json_script:"next_processing_date_id" }}
     {{ form.slutlignet.id_for_label|json_script:"slutlignet_id" }}
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
         const objectNextProcessingDate = JSON.parse($('#next_processing_date').text());
         const nextProcessingDateFieldId = JSON.parse($('#next_processing_date_id').text());
         const slutlignetFieldId = JSON.parse($('#slutlignet_id').text());
@@ -37,7 +36,7 @@
 
     {{ checkbox_id|json_script:"checkbox_id" }}
     {{ modal_id|json_script:"modal_id" }}
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
         $(function() {
             const checkbox = $("#" + JSON.parse($("#checkbox_id").text()));
             const modal = $("#" + JSON.parse($("#modal_id").text()));
@@ -47,7 +46,7 @@
         });
     </script>
 
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
         if (slutlignetFieldId) {
             $(function(){
                 const nextProcessingDateField = nextProcessingDateFieldId ? $("#"+nextProcessingDateFieldId) : null;
@@ -73,7 +72,7 @@
 
 
 {% if form.next_processing_date %}
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
         if (nextProcessingDateFieldId) {
             $(function () {
                 const nextProcessingDateField = $("#" + nextProcessingDateFieldId);

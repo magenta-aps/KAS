@@ -31,7 +31,7 @@
     <div id="modal-container">
 
     </div>
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
         function closeModal() {
             const backdrop = $("#modal-backdrop");
             const modal = $("#modal");
@@ -42,5 +42,6 @@
                 modal.remove();
             }, 200)
         }
+        $("#modal-container").on("click", "button", closeModal);
     </script>
 {% endblock %}

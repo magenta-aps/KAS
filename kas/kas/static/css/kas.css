@@ -74,3 +74,28 @@ table.table tr td > a:only-child {
     font-size: 18pt;
     text-align: right;
 }
+
+.autowidth {
+    width: auto;
+}
+
+.inline {
+    display: inline;
+}
+
+.historylink {
+    font-size: 0.65em;
+}
+
+.anchor-symbol {
+    font-size: 10px;
+}
+
+.subprocess {
+    height: 30px;
+}
+
+.modal-backdrop,
+.modal {
+    display: block;
+}
