@@ -148,7 +148,7 @@
                                         {% endif %}
                                         {% endfor %}
 
-                                        <div class="doc_file prototype" style="display:none">
+                                        <div class="doc_file prototype hidden">
                                             {{ policyform.file_file_0 }}
                                             <button type="button" class="close" title="{% translate 'Fjern' %}"></button>
                                             {{ policyform.file_description_0 }}
@@ -157,7 +157,7 @@
                                             {% if field.name|startswith:'file_file' and field.value is not None %}
                                             <div class="doc_file">
                                                 {{ field }}
-                                                <button type="button" class="close" style="display:none"></button>
+                                                <button type="button" class="close hidden"></button>
                                                 {% with field.name|after:'file_file_' as id %}
                                                 {% with 'file_description_'|addstr:id as desc_id %}
                                                 {{ policyform|get:desc_id }}
@@ -195,8 +195,8 @@
 
 
         <button class="btn-primary">{% translate 'Indsend' %}</button>
-        </form>
-    <script>
+    </form>
+    <script nonce="{{ request.csp_nonce }}">
         $(function(){
             // If all file rows are set (has a value), create a new empty row
             const updateRows = function(animate) {

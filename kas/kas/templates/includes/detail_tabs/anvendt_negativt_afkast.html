@@ -4,7 +4,7 @@
 {% with years_with_negative_payout_history=policy.years_with_negative_payout_history %}
 {% with years_with_protected_negative_payout=policy.years_with_protected_negative_payout %}
 {% with latest_used_negativ_table=policy.latest_policy.previous_year_deduction_table_data %}
-<table class="table table-bordered table-hover table-sm" style="width: auto;" label="used_negativ_table">
+<table class="table table-bordered table-hover table-sm autowidth" label="used_negativ_table">
     <thead>
     <tr class="table-info">
         <th colspan="2"></th>
@@ -48,14 +48,14 @@
 
                             {% if lookup_tuple in years_with_negative_payout_history %}
                             <!-- History link -->
-                            <span style="font-size: 0.65em">
+                            <span class="historylink">
                                 <a href="{% url 'kas:define-negative-policy-payout-history' pk=policy.pk from=year to=year2%}?back={{policy.year}}">({% translate 'Historik' %})</a>
                             </span>
                             {% endif %}
 
                             {% if lookup_tuple in years_with_protected_negative_payout %}
                             <!-- Anchor symbol -->
-                            <span style='font-size: 10px;' class="align-bottom" data-toggle="tooltip" data-placement="bottom" title="{% translate 'Beskyttet mod genberegninger' %}">&#x2693;</span>
+                            <span class="align-bottom anchor-symbol" data-toggle="tooltip" data-placement="bottom" title="{% translate 'Beskyttet mod genberegninger' %}">&#x2693;</span>
                             {% endif %}
 
                             {% endwith %}

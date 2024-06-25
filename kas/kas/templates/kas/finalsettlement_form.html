@@ -22,7 +22,7 @@
     </div>
     <input type="submit" value="{% translate 'Opdatér' %}" class="btn btn-success" />
 </form>
-<script>
+<script nonce="{{ request.csp_nonce }}">
     $(".custom-file-input").on("change", function() {
         var fileName = $(this).val().split("\\").pop();
         $(this).siblings(".custom-file-label").addClass("selected").text(fileName);

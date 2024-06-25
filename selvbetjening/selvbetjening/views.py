@@ -219,7 +219,7 @@ class PolicyFormView(HasUserMixin, CloseMixin, YearTabMixin, FormView):
 
     @property
     def year(self):
-        return date.today().year - 1
+        return date.today().year - 2
 
     def load_initial(self):
         # Load known policy_tax_year data to populate form with initial data

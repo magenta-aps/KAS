@@ -1247,9 +1247,9 @@ class PensionCompanySummaryFileDownloadView(
         )
         response = HttpResponse(self.object.file, content_type="text/csv")
         response["Content-Length"] = self.object.file.size
-        response[
-            "Content-Disposition"
-        ] = f"attachment; filename={os.path.basename(self.object.file.name)}"
+        response["Content-Disposition"] = (
+            f"attachment; filename={os.path.basename(self.object.file.name)}"
+        )
         return response
 
 
@@ -1586,11 +1586,11 @@ class FinalSettlementDownloadView(
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
         response = HttpResponse(self.object.pdf.read(), content_type="application/pdf")
-        response[
-            "Content-Disposition"
-        ] = "attachment; filename={year}_{cpr}.pdf".format(
-            year=self.object.person_tax_year.tax_year.year,
-            cpr=self.object.person_tax_year.person.cpr,
+        response["Content-Disposition"] = (
+            "attachment; filename={year}_{cpr}.pdf".format(
+                year=self.object.person_tax_year.tax_year.year,
+                cpr=self.object.person_tax_year.person.cpr,
+            )
         )
         return response
 

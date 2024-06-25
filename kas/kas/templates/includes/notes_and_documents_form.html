@@ -101,7 +101,7 @@
 </form>
 {% if form.next_processing_date %}
 {{ form.next_processing_date.id_for_label|json_script:"next_processing_date_id" }}
-<script>
+<script nonce="{{ request.csp_nonce }}">
     $( document ).ready(function() {
         $("input#add-attachments").click(function() {
             let count = $('input#id_uploads-TOTAL_FORMS').val();

@@ -12,7 +12,7 @@
                     {{ form.file }}
                     <label class="custom-file-label" for="{{ form.file.id_for_label }}">{% translate 'Vælg en fil' %}</label>
                 </div>
-                <script>
+                <script nonce="{{ request.csp_nonce }}">
                     $(".custom-file-input").on("change", function() {
                         var fileName = $(this).val().split("\\").pop();
                         $(this).siblings(".custom-file-label").addClass("selected").text(fileName);

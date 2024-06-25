@@ -29,6 +29,11 @@ class JobListHtmxView(KasMixin, PermissionRequiredMixin, ListView):
             qs = qs.filter(created_at__lt=last_object.created_at)
         return qs.order_by("-created_at")[:10]
 
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(
+            **{**kwargs, "csp_nonce": self.request.GET.get("csp_nonce")}
+        )
+
 
 class JobListTemplateView(KasMixin, PermissionRequiredMixin, TemplateView):
     permission_denied_message = administrator_required

@@ -7,7 +7,7 @@
     {% url 'kas:policy_summary' object.year request.GET.download as download_url %}
     {% if download_url %}
       {{ download_url|json_script:"download_url" }}
-      <script>
+      <script nonce="{{ request.csp_nonce }}">
         $(function(){
             const download_url = JSON.parse($('#download_url').text());
             if (download_url) {
