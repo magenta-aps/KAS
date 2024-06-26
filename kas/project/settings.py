@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "simple_history",
     "watchman",
     "django_extensions",
+    "metrics",
 ]
 
 MIDDLEWARE = [
