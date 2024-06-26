@@ -9,7 +9,7 @@ django-simple-history==3.0.0
 whitenoise==6.0.0
 fpdf2==2.5.1
 requests==2.27.1
-lxml==4.8.0
+lxml==5.2.2
 fakeredis==2.10.1
 django-ipware>=4.0.2
 openpyxl==3.0.9
