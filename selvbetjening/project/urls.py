@@ -7,6 +7,7 @@ urlpatterns = [
     path("", include("selvbetjening.urls", namespace="selvbetjening")),
     path("", include("django_mitid_auth.urls", namespace="login")),
     path("i18n/", include("django.conf.urls.i18n")),
+    path("metrics/", include("metrics.urls")),
 ]
 
 if settings.DEBUG:
