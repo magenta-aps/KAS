@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "watchman",
     "django_mitid_auth",
     "mitid_test",
+    "metrics",
 ]
 
 MIDDLEWARE = [
@@ -187,6 +188,8 @@ LOGIN_WHITELISTED_URLS = [
     reverse_lazy("selvbetjening:representation-stop"),
     LOGIN_URL,
     "/_ht/",
+    "/metrics/health/storage",
+    "/metrics/health/database",
     LOGIN_TIMEOUT_URL,
     LOGIN_REPEATED_URL,
     LOGIN_NO_CPRCVR_URL,
