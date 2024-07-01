@@ -104,8 +104,8 @@
 <script nonce="{{ request.csp_nonce }}">
     $( document ).ready(function() {
         $("input#add-attachments").click(function() {
-            let count = $('input#id_uploads-TOTAL_FORMS').val();
-            let row = $(`<div class="form-row mt-2">
+            const count = $('input#id_uploads-TOTAL_FORMS').val();
+            const row = $(`<div class="form-row mt-2">
                 <div class="col">
                     <input type="text" name="uploads-${count}-description" placeholder="Fil-beskrivelse" autocomplete="off" class="form-control mr-2" id="id_uploads-${count}-description">
                 </div>
@@ -118,7 +118,7 @@
             $('input#id_uploads-TOTAL_FORMS').val(count+1);
 
             row.find(".custom-file-input").on("change", function() {
-                var fileName = $(this).val().split("\\").pop();
+                const fileName = $(this).val().split("\\").pop();
                 $(this).siblings(".custom-file-label").addClass("selected").text(fileName);
             });
         });
@@ -134,12 +134,12 @@
             }
         });
         $(".custom-file-input").on("change", function() {
-            var fileName = $(this).val().split("\\").pop();
+            const fileName = $(this).val().split("\\").pop();
             $(this).siblings(".custom-file-label").addClass("selected").text(fileName);
         });
     });
 </script>
-<style>
+<style nonce="{{request.csp_nonce}}">
     .custom-file-label::after { content: "{% translate 'Gennemse...' %}" !important; }
 </style>
 
