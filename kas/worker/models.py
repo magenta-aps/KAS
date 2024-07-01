@@ -192,7 +192,7 @@ class Job(models.Model):
             documentation = (
                 "Last successful execution time for: %s" % self.get_job_type_display()
             )
-            g = Gauge("kas_job", documentation, registry=registry)
+            g = Gauge("groenland_job", documentation, registry=registry)
             g.set_to_current_time()
             try:
                 push_to_gateway(
