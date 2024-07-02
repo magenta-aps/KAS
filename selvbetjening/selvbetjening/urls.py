@@ -76,4 +76,9 @@ urlpatterns = [
         AccessDeniedView.as_view(template_name="error/login_no_cpr.html"),
         name="login-no-cpr",
     ),
+    path(
+        "error/login_assurance/",
+        AccessDeniedView.as_view(template_name="error/login_assurance.html"),
+        name="login-assurance-level",
+    ),
 ]

@@ -34,7 +34,7 @@
     {% endfor %}
 </div>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
     $(function (){
         {# When a fragment like "policy_3__notes" comes in, first open tab "#policy_3", then "#policy_3__notes" #}
         const activeTabs = window.location.hash.substr(1).split('__');

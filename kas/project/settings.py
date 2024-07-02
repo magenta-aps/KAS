@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "simple_history",
     "watchman",
     "django_extensions",
+    "metrics",
 ]
 
 MIDDLEWARE = [
@@ -54,6 +55,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
+    "csp.middleware.CSPMiddleware",
 ]
 
 ROOT_URLCONF = "project.urls"
@@ -72,6 +74,9 @@ TEMPLATES = [
                 "project.context_processors.feature_flag_processor",
                 "kas.context_processors.representation_processor",
             ],
+            "libraries": {
+                "csp": "csp.templatetags.csp",
+            },
         },
     },
 ]
@@ -280,6 +285,12 @@ for x in FEATURE_FLAGS:
         FEATURE_FLAGS[x] = bool(strtobool(value))
 
 LEGACY_YEARS = (2018, 2019)
+
+# django-csp
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC_ATTR = ("'self'",)
+CSP_STYLE_SRC_ATTR = ("'self'",)
+CSP_IMG_SRC = ("'self'", "data:")
 
 TESTING = bool(len(sys.argv) > 1 and sys.argv[1] == "test")
 

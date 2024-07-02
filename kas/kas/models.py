@@ -726,14 +726,14 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     prefilled_amount = models.BigIntegerField(
         verbose_name=_("Beløb rapporteret fra pensionsselskab"),
         blank=True,
-        null=True
+        null=True,
         # Ikke justeret for dage i skatteår
     )
 
     self_reported_amount = models.BigIntegerField(
         verbose_name=_("Selvangivet beløb"),
         blank=True,
-        null=True
+        null=True,
         # Justeret for dage i skatteår
     )
 
@@ -754,13 +754,13 @@ class PolicyTaxYear(HistoryMixin, models.Model):
     prefilled_amount_edited = models.BigIntegerField(
         verbose_name=_("Justeret R75 beløb"),
         blank=True,
-        null=True
+        null=True,
         # Ikke justeret for dage i skatteår
     )
     assessed_amount = models.BigIntegerField(
         verbose_name=_("Ansat beløb"),
         blank=True,
-        null=True
+        null=True,
         # Justeret for dage i skatteår
     )
     base_calculation_amount = models.BigIntegerField(
@@ -772,7 +772,7 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
     year_adjusted_amount = models.BigIntegerField(
         verbose_name=_("Beløb justeret for dage i skatteår"),
-        default=0
+        default=0,
         # Justeret for dage i skatteår (ved at gange faktor på efter behov)
     )
     __original_year_adjusted_amount = None
@@ -1197,9 +1197,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
                     )
 
                     if amount_to_put_in_this_year != 0:
-                        modified_desired_deduction_data[
-                            year
-                        ] = amount_to_put_in_this_year
+                        modified_desired_deduction_data[year] = (
+                            amount_to_put_in_this_year
+                        )
                         amount_to_put_elsewhere -= amount_to_put_in_this_year
 
                 else:
@@ -1225,9 +1225,9 @@ class PolicyTaxYear(HistoryMixin, models.Model):
                 protected_payout_used.save()
                 amount_to_deduct -= amount_to_deduct_from_this_year
 
-                modified_desired_deduction_data[
-                    year
-                ] = protected_payout_used.transferred_negative_payout
+                modified_desired_deduction_data[year] = (
+                    protected_payout_used.transferred_negative_payout
+                )
 
                 if amount_to_deduct == 0:
                     break
@@ -1251,10 +1251,10 @@ class PolicyTaxYear(HistoryMixin, models.Model):
 
         result = self.get_calculation()
 
-        result[
-            "desired_deduction_data"
-        ] = self.modify_deduction_data_for_protected_cells(
-            result["desired_deduction_data"]
+        result["desired_deduction_data"] = (
+            self.modify_deduction_data_for_protected_cells(
+                result["desired_deduction_data"]
+            )
         )
 
         self.indifference_limited = (

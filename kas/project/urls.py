@@ -20,6 +20,7 @@ urlpatterns = [
     path("", include("kas.urls", namespace="kas")),
     path("prisme/", include("prisme.urls", namespace="prisme")),
     path("_ht/", include("watchman.urls")),
+    path("metrics/", include("metrics.urls")),
 ]
 
 

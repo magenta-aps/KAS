@@ -53,7 +53,7 @@
             <tbody hx-get="{% url 'kas:pensioncompany-htmxview' %}" hx-trigger="load, keyup from:input#js-search, change from:div#js-filters" hx-include="div#js-filters"/>
         </table>
     </form>
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
     $('select#id_target').select2({
         theme: 'bootstrap4'
     })

@@ -2,7 +2,7 @@
 {% load i18n %}
 {% block content %}
     <h1>{% blocktranslate with name=object.person.name year=object.tax_year.year %} Historik for {{ name }} i år {{ year }}{% endblocktranslate %}</h1>
-    <table class="table table-bordered table-sm" style="width: auto;">
+    <table class="table table-bordered table-sm autowidth">
         <tbody>
         <tr>
             <td>{% translate 'Personskatteår' %}</td>
