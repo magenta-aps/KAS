@@ -11,6 +11,7 @@ omit =
     */migrations/*
     */tests/*
     */management/commands/create_dummy_*.py
+    */mockupdata.py
     */management/commands/wait_for_db.py
     */management/commands/devrqworker.py  # No need to test dev-only functionality.
 parallel = true
