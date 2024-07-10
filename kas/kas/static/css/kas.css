@@ -95,7 +95,7 @@ table.table tr td > a:only-child {
     height: 30px;
 }
 
-.modal-backdrop,
-.modal {
+.modal-backdrop.show,
+.modal.show {
     display: block;
 }
