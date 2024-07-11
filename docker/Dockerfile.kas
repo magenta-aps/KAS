@@ -12,15 +12,19 @@ useradd -u 75050 --no-log-init -r -g kas -G certificate_exporter kas && chown ka
 COPY kas/requirements.txt /app/requirements.txt
 COPY kas/.coveragerc /app/.coveragerc
 RUN pip install --no-cache-dir -r /app/requirements.txt
+
 # hadolint ignore=DL3008
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends gettext python3-distutils libaio1 libaio-dev graphviz && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && wget --progress=dot:giga "$SUPERCRONIC_URL" \
-    && echo "${SUPERCRONIC_SHA1SUM}  ${SUPERCRONIC}" | sha1sum -c - \
-    && chmod +x "$SUPERCRONIC" \
-    && mv "$SUPERCRONIC" "/usr/local/bin/${SUPERCRONIC}" \
-    && ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic
+RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
+    curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gettext python3-distutils libaio1 libaio-dev graphviz postgresql-client-common postgresql-client-16 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    wget --progress=dot:giga "$SUPERCRONIC_URL" && \
+    echo "${SUPERCRONIC_SHA1SUM}  ${SUPERCRONIC}" | sha1sum -c - && \
+    chmod +x "$SUPERCRONIC" && \
+    mv "$SUPERCRONIC" "/usr/local/bin/${SUPERCRONIC}" && \
+    ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic
 
 # Oracle DB driver client libraries
 ADD https://download.oracle.com/otn_software/linux/instantclient/191000/instantclient-basiclite-linux.x64-19.10.0.0.0dbru.zip /tmp/oracle_driver.zip
