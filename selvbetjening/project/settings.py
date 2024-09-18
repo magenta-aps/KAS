@@ -10,6 +10,7 @@ from distutils.util import strtobool
 import django.conf.locale
 from django.urls import reverse_lazy
 
+VERSION = os.environ["COMMIT_TAG"]
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
