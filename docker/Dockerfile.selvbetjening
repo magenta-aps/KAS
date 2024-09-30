@@ -31,7 +31,9 @@ ENV COMMIT_TAG=${COMMIT_TAG:-HEAD}
 
 COPY selvbetjening/requirements.txt /app/requirements.txt
 COPY selvbetjening/.coveragerc /app/.coveragerc
-RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt&& \
+    rm /app/requirements.txt
+
 ENV PYTHONUNBUFFERED=1
 USER kas
 COPY ./docker/crontab.selvbetjening /crontab
