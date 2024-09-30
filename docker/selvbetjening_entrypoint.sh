@@ -19,9 +19,8 @@ if [ "${MIGRATE,,}" = true ]; then
   echo 'running migrations'
   python manage.py migrate
 fi
-
 if [ "${DJANGO_DEBUG,,}" = false ]; then
-  echo 'collection static files for whitenoise!'
-  ./manage.py collectstatic --no-input --clear
+  echo 'collecting static files for whitenoise!'
+  python manage.py collectstatic --no-input --clear
 fi
 exec "$@"

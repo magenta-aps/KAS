@@ -46,6 +46,7 @@ services:
       - ./dev-environment/crontab:/crontab
     entrypoint: [ ]
     command: [ "supercronic", "/crontab" ]
+    pull_policy: build
 
   worker:
     user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
@@ -66,7 +67,7 @@ services:
     # "devrqworker" reloads automatically on code-changes and eats a lot of memory.
     # See https://github.com/rq/rq/issues/2 for details
     command: python manage.py devrqworker high default low # listening on all three queues by default
-
+    pull_policy: build
 
   postgres:
     # Do not set `user` here

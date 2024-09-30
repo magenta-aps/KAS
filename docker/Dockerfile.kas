@@ -11,7 +11,8 @@ RUN mkdir /app && mkdir -p /srv/media && \
     useradd -u 75050 --no-log-init -r -g kas -G certificate_exporter kas && chown kas:kas /srv/media
 COPY kas/requirements.txt /app/requirements.txt
 COPY kas/.coveragerc /app/.coveragerc
-RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt && \
+    rm /app/requirements.txt
 
 # hadolint ignore=DL3008
 RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
@@ -38,13 +39,20 @@ RUN unzip /tmp/oracle_driver.zip -d /usr/local/lib && \
 ARG COMMIT_TAG
 ENV COMMIT_TAG=${COMMIT_TAG:-HEAD}
 
-USER kas
 COPY --chown=kas:kas docker/crontab.kas /crontab
 COPY ./docker/kas_entrypoint.sh /entrypoint.sh
 COPY --chown=kas:kas ./kas /app
+RUN chown kas:kas /app
+USER kas
 EXPOSE 8000
 VOLUME  /srv/media
 ENTRYPOINT ["/entrypoint.sh"]
 WORKDIR /app
 RUN django-admin compilemessages
+
+# temporary use of dev env to make manage.py work
+COPY --chown=kas:kas ./dev-environment/kas.env kas.env
+# hadolint ignore=SC1091
+RUN set -a && source kas.env && set +a && python manage.py collectstatic --no-input --clear && rm kas.env
+
 CMD ["gunicorn","-b","0.0.0.0:8000","project.wsgi:application","-w 4","--timeout 120", "--error-logfile", "-","--capture-output"]
