@@ -630,7 +630,7 @@ class PaymentOverrideTestCase(BaseTestCase):
         self.assertEqual(Prisme10QBatch.objects.count(), 1)
         self.assertEqual(FinalSettlement.objects.count(), 1)
         statement = FinalSettlement.objects.first()
-        collect_date = date(self.tax_year.year, 9, 1)
+        collect_date = date(self.tax_year.year + 1, 9, 1)
 
         self.assertEqual(statement.due_date_used, collect_date)
 
