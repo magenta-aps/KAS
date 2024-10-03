@@ -5,7 +5,7 @@ from distutils.util import strtobool
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
 
-VERSION = os.environ["VERSION"]
+VERSION = os.environ["COMMIT_TAG"]
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

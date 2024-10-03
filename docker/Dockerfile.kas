@@ -5,22 +5,29 @@ ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.
     PYTHONUNBUFFERED=1
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN mkdir /app && mkdir -p /srv/media && \
-#gid/uid from salt
-groupadd -g 75050 -r kas && \
-groupadd -g 75100 -r certificate_exporter && \
-useradd -u 75050 --no-log-init -r -g kas -G certificate_exporter kas && chown kas:kas /srv/media
+    #gid/uid from salt
+    groupadd -g 75050 -r kas && \
+    groupadd -g 75100 -r certificate_exporter && \
+    useradd -u 75050 --no-log-init -r -g kas -G certificate_exporter kas && chown kas:kas /srv/media
 COPY kas/requirements.txt /app/requirements.txt
 COPY kas/.coveragerc /app/.coveragerc
-RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt && \
+    rm /app/requirements.txt
+
 # hadolint ignore=DL3008
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends gettext python3-distutils libaio1 libaio-dev graphviz && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && wget --progress=dot:giga "$SUPERCRONIC_URL" \
-    && echo "${SUPERCRONIC_SHA1SUM}  ${SUPERCRONIC}" | sha1sum -c - \
-    && chmod +x "$SUPERCRONIC" \
-    && mv "$SUPERCRONIC" "/usr/local/bin/${SUPERCRONIC}" \
-    && ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic
+RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
+    curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gettext python3-distutils libaio1 libaio-dev graphviz postgresql-client-common postgresql-client-16 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# supercronic
+RUN curl -fsSLO "$SUPERCRONIC_URL" && \
+    echo "${SUPERCRONIC_SHA1SUM}  ${SUPERCRONIC}" | sha1sum -c - && \
+    chmod +x "$SUPERCRONIC" && \
+    mv "$SUPERCRONIC" "/usr/local/bin/${SUPERCRONIC}" && \
+    ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic
 
 # Oracle DB driver client libraries
 ADD https://download.oracle.com/otn_software/linux/instantclient/191000/instantclient-basiclite-linux.x64-19.10.0.0.0dbru.zip /tmp/oracle_driver.zip
@@ -28,13 +35,24 @@ RUN unzip /tmp/oracle_driver.zip -d /usr/local/lib && \
     rm /tmp/oracle_driver.zip && \
     printf "# Oracle client libraries\n/usr/local/lib/instantclient_19_10\n" > /etc/ld.so.conf.d/oracle_client_libraries.conf && \
     ldconfig
-USER kas
+
+ARG COMMIT_TAG
+ENV COMMIT_TAG=${COMMIT_TAG:-HEAD}
+
 COPY --chown=kas:kas docker/crontab.kas /crontab
 COPY ./docker/kas_entrypoint.sh /entrypoint.sh
 COPY --chown=kas:kas ./kas /app
+RUN chown kas:kas /app
+USER kas
 EXPOSE 8000
 VOLUME  /srv/media
 ENTRYPOINT ["/entrypoint.sh"]
 WORKDIR /app
 RUN django-admin compilemessages
+
+# temporary use of dev env to make manage.py work
+COPY --chown=kas:kas ./dev-environment/kas.env kas.env
+# hadolint ignore=SC1091
+RUN set -a && source kas.env && set +a && python manage.py collectstatic --no-input --clear && rm kas.env
+
 CMD ["gunicorn","-b","0.0.0.0:8000","project.wsgi:application","-w 4","--timeout 120", "--error-logfile", "-","--capture-output"]

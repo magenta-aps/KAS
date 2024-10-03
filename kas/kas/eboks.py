@@ -176,9 +176,9 @@ class EboksClient(object):
         try:
             status_code = e.response.status_code
             try:
-                error = {"status_code": status_code, "error": e.response.json()}
+                error = {"status": status_code, "message": e.response.json()}
             except ValueError:
-                error = {"status_code": status_code, "error": e.response.text}
+                error = {"status": status_code, "message": e.response.text}
         except AttributeError:
             pass
         return error

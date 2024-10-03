@@ -2100,7 +2100,7 @@ class FinalSettlement(EboksDispatch):
             FinalSettlement.PAYMENT_TEXT_REFUND,
             FinalSettlement.PAYMENT_TEXT_BULK,
         ):
-            return datetime.date(year=tax_year.year, month=9, day=1)
+            return datetime.date(year=tax_year.year + 1, month=9, day=1)
         return None
 
     def get_calculation_amounts(self):

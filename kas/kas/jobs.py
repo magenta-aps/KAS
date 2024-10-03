@@ -661,7 +661,6 @@ def dispatch_tax_year_debug():
 
 @job_decorator
 def dispatch_eboks_tax_slip_debug(job):
-    print("dispatch_eboks_tax_slip_debug")
     generator = EboksDispatchGenerator.from_settings()
     slips = TaxSlipGenerated.objects.filter(
         Q(persontaxyear__person__name="Bent Handberg")
@@ -688,7 +687,6 @@ def dispatch_eboks_tax_slip_debug(job):
             except (ConnectionError, HTTPError) as e:
                 job.status = "failed"
                 job.result = client.parse_exception(e)
-                print(job.result)
                 job.save(update_fields=["status", "result"])
                 mark_parent_job_as_failed(job)
                 break
