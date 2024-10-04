@@ -17,12 +17,12 @@ TIME_ZONE = os.environ["DJANGO_TIMEZONE"]
 LOGIN_REDIRECT_URL = "/"
 SESSION_COOKIE_NAME = "admin-sessionid"
 WHITENOISE_USE_FINDERS = True
-# DEFAULT_AUTO_FIELD  er sat, da vi benytter 3. parts biblioteker der ikke har
+# DEFAULT_AUTO_FIELD er sat, da vi benytter 3. parts biblioteker der ikke har
 # fuldt implementeret app_config.
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-STATIC_ROOT = os.path.join(BASE_DIR, "kas", "static")
-# Application definition
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_URL = "/static/"
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -140,8 +140,6 @@ LANGUAGES = [
     ("kl", _("Greenlandic")),
 ]
 
-
-STATIC_URL = "/static/"
 
 UPLOAD_PATH = "/uploads"
 MEDIA_ROOT = "/srv/media/"

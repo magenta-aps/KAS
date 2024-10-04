@@ -6,9 +6,9 @@
 
     {% get_current_language as language_code %}
     {% if language_code == 'kl-GL' %}
-        {% static 'doc/kl/Manual for system til skat af visse kapitalafkast (KAS).pdf' as manual_url %}
+        {% static 'kas/doc/kl/Manual for system til skat af visse kapitalafkast (KAS).pdf' as manual_url %}
     {% else %}
-        {% static 'doc/da/Manual for system til skat af visse kapitalafkast (KAS).pdf' as manual_url %}
+        {% static 'kas/doc/da/Manual for system til skat af visse kapitalafkast (KAS).pdf' as manual_url %}
     {% endif %}
 
     {% blocktrans with link=manual_url asvar help_text_jobs %}På denne side oplistes kørende og kørte jobs, med relevant information om hvert job.

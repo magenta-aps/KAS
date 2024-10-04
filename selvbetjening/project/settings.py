@@ -18,7 +18,7 @@ DEBUG = bool(strtobool(os.environ.get("DJANGO_DEBUG", "False")))
 HOST_DOMAIN = os.environ.get("HOST_DOMAIN", "https://kas.aka.nanoq.gl")
 ALLOWED_HOSTS = json.loads(os.environ.get("ALLOWED_HOSTS", "[]"))
 TIME_ZONE = os.environ["DJANGO_TIMEZONE"]
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 # Application definition
 

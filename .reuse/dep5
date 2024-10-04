@@ -6,30 +6,30 @@ Files: kas/* selvbetjening/* dev-environment/* docker/* dev-idp/* docker-compose
 Copyright: 2021-2022 Magenta ApS <info@magenta.dk>
 License: MPL-2.0
 
-Files: kas/kas/static/bootstrap/*
+Files: kas/kas/static/kas/bootstrap/*
 Copyright: 2011-2021 The Bootstrap Authors (https://github.com/twbs/bootstrap/graphs/contributors)
 License: MIT
 
-Files: kas/kas/static/font-awesome/webfonts/*.eot kas/kas/static/font-awesome/webfonts/*.ttf kas/kas/static/font-awesome/webfonts/*.woff kas/kas/static/font-awesome/webfonts/*.woff2
+Files: kas/kas/static/kas/font-awesome/webfonts/*.eot kas/kas/static/font-awesome/webfonts/*.ttf kas/kas/static/font-awesome/webfonts/*.woff kas/kas/static/font-awesome/webfonts/*.woff2
 Copyright: 2011-2021 @fontawesome (https://fontawesome.com)
 License: OFL-1.1
 
-Files: kas/kas/static/font-awesome/css/*
+Files: kas/kas/static/kas/font-awesome/css/*
 Copyright: 2011-2021 @fontawesome (https://fontawesome.com)
 License: MIT
 
-Files: kas/kas/static/font-awesome/webfonts/*.svg
+Files: kas/kas/static/kas/font-awesome/webfonts/*.svg
 Copyright: 2011-2021 @fontawesome (https://fontawesome.com)
 License: CC-BY-4.0
 
-Files: kas/kas/static/js/bootstrap-tab-history/*
+Files: kas/kas/static/kas/js/bootstrap-tab-history/*
 Copyright: Michael Narayan <mnarayan01@gmail.com>
 License: Apache-2.0
 
-Files: kas/kas/static/js/jquery*
+Files: kas/kas/static/kas/js/jquery*
 Copyright: 2022 OpenJS Foundation and jQuery contributors
 License: MIT
 
-Files: kas/kas/static/js/select2*
+Files: kas/kas/static/kas/js/select2*
 Copyright: 2012-2017 Kevin Brown, Igor Vaynberg, and Select2 contributors
 License: MIT
