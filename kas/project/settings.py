@@ -141,7 +141,6 @@ LANGUAGES = [
 ]
 
 
-
 UPLOAD_PATH = "/uploads"
 MEDIA_ROOT = "/srv/media/"
 MEDIA_URL = "/media/"

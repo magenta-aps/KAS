@@ -44,7 +44,6 @@ COPY ./docker/kas_entrypoint.sh /entrypoint.sh
 COPY --chown=kas:kas ./kas /app
 RUN chown kas:kas /app
 USER kas
-# RUN mkdir -p /app/static
 EXPOSE 8000
 VOLUME /srv/media
 ENTRYPOINT ["/entrypoint.sh"]
