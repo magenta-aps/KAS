@@ -38,9 +38,5 @@ if [ "${MAKE_MIGRATIONS,,}" = true ] || [ "${MIGRATE,,}" = true ] || [ "${TEST,,
     echo 'making messages!'
     python manage.py makemessages --all --no-obsolete --add-location file
   fi
-  if [ "${GENERATE_DB_DOCUMENTATION,,}" = true ]; then
-      echo 'building DB documentation!'
-      python manage.py graph_models eskat kas prisme worker -g -X Historical* -o kas/static/doc/kas_models.png
-  fi
 fi
 exec "$@"

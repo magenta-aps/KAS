@@ -44,8 +44,9 @@ COPY ./docker/kas_entrypoint.sh /entrypoint.sh
 COPY --chown=kas:kas ./kas /app
 RUN chown kas:kas /app
 USER kas
+# RUN mkdir -p /app/static
 EXPOSE 8000
-VOLUME  /srv/media
+VOLUME /srv/media
 ENTRYPOINT ["/entrypoint.sh"]
 WORKDIR /app
 RUN django-admin compilemessages
@@ -53,6 +54,11 @@ RUN django-admin compilemessages
 # temporary use of dev env to make manage.py work
 COPY --chown=kas:kas ./dev-environment/kas.env kas.env
 # hadolint ignore=SC1091
-RUN set -a && source kas.env && set +a && python manage.py collectstatic --no-input --clear && rm kas.env
+RUN set -a && \
+    source kas.env && \
+    set +a && \
+    python manage.py collectstatic --no-input --clear && \
+    python manage.py graph_models eskat kas prisme worker -g -X Historical* -o /app/static/kas/doc/kas_models.png && \
+    rm kas.env
 
 CMD ["gunicorn","-b","0.0.0.0:8000","project.wsgi:application","-w 4","--timeout 120", "--error-logfile", "-","--capture-output"]
