@@ -35,12 +35,25 @@ RUN pip install --no-cache-dir -r /app/requirements.txt&& \
     rm /app/requirements.txt
 
 ENV PYTHONUNBUFFERED=1
-USER kas
 COPY ./docker/crontab.selvbetjening /crontab
 COPY ./docker/selvbetjening_entrypoint.sh /entrypoint.sh
-COPY ./selvbetjening /app
+COPY --chown=kas:kas ./selvbetjening /app
+RUN chown kas:kas /app
+USER kas
 EXPOSE 8000
 WORKDIR /app
+
+RUN django-admin compilemessages
+
+# temporary use of dev env to make manage.py work
+COPY --chown=kas:kas ./dev-environment/selvbetjening.env selvbetjening.env
+# hadolint ignore=SC1091
+RUN set -a && \
+    source selvbetjening.env && \
+    set +a && \
+    python manage.py collectstatic --no-input --clear && \
+    rm selvbetjening.env
+
 VOLUME  /var/cache/kas
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["gunicorn","-b","0.0.0.0:8000","project.wsgi:application","-w 4","--timeout 60","--error-logfile", "-","--capture-output"]
