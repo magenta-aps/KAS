@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-18 14:34+0200\n"
+"POT-Creation-Date: 2024-11-11 13:17+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -44,8 +44,7 @@ msgstr ""
 msgid "År"
 msgstr ""
 
-#: kas/forms.py kas/templates/includes/persontaxyear_lists/standard.html
-#: kas/templates/includes/persontaxyear_speciallist.html
+#: kas/forms.py kas/templates/includes/persontaxyear_speciallist.html
 #: kas/templates/kas/lock_detail.html
 #: kas/templates/kas/persontaxyear_eskat_diff.html
 #: kas/templates/kas/persontaxyear_list.html
@@ -54,7 +53,6 @@ msgid "Personnummer"
 msgstr ""
 
 #: kas/forms.py kas/models.py
-#: kas/templates/includes/persontaxyear_lists/standard.html
 #: kas/templates/includes/persontaxyear_speciallist.html
 #: kas/templates/kas/lock_detail.html
 #: kas/templates/kas/pensioncompany_list.html
@@ -74,7 +72,6 @@ msgid "Kommunenavn"
 msgstr ""
 
 #: kas/forms.py kas/models.py
-#: kas/templates/includes/persontaxyear_lists/standard.html
 #: kas/templates/includes/persontaxyear_speciallist.html
 #: kas/templates/kas/persontaxyear_detail.html
 #: kas/templates/kas/persontaxyear_eskat_diff.html
@@ -1355,33 +1352,6 @@ msgstr ""
 msgid "sidste"
 msgstr ""
 
-#: kas/templates/includes/persontaxyear_lists/standard.html
-#: kas/templates/includes/persontaxyear_speciallist.html
-#: kas/templates/kas/persontaxyear_eskat_diff.html
-#: kas/templates/kas/persontaxyear_list.html
-#: kas/templates/kas/persontaxyear_unfinished_list.html
-msgid "Kommune"
-msgstr ""
-
-#: kas/templates/includes/persontaxyear_lists/standard.html
-#: kas/templates/includes/persontaxyear_speciallist.html
-#: kas/templates/kas/persontaxyear_eskat_diff.html
-#: kas/templates/kas/persontaxyear_list.html
-#: kas/templates/kas/persontaxyear_unfinished_list.html
-msgid "Antal policer"
-msgstr ""
-
-#: kas/templates/includes/persontaxyear_lists/standard.html
-#: kas/templates/kas/persontaxyear_list.html
-#, python-format
-msgid "Ingen personer fundet for %(year)s med søgekriterierne"
-msgstr ""
-
-#: kas/templates/includes/persontaxyear_lists/standard.html
-#: kas/templates/kas/persontaxyear_list.html
-msgid "Udfyld mindst ét søgefelt"
-msgstr ""
-
 #: kas/templates/includes/persontaxyear_speciallist.html
 #: kas/templates/kas/persontaxyear_eskat_diff.html
 #: kas/templates/kas/persontaxyear_list.html
@@ -1398,6 +1368,20 @@ msgstr ""
 #: kas/templates/kas/policytaxyear_taxdifference_list.html
 #: kas/templates/kas/policytaxyear_unfinished_list.html
 msgid "Download excel fil"
+msgstr ""
+
+#: kas/templates/includes/persontaxyear_speciallist.html
+#: kas/templates/kas/persontaxyear_eskat_diff.html
+#: kas/templates/kas/persontaxyear_list.html
+#: kas/templates/kas/persontaxyear_unfinished_list.html
+msgid "Kommune"
+msgstr ""
+
+#: kas/templates/includes/persontaxyear_speciallist.html
+#: kas/templates/kas/persontaxyear_eskat_diff.html
+#: kas/templates/kas/persontaxyear_list.html
+#: kas/templates/kas/persontaxyear_unfinished_list.html
+msgid "Antal policer"
 msgstr ""
 
 #: kas/templates/includes/persontaxyear_speciallist.html
@@ -2043,6 +2027,15 @@ msgid ""
 "\n"
 "    Klik på en borger i listen for at få vist detaljer for borgeren og for "
 "at få vist borgerens policer for det valgte år."
+msgstr ""
+
+#: kas/templates/kas/persontaxyear_list.html
+#, python-format
+msgid "Ingen personer fundet for %(year)s med søgekriterierne"
+msgstr ""
+
+#: kas/templates/kas/persontaxyear_list.html
+msgid "Udfyld mindst ét søgefelt"
 msgstr ""
 
 #: kas/templates/kas/persontaxyear_unfinished_list.html
