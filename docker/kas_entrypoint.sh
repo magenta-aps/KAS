@@ -36,7 +36,7 @@ if [ "${MAKE_MIGRATIONS,,}" = true ] || [ "${MIGRATE,,}" = true ] || [ "${TEST,,
   fi
   if [ "${MAKEMESSAGES,,}" = true ]; then
     echo 'making messages!'
-    python manage.py makemessages --all --no-obsolete --add-location file
+    python manage.py make_messages --all --no-obsolete --add-location file
   fi
 fi
 exec "$@"
