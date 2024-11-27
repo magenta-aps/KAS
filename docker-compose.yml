@@ -1,4 +1,3 @@
-version: "3.4"
 services:
   kas-web:
     user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
