@@ -306,7 +306,7 @@ Selvbetjening Django check:
     # install skopeo
     - apk add skopeo
 
-Release KAS image:
+Release Admin image:
   # Releases both stable and RC releases.
   extends:
     - .rules:semver-all
@@ -365,7 +365,7 @@ Configure Test:
   extends:
     - .rules:semver-all
     - .config:endpoint-with-tag
-  needs: ["Release KAS image", "Release Selvbetjening image"]
+  needs: ["Release Admin image", "Release Selvbetjening image"]
   variables:
     # Matches routing in config-updater/config_updater/kas/main.py in salt repo
     ENDPOINT: kas/salt/update-test
@@ -375,7 +375,7 @@ Configure Production:
   extends:
     - .rules:semver-core
     - .config:endpoint-with-tag
-  needs: ["Release KAS image", "Release Selvbetjening image"]
+  needs: ["Release Admin image", "Release Selvbetjening image"]
   variables:
     # Matches routing in config-updater/config_updater/kas/main.py in salt repo
     ENDPOINT: kas/salt/update-production
@@ -388,7 +388,7 @@ Deploy to Staging:
   extends:
     - .rules:semver-all
     - .saltbert
-  needs: ["Release KAS image", "Release Selvbetjening image", "Release ER image", "Configure Test"]
+  needs: ["Release Admin image", "Release Selvbetjening image", "Release ER image", "Configure Test"]
   variables:
     SALTBERT_ORCHESTRATION: groenland.kas.service-test
     SALTBERT_URL: https://saltmaster.groenland.magentahosted.dk
@@ -401,7 +401,7 @@ Deploy to Production:
   extends:
     - .rules:semver-core
     - .saltbert
-  needs: ["Release KAS image", "Release Selvbetjening image", "Configure Production"]
+  needs: ["Release Admin image", "Release Selvbetjening image", "Configure Production"]
   variables:
     SALTBERT_ORCHESTRATION: groenland.kas.service-prod
     SALTBERT_URL: https://saltmaster.groenland.magentahosted.dk
