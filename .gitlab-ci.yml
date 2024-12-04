@@ -290,7 +290,7 @@ Selvbetjening Django check:
   <<: *test-selvbetjening
   script:
     - cd /app
-    - python manage.py check kas eskat prisme worker
+    - python manage.py check selvbetjening
 
 
 # Release stage
