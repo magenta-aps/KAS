@@ -136,13 +136,13 @@ Build ER image:
   stage: test
   dependencies: []
 
-KAS Unittest:
+.test-admin: &test-admin
   <<: *test-default
   needs: ["Build KAS image"]
   image: ${KAS_IMAGE_SHA}
   services:
-   - name: postgres:13
-     alias: kas-db
+    - name: postgres:13
+      alias: kas-db
   variables:
     DJANGO_SECRET_KEY: e$s6@0(hs5ja79-&!l7vt^onoe4h^*bv_e4hj&wt5^8*&x76-$
     DJANGO_TIMEZONE: Europe/Copenhagen
@@ -179,6 +179,9 @@ KAS Unittest:
     # Simulate development environment while running tests so we use mockup data
     ENVIRONMENT: development
     DISABLE_METRICS: 'True'
+
+Admin Unittest:
+  <<: *test-admin
   script:
     - cd /app
     - coverage run manage.py test --parallel 4
@@ -192,7 +195,14 @@ KAS Unittest:
           coverage_format: cobertura
           path: /app/coverage.xml
 
-Selvbetjening Unittest:
+Admin Django check:
+  <<: *test-admin
+  script:
+    - cd /app
+    - python manage.py check kas eskat prisme worker
+
+
+.test-selvbetjening: &test-selvbetjening
   <<: *test-default
   needs: ["Build Selvbetjening image"]
   image: ${SELF_IMAGE_SHA}
@@ -228,6 +238,9 @@ Selvbetjening Unittest:
     SAML_CONTACT_SUPPORT_NAME: Tester
     SAML_CONTACT_SUPPORT_EMAIL: test@example.com
     SKIP_IDP_METADATA: "true"
+
+Selvbetjening Unittest:
+  <<: *test-selvbetjening
   script:
     - cd /app
     - coverage run manage.py test --parallel 4
@@ -241,38 +254,8 @@ Selvbetjening Unittest:
           coverage_format: cobertura
           path: /app/coverage.xml
 
-KAS Django check:
-  <<: *test-default
-  needs: [ "Build KAS image" ]
-  image: ${KAS_IMAGE_SHA}
-  services:
-    - name: postgres:13
-      alias: kas-db
-  variables:
-    DJANGO_SECRET_KEY: e$s6@0(hs5ja79-&!l7vt^onoe4h^*bv_e4hj&wt5^8*&x76-$
-    DJANGO_TIMEZONE: Europe/Copenhagen
-    POSTGRES_USER: kas
-    POSTGRES_PASSWORD: kas
-    POSTGRES_DB: selvbetjening
-    POSTGRES_HOST: kas-db
-    SELVBETJENING_REPRESENTATION_START: ""
-    SELVBETJENING_REPRESENTATION_STOP: ""
-    EBOKS_MOCK: 'True'
-    EBOKS_DISPATCH_BULK_SIZE: 100
-    ESKAT_HOST: ""
-    ESKAT_PORT: ""
-    ESKAT_DB: ""
-    ESKAT_USER: ""
-    ESKAT_PASSWORD: ""
-    TENQ_HOST: ""
-    TENQ_PORT: 22
-    TENQ_USER: ""
-    TENQ_PASSWORD: ""
-    TENQ_KNOWN_HOSTS: ""
-    TENQ_PROD_PATH: ""
-    TENQ_TEST_PATH: ""
-    TENQ_PROJECT_ID: "KAS"
-    ENVIRONMENT: development
+Selvbetjening Django check:
+  <<: *test-selvbetjening
   script:
     - cd /app
     - python manage.py check kas eskat prisme worker
@@ -281,10 +264,9 @@ KAS Django check:
 # Release stage
 ###############
 
-.release-kas:
+.release:
   stage: release
   image: alpine
-  needs: ["KAS Unittest"]
   variables:
     GIT_STRATEGY: none # We do not need the source code
   dependencies: []
@@ -292,16 +274,12 @@ KAS Django check:
     # install skopeo
     - apk add skopeo
 
-.release-self: &release-self
-  extends:
-    - .release-kas
-  needs: ["Selvbetjening Unittest"]
-
 Release KAS image:
   # Releases both stable and RC releases.
   extends:
     - .rules:semver-all
-    - .release-kas
+    - .release
+  needs: ["Admin Unittest"]
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD}
@@ -312,7 +290,8 @@ Release KAS image:
 Release Selvbetjening image:
   extends:
     - .rules:semver-all
-    - .release-self
+    - .release
+  needs: ["Selvbetjening Unittest"]
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD}
@@ -323,7 +302,8 @@ Release Selvbetjening image:
 Release ER image:
   extends:
     - .rules:semver-all
-    - .release-kas
+    - .release
+  needs: ["Admin Unittest"]
   script:
     - skopeo copy
       --src-creds=${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD}
