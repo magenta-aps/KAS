@@ -44,6 +44,38 @@ include:
       - "/gitlab-ci-templates/common/conventional-commits-changelog-meta.v1.yml"
 
 
+.releaserc:
+  before_script:
+    - |
+      cat <<EOF > .releaserc.yaml
+      branches:
+        - master
+      tagFormat: "\${version}-rc1"
+      plugins:
+        - - "@semantic-release/commit-analyzer"
+          - preset: angular
+            releaseRules:
+              - type: chore
+                scope: deps-dev
+                release: patch
+              - type: chore
+                scope: deps
+                release: patch
+              - type: build
+                scope: deps-dev
+                release: patch
+              - type: build
+                scope: deps
+                release: patch
+        - "@semantic-release/release-notes-generator"
+        - "@semantic-release/changelog"
+        - - "@semantic-release/gitlab"
+          - assets:
+              - path: CHANGELOG.md
+                label: Changelog
+      EOF
+      
+
 variables:
   # Project variables
   RELEASE_REGISTRY: docker.io
