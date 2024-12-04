@@ -3,6 +3,7 @@ stages:
   - build
   - test
   - release
+  - docs
   - configure
   - deploy
 
@@ -15,6 +16,7 @@ stages:
 
 .if-merge-request: &if-merge-request
   if: '$CI_MERGE_REQUEST_IID'
+
 
 # Workflow
 ###########
@@ -35,8 +37,12 @@ include:
     file:
       - '/gitlab-ci-templates/common/rules.v1.yml'
       - '/gitlab-ci-templates/common/saltbert.v1.yml'
-      - '/gitlab-ci-templates/common/config-updater-meta.v1.yml'
       - '/gitlab-ci-templates/common/docker-build-meta.v2.yml'
+      - '/gitlab-ci-templates/common/docker-release-meta.v1.yml'
+      - '/gitlab-ci-templates/common/config-updater-meta.v1.yml'
+      - "/gitlab-ci-templates/common/conventional-commits-meta.v1.yml"
+      - "/gitlab-ci-templates/common/conventional-commits-changelog-meta.v1.yml"
+
 
 variables:
   # Project variables
@@ -64,6 +70,11 @@ variables:
   stage: lint
   needs: []
   image: python:3.8
+
+Lint Commits:
+  extends: .lint:commits
+  variables:
+    CONFIG: '{ extends: [''@commitlint/config-conventional''], ignores: [(message) => message.includes(''suggestion(s)'')], }'
 
 Lint Python:
   <<: *lint-default
@@ -96,6 +107,7 @@ Lint REUSE compliance:
     entrypoint: [""]
   script:
     - reuse lint
+
 
 # Build stage
 #############
@@ -265,6 +277,7 @@ KAS Django check:
     - cd /app
     - python manage.py check kas eskat prisme worker
 
+
 # Release stage
 ###############
 
@@ -283,7 +296,6 @@ KAS Django check:
   extends:
     - .release-kas
   needs: ["Selvbetjening Unittest"]
-
 
 Release KAS image:
   # Releases both stable and RC releases.
@@ -318,6 +330,20 @@ Release ER image:
       --dest-creds=${RELEASE_REGISTRY_USER}:${RELEASE_REGISTRY_PASSWORD}
       "docker://${ER_IMAGE_SHA}"
       "docker://${ER_IMAGE_TAG}"
+
+Release Semantic commit:
+  extends: .release:semantic-commit
+
+Release Generate changelog:
+  extends: .release:generate-changelog
+
+Docs Export changelog:
+  extends:
+    - .rules:semver-all
+    - .docs:export-changelog
+  variables:
+    CHANGELOG_EXTRA_FLAGS: "--merge-prerelease"
+
 
 # Configure stage
 #################
@@ -354,7 +380,6 @@ Deploy to Staging:
   variables:
     SALTBERT_ORCHESTRATION: groenland.kas.service-test
     SALTBERT_URL: https://saltmaster.groenland.magentahosted.dk
-  when: manual
   environment:
     name: test
     url: "https://test.kas.aka.nanoq.gl"
