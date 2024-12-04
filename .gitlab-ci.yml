@@ -2,7 +2,6 @@ stages:
   - lint
   - build
   - test
-  - coverage
   - release
   - docs
   - configure
