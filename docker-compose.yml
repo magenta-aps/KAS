@@ -1,18 +1,19 @@
 services:
-  kas-web:
+  kas-admin:
     user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
-    container_name: kas
+    container_name: kas-admin
     image: kas:latest
     build:
       context: .
       dockerfile: docker/Dockerfile.kas
     depends_on:
-      - postgres
-    # Test-idp needs for adresses to endpoints to be the same from the perspective
-    # of the test-idp container and for the client (which means accessing 'localhost' adresses always)
-    # This means that all containers should run in "host" network mode, and should conflict
-    # with each others' ports
-    network_mode: "host"
+      - kas-db
+    ports:
+      - "8020:8000"
+    networks:
+      - default
+      - database
+      - worker
     env_file:
       - ./dev-environment/kas.env
     volumes:
@@ -26,7 +27,7 @@ services:
       - DUMMYDATA=true
       - CREATE_USERS=true
       - CREATE_DUMMY_USERS=true
-      - TEST=true
+      - TEST=false
     command: gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output # reload on code changes
 
   kas-cron:
@@ -34,11 +35,12 @@ services:
     container_name: kas-cron
     image: kas:latest
     depends_on:
-      - postgres
+      - kas-db
       - redis
-    network_mode: "host"
     env_file:
       - ./dev-environment/kas.env
+    networks:
+      - database
     volumes:
       - ./kas/:/app
       - ./data/kas:/srv/media
@@ -52,10 +54,12 @@ services:
     #add more containers like this to add more workers
     container_name: worker-one
     image: kas:latest
-    network_mode: "host"
     depends_on:
-      - postgres
+      - kas-db
       - redis
+    networks:
+      - worker
+      - database
     env_file:
       - ./dev-environment/kas.env
     volumes:
@@ -68,13 +72,14 @@ services:
     command: python manage.py devrqworker high default low # listening on all three queues by default
     pull_policy: build
 
-  postgres:
+  kas-db:
     # Do not set `user` here
     container_name: kas-db
     image: postgres:13
-    network_mode: "host"
     env_file:
       - ./dev-environment/kas.env
+    networks:
+      - database
     volumes:
       - kas-postgres-data:/var/lib/postgresql/data
       - ./dev-environment/postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
@@ -82,17 +87,22 @@ services:
   redis:
     container_name: redis
     image: redis:6.0
-    network_mode: "host"
+    networks:
+      - worker
 
-  selvbetjening:
+  kas-selvbetjening:
     user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
     container_name: kas-selvbetjening
     build:
       context: .
       dockerfile: docker/Dockerfile.selvbetjening
     depends_on:
-      - postgres
-    network_mode: "host"
+      - kas-db
+    ports:
+      - "8021:8000"
+    networks:
+      - default
+      - database
     env_file:
       - ./dev-environment/selvbetjening.env
     volumes:
@@ -103,26 +113,32 @@ services:
       - MIGRATE=true
     command: bash -c "
         django-admin compilemessages &&
-        gunicorn -b 0.0.0.0:8040 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output
+        gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output
       "
 
-  kas-test-idp:
+  kas-idp:
     user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
     image: kenchan0130/simplesamlphp
-    container_name: kas-test-idp
-    network_mode: "host"
+    container_name: kas-idp
+    ports:
+      - "8022:8022"
+    networks:
+      - default
     environment:
-      SIMPLESAMLPHP_SP_ENTITY_ID: http://localhost:8040/saml/metadata/
-      SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: http://localhost:8040/login/callback/
-      SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE: http://localhost:8040/logout/callback/
+      HTTP_PORT: 8022
+      SIMPLESAMLPHP_SP_ENTITY_ID: http://kas-selvbetjening:8021/saml/metadata/
+      SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: http://kas-selvbetjening:8021/login/callback/
+      SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE: http://kas-selvbetjening:8021/logout/callback/
       SIMPLESAMLPHP_IDP_CERTIFICATE: /var/www/simplesamlphp/cert/selfsigned.crt
       SIMPLESAMLPHP_IDP_PRIVATEKEY: /var/www/simplesamlphp/cert/selfsigned.key
 
     volumes:
       - ./dev-environment/cert/idp/selfsigned.crt:/var/www/simplesamlphp/cert/server.crt:ro
       - ./dev-environment/cert/idp/selfsigned.key:/var/www/simplesamlphp/cert/server.pem:ro
-      - ./dev-idp/authsources.php:/var/www/simplesamlphp/config/authsources.php:ro
-      - ./dev-idp/saml20-sp-remote.php:/var/www/simplesamlphp/metadata/saml20-sp-remote.php:ro
+      - ./dev-environment/idp/authsources.php:/var/www/simplesamlphp/config/authsources.php:ro
+      - ./dev-environment/idp/saml20-sp-remote.php:/var/www/simplesamlphp/metadata/saml20-sp-remote.php:ro
+      - ./dev-environment/idp/ports.conf:/etc/apache2/ports.conf:ro
+      - ./dev-environment/idp/site.conf:/etc/apache2/sites-available/simplesamlphp.conf:ro
 
   kas-er:
     user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
@@ -132,12 +148,27 @@ services:
       context: .
       dockerfile: docker/Dockerfile.er
     depends_on:
-      - postgres
-    network_mode: "host"
+      - kas-db
     env_file:
       - ./dev-environment/kas.env
+    networks:
+      - database
     volumes:
       - ./data/er:/doc
 
+  kas-hosts-updater:
+    container_name: kas-hosts-updater
+    image: bash
+    volumes:
+      - ./dev-environment/hosts.sh:/hosts.sh:ro
+      - /etc/hosts:/hosts:rw
+    command: [ "bash", "/hosts.sh" ]
+
+
 volumes:
   kas-postgres-data:
+
+networks:
+  default:
+  database:
+  worker:

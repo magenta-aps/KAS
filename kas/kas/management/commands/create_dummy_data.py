@@ -1,8 +1,11 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from eskat.jobs import generate_sample_data, importere_kas_beregninger_for_legacy_years
 from worker.models import Job
+
+from kas.models import TaxYear
 
 from kas.jobs import (  # isort: skip
     generate_pseudo_settlements_and_transactions_for_legacy_years,
@@ -25,6 +28,10 @@ class Command(BaseCommand):
             "GenerateSampleData",
             admin_user,
         )
+
+        current_year = timezone.now().year
+        for year in range(2018, current_year + 1):
+            TaxYear.objects.get_or_create(year=year)
 
         for year in [2018, 2019]:
             # Import mandtal
