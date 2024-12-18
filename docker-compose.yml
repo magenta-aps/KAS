@@ -111,10 +111,7 @@ services:
     environment:
       - MAKE_MIGRATIONS=true
       - MIGRATE=true
-    command: bash -c "
-        django-admin compilemessages &&
-        gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output
-      "
+    command: gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output
 
   kas-idp:
     user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
