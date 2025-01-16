@@ -11,7 +11,8 @@ data/er/*
 kas/kas/static/doc/er_html/
 kas/kas/static/doc/kas_models.png
 /kas/.coverage
-
+/certifikater/*.crt
+/certifikater/*.key
 
 **/__pycache__
 **/.venv*
