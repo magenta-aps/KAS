@@ -2,7 +2,7 @@ Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: KAS
 Upstream-Contact: Magenta ApS <info@magenta.dk>
 
-Files: kas/* selvbetjening/* dev-environment/* docker/* idp/* docker-compose.yml SUMMARY README.md .gitignore .gitlab-ci.yml .pre-commit-config.yaml
+Files: kas/* selvbetjening/* dev-environment/* docker/* idp/* certifikater/* docker-compose.yml SUMMARY README.md .gitignore .gitlab-ci.yml .pre-commit-config.yaml
 Copyright: 2021-2022 Magenta ApS <info@magenta.dk>
 License: MPL-2.0
 
