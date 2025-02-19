@@ -42,7 +42,6 @@ include:
       - '/gitlab-ci-templates/common/config-updater-meta.v1.yml'
       - "/gitlab-ci-templates/common/conventional-commits-meta.v1.yml"
       - "/gitlab-ci-templates/common/conventional-commits-changelog-meta.v1.yml"
-    ref: "fix/61499-no-more-deployment-runner"
 
 
 .releaserc:
