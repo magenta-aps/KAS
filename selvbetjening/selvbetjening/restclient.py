@@ -32,7 +32,9 @@ class RestClient(object):
             params=params,
             headers=self.headers,
             verify=False,  # settings.REST_CA_CERT,
+            timeout=settings.REST_REQUEST_TIMEOUT,
         )
+
         return self._handle_response(response)
 
     def post(self, path, files=None, **data):
@@ -42,6 +44,7 @@ class RestClient(object):
             headers=self.headers,
             files=files,
             verify=False,  # settings.REST_CA_CERT,
+            timeout=settings.REST_REQUEST_TIMEOUT,
         )
         return self._handle_response(response)
 
@@ -51,6 +54,7 @@ class RestClient(object):
             data=data,
             headers=self.headers,
             verify=False,  # settings.REST_CA_CERT,
+            timeout=settings.REST_REQUEST_TIMEOUT,
         )
         return self._handle_response(response)
 
@@ -59,6 +63,7 @@ class RestClient(object):
             f"{settings.REST_HOST}/rest/{path}/",
             headers=self.headers,
             verify=False,  # settings.REST_CA_CERT,
+            timeout=settings.REST_REQUEST_TIMEOUT,
         )
         return self._handle_response(response)
 
