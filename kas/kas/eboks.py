@@ -163,7 +163,6 @@ class EboksClient(object):
                 )
             else:
                 print(f"Failed sending message (id={message_id}): {message}")
-                raise
 
     @staticmethod
     def parse_exception(e):
