@@ -563,7 +563,7 @@ def dispatch_eboks_tax_slips(job):
     )
     tries = 5
     generator = EboksDispatchGenerator.from_settings()
-    client = EboksClient.from_settings():
+    client = EboksClient.from_settings()
     try:
         while slips.exists() and tries > 0:
             tries -= 1
