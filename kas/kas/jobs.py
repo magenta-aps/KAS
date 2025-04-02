@@ -4,6 +4,7 @@ import importlib
 import re
 import traceback
 import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime
 from decimal import Decimal
 from time import sleep
@@ -523,94 +524,111 @@ def mark_parent_job_as_failed(child_job, progress=None):
         parent.save(update_fields=update_fields)
 
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+def send_message(slip, generator, client):
+    message_id = client.get_message_id()
+    slip.file.open(mode="rb")
+    try:
+        return client.send_message(
+            message=generator.generate_dispatch(
+                slip.title,
+                slip.persontaxyear.person.cpr,
+                pdf_data=base64.b64encode(slip.file.read()),
+            ),
+            message_id=message_id,
+        )
+    finally:
+        slip.file.close()
+
+
+
 @job_decorator
 def dispatch_eboks_tax_slips(job):
-    from django.conf import settings
-
-    dispatch_page_size = settings.EBOKS["dispatch_bulk_size"]
-    generator = EboksDispatchGenerator.from_settings()
-    client = EboksClient.from_settings()
-    i = 1
-    has_more = False
     slips = (
         TaxSlipGenerated.objects.filter(status="created")
         .filter(
-            persontaxyear__tax_year__pk=job.parent.arguments["year_pk"],
+            persontaxyear__tax_year__year=2024,
             persontaxyear__person__is_test_person=False,
         )
         .exclude(
             persontaxyear__person__status__in=["Dead", "Invalid"],
-        )[: dispatch_page_size + 1]
+        )
     )
-    try:
-        for slip in slips:
-            if i == dispatch_page_size + 1:
-                has_more = True
-                # we have more so we need to spawn a new job
-                break
+    tries = 5
+    generator = EboksDispatchGenerator.from_settings()
+    with EboksClient.from_settings() as client:
+        while slips.exists() and tries > 0:
+            tries -= 1
+            i=0
+            count = slips.count()
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                futures = {
+                    executor.submit(send_message, slip, generator, client): slip
+                    for slip in slips.iterator()
+                }
+                for future in as_completed(futures):
+                    slip = futures[future]
+                    i+=1
+                    print(f"{i}/{count}")
+                    try:
+                        resp = future.result()
+                    except:
+                        print("skipped")
+                        continue
+                    json = resp.json()
+                    recipient = json["recipients"][0]
+                    slip.message_id = json[
+                        "message_id"
+                    ]  # message_id might have changed so get it from the response
+                    slip.recipient_status = recipient["status"]
+                    slip.send_at = timezone.now()
+                    if recipient["post_processing_status"] == "":
+                        slip.status = "send"
+                    else:
+                        slip.status = "post_processing"
+                    slip.save(
+                        update_fields=[
+                            "status",
+                            "message_id",
+                            "recipient_status",
+                            "send_at",
+                        ]
+                    )
 
-            message_id = client.get_message_id()
-            slip.file.open(mode="rb")
-            try:
-                resp = client.send_message(
-                    message=generator.generate_dispatch(
-                        slip.title,
-                        slip.persontaxyear.person.cpr,
-                        pdf_data=base64.b64encode(slip.file.read()),
-                    ),
-                    message_id=message_id,
-                )
-            except (ConnectionError, HTTPError) as e:
-                job.status = "failed"
-                job.result = client.parse_exception(e)
-                job.save(update_fields=["status", "result"])
-                mark_parent_job_as_failed(job)
-                break
-            else:
-                # we only use 1 recipient
-                json = resp.json()
-                recipient = json["recipients"][0]
-                slip.message_id = json[
-                    "message_id"
-                ]  # message_id might have changed so get it from the response
-                slip.recipient_status = recipient["status"]
-                slip.send_at = timezone.now()
-                if recipient["post_processing_status"] == "":
-                    slip.status = "send"
-                else:
-                    slip.status = "post_processing"
-                slip.save(
-                    update_fields=[
-                        "status",
-                        "message_id",
-                        "recipient_status",
-                        "send_at",
-                    ]
-                )
-            finally:
-                slip.file.close()
-            i += 1
+        pending_slips_qs = TaxSlipGenerated.objects.filter(
+            status="post_processing"
+        ).filter(persontaxyear__tax_year__pk=job.parent.arguments["year_pk"])
 
-        pending_slips = {
-            slip.message_id: slip
-            for slip in TaxSlipGenerated.objects.filter(
-                status="post_processing"
-            ).filter(persontaxyear__tax_year__pk=job.parent.arguments["year_pk"])[:50]
-        }
-        while pending_slips:
-            update_status_for_pending_dispatches(client, pending_slips)
-            pending_slips = {
-                slip.message_id: slip
-                for slip in TaxSlipGenerated.objects.filter(
-                    status="post_processing"
-                ).filter(persontaxyear__tax_year__pk=job.parent.arguments["year_pk"])[
-                    :50
-                ]
-            }
-            if pending_slips:
-                sleep(10)
-    finally:
-        client.close()
+        tries = 5
+        while pending_slips_qs.exists() and tries > 0:
+            tries -= 1
+            i=0
+            count = pending_slips_qs.count()
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                futures = {}
+                for chunk in chunks(pending_slips_qs.iterator(), 100):
+                    messages = {message.message_id: message for message in chunk}
+                    future = executor.submit(lambda chunk: client.get_recipient_status(messages.keys()))
+                    futures[future] = messages
+                for future in as_completed(futures):
+                    messages = futures[future]
+                    results = future.result()
+                    for result in results.json():
+                        i+=1
+                        print(f"{i}/{count}")
+                        # we only use 1 recipient
+                        recipient = result["recipients"][0]
+                        message = messages.get(result["message_id"])
+                        if (
+                                message is not None
+                                and recipient["post_processing_status"] != "pending"
+                        ):
+                            # if state change update it
+                            message.post_processing_status = recipient["post_processing_status"]
+                            message.status = "send"
+                            message.save(update_fields=["post_processing_status", "status"])
+
 
     with transaction.atomic():
         parent = Job.objects.filter(pk=job.parent.pk).select_for_update()[0]
