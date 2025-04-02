@@ -458,8 +458,14 @@ def generate_reports_for_year(job):
 
 def chunks(lst, size):
     """Yield successive n-sized chunks from lst."""
-    for i in range(0, len(lst), size):
-        yield lst[i : i + size]
+    batch = []
+    for element in lst:
+        batch.append(element)
+        if len(batch) >= size:
+            yield batch
+            batch = []
+    if len(batch) > 0:
+        yield batch
 
 
 def update_status_for_pending_dispatches(eboks_client, pending_messages):
@@ -557,7 +563,8 @@ def dispatch_eboks_tax_slips(job):
     )
     tries = 5
     generator = EboksDispatchGenerator.from_settings()
-    with EboksClient.from_settings() as client:
+    client = EboksClient.from_settings():
+    try:
         while slips.exists() and tries > 0:
             tries -= 1
             i=0
@@ -600,6 +607,7 @@ def dispatch_eboks_tax_slips(job):
             status="post_processing"
         ).filter(persontaxyear__tax_year__pk=job.parent.arguments["year_pk"])
 
+
         tries = 5
         while pending_slips_qs.exists() and tries > 0:
             tries -= 1
@@ -607,13 +615,16 @@ def dispatch_eboks_tax_slips(job):
             count = pending_slips_qs.count()
             with ThreadPoolExecutor(max_workers=8) as executor:
                 futures = {}
-                for chunk in chunks(pending_slips_qs.iterator(), 100):
+                for chunk in chunks(pending_slips_qs.iterator(), 10):
                     messages = {message.message_id: message for message in chunk}
-                    future = executor.submit(lambda chunk: client.get_recipient_status(messages.keys()))
+                    future = executor.submit(lambda message_ids: client.get_recipient_status(message_ids), messages.keys())
                     futures[future] = messages
                 for future in as_completed(futures):
                     messages = futures[future]
-                    results = future.result()
+                    try:
+                        results = future.result()
+                    except Exception as e:
+                        continue
                     for result in results.json():
                         i+=1
                         print(f"{i}/{count}")
@@ -628,6 +639,10 @@ def dispatch_eboks_tax_slips(job):
                             message.post_processing_status = recipient["post_processing_status"]
                             message.status = "send"
                             message.save(update_fields=["post_processing_status", "status"])
+    finally:
+        client.close()
+
+
 
 
     with transaction.atomic():
