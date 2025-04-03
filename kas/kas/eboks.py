@@ -195,5 +195,4 @@ class EboksClient(object):
     def from_settings(cls):
         eboks_settings = dict(settings.EBOKS)
         eboks_settings.pop("content_type_id")
-        eboks_settings.pop("dispatch_bulk_size")
         return cls(**eboks_settings)

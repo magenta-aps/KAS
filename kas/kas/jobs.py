@@ -1281,69 +1281,20 @@ def dispatch_agterskrivelser_for_year(job):
 def dispatch_agterskrivelser(job):
     # Mostly a copy of dispatch_final_settlements
 
-    dispatch_page_size = settings.EBOKS["dispatch_bulk_size"]
-    generator = EboksDispatchGenerator.from_settings()
-    client = EboksClient.from_settings()
-    has_more = False
-
     agterskrivelser = Agterskrivelse.objects.exclude(
         person_tax_year__person__status__in=["Dead", "Invalid"]
     ).filter(
         status="created",
         person_tax_year__tax_year__pk=job.parent.arguments["year_pk"],
         person_tax_year__person__is_test_person=False,
-    )[
-        : dispatch_page_size + 1
-    ]
+    )
 
-    pending_messages = {}
-    current_number_of_items = 0
-    for i, agterskrivelse in enumerate(agterskrivelser, start=1):
-        if i == dispatch_page_size + 1:
-            has_more = True
-            # we have more so we need to spawn a new job
-            break
-        try:
-            sent_agterskrivelse = agterskrivelse.dispatch_to_eboks(client, generator)
-        except (ConnectionError, HTTPError) as e:
-            mark_job_failed(job, client.parse_exception(e), e)
-            break
-        else:
-            if sent_agterskrivelse.status == "post_processing":
-                pending_messages[sent_agterskrivelse.message_id] = sent_agterskrivelse
-            current_number_of_items = i
+    pending = Agterskrivelse.objects.filter(
+        status="post_processing",
+        person_tax_year__tax_year__pk=job.parent.arguments["year_pk"],
+    )
 
-    while pending_messages:
-        update_status_for_pending_dispatches(client, pending_messages)
-        pending_messages = {
-            settlement.message_id: settlement
-            for settlement in Agterskrivelse.objects.filter(
-                status="post_processing",
-                person_tax_year__tax_year__pk=job.parent.arguments["year_pk"],
-            )[:50]
-        }
-        if pending_messages:
-            sleep(10)
-
-    with transaction.atomic():
-        parent = Job.objects.filter(pk=job.parent.pk).select_for_update()[0]
-        current_count = parent.arguments["current_count"] + min(
-            current_number_of_items, dispatch_page_size
-        )
-        job.set_progress(current_count, parent.arguments["total_count"])
-        if not has_more:
-            # mark the parent job as finished
-            parent.result = {"dispatched_items": current_count}
-            parent.finish()
-
-    if has_more:
-        # start a new child job to handle the next hundred
-        Job.schedule_job(
-            dispatch_agterskrivelser,
-            "dispatch_agterskrivelser_child",
-            job.parent.created_by,
-            parent=job.parent,
-        )
+    dispatch(agterskrivelser, pending, job)
 
 
 def resolve_class(string):

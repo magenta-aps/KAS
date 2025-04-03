@@ -206,7 +206,7 @@ TRANSACTION_INDIFFERENCE_LIMIT = int(
 REPORT_EXCLUDE_ALREADY_GENERATED = False
 
 EBOKS_MOCK = bool(strtobool(os.environ.get("EBOKS_MOCK", "False")))
-EBOKS = {"dispatch_bulk_size": int(os.environ["EBOKS_DISPATCH_BULK_SIZE"])}
+EBOKS = {}
 if EBOKS_MOCK:
     # If mock is set ignore the rest of the settings.
     EBOKS["mock"] = EBOKS_MOCK

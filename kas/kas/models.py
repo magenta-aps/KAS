@@ -2348,7 +2348,7 @@ class Agterskrivelse(EboksDispatch):
     person_tax_year = models.ForeignKey(PersonTaxYear, on_delete=models.CASCADE)
     pdf = models.FileField(upload_to=agterskrivelse_file_path)
 
-    def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
+    def dispatch(self, client: EboksClient, generator: EboksDispatchGenerator):
         return super().dispatch_to_eboks(
             client, generator, self.pdf, self.person_tax_year.person.cpr
         )

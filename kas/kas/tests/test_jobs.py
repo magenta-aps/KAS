@@ -46,7 +46,6 @@ from kas.models import (  # isort: skip
 )
 
 test_settings = dict(settings.EBOKS)
-test_settings["dispatch_bulk_size"] = 2
 
 
 def send_message_mock(message_and_status):
