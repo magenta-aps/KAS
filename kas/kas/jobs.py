@@ -18,6 +18,21 @@ from django.db.models.functions import Cast
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from eskat.jobs import delete_protected
+from more_itertools import map_except
+from openpyxl import load_workbook
+from pandas import to_datetime
+from prisme.models import Prisme10QBatch
+from project.dafo import DatafordelerClient
+from requests.exceptions import ConnectionError, HTTPError
+from rq import get_current_job
+from worker.job_registry import resolve_job_function
+from worker.models import Job, job_decorator
+
+from kas.eboks import EboksClient, EboksDispatchGenerator
+from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
+from kas.reportgeneration.kas_report import TaxPDF
+from kas.reportgeneration.kas_topdanmark_agterskrivelse import AgterskrivelsePDF
+
 from eskat.models import (  # isort: skip
     EskatModels,
     ImportedKasMandtal,
@@ -26,7 +41,6 @@ from eskat.models import (  # isort: skip
     get_kas_mandtal_model,
     get_r75_private_pension_model,
 )
-from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.models import (  # isort: skip
     AddressFromDafo,
     Agterskrivelse,
@@ -41,18 +55,6 @@ from kas.models import (  # isort: skip
     TaxSlipGenerated,
     TaxYear,
 )
-from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
-from kas.reportgeneration.kas_report import TaxPDF
-from kas.reportgeneration.kas_topdanmark_agterskrivelse import AgterskrivelsePDF
-from more_itertools import map_except
-from openpyxl import load_workbook
-from pandas import to_datetime
-from prisme.models import Prisme10QBatch
-from project.dafo import DatafordelerClient
-from requests.exceptions import ConnectionError, HTTPError
-from rq import get_current_job
-from worker.job_registry import resolve_job_function
-from worker.models import Job, job_decorator
 
 
 def mark_job_failed(job, result, exception=None):
@@ -60,7 +62,9 @@ def mark_job_failed(job, result, exception=None):
     job.result = result
     if exception is not None:
         job.traceback = repr(
-            traceback.format_exception(type(exception), exception, exception.__traceback__)
+            traceback.format_exception(
+                type(exception), exception, exception.__traceback__
+            )
         )
     job.save(update_fields=["status", "result", "traceback"])
     mark_parent_job_as_failed(job)
@@ -529,7 +533,7 @@ def mark_parent_job_as_failed(child_job, progress=None):
         parent.save(update_fields=update_fields)
 
 
-def send_message(message: Union[TaxSlipGenerated,FinalSettlement], generator, client):
+def send_message(message: Union[TaxSlipGenerated, FinalSettlement], generator, client):
     message.dispatch(client, generator)
 
 
@@ -546,9 +550,9 @@ def dispatch_eboks_tax_slips(job):
         )
     )
 
-    pending = TaxSlipGenerated.objects.filter(
-        status="post_processing"
-    ).filter(persontaxyear__tax_year__pk=job.parent.arguments["year_pk"])
+    pending = TaxSlipGenerated.objects.filter(status="post_processing").filter(
+        persontaxyear__tax_year__pk=job.parent.arguments["year_pk"]
+    )
 
     dispatch(slips, pending, job)
 
@@ -568,8 +572,12 @@ def dispatch(dispatch_qs, pending_qs, job):
             with ThreadPoolExecutor(max_workers=8) as executor:
                 futures = {
                     executor.submit(
-                        lambda message, client, generator: message.dispatch(client, generator),
-                        dispatch_item, client, generator
+                        lambda message, client, generator: message.dispatch(
+                            client, generator
+                        ),
+                        dispatch_item,
+                        client,
+                        generator,
                     ): dispatch_item
                     for dispatch_item in dispatch_qs.iterator()
                 }
@@ -628,7 +636,10 @@ def dispatch(dispatch_qs, pending_qs, job):
                 futures = {}
                 for chunk in chunks(pending_qs.iterator(), 10):
                     messages = {message.message_id: message for message in chunk}
-                    future = executor.submit(lambda message_ids: client.get_recipient_status(message_ids), messages.keys())
+                    future = executor.submit(
+                        lambda message_ids: client.get_recipient_status(message_ids),
+                        messages.keys(),
+                    )
                     futures[future] = messages
                 for future in as_completed(futures):
                     messages = futures[future]
@@ -641,13 +652,17 @@ def dispatch(dispatch_qs, pending_qs, job):
                         recipient = result["recipients"][0]
                         message = messages.get(result["message_id"])
                         if (
-                                message is not None
-                                and recipient["post_processing_status"] != "pending"
+                            message is not None
+                            and recipient["post_processing_status"] != "pending"
                         ):
                             # if state change update it
-                            message.post_processing_status = recipient["post_processing_status"]
+                            message.post_processing_status = recipient[
+                                "post_processing_status"
+                            ]
                             message.status = "send"
-                            message.save(update_fields=["post_processing_status", "status"])
+                            message.save(
+                                update_fields=["post_processing_status", "status"]
+                            )
                             processed += 1
                     job.set_progress(processed, total_count)
 
@@ -987,9 +1002,9 @@ def dispatch_final_settlements(job):
         person_tax_year__person__is_test_person=False,
     )
 
-    pending = TaxSlipGenerated.objects.filter(
-        status="post_processing"
-    ).filter(persontaxyear__tax_year__pk=job.parent.arguments["year_pk"])
+    pending = TaxSlipGenerated.objects.filter(status="post_processing").filter(
+        persontaxyear__tax_year__pk=job.parent.arguments["year_pk"]
+    )
 
     dispatch(settlements, pending, job)
 

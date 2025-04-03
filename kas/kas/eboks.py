@@ -164,7 +164,9 @@ class EboksClient(object):
                     message, message_id, retries - 1, retry_wait_time * 2
                 )
             else:
-                print(f"Failed sending message (id={', '.join(message_ids)}): {message}")
+                print(
+                    f"Failed sending message (id={', '.join(message_ids)}): {message}"
+                )
                 raise
 
     @staticmethod

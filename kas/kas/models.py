@@ -525,6 +525,7 @@ class TaxSlipGenerated(EboksDispatch):
             client, generator, self.file, self.persontaxyear.person.cpr
         )
 
+
 def delete_file(sender, instance, using, **kwargs):
     """
     This method expect a model with a filefield named file.
