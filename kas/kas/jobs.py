@@ -585,9 +585,9 @@ def dispatch(dispatch_qs, pending_qs, job):
                     dispatch_item = futures[future]
                     try:
                         resp = future.result()
-                    except:
-                        # When a message fails to send for whatever reason (usually network),
-                        # skip it.
+                    except Exception:
+                        # When a message fails to send for whatever reason
+                        # (usually network), skip it.
                         # It will still exist in the queryset, and subsequent tries
                         # (loop while slips.exists() and tries > 0) will attempt later
                         continue
@@ -645,7 +645,7 @@ def dispatch(dispatch_qs, pending_qs, job):
                     messages = futures[future]
                     try:
                         results = future.result()
-                    except Exception as e:
+                    except Exception:
                         continue
                     for result in results.json():
                         # we only use 1 recipient
