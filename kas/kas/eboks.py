@@ -149,6 +149,7 @@ class EboksClient(object):
                 sys_id=self._system_id, message_id=message_id
             ),
         )
+        message_ids = [message_id]
         try:
             return self._make_request(url=url, method="PUT", data=message)
         except HTTPError as e:
@@ -157,12 +158,15 @@ class EboksClient(object):
                     if e.response.status_code == 409:
                         # message_id is already used
                         message_id = self.get_message_id()
+                        message_ids.append(message_id)
                 sleep(retry_wait_time)  # 10, 20 ,40 seconds
                 return self.send_message(
                     message, message_id, retries - 1, retry_wait_time * 2
                 )
             else:
-                print(f"Failed sending message (id={message_id}): {message}")
+                print(
+                    f"Failed sending message (id={', '.join(message_ids)}): {message}"
+                )
                 raise
 
     @staticmethod
