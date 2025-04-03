@@ -57,12 +57,13 @@ from kas.models import (  # isort: skip
 )
 
 
-def mark_job_failed(job, result, exception):
+def mark_job_failed(job, result, exception=None):
     job.status = "failed"
     job.result = result
-    job.traceback = repr(
-        traceback.format_exception(type(exception), exception, exception.__traceback__)
-    )
+    if exception is not None:
+        job.traceback = repr(
+            traceback.format_exception(type(exception), exception, exception.__traceback__)
+        )
     job.save(update_fields=["status", "result", "traceback"])
     mark_parent_job_as_failed(job)
 
@@ -506,7 +507,7 @@ def dispatch_tax_year():
         job.arguments["current_count"] = 0
         job.save(update_fields=["status", "progress", "started_at", "arguments"])
 
-    if job.arguments["total_count"] > 0:
+    if total > 0:
         Job.schedule_job(
             dispatch_eboks_tax_slips,
             "dispatch_tax_year_child",
@@ -548,53 +549,66 @@ def send_message(slip, generator, client):
         slip.file.close()
 
 
-
 @job_decorator
 def dispatch_eboks_tax_slips(job):
     slips = (
         TaxSlipGenerated.objects.filter(status="created")
         .filter(
-            persontaxyear__tax_year__year=2024,
+            persontaxyear__tax_year__pk=job.parent.arguments["year_pk"],
             persontaxyear__person__is_test_person=False,
         )
         .exclude(
             persontaxyear__person__status__in=["Dead", "Invalid"],
         )
     )
-    tries = 5
+
+    pending = TaxSlipGenerated.objects.filter(
+        status="post_processing"
+    ).filter(persontaxyear__tax_year__pk=job.parent.arguments["year_pk"])
+
+    dispatch(slips, pending, job)
+
+
+def dispatch(dispatch_qs, pending_qs, job):
     generator = EboksDispatchGenerator.from_settings()
     client = EboksClient.from_settings()
+    total_count = dispatch_qs.count()
+    processed = 0
     try:
-        while slips.exists() and tries > 0:
+        tries = 5
+        while dispatch_qs.exists() and tries > 0:
+            # Each iteration of the loop runs through all eligible tax slips
+            # and attempts to send them. Usually the first iteration will get
+            # 99% of all messages sent
             tries -= 1
-            i=0
-            count = slips.count()
             with ThreadPoolExecutor(max_workers=8) as executor:
                 futures = {
-                    executor.submit(send_message, slip, generator, client): slip
-                    for slip in slips.iterator()
+                    executor.submit(send_message, dispatch_item, generator, client): dispatch_item
+                    for dispatch_item in dispatch_qs.iterator()
                 }
                 for future in as_completed(futures):
-                    slip = futures[future]
-                    i+=1
-                    print(f"{i}/{count}")
+                    dispatch_item = futures[future]
                     try:
                         resp = future.result()
                     except:
-                        print("skipped")
+                        # When a message fails to send for whatever reason (usually network),
+                        # skip it.
+                        # It will still exist in the queryset, and subsequent tries
+                        # (loop while slips.exists() and tries > 0) will attempt later
                         continue
                     json = resp.json()
                     recipient = json["recipients"][0]
-                    slip.message_id = json[
+                    dispatch_item.message_id = json[
                         "message_id"
                     ]  # message_id might have changed so get it from the response
-                    slip.recipient_status = recipient["status"]
-                    slip.send_at = timezone.now()
+                    dispatch_item.recipient_status = recipient["status"]
+                    dispatch_item.send_at = timezone.now()
                     if recipient["post_processing_status"] == "":
-                        slip.status = "send"
+                        dispatch_item.status = "send"
+                        processed += 1
                     else:
-                        slip.status = "post_processing"
-                    slip.save(
+                        dispatch_item.status = "post_processing"
+                    dispatch_item.save(
                         update_fields=[
                             "status",
                             "message_id",
@@ -602,20 +616,30 @@ def dispatch_eboks_tax_slips(job):
                             "send_at",
                         ]
                     )
+                    job.set_progress(processed, total_count)
 
-        pending_slips_qs = TaxSlipGenerated.objects.filter(
-            status="post_processing"
-        ).filter(persontaxyear__tax_year__pk=job.parent.arguments["year_pk"])
+        if tries == 0 and dispatch_qs.exists():
+            # We failed sending all messages in 5 tries
+            mark_job_failed(job, "Failed sending {dispatch_qs.count()} messages")
 
-
+        # Do the same loop logic again, with obtaining recipient status
+        # This checks all messages that were in status "post_processing"
+        # How their status is resolved in eboks.
+        # Post_processing means that they are getting piped to remote printing
+        # and their post_processing_status is updated to "remote printed"
         tries = 5
-        while pending_slips_qs.exists() and tries > 0:
+        first = True
+        while pending_qs.exists() and tries > 0:
             tries -= 1
-            i=0
-            count = pending_slips_qs.count()
+            if first:
+                first = False
+                # Remote server does take a bit of time eating through the workload
+                # so give it some time to do its job
+                sleep(10)
+
             with ThreadPoolExecutor(max_workers=8) as executor:
                 futures = {}
-                for chunk in chunks(pending_slips_qs.iterator(), 10):
+                for chunk in chunks(pending_qs.iterator(), 10):
                     messages = {message.message_id: message for message in chunk}
                     future = executor.submit(lambda message_ids: client.get_recipient_status(message_ids), messages.keys())
                     futures[future] = messages
@@ -626,8 +650,6 @@ def dispatch_eboks_tax_slips(job):
                     except Exception as e:
                         continue
                     for result in results.json():
-                        i+=1
-                        print(f"{i}/{count}")
                         # we only use 1 recipient
                         recipient = result["recipients"][0]
                         message = messages.get(result["message_id"])
@@ -639,30 +661,16 @@ def dispatch_eboks_tax_slips(job):
                             message.post_processing_status = recipient["post_processing_status"]
                             message.status = "send"
                             message.save(update_fields=["post_processing_status", "status"])
+                            processed += 1
+                    job.set_progress(processed, total_count)
+
     finally:
         client.close()
 
-
-
-
-    with transaction.atomic():
-        parent = Job.objects.filter(pk=job.parent.pk).select_for_update()[0]
-        current_count = parent.arguments["current_count"] + min(i, dispatch_page_size)
-        parent.set_progress(current_count, parent.arguments["total_count"])
-        parent.arguments["current_count"] = current_count
-        parent.save()
-        if has_more is False:
-            # if we are done mark the parent job as finished
-            parent.result = {"dispatched_items": current_count}
-            parent.finish()
-
-    if has_more:
-        Job.schedule_job(
-            dispatch_eboks_tax_slips,
-            "dispatch_tax_year_child",
-            job.parent.created_by,
-            parent=job.parent,
-        )
+        # if we are done mark the parent job as finished
+        job.result = {"dispatched_items": processed}
+        job.save(update_fields=["result"])
+        job.finish()
 
 
 def dispatch_tax_year_debug():
@@ -983,76 +991,26 @@ def dispatch_final_settlements_for_year():
 
 @job_decorator
 def dispatch_final_settlements(job):
-    from django.conf import settings
 
-    dispatch_page_size = settings.EBOKS["dispatch_bulk_size"]
-    generator = EboksDispatchGenerator.from_settings()
-    client = EboksClient.from_settings()
-    has_more = False
     settlements = FinalSettlement.objects.exclude(
         invalid=True, person_tax_year__person__status__in=["Dead", "Invalid"]
     ).filter(
         status="created",
         person_tax_year__tax_year__pk=job.parent.arguments["year_pk"],
         person_tax_year__person__is_test_person=False,
-    )[
-        : dispatch_page_size + 1
-    ]
+    )
 
-    pending_messages = {}
-    current_number_of_items = 0
-    for i, settlement in enumerate(settlements, start=1):
-        if i == dispatch_page_size + 1:
-            has_more = True
-            # we have more so we need to spawn a new job
-            break
-        try:
-            send_settlement = settlement.dispatch_to_eboks(client, generator)
-        except Exception as e:
-            mark_job_failed(job, client.parse_exception(e), e)
-            break
-        else:
-            if send_settlement.status == "post_processing":
-                pending_messages[send_settlement.message_id] = send_settlement
-            current_number_of_items = i
+    pending = TaxSlipGenerated.objects.filter(
+        status="post_processing"
+    ).filter(persontaxyear__tax_year__pk=job.parent.arguments["year_pk"])
 
-    while pending_messages:
-        update_status_for_pending_dispatches(client, pending_messages)
-        pending_messages = {
-            settlement.message_id: settlement
-            for settlement in FinalSettlement.objects.filter(
-                status="post_processing",
-                person_tax_year__tax_year__pk=job.parent.arguments["year_pk"],
-            )[:50]
-        }
-        if pending_messages:
-            sleep(10)
+    dispatch(settlements, pending, job)
 
-    with transaction.atomic():
-        parent = Job.objects.filter(pk=job.parent.pk).select_for_update()[0]
-        current_count = parent.arguments["current_count"] + min(
-            current_number_of_items, dispatch_page_size
-        )
-        job.set_progress(current_count, parent.arguments["total_count"])
-        if not has_more:
-            if job.status != "failed":
-                # set the current year part to genoptagelse only if job didnt fail
-                year = TaxYear.objects.get(pk=parent.arguments["year_pk"])
-                year.year_part = "genoptagelsesperiode"
-                year.save(update_fields=["year_part"])
-
-            # mark the parent job as finished
-            parent.result = {"dispatched_items": current_count}
-            parent.finish()
-
-    if has_more:
-        # start a new child job to handle the next hundred
-        Job.schedule_job(
-            dispatch_final_settlements,
-            "dispatch_final_settlements_child",
-            job.parent.created_by,
-            parent=job.parent,
-        )
+    if job.status != "failed":
+        # set the current year part to genoptagelse only if job didn't fail
+        year = TaxYear.objects.get(pk=job.arguments["year_pk"])
+        year.year_part = "genoptagelsesperiode"
+        year.save(update_fields=["year_part"])
 
 
 @job_decorator

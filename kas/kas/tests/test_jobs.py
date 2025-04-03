@@ -409,8 +409,8 @@ class TaxslipGeneratedJobsTest(BaseTransactionTestCase):
             created_by=self.user,
         )
         self.assertEqual(
-            Job.objects.filter(parent=parent_job).count(), 2
-        )  # 4 jobs should have been started
+            Job.objects.filter(parent=parent_job).count(), 1
+        )
         self.assertEqual(TaxSlipGenerated.objects.filter(status="send").count(), 4)
 
 

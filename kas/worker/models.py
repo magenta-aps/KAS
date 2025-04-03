@@ -111,10 +111,12 @@ class Job(models.Model):
 
     def set_progress(self, count, total, **kwargs):
         self.set_progress_pct((count / total) * 100, **kwargs)
+        self.arguments["current_count"] = count
+        self.arguments["total_count"] = total
 
     def set_progress_pct(self, progress, **kwargs):
         self.progress = progress
-        self.save(update_fields=["progress"], **kwargs)
+        self.save(update_fields=["progress", "arguments"], **kwargs)
 
     @classmethod
     def schedule_job(
