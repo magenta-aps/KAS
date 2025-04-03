@@ -520,6 +520,10 @@ class EboksDispatch(models.Model):
 class TaxSlipGenerated(EboksDispatch):
     file = models.FileField(upload_to=taxslip_path_by_year, null=True)
 
+    def dispatch(self, client: EboksClient, generator: EboksDispatchGenerator):
+        return super().dispatch_to_eboks(
+            client, generator, self.file, self.persontaxyear.person.cpr
+        )
 
 def delete_file(sender, instance, using, **kwargs):
     """
@@ -2081,7 +2085,7 @@ class FinalSettlement(EboksDispatch):
             else None
         )
 
-    def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
+    def dispatch(self, client: EboksClient, generator: EboksDispatchGenerator):
         return super().dispatch_to_eboks(
             client, generator, self.pdf, self.person_tax_year.person.cpr
         )

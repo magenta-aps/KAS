@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime
 from decimal import Decimal
 from time import sleep
+from typing import Union
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -528,20 +529,8 @@ def mark_parent_job_as_failed(child_job, progress=None):
         parent.save(update_fields=update_fields)
 
 
-def send_message(slip, generator, client):
-    message_id = client.get_message_id()
-    slip.file.open(mode="rb")
-    try:
-        return client.send_message(
-            message=generator.generate_dispatch(
-                slip.title,
-                slip.persontaxyear.person.cpr,
-                pdf_data=base64.b64encode(slip.file.read()),
-            ),
-            message_id=message_id,
-        )
-    finally:
-        slip.file.close()
+def send_message(message: Union[TaxSlipGenerated,FinalSettlement], generator, client):
+    message.dispatch(client, generator)
 
 
 @job_decorator
@@ -578,7 +567,10 @@ def dispatch(dispatch_qs, pending_qs, job):
             tries -= 1
             with ThreadPoolExecutor(max_workers=8) as executor:
                 futures = {
-                    executor.submit(send_message, dispatch_item, generator, client): dispatch_item
+                    executor.submit(
+                        lambda message, client, generator: message.dispatch(client, generator),
+                        dispatch_item, client, generator
+                    ): dispatch_item
                     for dispatch_item in dispatch_qs.iterator()
                 }
                 for future in as_completed(futures):
