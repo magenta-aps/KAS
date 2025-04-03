@@ -17,21 +17,6 @@ from django.db.models.functions import Cast
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from eskat.jobs import delete_protected
-from more_itertools import map_except
-from openpyxl import load_workbook
-from pandas import to_datetime
-from prisme.models import Prisme10QBatch
-from project.dafo import DatafordelerClient
-from requests.exceptions import ConnectionError, HTTPError
-from rq import get_current_job
-from worker.job_registry import resolve_job_function
-from worker.models import Job, job_decorator
-
-from kas.eboks import EboksClient, EboksDispatchGenerator
-from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
-from kas.reportgeneration.kas_report import TaxPDF
-from kas.reportgeneration.kas_topdanmark_agterskrivelse import AgterskrivelsePDF
-
 from eskat.models import (  # isort: skip
     EskatModels,
     ImportedKasMandtal,
@@ -40,7 +25,7 @@ from eskat.models import (  # isort: skip
     get_kas_mandtal_model,
     get_r75_private_pension_model,
 )
-
+from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.models import (  # isort: skip
     AddressFromDafo,
     Agterskrivelse,
@@ -55,6 +40,18 @@ from kas.models import (  # isort: skip
     TaxSlipGenerated,
     TaxYear,
 )
+from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
+from kas.reportgeneration.kas_report import TaxPDF
+from kas.reportgeneration.kas_topdanmark_agterskrivelse import AgterskrivelsePDF
+from more_itertools import map_except
+from openpyxl import load_workbook
+from pandas import to_datetime
+from prisme.models import Prisme10QBatch
+from project.dafo import DatafordelerClient
+from requests.exceptions import ConnectionError, HTTPError
+from rq import get_current_job
+from worker.job_registry import resolve_job_function
+from worker.models import Job, job_decorator
 
 
 def mark_job_failed(job, result, exception=None):
@@ -530,8 +527,6 @@ def mark_parent_job_as_failed(child_job, progress=None):
             update_fields.append("progress")
         parent.save(update_fields=update_fields)
 
-
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def send_message(slip, generator, client):
     message_id = client.get_message_id()
