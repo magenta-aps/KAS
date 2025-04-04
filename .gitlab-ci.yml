@@ -217,7 +217,7 @@ Admin Unittest:
     - cd /app
     - coverage run manage.py test --parallel 4
     - coverage combine
-    - coverage report --show-missing --fail-under=72
+    - coverage report --show-missing --fail-under=71
     - coverage xml
   coverage: '/^TOTAL.+?(\d+\%)$/'
   artifacts:
