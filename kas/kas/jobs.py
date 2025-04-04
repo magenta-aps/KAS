@@ -8,7 +8,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime
 from decimal import Decimal
 from time import sleep
-from typing import Union
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -490,36 +489,6 @@ def update_status_for_pending_dispatches(eboks_client, pending_messages):
                 message.save(update_fields=["post_processing_status", "status"])
 
 
-def dispatch_tax_year():
-    rq_job = get_current_job()
-    with transaction.atomic():
-        job = Job.objects.select_for_update().filter(uuid=rq_job.meta["job_uuid"])[0]
-        job.status = rq_job.get_status()
-        job.progress = 0
-        job.started_at = timezone.now()
-        total = (
-            TaxSlipGenerated.objects.filter(status="created")
-            .filter(
-                persontaxyear__tax_year__pk=job.arguments["year_pk"],
-                persontaxyear__person__is_test_person=False,
-            )
-            .count()
-        )
-        job.arguments["total_count"] = total
-        job.arguments["current_count"] = 0
-        job.save(update_fields=["status", "progress", "started_at", "arguments"])
-
-    if total > 0:
-        Job.schedule_job(
-            dispatch_eboks_tax_slips,
-            "dispatch_tax_year_child",
-            job.created_by,
-            parent=job,
-        )
-    else:
-        job.finish()
-
-
 def mark_parent_job_as_failed(child_job, progress=None):
     parent = child_job.parent
     if parent:
@@ -531,30 +500,6 @@ def mark_parent_job_as_failed(child_job, progress=None):
             parent.progress = progress
             update_fields.append("progress")
         parent.save(update_fields=update_fields)
-
-
-def send_message(message: Union[TaxSlipGenerated, FinalSettlement], generator, client):
-    message.dispatch(client, generator)
-
-
-@job_decorator
-def dispatch_eboks_tax_slips(job):
-    slips = (
-        TaxSlipGenerated.objects.filter(status="created")
-        .filter(
-            persontaxyear__tax_year__pk=job.parent.arguments["year_pk"],
-            persontaxyear__person__is_test_person=False,
-        )
-        .exclude(
-            persontaxyear__person__status__in=["Dead", "Invalid"],
-        )
-    )
-
-    pending = TaxSlipGenerated.objects.filter(status="post_processing").filter(
-        persontaxyear__tax_year__pk=job.parent.arguments["year_pk"]
-    )
-
-    dispatch(slips, pending, job)
 
 
 def dispatch(dispatch_qs, pending_qs, job):
@@ -584,33 +529,15 @@ def dispatch(dispatch_qs, pending_qs, job):
                 for future in as_completed(futures):
                     dispatch_item = futures[future]
                     try:
-                        resp = future.result()
+                        future.result()
                     except Exception:
                         # When a message fails to send for whatever reason
                         # (usually network), skip it.
                         # It will still exist in the queryset, and subsequent tries
                         # (loop while slips.exists() and tries > 0) will attempt later
                         continue
-                    json = resp.json()
-                    recipient = json["recipients"][0]
-                    dispatch_item.message_id = json[
-                        "message_id"
-                    ]  # message_id might have changed so get it from the response
-                    dispatch_item.recipient_status = recipient["status"]
-                    dispatch_item.send_at = timezone.now()
-                    if recipient["post_processing_status"] == "":
-                        dispatch_item.status = "send"
+                    if dispatch_item.status == "send":
                         processed += 1
-                    else:
-                        dispatch_item.status = "post_processing"
-                    dispatch_item.save(
-                        update_fields=[
-                            "status",
-                            "message_id",
-                            "recipient_status",
-                            "send_at",
-                        ]
-                    )
                     job.set_progress(processed, total_count)
 
         if tries == 0 and dispatch_qs.exists():
@@ -675,6 +602,38 @@ def dispatch(dispatch_qs, pending_qs, job):
         job.finish()
 
 
+@job_decorator
+def dispatch_tax_year(job):
+
+    slips = (
+        TaxSlipGenerated.objects.filter(status="created")
+        .filter(
+            persontaxyear__tax_year__pk=job.arguments["year_pk"],
+            persontaxyear__person__is_test_person=False,
+        )
+        .exclude(
+            persontaxyear__person__status__in=["Dead", "Invalid"],
+        )
+    )
+
+    pending = TaxSlipGenerated.objects.filter(status="post_processing").filter(
+        persontaxyear__tax_year__pk=job.arguments["year_pk"]
+    )
+
+    with transaction.atomic():
+        job = Job.objects.select_for_update().filter(uuid=job.uuid)[0]
+        job.started_at = timezone.now()
+        total = slips.count()
+        job.arguments["total_count"] = total
+        job.arguments["current_count"] = 0
+        job.save(update_fields=["status", "progress", "started_at", "arguments"])
+
+    if total > 0:
+        dispatch(slips, pending, job)
+    else:
+        job.finish()
+
+
 def dispatch_tax_year_debug():
     rq_job = get_current_job()
     with transaction.atomic():
@@ -722,7 +681,6 @@ def dispatch_eboks_tax_slip_debug(job):
                     slip.persontaxyear.person.cpr,
                     pdf_data=base64.b64encode(slip.file.read()),
                 )
-                print(f"Sending message (id={message_id}): {message}")
                 resp = client.send_message(
                     message=message,
                     message_id=message_id,
@@ -963,37 +921,8 @@ def generate_pension_company_summary_file(job):
     }
 
 
-def dispatch_final_settlements_for_year():
-    rq_job = get_current_job()
-    with transaction.atomic():
-        job = Job.objects.select_for_update().filter(uuid=rq_job.meta["job_uuid"])[0]
-        job.status = rq_job.get_status()
-        job.progress = 0
-        job.started_at = timezone.now()
-        settlements = (
-            FinalSettlement.objects.exclude(invalid=True)
-            .filter(status="created")
-            .filter(person_tax_year__tax_year__pk=job.arguments["year_pk"])
-        )
-        settlements.update(title=job.arguments["title"])
-        job.arguments["total_count"] = settlements.count()
-        job.arguments["current_count"] = 0
-        job.save(update_fields=["status", "progress", "started_at", "arguments"])
-
-    if job.arguments["total_count"] > 0:
-        Job.schedule_job(
-            dispatch_final_settlements,
-            "dispatch_final_settlements_child",
-            job.created_by,
-            parent=job,
-        )
-    else:
-        job.finish()
-
-
 @job_decorator
-def dispatch_final_settlements(job):
-
+def dispatch_final_settlements_for_year(job):
     settlements = FinalSettlement.objects.exclude(
         invalid=True, person_tax_year__person__status__in=["Dead", "Invalid"]
     ).filter(
@@ -1003,16 +932,26 @@ def dispatch_final_settlements(job):
     )
 
     pending = TaxSlipGenerated.objects.filter(status="post_processing").filter(
-        persontaxyear__tax_year__pk=job.parent.arguments["year_pk"]
+        persontaxyear__tax_year__pk=job.arguments["year_pk"]
     )
 
-    dispatch(settlements, pending, job)
+    with transaction.atomic():
+        settlements.update(title=job.arguments["title"])
+        job.started_at = timezone.now()
+        job.arguments["total_count"] = settlements.count()
+        job.arguments["current_count"] = 0
+        job.save(update_fields=["status", "progress", "started_at", "arguments"])
 
-    if job.status != "failed":
-        # set the current year part to genoptagelse only if job didn't fail
-        year = TaxYear.objects.get(pk=job.arguments["year_pk"])
-        year.year_part = "genoptagelsesperiode"
-        year.save(update_fields=["year_part"])
+    if job.arguments["total_count"] > 0:
+        dispatch(settlements, pending, job)
+
+        if job.status != "failed":
+            # set the current year part to genoptagelse only if job didn't fail
+            year = TaxYear.objects.get(pk=job.arguments["year_pk"])
+            year.year_part = "genoptagelsesperiode"
+            year.save(update_fields=["year_part"])
+    else:
+        job.finish()
 
 
 @job_decorator
@@ -1255,31 +1194,6 @@ def import_spreadsheet_r75(job):
 
 @job_decorator
 def dispatch_agterskrivelser_for_year(job):
-    rq_job = get_current_job()
-    with transaction.atomic():
-        job = Job.objects.select_for_update().filter(uuid=rq_job.meta["job_uuid"])[0]
-        job.status = rq_job.get_status()
-        job.progress = 0
-        job.started_at = timezone.now()
-        job.arguments["total_count"] = Agterskrivelse.objects.filter(
-            status="created", person_tax_year__tax_year__pk=job.arguments["year_pk"]
-        ).count()
-        job.arguments["current_count"] = 0
-        job.save(update_fields=["status", "progress", "started_at", "arguments"])
-    if job.arguments["total_count"] > 0:
-        Job.schedule_job(
-            dispatch_agterskrivelser,
-            "dispatch_agterskrivelser_child",
-            job.created_by,
-            parent=job,
-        )
-    else:
-        job.finish()
-
-
-@job_decorator
-def dispatch_agterskrivelser(job):
-    # Mostly a copy of dispatch_final_settlements
 
     agterskrivelser = Agterskrivelse.objects.exclude(
         person_tax_year__person__status__in=["Dead", "Invalid"]
@@ -1294,7 +1208,15 @@ def dispatch_agterskrivelser(job):
         person_tax_year__tax_year__pk=job.parent.arguments["year_pk"],
     )
 
-    dispatch(agterskrivelser, pending, job)
+    with transaction.atomic():
+        job.started_at = timezone.now()
+        job.arguments["total_count"] = agterskrivelser.count()
+        job.arguments["current_count"] = 0
+        job.save(update_fields=["status", "progress", "started_at", "arguments"])
+    if job.arguments["total_count"] > 0:
+        dispatch(agterskrivelser, pending, job)
+    else:
+        job.finish()
 
 
 def resolve_class(string):

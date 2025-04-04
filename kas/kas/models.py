@@ -497,10 +497,8 @@ class EboksDispatch(models.Model):
             self.status = "failed"
             self.save(update_fields=["status"])
             raise
-        else:
-            self.message_id = jsonresponse[
-                "message_id"
-            ]  # message_id might have changed so get it from the response
+        else:  # message_id might have changed so get it from the response
+            self.message_id = jsonresponse["message_id"]
             # we always only have 1 recipient
             recipient = jsonresponse["recipients"][0]
             self.recipient_status = recipient["status"]
