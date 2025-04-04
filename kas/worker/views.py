@@ -33,15 +33,16 @@ class JobListHtmxView(KasMixin, PermissionRequiredMixin, ListView):
             # For some reason this doesn't work completely,
             # it outputs Jobs that are later than last_object,
             # when objects are less than one second apart
-            qs = qs.filter(created_at__lt=last_object.created_at).order_by("-created_at")
+            qs = qs.filter(created_at__lt=last_object.created_at).order_by(
+                "-created_at"
+            )
 
             # Do further filtering
             return islice(
                 filter(
-                    lambda job: job.created_at < last_object.created_at,
-                    qs.iterator()
+                    lambda job: job.created_at < last_object.created_at, qs.iterator()
                 ),
-                chunk_size
+                chunk_size,
             )
 
         return qs.order_by("-created_at")[:chunk_size]
