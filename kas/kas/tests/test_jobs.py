@@ -659,7 +659,7 @@ class DispatchAgterskrivelseJobsTest(BaseTransactionTestCase):
             created_by=self.user,
         )
 
-        # all slips were marked as send
+        # all slips were marked as sent
         self.assertEqual(
             Agterskrivelse.objects.filter(status="send").count(), 4
         )  # 5 persons is not dead or invalid or testpersons
