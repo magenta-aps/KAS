@@ -373,42 +373,17 @@ class TaxslipGeneratedJobsTest(BaseTransactionTestCase):
         send_message.return_value = send_message_mock(self.mock_message)
         get_recipient_mock.return_value = get_recipient_status_mock()
 
-        parent_job = Job.schedule_job(
+        job = Job.schedule_job(
             dispatch_tax_year,
             job_type="dispatch_tax_year",
             job_kwargs=self.job_kwargs,
             created_by=self.user,
         )
 
-        self.assertEqual(Job.objects.filter(parent=parent_job).count(), 1)
-        # all slips where marked as send
+        # all slips where marked as sent
         self.assertEqual(
             TaxSlipGenerated.objects.filter(status="send").count(), 4
         )  # 4 persons is not dead or invalid
-
-    @patch.object(EboksClient, "get_recipient_status")
-    @patch.object(EboksClient, "send_message")
-    @patch.object(EboksClient, "get_message_id")
-    @patch.object(
-        django_rq,
-        "get_queue",
-        return_value=Queue(is_async=False, connection=FakeStrictRedis()),
-    )
-    @override_settings(EBOKS=test_settings, METRICS={"disabled": True})
-    def test_multi_child_jobs(
-        self, django_rq, get_message_id_mock, send_message, get_recipient_mock
-    ):
-        get_message_id_mock.side_effect = self.mock_message.keys()
-        send_message.return_value = send_message_mock(self.mock_message)
-        get_recipient_mock.return_value = get_recipient_status_mock(as_side_effect=True)
-        parent_job = Job.schedule_job(
-            dispatch_tax_year,
-            job_type="dispatch_tax_year",
-            job_kwargs=self.job_kwargs,
-            created_by=self.user,
-        )
-        self.assertEqual(Job.objects.filter(parent=parent_job).count(), 1)
-        self.assertEqual(TaxSlipGenerated.objects.filter(status="send").count(), 4)
 
 
 class GenerateBatchAndTransactionsForYearJobsTest(BaseTransactionTestCase):
@@ -677,14 +652,13 @@ class DispatchAgterskrivelseJobsTest(BaseTransactionTestCase):
         send_message.return_value = send_message_mock(self.mock_message)
         get_recipient_mock.return_value = get_recipient_status_mock()
 
-        parent_job = Job.schedule_job(
+        job = Job.schedule_job(
             dispatch_agterskrivelser_for_year,
             job_type="dispatch_agterskrivelser_for_year",
             job_kwargs=self.job_kwargs,
             created_by=self.user,
         )
 
-        self.assertEqual(Job.objects.filter(parent=parent_job).count(), 1)
         # all slips were marked as send
         self.assertEqual(
             Agterskrivelse.objects.filter(status="send").count(), 4

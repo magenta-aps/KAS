@@ -112,7 +112,6 @@ class Job(models.Model):
     def set_progress(self, count, total, **kwargs):
         self.arguments["current_count"] = count
         self.arguments["total_count"] = total
-        print(f"{count}/{total}")
         self.set_progress_pct((count / total) * 100, **kwargs)
 
     def set_progress_pct(self, progress, **kwargs):
