@@ -535,9 +535,7 @@ def dispatch(dispatch_qs, pending_qs, job):
                         # (usually network), skip it.
                         # It will still exist in the queryset, and subsequent tries
                         # (loop while slips.exists() and tries > 0) will attempt later
-                        print("Got exception")
                         continue
-                    print(f"dispatch_item.status: {dispatch_item.status}")
                     if dispatch_item.status == "send":
                         processed += 1
                     job.set_progress(processed, total_count)
@@ -1201,16 +1199,14 @@ def dispatch_agterskrivelser_for_year(job):
         person_tax_year__person__status__in=["Dead", "Invalid"]
     ).filter(
         status="created",
-        person_tax_year__tax_year__pk=job.parent.arguments["year_pk"],
+        person_tax_year__tax_year__pk=job.arguments["year_pk"],
         person_tax_year__person__is_test_person=False,
     )
 
     pending = Agterskrivelse.objects.filter(
         status="post_processing",
-        person_tax_year__tax_year__pk=job.parent.arguments["year_pk"],
+        person_tax_year__tax_year__pk=job.arguments["year_pk"],
     )
-
-    print(f"agterskrivelser.count: {agterskrivelser.count()}")
 
     with transaction.atomic():
         job.started_at = timezone.now()

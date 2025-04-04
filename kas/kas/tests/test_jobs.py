@@ -660,6 +660,9 @@ class DispatchAgterskrivelseJobsTest(BaseTransactionTestCase):
         )
 
         # all slips were marked as sent
+        job.refresh_from_db()
+        self.assertEqual(job.status, "finished")
+
         self.assertEqual(
             Agterskrivelse.objects.filter(status="send").count(), 4
         )  # 5 persons is not dead or invalid or testpersons

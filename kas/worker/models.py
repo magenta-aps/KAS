@@ -164,8 +164,8 @@ class Job(models.Model):
         )
 
         job.rq_job_id = rq_job.get_id()
-        job.statue = rq_job.get_status()
-        job.save(update_fields=["rq_job_id", "status"])
+        # job.status = rq_job.get_status()
+        job.save(update_fields=["rq_job_id"])
 
         return job
 
