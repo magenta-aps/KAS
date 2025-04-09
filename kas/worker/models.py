@@ -110,9 +110,9 @@ class Job(models.Model):
         return "{}%".format(max(self.progress, 0))
 
     def set_progress(self, count, total, **kwargs):
-        self.set_progress_pct((count / total) * 100, **kwargs)
         self.arguments["current_count"] = count
         self.arguments["total_count"] = total
+        self.set_progress_pct((count / total) * 100, **kwargs)
 
     def set_progress_pct(self, progress, **kwargs):
         self.progress = progress
@@ -164,8 +164,8 @@ class Job(models.Model):
         )
 
         job.rq_job_id = rq_job.get_id()
-        job.statue = rq_job.get_status()
-        job.save(update_fields=["rq_job_id", "status"])
+        # job.status = rq_job.get_status()
+        job.save(update_fields=["rq_job_id"])
 
         return job
 

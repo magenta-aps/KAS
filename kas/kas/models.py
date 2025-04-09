@@ -497,10 +497,8 @@ class EboksDispatch(models.Model):
             self.status = "failed"
             self.save(update_fields=["status"])
             raise
-        else:
-            self.message_id = jsonresponse[
-                "message_id"
-            ]  # message_id might have changed so get it from the response
+        else:  # message_id might have changed so get it from the response
+            self.message_id = jsonresponse["message_id"]
             # we always only have 1 recipient
             recipient = jsonresponse["recipients"][0]
             self.recipient_status = recipient["status"]
@@ -2348,7 +2346,7 @@ class Agterskrivelse(EboksDispatch):
     person_tax_year = models.ForeignKey(PersonTaxYear, on_delete=models.CASCADE)
     pdf = models.FileField(upload_to=agterskrivelse_file_path)
 
-    def dispatch_to_eboks(self, client: EboksClient, generator: EboksDispatchGenerator):
+    def dispatch(self, client: EboksClient, generator: EboksDispatchGenerator):
         return super().dispatch_to_eboks(
             client, generator, self.pdf, self.person_tax_year.person.cpr
         )
