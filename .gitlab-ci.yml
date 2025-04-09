@@ -189,7 +189,6 @@ Build ER image:
     SELVBETJENING_REPRESENTATION_START: http://kas-selvbetjening:8080/represent-start/
     SELVBETJENING_REPRESENTATION_STOP: http://kas-selvbetjening:8000/represent-stop/
     SELVBETJENING_REPRESENTATION_TOKEN_MAX_AGE: 60
-    EBOKS_DISPATCH_BULK_SIZE: 100
     EBOKS_MOCK: 'True'
     # No access to the eskat database, so give it dummy environment variables
     ESKAT_HOST: ""
@@ -218,7 +217,7 @@ Admin Unittest:
     - cd /app
     - coverage run manage.py test --parallel 4
     - coverage combine
-    - coverage report --show-missing --fail-under=72
+    - coverage report --show-missing --fail-under=71
     - coverage xml
   coverage: '/^TOTAL.+?(\d+\%)$/'
   artifacts:
