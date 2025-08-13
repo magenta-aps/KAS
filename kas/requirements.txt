@@ -26,3 +26,4 @@ more_itertools==8.14.0
 setuptools==80.9.0
 tblib==3.0.0
 django-csp==3.8
+paramiko==3.5.1
