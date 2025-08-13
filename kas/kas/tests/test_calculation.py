@@ -39,25 +39,25 @@ class TestCalculationMath(TestCase):
         result = PolicyTaxYear.perform_calculation(amount)
 
         # Adjust factor for days in year should be 1
-        self.assertEquals(result["tax_days_adjust_factor"], 1)
+        self.assertEqual(result["tax_days_adjust_factor"], 1)
 
         # The amount adjust for days in year should be the initial amount
-        self.assertEquals(result["year_adjusted_amount"], amount)
+        self.assertEqual(result["year_adjusted_amount"], amount)
 
         # There should be no negative return
-        self.assertEquals(result["available_negative_return"], 0)
+        self.assertEqual(result["available_negative_return"], 0)
 
         # There should be no spent negative return
-        self.assertEquals(result["used_negative_return"], 0)
+        self.assertEqual(result["used_negative_return"], 0)
 
         # Taxable amount should be equal to initial amount
-        self.assertEquals(result["taxable_amount"], amount)
+        self.assertEqual(result["taxable_amount"], amount)
 
         # Full tax should be equal to amount times the tax rate
-        self.assertEquals(result["full_tax"], amount * settings.KAS_TAX_RATE)
+        self.assertEqual(result["full_tax"], amount * settings.KAS_TAX_RATE)
 
         # Tax with deductions should be equal to the full amount
-        self.assertEquals(result["tax_with_deductions"], result["full_tax"])
+        self.assertEqual(result["tax_with_deductions"], result["full_tax"])
 
     def test_negative_amount(self):
         amount = -1000
@@ -65,16 +65,16 @@ class TestCalculationMath(TestCase):
         result = PolicyTaxYear.perform_calculation(amount)
 
         # Adjust factor for days in year should be 1
-        self.assertEquals(result["tax_days_adjust_factor"], 1)
+        self.assertEqual(result["tax_days_adjust_factor"], 1)
 
         # The amount adjust for days in year should be -1000
-        self.assertEquals(result["year_adjusted_amount"], -1000)
+        self.assertEqual(result["year_adjusted_amount"], -1000)
 
         # Taxable amount should be 0
-        self.assertEquals(result["taxable_amount"], 0)
+        self.assertEqual(result["taxable_amount"], 0)
 
         # Full tax should be zero
-        self.assertEquals(result["full_tax"], 0)
+        self.assertEqual(result["full_tax"], 0)
 
     def test_zero_amount(self):
         amount = 0
@@ -82,13 +82,13 @@ class TestCalculationMath(TestCase):
         result = PolicyTaxYear.perform_calculation(amount)
 
         # The amount adjust for days in year should be zero
-        self.assertEquals(result["year_adjusted_amount"], 0)
+        self.assertEqual(result["year_adjusted_amount"], 0)
 
         # Taxable amount should be equal to initial amount
-        self.assertEquals(result["taxable_amount"], 0)
+        self.assertEqual(result["taxable_amount"], 0)
 
         # Full tax should be zero
-        self.assertEquals(result["full_tax"], 0)
+        self.assertEqual(result["full_tax"], 0)
 
     def test_days_adjustment(self):
         amount = 1000
@@ -99,19 +99,19 @@ class TestCalculationMath(TestCase):
             taxable_days_in_year=int(365 / 5),
         )
 
-        self.assertEquals(result["tax_days_adjust_factor"], 0.2)
+        self.assertEqual(result["tax_days_adjust_factor"], 0.2)
 
         # The amount adjust for days in year should be zero
-        self.assertEquals(result["year_adjusted_amount"], 200)
+        self.assertEqual(result["year_adjusted_amount"], 200)
 
         # Full tax should be 0.2 * 153 = 30,6 => 30
-        self.assertEquals(result["full_tax"], 30)
+        self.assertEqual(result["full_tax"], 30)
 
     def test_foreign_adjustment(self):
         # This amount should make the tax exactly 1000
         amount = 6536
 
-        self.assertEquals(PolicyTaxYear.perform_calculation(amount)["full_tax"], 1000)
+        self.assertEqual(PolicyTaxYear.perform_calculation(amount)["full_tax"], 1000)
 
         for foreign_paid, expected_result in (
             (0, 1000),
@@ -124,7 +124,7 @@ class TestCalculationMath(TestCase):
                 foreign_paid_amount=foreign_paid,
             )
 
-            self.assertEquals(result["tax_with_deductions"], expected_result)
+            self.assertEqual(result["tax_with_deductions"], expected_result)
 
     def test_days_adjustment_self_reported(self):
         amount = 1000
@@ -136,9 +136,9 @@ class TestCalculationMath(TestCase):
             adjust_for_days_in_year=False,
         )
 
-        self.assertEquals(result["tax_days_adjust_factor"], 1)
-        self.assertEquals(result["year_adjusted_amount"], 1000)
-        self.assertEquals(result["full_tax"], 153)
+        self.assertEqual(result["tax_days_adjust_factor"], 1)
+        self.assertEqual(result["year_adjusted_amount"], 1000)
+        self.assertEqual(result["full_tax"], 153)
 
     def test_deductions(self):
         # Test with available deductions that fully cover the income
@@ -151,33 +151,33 @@ class TestCalculationMath(TestCase):
                 "2014": 300,
             },
         )
-        self.assertEquals(
+        self.assertEqual(
             result["desired_deduction_data"], {"2014": 300, "2016": 500, "2017": 200}
         )
-        self.assertEquals(result["available_negative_return"], 1500)
-        self.assertEquals(result["used_negative_return"], 1000)
-        self.assertEquals(result["taxable_amount"], 0)
-        self.assertEquals(result["full_tax"], 0)
+        self.assertEqual(result["available_negative_return"], 1500)
+        self.assertEqual(result["used_negative_return"], 1000)
+        self.assertEqual(result["taxable_amount"], 0)
+        self.assertEqual(result["full_tax"], 0)
 
         # Test with available deductions that don't fully cover the income
         result = PolicyTaxYear.perform_calculation(
             1000, available_deduction_data={"2019": 300, "2016": 500}
         )
-        self.assertEquals(result["desired_deduction_data"], {"2016": 500, "2019": 300})
-        self.assertEquals(result["available_negative_return"], 800)
-        self.assertEquals(result["used_negative_return"], 800)
-        self.assertEquals(result["taxable_amount"], 200)
-        self.assertEquals(result["full_tax"], math.floor(200 * settings.KAS_TAX_RATE))
+        self.assertEqual(result["desired_deduction_data"], {"2016": 500, "2019": 300})
+        self.assertEqual(result["available_negative_return"], 800)
+        self.assertEqual(result["used_negative_return"], 800)
+        self.assertEqual(result["taxable_amount"], 200)
+        self.assertEqual(result["full_tax"], math.floor(200 * settings.KAS_TAX_RATE))
 
         # Test with a negative income
         result = PolicyTaxYear.perform_calculation(
             -1000, available_deduction_data={"2019": 500, "2016": 700}
         )
-        self.assertEquals(result["desired_deduction_data"], {})
-        self.assertEquals(result["available_negative_return"], 1200)
-        self.assertEquals(result["used_negative_return"], 0)
-        self.assertEquals(result["taxable_amount"], 0)
-        self.assertEquals(result["full_tax"], 0)
+        self.assertEqual(result["desired_deduction_data"], {})
+        self.assertEqual(result["available_negative_return"], 1200)
+        self.assertEqual(result["used_negative_return"], 0)
+        self.assertEqual(result["taxable_amount"], 0)
+        self.assertEqual(result["full_tax"], 0)
 
     def test_input_validation(self):
         amount = 1000
@@ -323,19 +323,19 @@ class TestCalculationMath(TestCase):
         older_policy_2.recalculate()
         older_policy_2.save()
         calculation_results = policy.get_calculation()
-        self.assertEquals(calculation_results["available_negative_return"], 6000)
-        self.assertEquals(calculation_results["used_negative_return"], 6000)
-        self.assertEquals(calculation_results["taxable_amount"], 4000)
-        self.assertEquals(calculation_results["tax_with_deductions"], 412)
+        self.assertEqual(calculation_results["available_negative_return"], 6000)
+        self.assertEqual(calculation_results["used_negative_return"], 6000)
+        self.assertEqual(calculation_results["taxable_amount"], 4000)
+        self.assertEqual(calculation_results["tax_with_deductions"], 412)
         self.assertDictEqual(
             calculation_results["desired_deduction_data"], {2018: 2000, 2019: 4000}
         )
 
         policy.recalculate()
         policy.save()
-        self.assertEquals(policy.calculated_full_tax, 612)
-        self.assertEquals(policy.year_adjusted_amount, 10000)
-        self.assertEquals(policy.calculated_result, 412)
+        self.assertEqual(policy.calculated_full_tax, 612)
+        self.assertEqual(policy.year_adjusted_amount, 10000)
+        self.assertEqual(policy.calculated_result, 412)
 
         # Create a new policy that cannot use those deductions because they are already taken
         new_policy = PolicyTaxYear.objects.create(
@@ -350,35 +350,35 @@ class TestCalculationMath(TestCase):
             active_amount=PolicyTaxYear.ACTIVE_AMOUNT_PREFILLED,
         )
         calculation_results = new_policy.get_calculation()
-        self.assertEquals(calculation_results["available_negative_return"], 0)
-        self.assertEquals(calculation_results["used_negative_return"], 0)
-        self.assertEquals(calculation_results["taxable_amount"], 15000)
-        self.assertEquals(calculation_results["tax_with_deductions"], 2295)
+        self.assertEqual(calculation_results["available_negative_return"], 0)
+        self.assertEqual(calculation_results["used_negative_return"], 0)
+        self.assertEqual(calculation_results["taxable_amount"], 15000)
+        self.assertEqual(calculation_results["tax_with_deductions"], 2295)
         self.assertDictEqual(calculation_results["desired_deduction_data"], {})
 
         new_policy.recalculate()
         new_policy.save()
-        self.assertEquals(new_policy.calculated_full_tax, 2295)
-        self.assertEquals(new_policy.year_adjusted_amount, 15000)
-        self.assertEquals(new_policy.calculated_result, 2295)
+        self.assertEqual(new_policy.calculated_full_tax, 2295)
+        self.assertEqual(new_policy.year_adjusted_amount, 15000)
+        self.assertEqual(new_policy.calculated_result, 2295)
 
         # Deactivate one older policy; it should be excluded from calculation
         older_policy_2.active = False
         older_policy_2.save()
         calculation_results = policy.get_calculation()
-        self.assertEquals(calculation_results["available_negative_return"], 2000)
-        self.assertEquals(calculation_results["used_negative_return"], 2000)
-        self.assertEquals(calculation_results["taxable_amount"], 8000)
-        self.assertEquals(calculation_results["tax_with_deductions"], 1024)
+        self.assertEqual(calculation_results["available_negative_return"], 2000)
+        self.assertEqual(calculation_results["used_negative_return"], 2000)
+        self.assertEqual(calculation_results["taxable_amount"], 8000)
+        self.assertEqual(calculation_results["tax_with_deductions"], 1024)
         self.assertDictEqual(
             calculation_results["desired_deduction_data"], {2018: 2000}
         )
 
         policy.recalculate()
         policy.save()
-        self.assertEquals(policy.calculated_full_tax, 1224)
-        self.assertEquals(policy.year_adjusted_amount, 10000)
-        self.assertEquals(policy.calculated_result, 1024)
+        self.assertEqual(policy.calculated_full_tax, 1224)
+        self.assertEqual(policy.year_adjusted_amount, 10000)
+        self.assertEqual(policy.calculated_result, 1024)
 
     def test_interest_calculation(self):
         (
@@ -390,7 +390,7 @@ class TestCalculationMath(TestCase):
 
         policy_calculation = policy.get_calculation()
 
-        self.assertEquals(policy_calculation["tax_with_deductions"], 1530)
+        self.assertEqual(policy_calculation["tax_with_deductions"], 1530)
 
         Transaction.objects.create(
             person_tax_year=person_tax_year,
@@ -471,7 +471,7 @@ class TestCalculationMath(TestCase):
             policy,
         ) = self.create_test_person_data()
         policy_calculation = policy.get_calculation()
-        self.assertEquals(policy_calculation["tax_with_deductions"], 1530)
+        self.assertEqual(policy_calculation["tax_with_deductions"], 1530)
 
         final_statement = FinalSettlement(
             person_tax_year=person_tax_year,
@@ -547,7 +547,7 @@ class TestCalculationMath(TestCase):
             person_tax_year,
             policy_tax_year,
         ) = self.create_test_person_data()
-        self.assertEquals(policy_tax_year.calculated_result, 1530)
+        self.assertEqual(policy_tax_year.calculated_result, 1530)
 
         PersonTaxYearCensus.objects.create(
             person_tax_year=person_tax_year,
@@ -558,10 +558,10 @@ class TestCalculationMath(TestCase):
         person_tax_year.refresh_from_db()
         person_tax_year.recalculate_mandtal()
         policy_tax_year.refresh_from_db()
-        self.assertEquals(policy_tax_year.calculated_result, 835)
+        self.assertEqual(policy_tax_year.calculated_result, 835)
 
-        self.assertEquals(person_tax_year.notes.count(), 1)
-        self.assertEquals(
+        self.assertEqual(person_tax_year.notes.count(), 1)
+        self.assertEqual(
             person_tax_year.notes.first().content,
             "Personens antal skattedage i 2020 er blevet opdateret; denne police er blevet påvirket af ændringen, "
             "og beregningen kan afvige fra en evt. oprettet slutopgørelse.",

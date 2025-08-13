@@ -68,14 +68,14 @@ class RestTest(TestCase):
             self.client.credentials()
             for method in ["GET", "POST", "PUT", "PATCH", "DELETE"]:
                 response = self.client.generic(method, self.url)
-                self.assertEquals(status.HTTP_401_UNAUTHORIZED, response.status_code)
+                self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
 
     def test_wrongauthenticated(self):
         if hasattr(self, "url"):
             self.client.credentials(HTTP_AUTHORIZATION="Token some-invalid-token")
             for method in ["GET", "POST", "PUT", "PATCH", "DELETE"]:
                 response = self.client.generic(method, self.url)
-                self.assertEquals(status.HTTP_401_UNAUTHORIZED, response.status_code)
+                self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
 
 
 class TaxYearTest(RestTest):
@@ -86,7 +86,7 @@ class TaxYearTest(RestTest):
         TaxYear.objects.create(year=2021)
         self.authenticate()
         response = self.client.get(self.url)
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
                 {
@@ -105,7 +105,7 @@ class TaxYearTest(RestTest):
         year2021 = TaxYear.objects.create(year=2021)
         self.authenticate()
         response = self.client.get(f"{self.url}{year2020.id}/")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertDictEqual(
             {
                 "year": 2020,
@@ -116,7 +116,7 @@ class TaxYearTest(RestTest):
             response.json(),
         )
         response = self.client.get(f"{self.url}{year2021.id}/")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertDictEqual(
             {
                 "year": 2021,
@@ -132,7 +132,7 @@ class TaxYearTest(RestTest):
         year2021 = TaxYear.objects.create(year=2021)
         self.authenticate()
         response = self.client.get(f"{self.url}?year=2020")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
                 {
@@ -145,7 +145,7 @@ class TaxYearTest(RestTest):
             response.json(),
         )
         response = self.client.get(f"{self.url}?year_lt=2021")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
                 {
@@ -158,7 +158,7 @@ class TaxYearTest(RestTest):
             response.json(),
         )
         response = self.client.get(f"{self.url}?year_lt=2022")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
                 {
@@ -186,7 +186,7 @@ class PersonTest(RestTest):
         Person.objects.create(cpr="1234567891")
         self.authenticate()
         response = self.client.get(self.url)
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [{"cpr": person.cpr, "id": person.id} for person in Person.objects.all()],
             response.json(),
@@ -197,10 +197,10 @@ class PersonTest(RestTest):
         person2 = Person.objects.create(cpr="1234567891")
         self.authenticate()
         response = self.client.get(f"{self.url}{person1.id}/")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertDictEqual({"cpr": "1234567890", "id": person1.id}, response.json())
         response = self.client.get(f"{self.url}{person2.id}/")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertDictEqual({"cpr": "1234567891", "id": person2.id}, response.json())
 
     def test_get_filter(self):
@@ -208,7 +208,7 @@ class PersonTest(RestTest):
         Person.objects.create(cpr="1234567891")
         self.authenticate()
         response = self.client.get(f"{self.url}?cpr=1234567890")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [{"cpr": "1234567890", "id": person1.id}], response.json()
         )
@@ -220,10 +220,10 @@ class PersonTest(RestTest):
         response = self.client.post(
             self.url, json.dumps(item), content_type="application/json; charset=utf-8"
         )
-        self.assertEquals(201, response.status_code, response.content)
+        self.assertEqual(201, response.status_code, response.content)
         self.assertDictEqual(item, self.strip_id(response.json()))
-        self.assertEquals(1, Person.objects.count())
-        self.assertEquals(item["cpr"], Person.objects.first().cpr)
+        self.assertEqual(1, Person.objects.count())
+        self.assertEqual(item["cpr"], Person.objects.first().cpr)
 
     def test_create_two(self):
         # Create two items with the same input. Test that only one item is created
@@ -232,13 +232,13 @@ class PersonTest(RestTest):
         response = self.client.post(
             self.url, json.dumps(item), content_type="application/json; charset=utf-8"
         )
-        self.assertEquals(status.HTTP_201_CREATED, response.status_code)
-        self.assertEquals(1, Person.objects.count())
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        self.assertEqual(1, Person.objects.count())
         response2 = self.client.post(
             self.url, json.dumps(item), content_type="application/json; charset=utf-8"
         )
-        self.assertEquals(status.HTTP_400_BAD_REQUEST, response2.status_code)
-        self.assertEquals(1, Person.objects.count())
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response2.status_code)
+        self.assertEqual(1, Person.objects.count())
 
     def test_invalid_input(self):
         # Create an item with invalid input and expect errors
@@ -252,7 +252,7 @@ class PersonTest(RestTest):
                 json.dumps(input),
                 content_type="application/json; charset=utf-8",
             )
-            self.assertEquals(400, response.status_code, input)
+            self.assertEqual(400, response.status_code, input)
 
 
 class PensionCompanyTest(RestTest):
@@ -279,7 +279,7 @@ class PensionCompanyTest(RestTest):
         PensionCompany.objects.create(**pension_company_data2)
         self.authenticate()
         response = self.client.get(self.url)
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
                 {
@@ -317,13 +317,13 @@ class PensionCompanyTest(RestTest):
         pension_company2 = PensionCompany.objects.create(**pension_company_data2)
         self.authenticate()
         response = self.client.get(f"{self.url}{pension_company1.id}/")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertDictEqual(
             {**pension_company_data1, "id": pension_company1.id, **self.extra_fields},
             response.json(),
         )
         response = self.client.get(f"{self.url}{pension_company2.id}/")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertDictEqual(
             {**pension_company_data2, "id": pension_company2.id, **self.extra_fields},
             response.json(),
@@ -344,7 +344,7 @@ class PensionCompanyTest(RestTest):
         PensionCompany.objects.create(**pension_company_data2)
         self.authenticate()
         response = self.client.get(f"{self.url}?res=12345678")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [{**pension_company_data1, "id": pension_company1.id, **self.extra_fields}],
             response.json(),
@@ -363,13 +363,13 @@ class PensionCompanyTest(RestTest):
             json.dumps(pension_company_data1),
             content_type="application/json; charset=utf-8",
         )
-        self.assertEquals(201, response.status_code, response.content)
+        self.assertEqual(201, response.status_code, response.content)
         self.assertDictEqual(
             {**pension_company_data1, **self.extra_fields},
             self.strip_id(response.json()),
         )
-        self.assertEquals(1, PensionCompany.objects.count())
-        self.assertEquals(
+        self.assertEqual(1, PensionCompany.objects.count())
+        self.assertEqual(
             pension_company_data1["res"], PensionCompany.objects.first().res
         )
 
@@ -386,14 +386,14 @@ class PensionCompanyTest(RestTest):
             json.dumps(pension_company_data1),
             content_type="application/json; charset=utf-8",
         )
-        self.assertEquals(1, PensionCompany.objects.count())
+        self.assertEqual(1, PensionCompany.objects.count())
         response2 = self.client.post(
             self.url,
             json.dumps(pension_company_data1),
             content_type="application/json; charset=utf-8",
         )
-        self.assertEquals(status.HTTP_400_BAD_REQUEST, response2.status_code)
-        self.assertEquals(1, PensionCompany.objects.count())
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response2.status_code)
+        self.assertEqual(1, PensionCompany.objects.count())
 
     def test_invalid_input(self):
         # Create an item with invalid input and expect errors
@@ -410,7 +410,7 @@ class PensionCompanyTest(RestTest):
                 json.dumps(input),
                 content_type="application/json; charset=utf-8",
             )
-            self.assertEquals(400, response.status_code, input)
+            self.assertEqual(400, response.status_code, input)
 
 
 class PersonTaxYearTest(RestTest):
@@ -432,7 +432,7 @@ class PersonTaxYearTest(RestTest):
         extra = {}
         self.authenticate()
         response = self.client.get(self.url)
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
                 {
@@ -469,7 +469,7 @@ class PersonTaxYearTest(RestTest):
         extra = {}
         self.authenticate()
         response = self.client.get(f"{self.url}{person_tax_year1.id}/")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertDictEqual(
             {
                 "person": person.cpr,
@@ -486,7 +486,7 @@ class PersonTaxYearTest(RestTest):
             response.json(),
         )
         response = self.client.get(f"{self.url}{person_tax_year2.id}/")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertDictEqual(
             {
                 "person": person.cpr,
@@ -519,7 +519,7 @@ class PersonTaxYearTest(RestTest):
         extra = {}
         self.authenticate()
         response = self.client.get(f"{self.url}?cpr=1234567890")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
                 {
@@ -538,7 +538,7 @@ class PersonTaxYearTest(RestTest):
             response.json(),
         )
         response = self.client.get(f"{self.url}?year=2021")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
                 {
@@ -557,7 +557,7 @@ class PersonTaxYearTest(RestTest):
             response.json(),
         )
         response = self.client.get(f"{self.url}?cpr=1234567890&year=2020")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
                 {
@@ -576,7 +576,7 @@ class PersonTaxYearTest(RestTest):
             response.json(),
         )
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2020")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual([], response.json())
 
     def test_create_one(self):
@@ -588,7 +588,7 @@ class PersonTaxYearTest(RestTest):
         response = self.client.post(
             self.url, json.dumps(item), content_type="application/json; charset=utf-8"
         )
-        self.assertEquals(201, response.status_code, response.content)
+        self.assertEqual(201, response.status_code, response.content)
         self.assertDictEqual(
             {
                 **item,
@@ -601,9 +601,9 @@ class PersonTaxYearTest(RestTest):
             },
             self.strip_id(response.json()),
         )
-        self.assertEquals(1, PersonTaxYear.objects.count())
-        self.assertEquals(person.cpr, PersonTaxYear.objects.first().person.cpr)
-        self.assertEquals(tax_year.year, PersonTaxYear.objects.first().tax_year.year)
+        self.assertEqual(1, PersonTaxYear.objects.count())
+        self.assertEqual(person.cpr, PersonTaxYear.objects.first().person.cpr)
+        self.assertEqual(tax_year.year, PersonTaxYear.objects.first().tax_year.year)
 
     def test_create_two(self):
         # Create two items with the same input. Test that only one item is created
@@ -614,15 +614,15 @@ class PersonTaxYearTest(RestTest):
         response = self.client.post(
             self.url, json.dumps(item), content_type="application/json; charset=utf-8"
         )
-        self.assertEquals(status.HTTP_201_CREATED, response.status_code)
-        self.assertEquals(1, PersonTaxYear.objects.count())
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        self.assertEqual(1, PersonTaxYear.objects.count())
         response2 = self.client.post(
             self.url, json.dumps(item), content_type="application/json; charset=utf-8"
         )
-        self.assertEquals(status.HTTP_400_BAD_REQUEST, response2.status_code)
-        self.assertEquals(1, PersonTaxYear.objects.count())
-        self.assertEquals(person.cpr, PersonTaxYear.objects.first().person.cpr)
-        self.assertEquals(tax_year.year, PersonTaxYear.objects.first().tax_year.year)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response2.status_code)
+        self.assertEqual(1, PersonTaxYear.objects.count())
+        self.assertEqual(person.cpr, PersonTaxYear.objects.first().person.cpr)
+        self.assertEqual(tax_year.year, PersonTaxYear.objects.first().tax_year.year)
 
     def test_invalid_input(self):
         # Create an item with invalid input and expect errors
@@ -644,7 +644,7 @@ class PersonTaxYearTest(RestTest):
                 json.dumps(input),
                 content_type="application/json; charset=utf-8",
             )
-            self.assertEquals(400, response.status_code, input)
+            self.assertEqual(400, response.status_code, input)
 
 
 class PolicyTaxYearTest(RestTest):
@@ -681,7 +681,7 @@ class PolicyTaxYearTest(RestTest):
         extra = {}
         self.authenticate()
         response = self.client.get(self.url)
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
                 {
@@ -742,7 +742,7 @@ class PolicyTaxYearTest(RestTest):
         self.authenticate()
 
         response = self.client.get(f"{self.url}{policy_tax_year1.id}/")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertDictEqual(
             {
                 "active": policy_tax_year1.active,
@@ -768,7 +768,7 @@ class PolicyTaxYearTest(RestTest):
         )
 
         response = self.client.get(f"{self.url}{policy_tax_year2.id}/")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertDictEqual(
             {
                 "active": policy_tax_year2.active,
@@ -830,7 +830,7 @@ class PolicyTaxYearTest(RestTest):
         self.authenticate()
 
         response = self.client.get(f"{self.url}?cpr=1234567890")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
                 {
@@ -858,7 +858,7 @@ class PolicyTaxYearTest(RestTest):
         )
 
         response = self.client.get(f"{self.url}?year=2020")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
                 {
@@ -886,7 +886,7 @@ class PolicyTaxYearTest(RestTest):
         )
 
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2021")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual(
             [
                 {
@@ -914,7 +914,7 @@ class PolicyTaxYearTest(RestTest):
         )
 
         response = self.client.get(f"{self.url}?cpr=1234567891&year=2020")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertCountEqual([], response.json())
 
     def test_update_one(self):
@@ -947,7 +947,7 @@ class PolicyTaxYearTest(RestTest):
             content_type="application/json; charset=utf-8",
         )
         policy_tax_year.refresh_from_db()
-        self.assertEquals(200, response.status_code, response.content)
+        self.assertEqual(200, response.status_code, response.content)
         self.assertDictEqual(
             {
                 **item,
@@ -968,11 +968,11 @@ class PolicyTaxYearTest(RestTest):
         )
         data = response.json()
         policy_tax_year.refresh_from_db()
-        self.assertEquals(
+        self.assertEqual(
             policy_tax_year.self_reported_amount, data["self_reported_amount"]
         )
-        self.assertEquals(policy_tax_year.prefilled_amount, data["prefilled_amount"])
-        self.assertEquals(policy_tax_year.from_pension, data["from_pension"])
+        self.assertEqual(policy_tax_year.prefilled_amount, data["prefilled_amount"])
+        self.assertEqual(policy_tax_year.from_pension, data["from_pension"])
 
     def test_invalid_input(self):
         # Create an item with invalid input and expect errors
@@ -1012,7 +1012,7 @@ class PolicyTaxYearTest(RestTest):
                 json.dumps(input),
                 content_type="application/json; charset=utf-8",
             )
-            self.assertEquals(400, response.status_code, input)
+            self.assertEqual(400, response.status_code, input)
 
     def test_document_filtering(self):
         policy_tax_year = PolicyTaxYear.objects.create(
@@ -1045,18 +1045,18 @@ class PolicyTaxYearTest(RestTest):
         )
         self.authenticate()
         response = self.client.get(f"{self.url}{policy_tax_year.id}/")
-        self.assertEquals(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         response_json = response.json()
-        self.assertEquals(1, len(response_json["documents"]))
+        self.assertEqual(1, len(response_json["documents"]))
         first_doc = response_json["documents"][0]
-        self.assertEquals(public_document.id, first_doc["id"])
+        self.assertEqual(public_document.id, first_doc["id"])
         self.assertNotEqual(secret_document.id, first_doc["id"])
-        self.assertEquals(
+        self.assertEqual(
             public_document.policy_tax_year.id, first_doc["policy_tax_year"]
         )
-        self.assertEquals(public_document.name, first_doc["name"])
+        self.assertEqual(public_document.name, first_doc["name"])
         self.assertNotEqual(secret_document.name, first_doc["name"])
-        self.assertEquals(public_document.description, first_doc["description"])
+        self.assertEqual(public_document.description, first_doc["description"])
         self.assertNotEqual(secret_document.description, first_doc["description"])
 
 
@@ -1098,12 +1098,12 @@ class PolicyDocumentTest(RestTest):
                 format="multipart",
                 headers={"Authorization": "Token " + self.token.key},
             )
-            self.assertEquals(status.HTTP_201_CREATED, response.status_code)
-            self.assertEquals(1, PolicyDocument.objects.count())
+            self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+            self.assertEqual(1, PolicyDocument.objects.count())
             policy_document = PolicyDocument.objects.first()
             upload_file.seek(0)
-            self.assertEquals(upload_file.readlines(), policy_document.file.readlines())
-            self.assertEquals(
+            self.assertEqual(upload_file.readlines(), policy_document.file.readlines())
+            self.assertEqual(
                 policy_tax_year.person_tax_year, policy_document.person_tax_year
             )
 
@@ -1153,4 +1153,4 @@ class PolicyDocumentTest(RestTest):
             ):  # Skip setups with values that cannot even be sent out in a multipart request
                 continue
             response = self.client.post(self.url, input, format="multipart")
-            self.assertEquals(400, response.status_code, input)
+            self.assertEqual(400, response.status_code, input)

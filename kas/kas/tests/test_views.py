@@ -154,8 +154,8 @@ class SelfReportedAmountUpdateViewTestCase(BaseTestCase):
         self.assertEqual(policy_tax_year.self_reported_amount, 99)
         self.assertFalse(policy_tax_year.notes.exists())
         self.assertFalse(policy_tax_year.person_tax_year.notes.exists())
-        self.assertEquals(policy_tax_year.policy_documents.count(), 1)
-        self.assertEquals(policy_tax_year.person_tax_year.policydocument_set.count(), 1)
+        self.assertEqual(policy_tax_year.policy_documents.count(), 1)
+        self.assertEqual(policy_tax_year.person_tax_year.policydocument_set.count(), 1)
         policy_documents = policy_tax_year.policy_documents.first()
         self.assertEqual(policy_documents.uploaded_by, self.user)
 
@@ -186,8 +186,8 @@ class SelfReportedAmountUpdateViewTestCase(BaseTestCase):
         self.assertEqual(policy_tax_year.notes.count(), 1)
         self.assertEqual(policy_tax_year.notes.first().author, self.user)
         self.assertEqual(policy_tax_year.person_tax_year.notes.count(), 1)
-        self.assertEquals(policy_tax_year.policy_documents.count(), 1)
-        self.assertEquals(policy_tax_year.person_tax_year.policydocument_set.count(), 1)
+        self.assertEqual(policy_tax_year.policy_documents.count(), 1)
+        self.assertEqual(policy_tax_year.person_tax_year.policydocument_set.count(), 1)
         policy_documents = policy_tax_year.policy_documents.first()
         self.assertEqual(policy_documents.uploaded_by, self.user)
 

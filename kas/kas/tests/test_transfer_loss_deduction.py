@@ -53,14 +53,14 @@ class DeductionTest(TestCase):
         )
 
         used_previous_loss = policy_tax_year0.use_amount(900, policy_tax_year2)
-        self.assertEquals(900, used_previous_loss)
+        self.assertEqual(900, used_previous_loss)
         used_previous_loss = policy_tax_year0.use_amount(900, policy_tax_year2)
-        self.assertEquals(100, used_previous_loss)
+        self.assertEqual(100, used_previous_loss)
         used_previous_loss = policy_tax_year0.use_amount(900, policy_tax_year2)
-        self.assertEquals(0, used_previous_loss)
+        self.assertEqual(0, used_previous_loss)
 
         used_previous_loss = policy_tax_year1.use_amount(300, policy_tax_year2)
-        self.assertEquals(300, used_previous_loss)
+        self.assertEqual(300, used_previous_loss)
 
     # Validate that losses can not be used on years with no loss
     def test_Using_up_loss_from_2020(self):
@@ -98,4 +98,4 @@ class DeductionTest(TestCase):
         )
 
         used_previous_loss = policy_tax_year2.use_amount(1, policy_tax_year3)
-        self.assertEquals(0, used_previous_loss)
+        self.assertEqual(0, used_previous_loss)
