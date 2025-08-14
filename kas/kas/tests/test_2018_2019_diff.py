@@ -136,7 +136,7 @@ class LegacyYearsTestCase(BaseTestCase):
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEquals(
+        self.assertEqual(
             response.get("Content-Disposition"), "attachment; filename=eskat_diff.xls"
         )
 
@@ -150,17 +150,17 @@ class LegacyYearsTestCase(BaseTestCase):
             self.assertIn(col, df.columns)
 
         # Check that the data looks as expected
-        self.assertEquals(str(df.loc[0, "Personnummer"]), self.person.cpr)
-        self.assertEquals(df.loc[0, "Navn"], self.person.name)
-        self.assertEquals(df.loc[0, "Adresse"], self.person.full_address)
-        self.assertEquals(df.loc[0, "Kommune"], self.person.municipality_name)
-        self.assertEquals(df.loc[0, "Antal policer"], 1)
-        self.assertEquals(
+        self.assertEqual(str(df.loc[0, "Personnummer"]), self.person.cpr)
+        self.assertEqual(df.loc[0, "Navn"], self.person.name)
+        self.assertEqual(df.loc[0, "Adresse"], self.person.full_address)
+        self.assertEqual(df.loc[0, "Kommune"], self.person.municipality_name)
+        self.assertEqual(df.loc[0, "Antal policer"], 1)
+        self.assertEqual(
             df.loc[0, "Beløb i E-skat"],
             self.imported_kas_beregninger.capital_return_tax,
         )
-        self.assertEquals(df.loc[0, "Beløb i KAS"], self.final_settlement.pseudo_amount)
-        self.assertEquals(
+        self.assertEqual(df.loc[0, "Beløb i KAS"], self.final_settlement.pseudo_amount)
+        self.assertEqual(
             df.loc[0, "Kræver efterbehandling"], self.person_tax_year.efterbehandling
         )
 

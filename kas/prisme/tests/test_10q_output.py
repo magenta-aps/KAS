@@ -20,7 +20,7 @@ class Test10QDateCalculation(TestCase):
             afstem_noegle="e688d6a6fc65424483819520bbbe7745",
             rate_text="Testing\r\nwith\r\nlines",
         )
-        self.assertEquals(
+        self.assertEqual(
             prisme10q_content,
             "\r\n".join(
                 [
