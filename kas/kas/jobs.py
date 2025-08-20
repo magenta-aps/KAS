@@ -927,7 +927,7 @@ def dispatch_final_settlements_for_year(job):
         invalid=True, person_tax_year__person__status__in=["Dead", "Invalid"]
     ).filter(
         status="created",
-        person_tax_year__tax_year__pk=job.parent.arguments["year_pk"],
+        person_tax_year__tax_year__pk=job.arguments["year_pk"],
         person_tax_year__person__is_test_person=False,
     )
 
