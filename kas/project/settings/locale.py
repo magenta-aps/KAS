@@ -2,7 +2,6 @@ import os
 
 from django.utils.translation import gettext_lazy as _
 
-
 TIME_ZONE = os.environ["DJANGO_TIMEZONE"]
 LANGUAGE_CODE = "da-DK"
 USE_I18N = True

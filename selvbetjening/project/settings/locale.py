@@ -1,6 +1,7 @@
 import os
-from project.settings.base import BASE_DIR
+
 import django.conf.locale
+from project.settings.base import BASE_DIR
 
 LANGUAGE_CODE = "da-DK"
 
