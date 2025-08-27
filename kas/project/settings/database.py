@@ -16,14 +16,14 @@ DATABASES = {
     "eskat": {
         "ENGINE": "django.db.backends.oracle",
         "NAME": (
-                "("
-                "DESCRIPTION=(ADDRESS="
-                "(PROTOCOL=TCP)"
-                "(HOST=" + os.environ["ESKAT_HOST"] + ")"
-                "(PORT=" + os.environ["ESKAT_PORT"] + ")"
-                ")"
-                "(CONNECT_DATA=(SERVICE_NAME=" + os.environ["ESKAT_DB"] + "))"
-                ")"
+            "("
+            "DESCRIPTION=(ADDRESS="
+            "(PROTOCOL=TCP)"
+            "(HOST=" + os.environ["ESKAT_HOST"] + ")"
+            "(PORT=" + os.environ["ESKAT_PORT"] + ")"
+            ")"
+            "(CONNECT_DATA=(SERVICE_NAME=" + os.environ["ESKAT_DB"] + "))"
+            ")"
         ),
         "USER": os.environ["ESKAT_USER"],
         "PASSWORD": os.environ["ESKAT_PASSWORD"],
