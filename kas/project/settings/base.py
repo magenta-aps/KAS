@@ -60,4 +60,3 @@ for x in FEATURE_FLAGS:
         FEATURE_FLAGS[x] = bool(strtobool(value))
 
 LEGACY_YEARS = (2018, 2019)
-
