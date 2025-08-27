@@ -1,6 +1,7 @@
 import os
 import sys
 from distutils.util import strtobool
+from os.path import dirname
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -9,7 +10,7 @@ VERSION = os.environ["COMMIT_TAG"]
 TESTING = bool(len(sys.argv) > 1 and sys.argv[1] == "test")
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = dirname(dirname(dirname(os.path.abspath(__file__))))
 
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 DEBUG = bool(strtobool(os.environ.get("DJANGO_DEBUG", "False")))
