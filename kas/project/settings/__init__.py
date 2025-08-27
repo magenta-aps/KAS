@@ -14,11 +14,11 @@ include(
     "login.py",
     "logging.py",
     "staticfiles.py",
+    "redis.py",
     "rest.py",
     "csp.py",
     "dafo.py",
     "eboks.py",
     "metrics.py",
-    "redis.py",
     "tenq.py",
 )
