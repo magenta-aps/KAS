@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM python:3.12-bookworm
 ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.1.12/supercronic-linux-amd64 \
     SUPERCRONIC=supercronic-linux-amd64 \
     SUPERCRONIC_SHA1SUM=048b95b48b708983effb2e5c935a1ef8483d9e3e\
@@ -19,7 +19,7 @@ RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main"
     curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        gettext  libaio1t64 libaio-dev graphviz postgresql-client-common postgresql-client-16 && \
+        gettext libaio1 libaio-dev graphviz postgresql-client-common postgresql-client-16 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # supercronic
@@ -30,10 +30,10 @@ RUN curl -fsSLO "$SUPERCRONIC_URL" && \
     ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic
 
 # Oracle DB driver client libraries
-ADD https://download.oracle.com/otn_software/linux/instantclient/191000/instantclient-basiclite-linux.x64-19.10.0.0.0dbru.zip /tmp/oracle_driver.zip
-RUN unzip /tmp/oracle_driver.zip -d /usr/local/lib && \
+ADD https://download.oracle.com/otn_software/linux/instantclient/2390000/instantclient-basiclite-linux.x64-23.9.0.25.07.zip /tmp/oracle_driver.zip
+RUN unzip /tmp/oracle_driver.zip instantclient_23_9/* -d /usr/local/lib && \
     rm /tmp/oracle_driver.zip && \
-    printf "# Oracle client libraries\n/usr/local/lib/instantclient_19_10\n" > /etc/ld.so.conf.d/oracle_client_libraries.conf && \
+    printf "# Oracle client libraries\n/usr/local/lib/instantclient_23_9\n" > /etc/ld.so.conf.d/oracle_client_libraries.conf && \
     ldconfig
 
 ARG COMMIT_TAG
