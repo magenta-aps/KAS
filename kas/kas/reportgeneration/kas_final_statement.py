@@ -4,6 +4,7 @@ import datetime
 from datetime import date
 from operator import abs
 
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.utils import translation
 from django.utils.translation import gettext as _
@@ -287,6 +288,11 @@ class TaxFinalStatementPDF(FPDF):
                 available_deduction_data=available_deduction_data,
                 adjust_for_days_in_year=False,
             )
+
+            tax_with_deductions = calculation_result.get("tax_with_deductions") or 0
+            if abs(tax_with_deductions) < settings.TRANSACTION_INDIFFERENCE_LIMIT:
+                tax_with_deductions = 0
+
             self._pretty_policies.append(
                 {
                     "company": (policy.pension_company.name or "-"),
@@ -301,27 +307,13 @@ class TaxFinalStatementPDF(FPDF):
                     "base_calculation_amount": base_calculation_amount,
                     "available_negative_return": policy.available_negative_return,
                     "taxable_amount": calculation_result.get("taxable_amount"),
-                    "tax_with_deductions": calculation_result.get(
-                        "tax_with_deductions"
-                    ),
+                    "tax_with_deductions": tax_with_deductions,
                     "full_tax": calculation_result.get("full_tax"),
                     "available_reductions": available_deduction_data,
                     "foreign_paid_amount_actual": policy.foreign_paid_amount_actual,
-                    "tax_after_foreign_paid_deduction": (
-                        calculation_result.get("full_tax")
-                        - policy.foreign_paid_amount_actual
-                    ),
                     "agreement_present": policy.pension_company_pays,
                 }
             )
-        self.sum_tax_after_foreign_paid_deduction = sum(
-            [
-                policy.get("tax_after_foreign_paid_deduction")
-                for policy in self._pretty_policies
-                if not policy.get("agreement_present")
-                and policy.get("tax_after_foreign_paid_deduction") > 0
-            ]
-        )
 
         self.remainder_calculation = final_settlement.get_calculation_amounts()
         self._reference_datetime = date.today()
@@ -803,16 +795,12 @@ class TaxFinalStatementPDF(FPDF):
                     border=1,
                 )
                 self.set_xy(self.left_margin + c1w, self.yposition)
-                tax_after_foreign_paid_deduction = policy.get(
-                    "tax_after_foreign_paid_deduction"
-                )
+                tax_with_deductions = policy.get("tax_with_deductions")
                 self.multi_cell(
                     h=self.tablerowheight,
                     align="R",
                     w=c2w,
-                    txt="{:,}".format(tax_after_foreign_paid_deduction).replace(
-                        ",", "."
-                    ),
+                    txt="{:,}".format(tax_with_deductions).replace(",", "."),
                     border=1,
                 )
                 self.yposition = self.get_y()
@@ -921,13 +909,8 @@ class TaxFinalStatementPDF(FPDF):
         self.set_font(self.std_font_name, "", self.std_table_font_size)
 
         for policy in self._pretty_policies:
-            tax_after_foreign_paid_deduction = policy.get(
-                "tax_after_foreign_paid_deduction"
-            )
-            if (
-                not policy.get("agreement_present")
-                and tax_after_foreign_paid_deduction > 0
-            ):
+            tax_with_deductions = policy.get("tax_with_deductions")
+            if not policy.get("agreement_present") and tax_with_deductions > 0:
                 self.set_xy(self.left_margin, self.yposition)
                 self.multi_cell(
                     h=self.tablerowheight / 2,
@@ -943,9 +926,7 @@ class TaxFinalStatementPDF(FPDF):
                     h=self.tablerowheight,
                     align="R",
                     w=c2w,
-                    txt="{:,}".format(tax_after_foreign_paid_deduction).replace(
-                        ",", "."
-                    ),
+                    txt="{:,}".format(tax_with_deductions).replace(",", "."),
                     border=1,
                 )
                 self.yposition = self.get_y()
