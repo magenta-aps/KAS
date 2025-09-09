@@ -328,9 +328,7 @@ class TaxslipGeneratedJobsTest(BaseTransactionTestCase):
             person_tax_year = PersonTaxYear.objects.create(
                 tax_year=self.tax_year, person=person
             )
-            person_tax_year.tax_slip = TaxSlipGenerated(
-                persontaxyear=person_tax_year
-            )
+            person_tax_year.tax_slip = TaxSlipGenerated(persontaxyear=person_tax_year)
             person_tax_year.tax_slip.save()
             person_tax_year.tax_slip.file.save("test", report_file)
 
