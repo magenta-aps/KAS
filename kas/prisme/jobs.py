@@ -4,7 +4,7 @@ from csv import DictReader
 
 from django.conf import settings
 from django.utils import timezone
-from django.utils.datetime_safe import datetime
+from django.utils.timezone import datetime
 from tenQ.client import put_file_in_prisme_folder
 from worker.models import job_decorator
 

@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.db import models, transaction
 from django.db.models import JSONField
 from django.utils import timezone
-from django.utils.datetime_safe import datetime
+from django.utils.timezone import datetime
 from django.utils.translation import gettext as _
 from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 from rq import get_current_job
