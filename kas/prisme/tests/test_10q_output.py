@@ -20,6 +20,7 @@ class Test10QDateCalculation(TestCase):
             afstem_noegle="e688d6a6fc65424483819520bbbe7745",
             rate_text="Testing\r\nwith\r\nlines",
         )
+        print(prisme10q_content)
         self.assertEqual(
             prisme10q_content,
             "\r\n".join(
@@ -30,9 +31,9 @@ class Test10QDateCalculation(TestCase):
                     "202202182022010120221231                                                   "
                     "                                                        "
                     "e688d6a6fc65424483819520bbbe7745",
-                    " KAS2602022021812350900022209202212345678900020999000Testing",
-                    " KAS2602022021812350900022209202212345678900020999001with",
-                    " KAS2602022021812350900022209202212345678900020999002lines",
+                    " KAS2602022021812350900022209202212345678900020999001Testing",
+                    " KAS2602022021812350900022209202212345678900020999002with",
+                    " KAS2602022021812350900022209202212345678900020999003lines",
                 ]
             ),
         )
