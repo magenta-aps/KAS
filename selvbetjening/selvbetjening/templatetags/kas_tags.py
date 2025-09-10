@@ -2,11 +2,10 @@ import json as jsonlib
 import locale
 import re
 from html import unescape
+from urllib.parse import quote
 
 from django.template.defaultfilters import register
 from django.utils.translation import gettext
-
-from urllib.parse import quote
 
 trans_re = re.compile("_\\((.*)\\)")
 format_re = re.compile("{(.*)}")
