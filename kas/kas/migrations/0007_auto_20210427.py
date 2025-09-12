@@ -4,7 +4,7 @@ import datetime
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-from django.utils.timezone import utc
+from django.utils.timezone import timezone
 import kas.models
 import uuid
 
@@ -122,7 +122,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='taxslipgenerated',
             name='created_at',
-            field=models.DateTimeField(auto_now_add=True, default=datetime.datetime(2021, 5, 19, 10, 9, 35, 237138, tzinfo=utc)),
+            field=models.DateTimeField(auto_now_add=True, default=datetime.datetime(2021, 5, 19, 10, 9, 35, 237138, tzinfo=timezone.utc)),
             preserve_default=False,
         ),
         migrations.AddField(

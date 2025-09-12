@@ -4,7 +4,7 @@ import datetime
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-from django.utils.timezone import utc
+from django.utils.timezone import timezone
 
 
 class Migration(migrations.Migration):
@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='policydocument',
             name='uploaded_at',
-            field=models.DateTimeField(auto_now_add=True, default=datetime.datetime(2021, 4, 12, 11, 29, 8, 683285, tzinfo=utc)),
+            field=models.DateTimeField(auto_now_add=True, default=datetime.datetime(2021, 4, 12, 11, 29, 8, 683285, tzinfo=timezone.utc)),
             preserve_default=False,
         ),
         migrations.AddField(

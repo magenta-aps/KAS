@@ -7,10 +7,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": os.environ["POSTGRES_DB"],
-        "USER": os.environ["POSTGRES_USER"],
-        "PASSWORD": os.environ["POSTGRES_PASSWORD"],
-        "HOST": os.environ["POSTGRES_HOST"],
+        "NAME": os.environ["KAS_DB"],
+        "USER": os.environ["KAS_DB_USER"],
+        "PASSWORD": os.environ["KAS_DB_PASSWORD"],
+        "HOST": os.environ["KAS_DB_HOST"],
         "TIME_ZONE": os.environ.get("DJANGO_TIMEZONE", "America/Nuuk"),
     },
     "eskat": {

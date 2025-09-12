@@ -14,17 +14,6 @@ class BootstrapForm(Form):
 
         return result
 
-    def as_table(self):
-        return self._html_output(
-            # TODO: This should really be in a template.
-            normal_row="<tr%(html_class_attr)s><th>%(label)s</th><td>%"
-            + "(field)s%(help_text)s</td><td>%(errors)s</td></tr>",
-            error_row='<tr><td colspan="3">%s</td></tr>',
-            row_ender="</td></tr>",
-            help_text_html='<small class="form-text text-muted mb-2 ml-1">%s</small>',
-            errors_on_separate_row=False,
-        )
-
     def set_field_classes(self, name, field, check_for_errors=False):
         classes = self.split_class(field.widget.attrs.get("class"))
         classes.append("mr-2")

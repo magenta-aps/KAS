@@ -3,13 +3,14 @@ from unittest import mock
 from unittest.mock import patch
 
 import django_rq
-import pysftp
+import tenQ
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.test import TestCase, override_settings
 from fakeredis import FakeStrictRedis
+from paramiko.client import SSHClient
 from prisme.jobs import import_pre_payment_file, send_batch
 from prisme.models import PrePaymentFile, Prisme10QBatch, Transaction
 from rq import Queue
@@ -193,13 +194,14 @@ class MinimumAmountHandling(TestCase):
             )
 
     @mock.patch.object(
-        target=pysftp,
-        attribute="Connection",
+        target=tenQ,
+        attribute="client",
         autospec=True,
         return_value=mock.Mock(
-            spec=pysftp.Connection,
+            spec=SSHClient,
             __enter__=lambda self: self,
             __exit__=lambda *args: None,
+            connect=lambda *args: None,
         ),
     )
     @override_settings(TENQ=test_settings, METRICS={"disabled": True})

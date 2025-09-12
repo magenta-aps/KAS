@@ -2,9 +2,9 @@ import json as jsonlib
 import locale
 import re
 from html import unescape
+from urllib.parse import quote
 
 from django.template.defaultfilters import register
-from django.utils.http import urlquote
 from django.utils.translation import gettext
 
 trans_re = re.compile("_\\((.*)\\)")
@@ -82,7 +82,7 @@ def addstr(arg1, arg2):
 @register.filter
 def back(url, backurl):
     if backurl:
-        return "".join([url, "&" if "?" in url else "?", "back=", urlquote(backurl)])
+        return "".join([url, "&" if "?" in url else "?", "back=", quote(backurl)])
     return url
 
 
@@ -90,7 +90,7 @@ def back(url, backurl):
 def urlparam(url, param):
     if param:
         (key, value) = param.split("=")
-        return "".join([url, "&" if "?" in url else "?", key, "=", urlquote(value)])
+        return "".join([url, "&" if "?" in url else "?", key, "=", quote(value)])
     return url
 
 

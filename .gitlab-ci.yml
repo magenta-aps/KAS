@@ -74,7 +74,7 @@ include:
               - path: CHANGELOG.md
                 label: Changelog
       EOF
-      
+
 
 variables:
   # Project variables
@@ -173,7 +173,7 @@ Build ER image:
   needs: ["Build KAS image"]
   image: ${KAS_IMAGE_SHA}
   services:
-    - name: postgres:13
+    - name: postgres:16
       alias: kas-db
   variables:
     DJANGO_SECRET_KEY: e$s6@0(hs5ja79-&!l7vt^onoe4h^*bv_e4hj&wt5^8*&x76-$
@@ -183,6 +183,10 @@ Build ER image:
     POSTGRES_PASSWORD: kas
     POSTGRES_DB: kas
     POSTGRES_HOST: kas-db
+    KAS_DB_USER: kas
+    KAS_DB_PASSWORD: kas
+    KAS_DB: kas
+    KAS_DB_HOST: kas-db
     HOST_DOMAIN: http://localhost
     REST_HOST: http://kas:8000
     REST_TOKEN: 1799c88d-10e6-489d-8fe9-adeb2fd8a36f
@@ -238,7 +242,7 @@ Admin Django check:
   needs: ["Build Selvbetjening image"]
   image: ${SELF_IMAGE_SHA}
   services:
-    - name: postgres:13
+    - name: postgres:16
       alias: kas-db
   variables:
     DJANGO_SECRET_KEY: e$s6@0(hs5ja79-&!l7vt^onoe4h^*bv_e4hj&wt5^8*&x76-$
@@ -247,6 +251,10 @@ Admin Django check:
     POSTGRES_PASSWORD: kas
     POSTGRES_DB: selvbetjening
     POSTGRES_HOST: kas-db
+    SELVBETJENING_DB_USER: kas
+    SELVBETJENING_DB_PASSWORD: kas
+    SELVBETJENING_DB: selvbetjening
+    SELVBETJENING_DB_HOST: kas-db
     DJANGO_LANGUAGE_COOKIE_DOMAIN: localhost
     REST_HOST: http://kas:8000
     REST_TOKEN: 1799c88d-10e6-489d-8fe9-adeb2fd8a36f
@@ -275,7 +283,7 @@ Selvbetjening Unittest:
   script:
     - cd /app
     - coverage run manage.py test --parallel 4
-    - coverage combine   
+    - coverage combine
     - coverage report --show-missing --fail-under=25
     - coverage xml
   coverage: '/^TOTAL.+?(\d+\%)$/'

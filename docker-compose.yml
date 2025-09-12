@@ -75,14 +75,17 @@ services:
   kas-db:
     # Do not set `user` here
     container_name: kas-db
-    image: postgres:13
+    image: postgres:14
     env_file:
       - ./dev-environment/kas.env
+      - ./dev-environment/selvbetjening.env
+    environment:
+      POSTGRES_PASSWORD: "postgres"
     networks:
       - database
     volumes:
       - kas-postgres-data:/var/lib/postgresql/data
-      - ./dev-environment/postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
+      - ./docker/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
 
   redis:
     container_name: redis

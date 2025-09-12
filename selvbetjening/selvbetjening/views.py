@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import date
 
 from django.conf import settings
 from django.forms import formset_factory
@@ -8,7 +9,6 @@ from django.shortcuts import redirect
 from django.template import Context, Engine
 from django.urls import reverse
 from django.utils import timezone, translation
-from django.utils.datetime_safe import date
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.utils.translation.trans_real import DjangoTranslation
