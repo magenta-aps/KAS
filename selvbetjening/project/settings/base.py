@@ -9,8 +9,10 @@ BASE_DIR = dirname(dirname(dirname((os.path.abspath(__file__)))))
 
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 DEBUG = bool(strtobool(os.environ.get("DJANGO_DEBUG", "False")))
+
 HOST_DOMAIN = os.environ.get("HOST_DOMAIN", "https://kas.aka.nanoq.gl")
 ALLOWED_HOSTS = json.loads(os.environ.get("ALLOWED_HOSTS", "[]"))
+CSRF_TRUSTED_ORIGINS = json.loads(os.environ.get("CSRF_TRUSTED_ORIGINS", "[]"))
 
 ROOT_URLCONF = "project.urls"
 WSGI_APPLICATION = "project.wsgi.application"

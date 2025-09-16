@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 from distutils.util import strtobool
@@ -14,7 +15,11 @@ BASE_DIR = dirname(dirname(dirname(os.path.abspath(__file__))))
 
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 DEBUG = bool(strtobool(os.environ.get("DJANGO_DEBUG", "False")))
-ALLOWED_HOSTS = ["*"]
+
+HOST_DOMAIN = os.environ.get("HOST_DOMAIN", "https://nokasprod01.dmz70.local")
+ALLOWED_HOSTS = json.loads(os.environ.get("ALLOWED_HOSTS", "[]"))
+CSRF_TRUSTED_ORIGINS = json.loads(os.environ.get("CSRF_TRUSTED_ORIGINS", "[]"))
+
 ROOT_URLCONF = "project.urls"
 WSGI_APPLICATION = "project.wsgi.application"
 
