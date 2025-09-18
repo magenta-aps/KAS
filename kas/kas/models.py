@@ -1909,7 +1909,7 @@ class PensionCompanySummaryFile(models.Model):
         ]
         writer.writerow(headers)
 
-        for policy_tax_year in qs.iterator():
+        for policy_tax_year in qs.iterator(chunk_size=1000):
             calculation = policy_tax_year.get_calculation()
             note = ""
             if calculation["year_adjusted_amount"] != calculation["initial_amount"]:
