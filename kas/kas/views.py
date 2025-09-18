@@ -1354,7 +1354,7 @@ class PersonTaxYearHistoryListView(KasMixin, PermissionRequiredWithMessage, Deta
                 "uploaded_by__username",
                 "description",
                 "history_type",
-                "uploaded_by__username",
+                F("uploaded_by__username"),
                 "klass",
             )
         )
