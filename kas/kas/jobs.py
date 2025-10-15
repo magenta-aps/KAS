@@ -964,7 +964,7 @@ def dispatch_final_settlement(job):
     settlement = FinalSettlement.objects.get(uuid=job.arguments["uuid"])
     generator = EboksDispatchGenerator.from_settings()
     try:
-        send_settlement = settlement.dispatch_to_eboks(client, generator)
+        send_settlement = settlement.dispatch(client, generator)
     except Exception as e:
         mark_job_failed(job, client.parse_exception(e), e)
     else:
