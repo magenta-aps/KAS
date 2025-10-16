@@ -6,7 +6,7 @@ TENQ = {
     "port": int(os.environ.get("TENQ_PORT") or 22),
     "username": os.environ["TENQ_USER"],
     "password": os.environ["TENQ_PASSWORD"],
-    "known_hosts": json.loads(os.environ.get("TENQ_KNOWN_HOSTS", "[]")),
+    "known_hosts": json.loads(os.environ.get("TENQ_KNOWN_HOSTS") or "[]"),
     "dirs": {
         "10q_production": os.environ["TENQ_PROD_PATH"],
         "10q_development": os.environ["TENQ_TEST_PATH"],
