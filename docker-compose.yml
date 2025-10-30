@@ -111,6 +111,7 @@ services:
     volumes:
       - ./selvbetjening:/app
       - ./dev-environment/cert:/ssl:ro
+      - idp-data:/var/cache/idp:rw
     environment:
       - MAKE_MIGRATIONS=true
       - MIGRATE=true
@@ -167,6 +168,7 @@ services:
 
 volumes:
   kas-postgres-data:
+  idp-data:
 
 networks:
   default:
