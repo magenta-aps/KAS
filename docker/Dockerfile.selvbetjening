@@ -43,6 +43,7 @@ RUN chown kas:kas /app
 USER kas
 EXPOSE 8000
 WORKDIR /app
+VOLUME /var/cache/idp
 
 RUN django-admin compilemessages
 
