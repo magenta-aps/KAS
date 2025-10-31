@@ -43,7 +43,7 @@ SAML = {
     "description": os.environ.get("SAML_SP_DESCRIPTION") or "Kapitalafkastskat",
     "verify_ssl_cert": False,
     "metadata_remote": os.environ.get("SAML_IDP_METADATA"),
-    "metadata": {"local": ["/var/cache/kas/idp_metadata.xml"]},  # IdP Metadata
+    "metadata": {"local": ["/var/cache/idp/idp_metadata.xml"]},  # IdP Metadata
     "service": {
         "sp": {
             "name": os.environ.get("SAML_SP_NAME") or "KAS",
