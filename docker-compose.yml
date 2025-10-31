@@ -1,6 +1,6 @@
 services:
   kas-admin:
-    user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
+    user: "75050:1000"  # Override in docker-compose.override.yml if your local user is different
     container_name: kas-admin
     image: kas:latest
     build:
@@ -31,7 +31,7 @@ services:
     command: gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output # reload on code changes
 
   kas-cron:
-    user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
+    user: "75050:1000"  # Override in docker-compose.override.yml if your local user is different
     container_name: kas-cron
     image: kas:latest
     depends_on:
@@ -50,7 +50,7 @@ services:
     pull_policy: build
 
   worker:
-    user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
+    user: "75050:1000"  # Override in docker-compose.override.yml if your local user is different
     #add more containers like this to add more workers
     container_name: worker-one
     image: kas:latest
@@ -94,7 +94,7 @@ services:
       - worker
 
   kas-selvbetjening:
-    user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
+    user: "75050:1000"  # Override in docker-compose.override.yml if your local user is different
     container_name: kas-selvbetjening
     build:
       context: .
@@ -111,6 +111,7 @@ services:
     volumes:
       - ./selvbetjening:/app
       - ./dev-environment/cert:/ssl:ro
+      - idp-data:/var/cache/idp:rw
     environment:
       - MAKE_MIGRATIONS=true
       - MIGRATE=true
@@ -141,7 +142,7 @@ services:
       - ./dev-environment/idp/site.conf:/etc/apache2/sites-available/simplesamlphp.conf:ro
 
   kas-er:
-    user: "1000:1000"  # Override in docker-compose.override.yml if your local user is different
+    user: "75050:1000"  # Override in docker-compose.override.yml if your local user is different
     container_name: kas-er
     image: kas-er:latest
     build:
@@ -167,6 +168,7 @@ services:
 
 volumes:
   kas-postgres-data:
+  idp-data:
 
 networks:
   default:
