@@ -2,7 +2,7 @@ import os
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": os.environ["SELVBETJENING_DB"],
         "USER": os.environ["SELVBETJENING_DB_USER"],
         "PASSWORD": os.environ["SELVBETJENING_DB_PASSWORD"],

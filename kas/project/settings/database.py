@@ -6,7 +6,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": os.environ["KAS_DB"],
         "USER": os.environ["KAS_DB_USER"],
         "PASSWORD": os.environ["KAS_DB_PASSWORD"],
