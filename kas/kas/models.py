@@ -26,14 +26,14 @@ from django.dispatch import receiver
 from django.forms import model_to_dict
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from eskat.models import ImportedR75PrivatePension
-from prisme.models import Prisme10QBatch, Transaction
 from requests.exceptions import ReadTimeout
 from simple_history.models import HistoricalRecords
 from tenQ.dates import get_due_date, get_last_payment_date_from_due_date
 
+from eskat.models import ImportedR75PrivatePension
 from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.managers import PolicyTaxYearManager
+from prisme.models import Prisme10QBatch, Transaction
 
 
 def filefield_path(instance, filename):

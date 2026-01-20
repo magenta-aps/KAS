@@ -7,15 +7,15 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.test import TransactionTestCase, override_settings
+from fakeredis import FakeStrictRedis
+from rq import Queue
+
 from eskat.jobs import generate_sample_data
 from eskat.mockupdata import create_person
-from fakeredis import FakeStrictRedis
+from kas.eboks import EboksClient
 from prisme.models import Prisme10QBatch
 from project.dafo import DatafordelerClient
-from rq import Queue
 from worker.models import Job
-
-from kas.eboks import EboksClient
 
 from eskat.models import (  # isort: skip
     ImportedKasMandtal,

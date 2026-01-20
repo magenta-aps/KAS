@@ -17,14 +17,14 @@ from django.utils.translation import gettext as _
 from django.views.generic.detail import BaseDetailView, DetailView, SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
-from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from ipware import get_client_ip
 from openpyxl import Workbook
-from prisme.models import Prisme10QBatch, Transaction
-from worker.models import Job
 
+from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from kas.filters import LockFilterSet, PensionCompanyFilterSet
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
+from prisme.models import Prisme10QBatch, Transaction
+from worker.models import Job
 
 from django.db.models import (  # isort: skip
     BooleanField,

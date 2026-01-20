@@ -7,14 +7,14 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase, override_settings
-from eskat.jobs import generate_sample_data
 from fakeredis import FakeStrictRedis
-from prisme.models import Prisme10QBatch, Transaction
 from rq import Queue
-from worker.models import Job
 
+from eskat.jobs import generate_sample_data
 from kas.jobs import import_mandtal
 from kas.tests.test_mixin import create_admin_user
+from prisme.models import Prisme10QBatch, Transaction
+from worker.models import Job
 
 from kas.models import (  # isort: skip
     FinalSettlement,

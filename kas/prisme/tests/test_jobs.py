@@ -11,12 +11,12 @@ from django.core.files import File
 from django.test import TestCase, override_settings
 from fakeredis import FakeStrictRedis
 from paramiko.client import SSHClient
-from prisme.jobs import import_pre_payment_file, send_batch
-from prisme.models import PrePaymentFile, Prisme10QBatch, Transaction
 from rq import Queue
-from worker.models import Job
 
 from kas.models import PensionCompany, Person, PersonTaxYear, PolicyTaxYear, TaxYear
+from prisme.jobs import import_pre_payment_file, send_batch
+from prisme.models import PrePaymentFile, Prisme10QBatch, Transaction
+from worker.models import Job
 
 from kas.jobs import (  # isort: skip
     generate_batch_and_transactions_for_year,

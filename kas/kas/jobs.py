@@ -16,21 +16,21 @@ from django.db.models import Count, IntegerField, Q, Sum
 from django.db.models.functions import Cast
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from eskat.jobs import delete_protected
 from more_itertools import map_except
 from openpyxl import load_workbook
 from pandas import to_datetime
-from prisme.models import Prisme10QBatch
-from project.dafo import DatafordelerClient
 from requests.exceptions import ConnectionError, HTTPError
 from rq import get_current_job
-from worker.job_registry import resolve_job_function
-from worker.models import Job, job_decorator
 
+from eskat.jobs import delete_protected
 from kas.eboks import EboksClient, EboksDispatchGenerator
 from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from kas.reportgeneration.kas_report import TaxPDF
 from kas.reportgeneration.kas_topdanmark_agterskrivelse import AgterskrivelsePDF
+from prisme.models import Prisme10QBatch
+from project.dafo import DatafordelerClient
+from worker.job_registry import resolve_job_function
+from worker.models import Job, job_decorator
 
 from eskat.models import (  # isort: skip
     EskatModels,

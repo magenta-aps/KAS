@@ -5,11 +5,11 @@ from django.conf import settings
 from django.core.management import call_command
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
+
 from eskat.mockupdata import generate_persons
+from kas.models import PersonTaxYear, TaxYear
 from worker.job_registry import resolve_job_function
 from worker.models import Job, job_decorator
-
-from kas.models import PersonTaxYear, TaxYear
 
 from eskat.models import (  # isort: skip
     ImportedKasBeregningerX,

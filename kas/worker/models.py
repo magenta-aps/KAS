@@ -13,6 +13,7 @@ from django.utils.timezone import datetime
 from django.utils.translation import gettext as _
 from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 from rq import get_current_job
+
 from worker.job_registry import get_job_types
 
 logger = getLogger(__name__)

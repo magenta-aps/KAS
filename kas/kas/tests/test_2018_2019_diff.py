@@ -6,8 +6,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
-from eskat.models import ImportedKasBeregningerX
 
+from eskat.models import ImportedKasBeregningerX
 from kas.views import PersonTaxYearEskatDiffListView
 
 from kas.models import (  # isort: skip

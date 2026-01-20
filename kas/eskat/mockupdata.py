@@ -1,7 +1,6 @@
 import uuid
 
 from eskat.models import MockModels
-
 from kas.models import TaxYear
 
 unique_res_counter = 0

@@ -6,9 +6,9 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.timezone import datetime
 from tenQ.client import put_file_in_prisme_folder
-from worker.models import job_decorator
 
 from kas.models import PersonTaxYear
+from worker.models import job_decorator
 
 from prisme.models import (  # isort: skip
     PrePaymentFile,

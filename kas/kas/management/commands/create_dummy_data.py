@@ -2,10 +2,10 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from eskat.jobs import generate_sample_data, importere_kas_beregninger_for_legacy_years
-from worker.models import Job
 
+from eskat.jobs import generate_sample_data, importere_kas_beregninger_for_legacy_years
 from kas.models import TaxYear
+from worker.models import Job
 
 from kas.jobs import (  # isort: skip
     generate_pseudo_settlements_and_transactions_for_legacy_years,

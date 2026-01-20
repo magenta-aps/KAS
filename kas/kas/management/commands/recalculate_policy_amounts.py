@@ -1,7 +1,7 @@
 from django.core.management import BaseCommand
 from django.db.models import Count
-from eskat.models import ImportedR75PrivatePension
 
+from eskat.models import ImportedR75PrivatePension
 from kas.models import PolicyTaxYear
 
 
