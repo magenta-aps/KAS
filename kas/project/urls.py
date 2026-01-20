@@ -3,9 +3,9 @@ from django.contrib import admin
 from django.contrib.auth.views import LogoutView
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path, reverse_lazy
+from project.admin import kasadmin
 
 from kas.viewsets import router
-from project.admin import kasadmin
 
 urlpatterns = [
     path("admin/", kasadmin.urls),

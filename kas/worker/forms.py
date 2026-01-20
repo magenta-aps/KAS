@@ -2,12 +2,12 @@ from django import forms
 from django.conf import settings
 from django.forms import ModelForm
 from django.utils.translation import gettext as _
-
 from eskat.models import R75SpreadsheetFile
+from worker.job_registry import get_job_types
+
 from kas.forms import PensionCompanySummaryFileForm
 from kas.forms_mixin import BootstrapForm
 from kas.models import TaxYear
-from worker.job_registry import get_job_types
 
 
 class JobTypeSelectForm(BootstrapForm):

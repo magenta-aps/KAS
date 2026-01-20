@@ -9,12 +9,12 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import FormView
-
-from kas.view_mixins import KasMixin
 from project.view_mixins import administrator_required
 from worker.forms import JobTypeSelectForm
 from worker.job_registry import get_job_types, resolve_job_function
 from worker.models import Job
+
+from kas.view_mixins import KasMixin
 
 
 class JobListHtmxView(KasMixin, PermissionRequiredMixin, ListView):

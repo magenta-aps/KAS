@@ -2,7 +2,6 @@ import traceback
 
 from django.db.transaction import atomic
 from django.utils import timezone
-
 from worker.models import Job
 
 

@@ -6,7 +6,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-
 from prisme.models import Prisme10QBatch, Transaction
 
 from kas.models import (  # isort: skip
