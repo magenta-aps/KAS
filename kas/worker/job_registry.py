@@ -59,12 +59,12 @@ def get_job_types():
             "function": "kas.jobs.generate_reports_for_year",
             "result_template": "worker/includes/raw.html",
         },
-        "DispatchTaxYear": {
-            "label": _("Afsendelse af KAS selvangivelser for et givet år"),
-            "form_class": YearPkForm,
-            "function": "kas.jobs.dispatch_tax_year",
-            "result_template": "worker/includes/raw.html",
-        },
+        # "DispatchTaxYear": {
+        #    "label": _("Afsendelse af KAS selvangivelser for et givet år"),
+        #    "form_class": YearPkForm,
+        #    "function": "kas.jobs.dispatch_tax_year",
+        #    "result_template": "worker/includes/raw.html",
+        # },
         "DispatchTaxYearDebug": {
             "label": _("Test-afsendelse af KAS selvangivelser for et givet år"),
             "form_class": YearPkForm,
