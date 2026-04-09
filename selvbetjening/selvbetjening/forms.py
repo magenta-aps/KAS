@@ -57,7 +57,7 @@ class PolicyForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         for i in range(0, 10):
-            self.fields[f"file_file_{i}"] = forms.FileField(
+            self.fields[f"file_file_{i}"] = fields.FileField(
                 allow_empty_file=True, required=False
             )
             self.fields[f"file_description_{i}"] = fields.CharField(
