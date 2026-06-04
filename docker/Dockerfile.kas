@@ -30,10 +30,10 @@ RUN curl -fsSLO "$SUPERCRONIC_URL" && \
     ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic
 
 # Oracle DB driver client libraries
-ADD https://download.oracle.com/otn_software/linux/instantclient/2390000/instantclient-basiclite-linux.x64-23.9.0.25.07.zip /tmp/oracle_driver.zip
-RUN unzip /tmp/oracle_driver.zip instantclient_23_9/* -d /usr/local/lib && \
+ADD https://download.oracle.com/otn_software/linux/instantclient/2326200/instantclient-basic-linux.x64-23.26.2.0.0.zip /tmp/oracle_driver.zip
+RUN unzip /tmp/oracle_driver.zip instantclient_23_26/* -d /usr/local/lib && \
     rm /tmp/oracle_driver.zip && \
-    printf "# Oracle client libraries\n/usr/local/lib/instantclient_23_9\n" > /etc/ld.so.conf.d/oracle_client_libraries.conf && \
+    printf "# Oracle client libraries\n/usr/local/lib/instantclient_23_26\n" > /etc/ld.so.conf.d/oracle_client_libraries.conf && \
     ldconfig
 
 ARG COMMIT_TAG
