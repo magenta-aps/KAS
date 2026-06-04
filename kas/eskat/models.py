@@ -7,7 +7,10 @@ from django.db import models
 from django.db.models.functions import Length
 from django.forms.models import model_to_dict
 from django.utils.formats import date_format
+from oracledb import init_oracle_client
 from simple_history.models import HistoricalRecords
+
+init_oracle_client()
 
 """
 There are four types of models in this module:
