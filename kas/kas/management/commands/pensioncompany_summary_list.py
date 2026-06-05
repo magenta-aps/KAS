@@ -72,6 +72,6 @@ class Command(BaseCommand):
             df.loc[idx] = row
         df.dropna(how="all", inplace=True)
         df.to_csv(
-            settings.MEDIA_ROOT + "pensioncompany_summary_list_" + str(year) + ".xlsx",
+            settings.MEDIA_ROOT + "pensioncompany_summary_list_" + str(year) + ".csv",
             index=False,
         )
