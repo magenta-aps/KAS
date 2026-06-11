@@ -56,6 +56,10 @@ class Command(BaseCommand):
             pc_df["prepaid"] = (
                 pc_df["preliminary_paid_amount"] + pc_df["foreign_paid_amount_actual"]
             )
+            pc_df.loc[
+                pc_df["tax_with_deductions"] < settings.TRANSACTION_INDIFFERENCE_LIMIT,
+                "tax_with_deductions",
+            ] = 0
             row = Series(
                 {
                     "Pensionskasse": pc.name,
@@ -66,12 +70,15 @@ class Command(BaseCommand):
                     ].sum(),
                     "Beregningsgrundlag": pc_df["taxable_amount"].sum(),
                     "Forudbetaling": pc_df["prepaid"].sum(),
-                    "Kapitalafkastskat": pc_df["tax_to_pay"].sum(),
+                    "Kapitalafkastskat": pc_df["tax_with_deductions"].sum(),
                 }
             )
             df.loc[idx] = row
         df.dropna(how="all", inplace=True)
         df.to_csv(
-            settings.MEDIA_ROOT + "pensioncompany_summary_list_" + str(year) + ".csv",
+            settings.MEDIA_ROOT
+            + "pensioncompany_summary/pensioncompany_summary_list_"
+            + str(year)
+            + ".csv",
             index=False,
         )
