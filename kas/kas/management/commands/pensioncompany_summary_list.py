@@ -75,10 +75,10 @@ class Command(BaseCommand):
             )
             df.loc[idx] = row
         df.dropna(how="all", inplace=True)
-        df.to_csv(
+        df.to_excel(
             settings.MEDIA_ROOT
             + "pensioncompany_summary/pensioncompany_summary_list_"
             + str(year)
-            + ".csv",
+            + ".xlsx",
             index=False,
         )
