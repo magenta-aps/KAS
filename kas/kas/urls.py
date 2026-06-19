@@ -11,6 +11,7 @@ from kas.views import (  # isort: skip
     FeatureFlagView,
     FinalSettlementDownloadView,
     FinalSettlementGenerateView,
+    GenerateTotalPensionCompanySummaryFileView,
     KasLoginView,
     LockDetailView,
     LockFilterView,
@@ -194,6 +195,11 @@ urlpatterns = [
         "tax_year/<int:year>/company-summary/",
         PensionCompanySummaryFileView.as_view(),
         name="policy_summary_list",
+    ),
+    path(
+        "tax_year/<int:year>/generate-company-summary/",
+        GenerateTotalPensionCompanySummaryFileView.as_view(),
+        name="generate_total_pensioncompany_summary",
     ),
     path(
         "tax_year/<int:year>/company-summary/<int:pk>/",

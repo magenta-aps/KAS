@@ -9,11 +9,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import SuspiciousOperation
 from django.db import models, transaction
 from django.http import FileResponse, Http404, HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
+from django.views import View
 from django.views.generic.detail import BaseDetailView, DetailView, SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
@@ -80,6 +81,7 @@ from kas.forms import (  # isort: skip
 from kas.jobs import (  # isort: skip
     dispatch_final_settlement,
     generate_pension_company_summary_file,
+    generate_total_pension_company_summary_file,
     import_mandtal,
     merge_pension_companies,
 )
@@ -1173,6 +1175,29 @@ class PolicyTaxYearNumberUpdateView(
                 siblings = old_instance.same_policy_qs.exclude(pk=form.instance.pk)
                 siblings.update(policy_number=self.object.policy_number)
         return super().form_valid(form)
+
+
+class GenerateTotalPensionCompanySummaryFileView(
+    PermissionRequiredWithMessage,
+    View,
+):
+    permission_required = "kas.add_pensioncompanysummaryfile"
+    slug_url_kwarg = "year"
+    slug_field = "year"
+
+    def get(self, request, *args, **kwargs):
+        year = kwargs["year"]
+        if TaxYear.objects.filter(year=year).exists():
+            Job.schedule_job(
+                generate_total_pension_company_summary_file,
+                job_type="GenerateTotalPensionCompanySummary",
+                created_by=request.user,
+                job_kwargs={"year": year},
+            )
+            return redirect("kas:policy_summary_list", year=year)
+        else:
+            return redirect("kas:policy_summary_list_latest")
+
 
 
 class PensionCompanySummaryFileView(

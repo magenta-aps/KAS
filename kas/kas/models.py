@@ -8,7 +8,7 @@ import re
 import string
 import uuid
 from functools import cached_property
-from io import StringIO
+from io import BytesIO, StringIO
 from time import sleep
 from uuid import uuid4
 
@@ -27,6 +27,8 @@ from django.forms import model_to_dict
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from eskat.models import ImportedR75PrivatePension
+from numpy import nan
+from pandas import DataFrame, ExcelWriter, Series
 from prisme.models import Prisme10QBatch, Transaction
 from requests.exceptions import ReadTimeout
 from simple_history.models import HistoricalRecords
@@ -2422,3 +2424,159 @@ class RepresentationToken(models.Model):
                 for _ in range(64)
             ]
         )
+
+
+def totalpensioncompanysummaryfile_path(instance, filename):
+    return (
+        "pensioncompany_summary/pensioncompany_summary_list_"
+        f"{instance.tax_year.year}__{instance.created.isoformat()}.xlsx"
+    )
+
+
+class TotalPensionCompanySummaryFile(models.Model):
+    class Meta:
+        ordering = ["tax_year"]
+
+    tax_year = models.ForeignKey(
+        TaxYear,
+        null=False,
+        on_delete=models.CASCADE,
+    )
+
+    file = models.FileField(
+        upload_to=totalpensioncompanysummaryfile_path,
+        null=False,
+    )
+
+    creator = models.ForeignKey(
+        get_user_model(),
+        null=False,
+        on_delete=models.CASCADE,
+    )
+
+    created = models.DateTimeField(
+        auto_now_add=True,
+        null=False,
+    )
+
+    @staticmethod
+    def create(tax_year, creator):
+        # Generate a TotalPensionCompanySummaryFile entry and populate a file for it
+        pensioncompanies = PensionCompany.objects.filter(
+            policytaxyear__person_tax_year__tax_year=tax_year,
+        ).distinct()
+
+        # Setup data format
+        dtypes = {
+            "Pensionskasse": str,
+            "Antal": float,
+            "Afkast": float,
+            "Modregnet negativt afkast tidl. år": float,
+            "Beregningsgrundlag": float,
+            "Forudbetaling": float,
+            "Kapitalafkastskat": float,
+        }
+        columns = list(dtypes.keys())
+        df = DataFrame(
+            nan,
+            index=range(len(pensioncompanies)),
+            columns=columns,
+        ).astype(dtypes)
+
+        file_entry = TotalPensionCompanySummaryFile.objects.create(
+            tax_year=tax_year, creator=creator
+        )
+
+        for idx, pc in enumerate(pensioncompanies):
+            ptys = PolicyTaxYear.objects.filter(
+                pension_company=pc,
+                person_tax_year__tax_year=tax_year,
+            )
+            pty_calcs = [
+                {
+                    "preliminary_paid_amount": pty.preliminary_paid_amount,
+                    "foreign_paid_amount_actual": pty.foreign_paid_amount_actual,
+                    **pty.get_calculation(),
+                }
+                for pty in ptys.iterator(chunk_size=1000)
+            ]
+            if not pty_calcs:
+                continue
+
+            pc_df = DataFrame(pty_calcs)
+            pc_df["prepaid"] = (
+                pc_df["preliminary_paid_amount"] + pc_df["foreign_paid_amount_actual"]
+            )
+            pc_df.loc[
+                pc_df["tax_with_deductions"] < settings.TRANSACTION_INDIFFERENCE_LIMIT,
+                "tax_with_deductions",
+            ] = 0
+            row = Series(
+                {
+                    "Pensionskasse": pc.name,
+                    "Antal": ptys.values("person_tax_year__person").distinct().count(),
+                    "Afkast": pc_df["year_adjusted_amount"].sum(),
+                    "Modregnet negativt afkast tidl. år": pc_df[
+                        "used_negative_return"
+                    ].sum(),
+                    "Beregningsgrundlag": pc_df["taxable_amount"].sum(),
+                    "Forudbetaling": pc_df["prepaid"].sum(),
+                    "Kapitalafkastskat": pc_df["tax_with_deductions"].sum(),
+                }
+            )
+            df.loc[idx] = row
+        df.dropna(how="all", inplace=True)
+
+        # Save the file
+        buffer = BytesIO()
+        with ExcelWriter(buffer) as excelfile:
+            # Save file in buffer, files won't be large
+            df.to_excel(
+                excelfile,
+                index=False,
+            )
+            name = f"{timezone.now().isoformat()}.xlsx" 
+
+            # Reset buffer to start, and convet to django-type file
+            buffer.seek(0)
+            django_file = File(buffer, name=name)
+
+            # Save file
+            file_entry.file.save(
+                name,
+                django_file,
+                save=True,
+            )
+            file_entry.save()
+        return file_entry
+
+
+post_delete.connect(
+    delete_file, sender=TotalPensionCompanySummaryFile, dispatch_uid="delete_total_pension_file"
+)
+
+
+class TotalPensionCompanySummaryFileDownload(models.Model):
+    class Meta:
+        ordering = ["downloaded_at"]
+
+    downloaded_by = models.ForeignKey(
+        get_user_model(),
+        null=False,
+        on_delete=models.CASCADE,
+    )
+
+    downloaded_at = models.DateTimeField(
+        auto_now_add=True,
+        null=False,
+    )
+
+    downloaded_to = models.GenericIPAddressField(
+        null=True,
+    )
+
+    file = models.ForeignKey(
+        TotalPensionCompanySummaryFile,
+        null=False,
+        on_delete=models.CASCADE,
+    )
