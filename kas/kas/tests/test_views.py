@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -7,7 +8,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from prisme.models import Prisme10QBatch, Transaction
-from unittest.mock import patch
+from worker.models import Job
 
 from kas.models import (  # isort: skip
     FinalSettlement,
@@ -17,8 +18,6 @@ from kas.models import (  # isort: skip
     PolicyTaxYear,
     TaxYear,
 )
-
-from worker.models import Job
 
 
 class BaseTestCase(TestCase):

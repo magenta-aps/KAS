@@ -20,7 +20,6 @@ from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from ipware import get_client_ip
-from itertools import chain
 from openpyxl import Workbook
 from prisme.models import Prisme10QBatch, Transaction
 from worker.models import Job
