@@ -926,7 +926,6 @@ def generate_pension_company_summary_file(job):
 def generate_total_pension_company_summary_file(job):
     year = TaxYear.objects.get(year=job.arguments["year"])
     TotalPensionCompanySummaryFile.create(year, job.created_by)
-    
     job.result = {
         "summary": [
             {

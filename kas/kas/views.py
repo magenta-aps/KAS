@@ -14,7 +14,6 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
-from django.views import View
 from django.views.generic.detail import BaseDetailView, DetailView, SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
@@ -1203,7 +1202,6 @@ class GenerateTotalPensionCompanySummaryFileView(
             return redirect("kas:policy_summary_list_latest")
 
 
-
 class PensionCompanySummaryFileView(
     KasMixin,
     PermissionRequiredWithMessage,
@@ -1229,9 +1227,7 @@ class PensionCompanySummaryFileView(
         summaryfiles = PensionCompanySummaryFile.objects.filter(tax_year=self.object)
         totalsummaryfiles = TotalPensionCompanySummaryFile.objects.filter(
             tax_year=self.object,
-        ).annotate(
-            filetype=sumfile_pensioncompany_value
-        )
+        ).annotate(filetype=sumfile_pensioncompany_value)
         summaryjobs = Job.objects.filter(
             job_type="GeneratePensionCompanySummary",
             arguments__year__eq=self.object.year,
@@ -1243,10 +1239,12 @@ class PensionCompanySummaryFileView(
             created=F("created_at"),
             arguments__pension_company=sumfile_pensioncompany_value,
         )
-        object_list = list(chain(
-            totalsummaryfiles.order_by("-created"),
-            summaryfiles.order_by("company", "-created")
-        ))
+        object_list = list(
+            chain(
+                totalsummaryfiles.order_by("-created"),
+                summaryfiles.order_by("company", "-created"),
+            )
+        )
         all_objects = [
             *summaryfiles,
             *summaryjobs,

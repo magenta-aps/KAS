@@ -1,7 +1,4 @@
-import numpy as np
-from django.conf import settings
 from django.core.management import BaseCommand
-from pandas import DataFrame, Series
 
 from kas.models import TaxYear, TotalPensionCompanySummaryFile
 
@@ -19,10 +16,8 @@ class Command(BaseCommand):
         year = options["year"]
         try:
             tax_year = TaxYear.objects.get(year)
-        except Taxyear.ObjectDoesNotExist:
+        except TaxYear.ObjectDoesNotExist:
             print(f"No valid TaxYear objects for entered year: {year}")
             return None
 
-        return TotalPensionCompanySummary.create(tax_year, "system")
-
-
+        return TotalPensionCompanySummaryFile.create(tax_year, "system")

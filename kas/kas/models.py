@@ -28,7 +28,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from eskat.models import ImportedR75PrivatePension
 from numpy import nan
-from pandas import DataFrame, ExcelWriter, Series
+from pandas import DataFrame, Series
 from prisme.models import Prisme10QBatch, Transaction
 from requests.exceptions import ReadTimeout
 from simple_history.models import HistoricalRecords
@@ -2529,13 +2529,12 @@ class TotalPensionCompanySummaryFile(models.Model):
 
         # Save the file
         buffer = BytesIO()
-        excelfile = ExcelWriter(buffer)
         # Save file in buffer, files won't be large
         df.to_excel(
-            buffer, #excelfile,
+            buffer,  # excelfile,
             index=False,
         )
-        name = f"{timezone.now().isoformat()}.xlsx" 
+        name = f"{timezone.now().isoformat()}.xlsx"
 
         # Reset buffer to start, and convet to django-type file
         buffer.seek(0)
@@ -2552,7 +2551,9 @@ class TotalPensionCompanySummaryFile(models.Model):
 
 
 post_delete.connect(
-    delete_file, sender=TotalPensionCompanySummaryFile, dispatch_uid="delete_total_pension_file"
+    delete_file,
+    sender=TotalPensionCompanySummaryFile,
+    dispatch_uid="delete_total_pension_file",
 )
 
 
