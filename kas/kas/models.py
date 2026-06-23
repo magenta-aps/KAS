@@ -2529,25 +2529,25 @@ class TotalPensionCompanySummaryFile(models.Model):
 
         # Save the file
         buffer = BytesIO()
-        with ExcelWriter(buffer) as excelfile:
-            # Save file in buffer, files won't be large
-            df.to_excel(
-                excelfile,
-                index=False,
-            )
-            name = f"{timezone.now().isoformat()}.xlsx" 
+        excelfile = ExcelWriter(buffer)
+        # Save file in buffer, files won't be large
+        df.to_excel(
+            buffer, #excelfile,
+            index=False,
+        )
+        name = f"{timezone.now().isoformat()}.xlsx" 
 
-            # Reset buffer to start, and convet to django-type file
-            buffer.seek(0)
-            django_file = File(buffer, name=name)
+        # Reset buffer to start, and convet to django-type file
+        buffer.seek(0)
+        django_file = File(buffer, name=name)
 
-            # Save file
-            file_entry.file.save(
-                name,
-                django_file,
-                save=True,
-            )
-            file_entry.save()
+        # Save file
+        file_entry.file.save(
+            name,
+            django_file,
+            save=True,
+        )
+        file_entry.save()
         return file_entry
 
 

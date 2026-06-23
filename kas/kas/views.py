@@ -20,6 +20,7 @@ from django.views.generic.list import MultipleObjectMixin
 from django_filters.views import FilterView
 from eskat.models import ImportedKasMandtal, ImportedR75PrivatePension, MockModels
 from ipware import get_client_ip
+from itertools import chain
 from openpyxl import Workbook
 from prisme.models import Prisme10QBatch, Transaction
 from worker.models import Job
@@ -30,6 +31,7 @@ from kas.reportgeneration.kas_final_statement import TaxFinalStatementPDF
 from django.db.models import (  # isort: skip
     BooleanField,
     Case,
+    CharField,
     Count,
     ExpressionWrapper,
     F,
@@ -101,6 +103,8 @@ from kas.models import (  # isort: skip
     RepresentationToken,
     TaxSlipGenerated,
     TaxYear,
+    TotalPensionCompanySummaryFile,
+    TotalPensionCompanySummaryFileDownload,
 )
 from kas.view_mixins import (  # isort: skip
     CreateOrUpdateViewWithNotesAndDocumentsForPolicyTaxYear,
@@ -1217,18 +1221,43 @@ class PensionCompanySummaryFileView(
 
     def get_context_data(self, **kwargs):
         self.object = self.get_object()
+        # TODO: Sæt sammen med fulde summationsfiler
+        sumfile_pensioncompany_value = Value(
+            "Årssummationsfil",
+            output_field=CharField(),
+        )
         summaryfiles = PensionCompanySummaryFile.objects.filter(tax_year=self.object)
+        totalsummaryfiles = TotalPensionCompanySummaryFile.objects.filter(
+            tax_year=self.object,
+        ).annotate(
+            filetype=sumfile_pensioncompany_value
+        )
         summaryjobs = Job.objects.filter(
             job_type="GeneratePensionCompanySummary",
             arguments__year__eq=self.object.year,
         ).annotate(created=F("created_at"))
-        all_objects = [*summaryfiles, *summaryjobs]
+        totalsummaryjobs = Job.objects.filter(
+            job_type="GenerateTotalPensionCompanySummary",
+            arguments__year__eq=self.object.year,
+        ).annotate(
+            created=F("created_at"),
+            arguments__pension_company=sumfile_pensioncompany_value,
+        )
+        object_list = list(chain(
+            totalsummaryfiles.order_by("-created"),
+            summaryfiles.order_by("company", "-created")
+        ))
+        all_objects = [
+            *summaryfiles,
+            *summaryjobs,
+            *totalsummaryfiles,
+            *totalsummaryjobs,
+        ]
         all_objects.sort(key=lambda e: e.created.timestamp())
+
         return super().get_context_data(
             **{
-                "object_list": PensionCompanySummaryFile.objects.filter(
-                    tax_year=self.object
-                ).order_by("company", "-created"),
+                "object_list": object_list,
                 "years": TaxYear.objects.values_list("year", flat=True).order_by(
                     "-year"
                 ),
@@ -1268,6 +1297,26 @@ class PensionCompanySummaryFileDownloadView(
     def render_to_response(self, context):
         client_ip, is_routable = get_client_ip(self.request)
         PensionCompanySummaryFileDownload.objects.create(
+            downloaded_by=self.request.user, downloaded_to=client_ip, file=self.object
+        )
+        response = HttpResponse(self.object.file, content_type="text/csv")
+        response["Content-Length"] = self.object.file.size
+        response["Content-Disposition"] = (
+            f"attachment; filename={os.path.basename(self.object.file.name)}"
+        )
+        return response
+
+
+class TotalPensionCompanySummaryFileDownloadView(
+    KasMixin, PermissionRequiredWithMessage, BaseDetailView
+):
+    permission_required = "kas.view_pensioncompanysummaryfile"
+    model = TotalPensionCompanySummaryFile
+
+    # Register info about who is downloading, and serve the file
+    def render_to_response(self, context):
+        client_ip, is_routable = get_client_ip(self.request)
+        TotalPensionCompanySummaryFileDownload.objects.create(
             downloaded_by=self.request.user, downloaded_to=client_ip, file=self.object
         )
         response = HttpResponse(self.object.file, content_type="text/csv")

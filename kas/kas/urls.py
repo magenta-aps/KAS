@@ -52,6 +52,7 @@ from kas.views import (  # isort: skip
     PreviousYearNegativePayoutHistoryListView,
     SelfReportedAmountUpdateView,
     StatisticsView,
+    TotalPensionCompanySummaryFileDownloadView,
     UpdateEfterbehandlingView,
     UpdatePreviousYearNegativePayoutView,
     UpdateSingleMandtal,
@@ -205,6 +206,11 @@ urlpatterns = [
         "tax_year/<int:year>/company-summary/<int:pk>/",
         PensionCompanySummaryFileDownloadView.as_view(),
         name="policy_summary",
+    ),
+    path(
+        "tax_year/<int:year>/total-company-summary/<int:pk>/",
+        TotalPensionCompanySummaryFileDownloadView.as_view(),
+        name="total_policy_summary",
     ),
     path(
         "persontaxyear/<int:pk>/history/",
