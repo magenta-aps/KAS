@@ -730,6 +730,7 @@ class PolicyUpdateNumberTestCase(BaseTestCase):
         self.assertEqual(self.policy_tax_year.policy_number, "efgh")
         self.assertEqual(other_policy_tax_year.policy_number, "abcd")
 
+
 class GenerateTotalPensionCompanySummaryFileViewTest(BaseTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -739,12 +740,13 @@ class GenerateTotalPensionCompanySummaryFileViewTest(BaseTestCase):
         response = self.client.get(
             reverse(
                 "kas:generate_total_pensioncompany_summary",
-                kwargs={"year": self.tax_year.year}),
+                kwargs={"year": self.tax_year.year},
+            ),
         )
         self.assertEqual(
             response.url,
             reverse(
-                "kas:policy_summary_list", 
+                "kas:policy_summary_list",
                 kwargs={"year": self.tax_year.year},
             ),
         )
@@ -753,11 +755,12 @@ class GenerateTotalPensionCompanySummaryFileViewTest(BaseTestCase):
         response = self.client.get(
             reverse(
                 "kas:generate_total_pensioncompany_summary",
-                kwargs={"year": self.tax_year.year + 7000}),
-        ) # This will break, if we're still in busines 6995 years from writing this
+                kwargs={"year": self.tax_year.year + 7000},
+            ),
+        )  # This will break, if we're still in busines 6995 years from writing this
         self.assertEqual(
             response.url,
             reverse(
-                "kas:policy_summary_list_latest", 
+                "kas:policy_summary_list_latest",
             ),
         )

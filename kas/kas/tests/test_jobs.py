@@ -880,6 +880,6 @@ class GenerateTotalPensionCompanySummaryFileJobTest(BaseTransactionTestCase):
             job_kwargs=self.job_kwargs,
         )
         self.assertEqual(
-            PensionCompanySummaryFile.objects.filter(creator=self.user).count(),
+            TotalPensionCompanySummaryFile.objects.filter(creator=self.user).count(),
             1,
         )
