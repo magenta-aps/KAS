@@ -7,6 +7,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from prisme.models import Prisme10QBatch, Transaction
+from unittest.mock import patch
 
 from kas.models import (  # isort: skip
     FinalSettlement,
@@ -16,6 +17,8 @@ from kas.models import (  # isort: skip
     PolicyTaxYear,
     TaxYear,
 )
+
+from worker.models import Job
 
 
 class BaseTestCase(TestCase):
@@ -736,7 +739,8 @@ class GenerateTotalPensionCompanySummaryFileViewTest(BaseTestCase):
         super().setUp()
         self.client.login(username=self.username, password=self.password)
 
-    def test_valid_year(self):
+    @patch.object(Job, "schedule_job", return_value=True)
+    def test_valid_year(self, Job):
         response = self.client.get(
             reverse(
                 "kas:generate_total_pensioncompany_summary",
