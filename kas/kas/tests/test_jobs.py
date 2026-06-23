@@ -29,6 +29,7 @@ from kas.jobs import (  # isort: skip
     generate_batch_and_transactions_for_year,
     generate_pension_company_summary_file,
     generate_pseudo_settlements_and_transactions_for_legacy_years,
+    generate_total_pension_company_summary_file,
     import_mandtal,
     import_r75,
     merge_pension_companies,
@@ -874,8 +875,8 @@ class GenerateTotalPensionCompanySummaryFileJobTest(BaseTransactionTestCase):
             0,
         )
         Job.schedule_job(
-            generate_pension_company_summary_file,
-            job_type="GeneratePensionCompanySummary",
+            generate_total_pension_company_summary_file,
+            job_type="GenerateTotalPensionCompanySummary",
             created_by=self.user,
             job_kwargs=self.job_kwargs,
         )
