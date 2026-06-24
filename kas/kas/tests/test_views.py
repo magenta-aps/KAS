@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -7,6 +8,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from prisme.models import Prisme10QBatch, Transaction
+from worker.models import Job
 
 from kas.models import (  # isort: skip
     FinalSettlement,
@@ -729,3 +731,39 @@ class PolicyUpdateNumberTestCase(BaseTestCase):
         other_policy_tax_year.refresh_from_db()
         self.assertEqual(self.policy_tax_year.policy_number, "efgh")
         self.assertEqual(other_policy_tax_year.policy_number, "abcd")
+
+
+class GenerateTotalPensionCompanySummaryFileViewTest(BaseTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.client.login(username=self.username, password=self.password)
+
+    @patch.object(Job, "schedule_job", return_value=True)
+    def test_valid_year(self, Job):
+        response = self.client.get(
+            reverse(
+                "kas:generate_total_pensioncompany_summary",
+                kwargs={"year": self.tax_year.year},
+            ),
+        )
+        self.assertEqual(
+            response.url,
+            reverse(
+                "kas:policy_summary_list",
+                kwargs={"year": self.tax_year.year},
+            ),
+        )
+
+    def test_invalid_year(self):
+        response = self.client.get(
+            reverse(
+                "kas:generate_total_pensioncompany_summary",
+                kwargs={"year": self.tax_year.year + 7000},
+            ),
+        )  # This will break, if we're still in busines 6995 years from writing this
+        self.assertEqual(
+            response.url,
+            reverse(
+                "kas:policy_summary_list_latest",
+            ),
+        )

@@ -11,6 +11,7 @@ from kas.views import (  # isort: skip
     FeatureFlagView,
     FinalSettlementDownloadView,
     FinalSettlementGenerateView,
+    GenerateTotalPensionCompanySummaryFileView,
     KasLoginView,
     LockDetailView,
     LockFilterView,
@@ -51,6 +52,7 @@ from kas.views import (  # isort: skip
     PreviousYearNegativePayoutHistoryListView,
     SelfReportedAmountUpdateView,
     StatisticsView,
+    TotalPensionCompanySummaryFileDownloadView,
     UpdateEfterbehandlingView,
     UpdatePreviousYearNegativePayoutView,
     UpdateSingleMandtal,
@@ -196,9 +198,19 @@ urlpatterns = [
         name="policy_summary_list",
     ),
     path(
+        "tax_year/<int:year>/generate-company-summary/",
+        GenerateTotalPensionCompanySummaryFileView.as_view(),
+        name="generate_total_pensioncompany_summary",
+    ),
+    path(
         "tax_year/<int:year>/company-summary/<int:pk>/",
         PensionCompanySummaryFileDownloadView.as_view(),
         name="policy_summary",
+    ),
+    path(
+        "tax_year/<int:year>/total-company-summary/<int:pk>/",
+        TotalPensionCompanySummaryFileDownloadView.as_view(),
+        name="total_policy_summary",
     ),
     path(
         "persontaxyear/<int:pk>/history/",

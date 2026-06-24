@@ -83,6 +83,11 @@ def get_job_types():
             "function": "kas.jobs.generate_pension_company_summary_file",
             "result_template": "worker/includes/status_only.html",
         },
+        "GenerateTotalPensionCompanySummary": {
+            "label": _("Generering af årssummationsfil for alle pensionsselskaber"),
+            "function": "kas.jobs.generate_total_pension_company_summary_file",
+            "result_template": "worker/inculdes/status_only.html",
+        },
         "GenerateBatchAndTransactions": {
             "label": _("Generering af Transaktioner og batch for et givent år"),
             "form_class": YearPkForm,

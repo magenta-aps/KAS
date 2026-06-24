@@ -53,6 +53,7 @@ from kas.models import (  # isort: skip
     PolicyTaxYear,
     TaxSlipGenerated,
     TaxYear,
+    TotalPensionCompanySummaryFile,
 )
 
 
@@ -914,6 +915,22 @@ def generate_pension_company_summary_file(job):
                 "label": "Årssummationsfil genereret",
                 "value": [
                     {"label": "Pensionsselskab", "value": pension_company.name},
+                    {"label": "Årstal", "value": year.year},
+                ],
+            },
+        ]
+    }
+
+
+@job_decorator
+def generate_total_pension_company_summary_file(job):
+    year = TaxYear.objects.get(year=job.arguments["year"])
+    TotalPensionCompanySummaryFile.create(year, job.created_by)
+    job.result = {
+        "summary": [
+            {
+                "label": "Årssummationsfil for alle pensionsselskaber genereret",
+                "value": [
                     {"label": "Årstal", "value": year.year},
                 ],
             },

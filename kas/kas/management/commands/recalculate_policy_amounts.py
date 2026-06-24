@@ -6,7 +6,7 @@ from kas.models import PolicyTaxYear
 
 
 class Command(BaseCommand):
-    help = "Updates prefilled_amount for PolixyTaxYears with more than 1 R75 entry"
+    help = "Updates prefilled_amount for PolicyTaxYears with more than 1 R75 entry"
 
     def add_arguments(self, parser):
         parser.add_argument("year", type=int)

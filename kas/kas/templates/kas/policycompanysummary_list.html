@@ -39,6 +39,11 @@
           {% translate 'Skift år' %}
         </button>
 
+        <a class="btn btn-primary" href="{% url 'kas:generate_total_pensioncompany_summary' object.year %}" id="generateTotalCompanySummary">
+          {% translate 'Generér årssummationsfil' %}
+        </a>
+
+
         <ul class="dropdown-menu" aria-labelledby="yearMenuLink">
           {% for year in years %}
           <li><a class="dropdown-item" href="{% url 'kas:policy_summary_list' year %}">{{year}}</a></li>
@@ -75,12 +80,18 @@
         <td>{{file.created_by}}</td>
         <td>{{file.created_at}}</td>
         <td>{% translate 'Job kører' %}<a href="{% url 'kas:policy_summary_list' object.year %}">{% translate 'Genindlæs siden' %}</a></td>
-      {% else %}
+      {% elif file.company %}
         <td>{{file.company.name}}</td>
         <td>{{file.tax_year.year}}</td>
         <td>{{file.creator.username}}</td>
         <td>{{file.created}}</td>
         <td><a href="{% url 'kas:policy_summary' object.year file.id %}">{% translate 'Download' %}</a></td>
+      {% else %}
+        <td>{{file.filetype}}</td>
+        <td>{{file.tax_year.year}}</td>
+        <td>{{file.creator.username}}</td>
+        <td>{{file.created}}</td>
+        <td><a href="{% url 'kas:total_policy_summary' object.year file.id %}">{% translate 'Download' %}</a></td>
       {% endif %}
       </tr>
     {% empty %}
