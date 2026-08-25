@@ -869,7 +869,7 @@ def generate_batch_and_transactions_for_year(job):
         "status": "Genererede batch og transaktioner",
         "message": (
             f"Genererede {new_transactions} på baggrund af"
-            "{settlements_count} slutopgørelser"
+            f"{settlements_count} slutopgørelser"
         ),
     }
 

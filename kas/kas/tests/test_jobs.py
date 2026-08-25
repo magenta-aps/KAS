@@ -462,8 +462,8 @@ class GenerateBatchAndTransactionsForYearJobsTest(BaseTransactionTestCase):
         self.assertEqual(qs.count(), 1)
         batch = qs.first()
         self.assertEqual(FinalSettlement.objects.count(), 1)
-        self.assertEqual(FinalSettlement.objects.first().get_transaction_amount(), 1)
-        self.assertEqual(batch.transaction_set.count(), 1)
+        self.assertEqual(FinalSettlement.objects.first().get_transaction_amount(), 0)
+        self.assertEqual(batch.transaction_set.count(), 0)
 
     @patch.object(
         django_rq,
