@@ -211,7 +211,7 @@ class MinimumAmountHandling(TestCase):
         return_value=Queue(is_async=False, connection=FakeStrictRedis()),
     )
     def test_minimim_amount_transactions(self, mock_connection, django_rq):
-        """Validate that transactions below minimum amount abs(100) is set to status indifferent"""
+        """Validate that transactions below minimum amount abs(100) are not created"""
 
         # generate final settlement
         Job.schedule_job(
@@ -244,14 +244,7 @@ class MinimumAmountHandling(TestCase):
 
         # Hent alle transaktioner, som er under grænsen for at være ubetydelig
         indifferent_transactions = Transaction.objects.filter(status="indifferent")
-        self.assertEqual(1, indifferent_transactions.count())
-
-        # Valider at personen 1111111111 har en transaktion med et ubetydeligt beløb
-        person_transactions = indifferent_transactions.get(
-            person_tax_year__person__cpr="1111111111"
-        )
-        self.assertEqual(91, person_transactions.amount)
-        self.assertEqual("prisme10q", person_transactions.type)
+        self.assertEqual(0, indifferent_transactions.count())
 
         # Hent alle transaktioner, som er over grænsen for at være ubetydelig
         transferred_transactions = Transaction.objects.filter(status="transferred")

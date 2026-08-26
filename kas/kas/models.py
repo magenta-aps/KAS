@@ -2203,7 +2203,7 @@ class FinalSettlement(EboksDispatch):
                 )
             else:
                 amount = policy.get_calculation()[
-                    "tax_with_deductions"
+                    "tax_to_pay"
                 ]  # skat der skal betales per police
                 result.append(
                     {
