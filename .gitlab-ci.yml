@@ -219,7 +219,7 @@ Admin Unittest:
   <<: *test-admin
   script:
     - cd /app
-    - coverage run manage.py test --parallel 4
+    - coverage run manage.py test
     - coverage combine
     - coverage report --show-missing --fail-under=71
     - coverage xml
