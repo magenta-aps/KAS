@@ -43,7 +43,7 @@ COPY --chown=kas:kas docker/crontab.kas /crontab
 COPY ./docker/kas_entrypoint.sh /entrypoint.sh
 COPY --chown=kas:kas ./kas /app
 RUN chown kas:kas /app
-USER kas
+USER 75050
 EXPOSE 8000
 VOLUME /srv/media
 ENTRYPOINT ["/entrypoint.sh"]

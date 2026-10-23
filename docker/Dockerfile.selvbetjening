@@ -40,7 +40,7 @@ COPY ./docker/crontab.selvbetjening /crontab
 COPY ./docker/selvbetjening_entrypoint.sh /entrypoint.sh
 COPY --chown=kas:kas ./selvbetjening /app
 RUN chown kas:kas /app
-USER kas
+USER 75050
 EXPOSE 8000
 WORKDIR /app
 VOLUME /var/cache/idp
@@ -51,7 +51,7 @@ RUN django-admin compilemessages
 COPY --chown=kas:kas ./dev-environment/selvbetjening.env selvbetjening.env
 # hadolint ignore=SC1091
 RUN set -a && \
-    source selvbetjening.env && \
+    . selvbetjening.env && \
     set +a && \
     python manage.py collectstatic --no-input --clear && \
     rm selvbetjening.env
