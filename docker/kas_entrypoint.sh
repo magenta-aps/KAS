@@ -39,4 +39,7 @@ if [ "${MAKE_MIGRATIONS,,}" = true ] || [ "${MIGRATE,,}" = true ] || [ "${TEST,,
     python manage.py make_messages --all --no-obsolete --add-location file
   fi
 fi
+if [ $ECHO_INTERFACE ]; then
+    echo "Interface: $ECHO_INTERFACE"
+fi
 exec "$@"

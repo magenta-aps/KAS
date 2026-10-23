@@ -22,7 +22,7 @@ pandas==2.3.2
 paramiko==3.5.1
 prometheus_client==0.22.1
 psycopg==3.2.12
-pydotplus==2.0.2
+pygraphviz==2.0.4
 requests==2.32.5
 rq==2.6.0
 tblib==3.1.0

@@ -28,6 +28,7 @@ services:
       - CREATE_USERS=true
       - CREATE_DUMMY_USERS=true
       - TEST=false
+      - ECHO_INTERFACE=http://localhost:8020
     command: gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output # reload on code changes
 
   kas-cron:
@@ -115,6 +116,7 @@ services:
     environment:
       - MAKE_MIGRATIONS=true
       - MIGRATE=true
+      - ECHO_INTERFACE=http://localhost:8021
     command: gunicorn -b 0.0.0.0:8000 project.wsgi:application --reload -w 1 --access-logfile - --error-logfile - --capture-output
 
   kas-idp:
