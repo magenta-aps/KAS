@@ -54,7 +54,7 @@ RUN django-admin compilemessages
 COPY --chown=kas:kas ./dev-environment/kas.env kas.env
 # hadolint ignore=SC1091
 RUN set -a && \
-    source kas.env && \
+    . kas.env && \
     set +a && \
     python manage.py collectstatic --no-input --clear && \
     python manage.py graph_models eskat kas prisme worker -g -X Historical* -o /app/static/kas/doc/kas_models.png && \
