@@ -1,4 +1,4 @@
-FROM python:3.12-bookworm
+FROM python:3.14-bookworm
 ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.1.12/supercronic-linux-amd64 \
     SUPERCRONIC=supercronic-linux-amd64 \
     SUPERCRONIC_SHA1SUM=048b95b48b708983effb2e5c935a1ef8483d9e3e\
@@ -43,7 +43,7 @@ COPY --chown=kas:kas docker/crontab.kas /crontab
 COPY ./docker/kas_entrypoint.sh /entrypoint.sh
 COPY --chown=kas:kas ./kas /app
 RUN chown kas:kas /app
-USER kas
+USER 75050
 EXPOSE 8000
 VOLUME /srv/media
 ENTRYPOINT ["/entrypoint.sh"]
@@ -54,7 +54,7 @@ RUN django-admin compilemessages
 COPY --chown=kas:kas ./dev-environment/kas.env kas.env
 # hadolint ignore=SC1091
 RUN set -a && \
-    source kas.env && \
+    . kas.env && \
     set +a && \
     python manage.py collectstatic --no-input --clear && \
     python manage.py graph_models eskat kas prisme worker -g -X Historical* -o /app/static/kas/doc/kas_models.png && \

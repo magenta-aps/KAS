@@ -19,4 +19,7 @@ if [ "${MIGRATE,,}" = true ]; then
   echo 'running migrations'
   python manage.py migrate
 fi
+if [ $ECHO_INTERFACE ]; then
+    echo "Interface: $ECHO_INTERFACE"
+fi
 exec "$@"
