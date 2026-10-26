@@ -28,7 +28,9 @@ if [ "${MAKE_MIGRATIONS,,}" = true ] || [ "${MIGRATE,,}" = true ] || [ "${TEST,,
   fi
   if [ "${TEST,,}" = true ]; then
     echo 'running tests!'
-    python manage.py test
+    coverage run manage.py test
+    coverage combine
+    coverage report --show-missing --fail-under=71
   fi
   if [ "${DUMMYDATA,,}" = true ]; then
     echo 'creating dummy data!'
@@ -38,5 +40,8 @@ if [ "${MAKE_MIGRATIONS,,}" = true ] || [ "${MIGRATE,,}" = true ] || [ "${TEST,,
     echo 'making messages!'
     python manage.py make_messages --all --no-obsolete --add-location file
   fi
+fi
+if [ $ECHO_INTERFACE ]; then
+    echo "Interface: $ECHO_INTERFACE"
 fi
 exec "$@"
