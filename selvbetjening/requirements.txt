@@ -8,7 +8,7 @@ gl-mitid==1.9.6
 gunicorn==26.2.0
 psycopg==3.3.6
 pyjwkest==1.4.4
-pysaml2==7.5.4
+pysaml2==7.5.5
 setuptools==84.2.1
 tblib==3.2.2
 whitenoise==6.12.0
