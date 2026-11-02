@@ -191,9 +191,7 @@ class Job(models.Model):
         if settings.DEBUG is False and settings.METRICS["disable"] is False:
             # send metric to push gateway
             registry = CollectorRegistry()
-            documentation = (
-                "Last successful execution time for: %s" % self.get_job_type_display()
-            )
+            documentation = "Last successful execution time"
             g = Gauge("groenland_job", documentation, registry=registry)
             g.set_to_current_time()
             try:
