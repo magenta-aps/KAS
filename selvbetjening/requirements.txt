@@ -1,4 +1,4 @@
-coverage==7.17.0
+coverage==7.17.3
 django==5.2.15
 django-csp==4.0
 django-session-timeout @ git+https://github.com/Lapeth/django-session-timeout@master
